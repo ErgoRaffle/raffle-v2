@@ -4,7 +4,7 @@ This project determined after successful Raffle project and purposes to add many
 
 * Multiple winners instead of only one winner
 * Set prize type as native token(Ergo) or not native tokens and also as NFTs 
-* Donate Tokens/NFTs to winners by anyone meanwhile raffle is open
+* Donate Tokens/NFTs to winners by anyone meanwhile a raffle is open
 * Raffle creators must pay service fee at the creation time
 
 ## Getting started
