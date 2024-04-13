@@ -18,7 +18,7 @@
     "make-input-template": "node ./dist/index.js make-input-template"
   },
   "devDependencies": {
-    "@types/node": "^20.11.9",
+    "@types/node": "^20.12.7",
     "typescript": "^5.3.3",
     "vitest": "^1.4.0"
   },

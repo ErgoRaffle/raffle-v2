@@ -10,7 +10,9 @@ index bcca28d..316b29e 100644
  import { hex } from '@fleet-sdk/crypto';
 +import * as sigmastateMain from 'sigmastate-js/main';
 +
-+var { SigmaCompilerObj, ValueObj, Value } = sigmastateMain;
++var SigmaCompilerObj = sigmastateMain.default.SigmaCompilerObj;
++var ValueObj = sigmastateMain.ValueObj;
++var Value = sigmastateMain.Value;
  
  // src/compiler.ts
  var ContractTemplate = class {

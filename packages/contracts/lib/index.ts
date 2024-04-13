@@ -15,33 +15,31 @@ program.command("compile-contracts")
 .option("-o, --output <output file path>", "Address of output file that contains contracts addresses")
 .option("-i, --input <intput file path>", "Address of intput file that contains JSON contract name and variables")
 .action((options) => {
-    // const options = program.opts()
-
     logger.info("compile-all command started");
 
-    let inputs = {};
+    let inputs: ContextVarsType = new Map();
     if(options.input) {
         let inputContent = ""
         try {
             inputContent = fs.readFileSync(options.input).toString();
         } catch(err) {
             logger.error(`Error: ${err}`);
-            logger.info("compile-all failed");
-            throw err;
+            logger.info("compile-all command failed");
+            exit(1);
         }
 
         try {
-            inputs = JSON.parse(inputContent);
+            inputs = new Map(Object.entries(JSON.parse(inputContent))) as ContextVarsType;
         } catch(err) {
             logger.error(`Error: Input file is not json`);
-            logger.info("compile-all failed");
+            logger.info("compile-all command failed");
             exit(1);
         }
     }
 
     let contracts = {}
     try {
-        contracts = compileAll(inputs as ContextVarsType);
+        contracts = compileAll(inputs);
     } catch(err) {
         logger.error(`Error: ${err}`);
         logger.info("compile-all failed");
@@ -62,7 +60,7 @@ program.command("compile-contracts")
         console.log(JSON.stringify(contracts, null, 4));
     }
 
-    logger.info("compile-all ran successfull");
+    logger.info("compile-all command ran successfull");
 });
 
 // Create template file of input variables
@@ -91,7 +89,7 @@ program.command("make-input-template")
         logger.info('Create input file template failed');
     }
 
-    logger.info('Create input file template ran successfull');
+    logger.info('Create input file template command ran successfull');
 });
 
 program.parse();
