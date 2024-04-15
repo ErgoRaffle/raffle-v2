@@ -15,14 +15,12 @@
   //   - RaffleLicense redeem from SucessRaffle or TicketRedeem
   //      [Service, (SuccessRaffle | TicketRedeem)] --> [Service]
   //   - New raffle creation
-  //      [Service(Self), UserBox] --> [Service, TicketRepo, InactiveRaffle, Change]
+  //      [Service, UserBox] --> [Service, TicketRepo, InactiveRaffle, Change]
   // 
 
-  val ownerNft = fromBase64("OWNER_NFT")
-  val serviceNft = fromBase64("SERVICE_NFT")
-  val raffleLicense = fromBase64("RAFFLE_LICENSE") // TODO to be removed
-  val inactiveRaffleScriptHash = fromBase64("INACTIVE_RAFFLE_SCRIPT_HASH")
-  val ticketRepoScriptHash = fromBase64("TICKET_REPO_SCRIPT_HASH")
+  val ownerNft = fromBase64("OWNER_NFT_B64")
+  val inactiveRaffleScriptHash = fromBase64("INACTIVE_RAFFLE_SCRIPT_HASH_B64")
+  val ticketRepoScriptHash = fromBase64("TICKET_REPO_SCRIPT_HASH_B64")
   val fee = FEE
   val minBoxValue = MIN_BOX_VALUE
 
@@ -31,6 +29,8 @@
     sigmaProp(true)
   } else {
     val outputService = OUTPUTS(0)
+    val serviceNft = SELF.tokens(0)._1
+    val raffleLicense = SELF.tokens(1)._1
     val selfReplication = allOf(Coll(
       outputService.R4[Coll[Long]].get == SELF.R4[Coll[Long]].get,
       outputService.R5[Coll[Coll[Byte]]].get == SELF.R5[Coll[Coll[Byte]]].get,
