@@ -47,18 +47,18 @@
     } else if (outputService.tokens(1)._2 == SELF.tokens(1)._2 - 1L) {
       // New raffle creation
       // [Service(Self), UserBox] --> [Service, TicketRepo, InactiveRaffle, Change]
-      val winnersPercent = getVar[Coll[Long]].get
+      val winnersPercent = getVar[Coll[Long]](0).get
       val winnersPercentBytes = winnersPercent.fold(
         Coll[Byte](), 
-        (res: Coll[Byte], p: Long) => res ++ longToByteArray(p)
+        {(res: Coll[Byte], p: Long) => res ++ longToByteArray(p)}
       )
       val winnerPercentsSum = winnersPercent.fold(0L, {(x: Long, y: Long) => x + y})
       val winnersCount = winnersPercent.size
       val hasStolenTickets = OUTPUTS.slice(2, OUTPUTS.size)
-        .exists(
+        .exists{
           (box: Box) => 
-            box.tokens.exists((token: (Coll[Byte], Long)) => token._1 == SELF.id)
-        )
+            box.tokens.exists{(token: (Coll[Byte], Long)) => token._1 == SELF.id}
+        }
       val ticketRepo = OUTPUTS(1)
       val inactiveRaffle = OUTPUTS(2)
       val serviceFeePercent = SELF.R4[Coll[Long]].get(0)
