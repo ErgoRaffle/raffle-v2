@@ -1,7 +1,10 @@
 {
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "rootDir": "./lib"
-  },
-  "exclude": ["tests"],
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "rootDir": "./lib",
+        "types": [
+            "node"
+        ]
+    },
+    "exclude": ["tests"],
 }
