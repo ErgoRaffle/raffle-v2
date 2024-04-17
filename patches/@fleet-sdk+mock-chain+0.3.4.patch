@@ -1,0 +1,20 @@
+diff --git a/node_modules/@fleet-sdk/mock-chain/dist/index.mjs b/node_modules/@fleet-sdk/mock-chain/dist/index.mjs
+index 1e7d918..8cf5393 100644
+--- a/node_modules/@fleet-sdk/mock-chain/dist/index.mjs
++++ b/node_modules/@fleet-sdk/mock-chain/dist/index.mjs
+@@ -3,10 +3,14 @@ import { SecretKeys, SecretKey, Wallet, BlockHeaders, PreHeader, ErgoBoxes, Unsi
+ import { SAFE_MIN_BOX_VALUE, ErgoAddress, DuplicateInputError, NotFoundError } from '@fleet-sdk/core';
+ import { hex, blake2b256, randomBytes, utf8 } from '@fleet-sdk/crypto';
+ import { serializeBox, parse } from '@fleet-sdk/serializer';
+-import { red, bgRed, bold, green, gray } from 'picocolors';
++// import { red, bgRed, bold, green, gray } from 'picocolors';
++import * as picocolors from 'picocolors';
+ import { diffArrays } from 'diff';
+ import { ErgoHDKey } from '@fleet-sdk/wallet';
+ 
++
++const { red, bgRed, bold, green, gray } = picocolors;
++
+ // src/executor.ts
+ function mockUTxO(mock) {
+   const box = {

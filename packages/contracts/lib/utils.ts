@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'node:path';
 import { compile } from '@fleet-sdk/compiler';
+import { RECOMMENDED_MIN_FEE_VALUE } from '@fleet-sdk/core'
 
 import { logger } from './logger.js';
 
@@ -19,7 +20,27 @@ const scriptList = [
     'gift',
     'giftRedeem',
     'ticketRedeem'
-]
+];
+
+export const defaultScriptsVariables = {
+    "service": {
+        "OWNER_NFT_B64": "",
+        "INACTIVE_RAFFLE_SCRIPT_HASH_B64": "",
+        "TICKET_REPO_SCRIPT_HASH_B64": "",
+        "FEE": 15000000,
+        "MIN_BOX_VALUE": 30000000
+    },
+    "inactiveRaffle": {},
+    "ticketRepo": {},
+    "activeRaffle": {},
+    "winner": {},
+    "ticket": {},
+    "successRaffle": {},
+    "winnerPrize": {},
+    "gift": {},
+    "giftRedeem": {},
+    "ticketRedeem": {}
+};
 
 export type ScriptNamesType = 'service' | 'inactiveRaffle' | 'ticketRepo' | 'activeRaffle' |
                     'winner' | 'ticket' | 'successRaffle' | 'winnerPrize' |
@@ -27,7 +48,7 @@ export type ScriptNamesType = 'service' | 'inactiveRaffle' | 'ticketRepo' | 'act
 export type ContextVarsType = Map<ScriptNamesType, Map<string, string>>;
 
 
-export function compileAll(contextVars?: ContextVarsType): Object {
+export function compileAll(contextVars?: ContextVarsType, outputsAsHex: boolean = false): Object {
     let contracts: {[key: string]: string} = {};
 
     for(const scriptName of scriptList) {
@@ -42,7 +63,11 @@ export function compileAll(contextVars?: ContextVarsType): Object {
 
         try {
             let contract = compile(script, {});
-            contracts[scriptName] = contract.toAddress().toString();
+            if(outputsAsHex) {
+                contracts[scriptName] = contract.toHex().toString();
+            }else {
+                contracts[scriptName] = contract.toAddress().toString();
+            }
         } catch(err) {
             logger.error(`The compileAll function raised error: ${err}`);
             throw err;
@@ -51,4 +76,11 @@ export function compileAll(contextVars?: ContextVarsType): Object {
     logger.info(`The compileAll function done successful`);
 
     return contracts;
+}
+
+
+export class RaffleUtil {
+    static getBox() {
+        
+    }
 }

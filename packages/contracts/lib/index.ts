@@ -4,7 +4,7 @@ import { exit } from "process";
 import { program } from "commander";
 
 import { logger } from "./logger.js";
-import { compileAll, ContextVarsType } from "./utils.js";
+import { defaultScriptsVariables, compileAll, ContextVarsType } from "./utils.js";
 
 
 program.name("contracts")
@@ -68,22 +68,10 @@ program.command("make-input-template")
 .argument("<destination>", "Destination address of file")
 .action((destination) => {
     logger.info("Create input file template started");
-    let scriptVariables = {
-        "service": {},
-        "inactiveRaffle": {},
-        "ticketRepo": {},
-        "activeRaffle": {},
-        "winner": {},
-        "ticket": {},
-        "successRaffle": {},
-        "winnerPrize": {},
-        "gift": {},
-        "giftRedeem": {},
-        "ticketRedeem": {}
-    };
+    let scriptsVariables = defaultScriptsVariables;
 
     try {
-        fs.writeFileSync(destination, JSON.stringify(scriptVariables, null, 4));
+        fs.writeFileSync(destination, JSON.stringify(scriptsVariables, null, 4));
     } catch(err) {
         logger.error(`Error: ${err}`);
         logger.info('Create input file template failed');

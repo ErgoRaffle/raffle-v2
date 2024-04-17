@@ -41,7 +41,7 @@
       outputService.tokens.size == SELF.tokens.size,
     ))
     if(outputService.tokens(1)._2 == SELF.tokens(1)._2 + 1L){
-      // RaffleLicense redeem from SucessRaffle or TicketRedeem
+      // RaffleLicense redeem from SuccessRaffle or TicketRedeem
       // [Service, (SuccessRaffle | TicketRedeem)] --> [Service]
       sigmaProp(selfReplication)
     } else if (outputService.tokens(1)._2 == SELF.tokens(1)._2 - 1L) {
