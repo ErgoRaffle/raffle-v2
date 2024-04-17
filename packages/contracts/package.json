@@ -30,5 +30,9 @@
   },
   "engines": {
     "node": ">=20.11.0"
+  },
+  "dependencies": {
+    "@fleet-sdk/core": "^0.3.4",
+    "@fleet-sdk/mock-chain": "^0.3.4"
   }
 }
