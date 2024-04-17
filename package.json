@@ -15,7 +15,8 @@
   },
   "devDependencies": {
     "husky": "^8.0.0",
-    "lint-staged": "^13.0.3"
+    "lint-staged": "^13.0.3",
+    "patch-package": "^8.0.0"
   },
   "dependencies": {
     "@fleet-sdk/compiler": "^0.3.4",
