@@ -22,6 +22,8 @@
   },
   "dependencies": {
     "@fleet-sdk/compiler": "^0.3.4",
+    "@fleet-sdk/core": "^0.3.4",
+    "@fleet-sdk/mock-chain": "^0.3.4",
     "sigmastate-js": "^0.4.0",
     "winston": "^3.13.0"
   }

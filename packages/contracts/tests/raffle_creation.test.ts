@@ -31,7 +31,7 @@ test('Create raffle successfuly', () => {
     scriptsVars['service'] = {
         "OWNER_NFT_B64": "",
         "INACTIVE_RAFFLE_SCRIPT_HASH_B64": "",
-        "TICKET_REPO_SCRIPT_HASH_B64": "",
+        "TICKET_REPO_SCRIPT_HASH_B64": "1906010101d17300",
         "FEE": 15000000,
         "MIN_BOX_VALUE": 30000000
     };
@@ -63,12 +63,13 @@ test('Create raffle successfuly', () => {
         });
     console.log(`2 >>>>>>>>>>>>>>>>>>>>>>>>> ${serviceContractParty.balance.nanoergs}`);
 
-    let ticketRepoOutputBox = new OutputBuilder('15000000', initialContractsAddresses['ticketRepo'])
-        .mintToken({
-            amount: "1000000000",
-            name: "TiketRepoToken",
-            decimals: 0
-        });
+    let ticketRepoOutputBox = new OutputBuilder(
+        '15000000', scriptsVars['service']['TICKET_REPO_SCRIPT_HASH_B64']
+    ).mintToken({
+        amount: "1000000000",
+        name: "TiketRepoToken",
+        decimals: 0
+    });
 
     let inactiveRaffleOutputBox = new OutputBuilder('15000000', initialContractsAddresses['inactiveRaffle'])
         .addTokens([
