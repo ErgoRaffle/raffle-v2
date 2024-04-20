@@ -1,5 +1,6 @@
 import { test } from 'vitest'
 
+import { Box } from '@fleet-sdk/core'
 import { MockChain } from '@fleet-sdk/mock-chain'
 import {
     SSigmaProp,
@@ -12,9 +13,8 @@ import {
     OutputBuilder
 } from '@fleet-sdk/core'
 
-import { defaultScriptsVariables, compileAll, ContextVarsType } from '../lib/utils.js'
-
 import * as helpers from './helpers.js';
+import { compileAll, defaultScriptsVariables, ContextVarsType } from '../lib/utils.js'
 
 
 test('Create raffle successfuly', () => {
@@ -27,7 +27,6 @@ test('Create raffle successfuly', () => {
     let raffleNFTToken = helpers.mintRaffleNFT(chain, rosen, 2);
     let licenseToken = helpers.mintLicenseToken(chain, rosen, 3);
     let serviceBox = helpers.createServiceBox(chain, rosen, 4, [raffleNFTToken, licenseToken]);
-
     let scriptsVars = { ...defaultScriptsVariables };
     scriptsVars['service'] = {
         "OWNER_NFT_B64": "",
@@ -36,13 +35,16 @@ test('Create raffle successfuly', () => {
         "FEE": 15000000,
         "MIN_BOX_VALUE": 30000000
     };
-    let inputs = new Map(Object.entries(scriptsVars)) as ContextVarsType;
-    // const contractsAddresses = compileAll(inputs, true) as {[key: string]: string};
-    // const serviceContractParty = helpers.initServiceContractParty(chain, contractsAddresses['service']);
+    const initialContractsAddresses = compileAll(
+        new Map(Object.entries(scriptsVars)) as ContextVarsType,
+        true
+    );
+
+    // initialContractsAddresses;
     const serviceContractParty = helpers.initServiceContractParty(chain, serviceBox.ergoTree);
     console.log(`1 >>>>>>>>>>>>>>>> ${serviceContractParty.ergoTree.toString()}`);
 
-    let serviceOuputBox = new OutputBuilder('1500000', serviceContractParty.address.ergoTree)
+    let serviceOuputBox = new OutputBuilder('15000000', serviceContractParty.address.ergoTree)
         .addTokens([
             {
                 // serviceNft
@@ -61,15 +63,14 @@ test('Create raffle successfuly', () => {
         });
     console.log(`2 >>>>>>>>>>>>>>>>>>>>>>>>> ${serviceContractParty.balance.nanoergs}`);
 
-    let ticketRepoOutputBox = new OutputBuilder('1500000', serviceContractParty.address.ergoTree)
-        // .addTokens([
-        //     {
-        //         // raffleLicense
-        //         tokenId: licenseToken.tokenId,
-        //         amount: '1'
-        //     }
-        // ]);
-    let inactiveRaffleOutputBox = new OutputBuilder('1500000', serviceContractParty.address.ergoTree)
+    let ticketRepoOutputBox = new OutputBuilder('15000000', initialContractsAddresses['ticketRepo'])
+        .mintToken({
+            amount: "1000000000",
+            name: "TiketRepoToken",
+            decimals: 0
+        });
+
+    let inactiveRaffleOutputBox = new OutputBuilder('15000000', initialContractsAddresses['inactiveRaffle'])
         .addTokens([
             {
                 // raffleLicense
@@ -82,8 +83,14 @@ test('Create raffle successfuly', () => {
             R5: SSigmaProp(SGroupElement(creator.key.publicKey)).toHex()
         });
 
+    let inputBoxes: Box<bigint>[] = [ ...creator.utxos.toArray() ];
+    inputBoxes.push(
+        serviceBox as Box<bigint>
+    );
+
     const transaction = new TransactionBuilder(chain.height)
-        .from(creator.utxos)
+    // .from(inputBoxes)
+    .from(rosen.utxos)
         .to([
             serviceOuputBox,
             ticketRepoOutputBox,
@@ -91,10 +98,13 @@ test('Create raffle successfuly', () => {
         ])
         .payMinFee()
         .sendChangeTo(creator.address)
-        .build()
+        .build();
 
-    let res = chain.execute(transaction, { signers: [creator] });
+    console.log(`3 >>>>>>>>>>>>>>>>>>>>>>>>> ${transaction.outputs[0]}`);
 
-    console.log(`3 >>>>>>>>>>>>>>>>>>>>>>>>> ${res}`);
-    console.log(`4 >>>>>>>>>>>>>>>>>>>>>>>>> ${transaction.outputs}`);
+    let res = chain.execute(transaction, { signers: [rosen] });
+
+    console.log(`4 >>>>>>>>>>>>>>>>>>>>>>>>> ${res}`);
+
+    console.log(`5 >>>>>>>>>>>>>>>>>>>>>>>>> ${ticketRepoOutputBox.ergoTree}`);
 });

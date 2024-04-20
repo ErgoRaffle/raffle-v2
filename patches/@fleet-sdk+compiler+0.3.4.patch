@@ -1,11 +1,12 @@
 diff --git a/node_modules/@fleet-sdk/compiler/dist/index.mjs b/node_modules/@fleet-sdk/compiler/dist/index.mjs
-index bcca28d..316b29e 100644
+index bcca28d..5296c4b 100644
 --- a/node_modules/@fleet-sdk/compiler/dist/index.mjs
 +++ b/node_modules/@fleet-sdk/compiler/dist/index.mjs
-@@ -1,8 +1,10 @@
+@@ -1,8 +1,13 @@
  import { ensureDefaults, assert, ergoTreeHeaderFlags, isEmpty, isHex } from '@fleet-sdk/common';
  import { SConstant } from '@fleet-sdk/serializer';
 -import { SigmaCompilerObj, ValueObj, Value } from 'sigmastate-js/main';
++// import { SigmaCompilerObj, ValueObj, Value } from 'sigmastate-js/main';
  import { ErgoTree } from '@fleet-sdk/core';
  import { hex } from '@fleet-sdk/crypto';
 +import * as sigmastateMain from 'sigmastate-js/main';

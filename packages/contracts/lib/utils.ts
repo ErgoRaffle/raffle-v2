@@ -48,7 +48,7 @@ export type ScriptNamesType = 'service' | 'inactiveRaffle' | 'ticketRepo' | 'act
 export type ContextVarsType = Map<ScriptNamesType, Map<string, string>>;
 
 
-export function compileAll(contextVars?: ContextVarsType, outputsAsHex: boolean = false): Object {
+export function compileAll(contextVars?: ContextVarsType, outputsAsHex: boolean = false): {[key: string]: string} {
     let contracts: {[key: string]: string} = {};
 
     for(const scriptName of scriptList) {
