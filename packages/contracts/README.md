@@ -1,5 +1,7 @@
 # contracts
 
+Raffle v2 contracts
+
 ## Table of contents
 
 - [Introduction](#introduction)
@@ -7,6 +9,7 @@
 
 ## Introduction
 
+This package contains Raffle v2 related contracts and utilities
 
 ## Installation
 
