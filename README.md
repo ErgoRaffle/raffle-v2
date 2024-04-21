@@ -1,6 +1,11 @@
-# raffle-2
+# raffle-v2
 
+This project determined after successful Raffle project and purposes to add many valuable features as listed below:
 
+* Multiple winners instead of only one winner
+* Set prize type as native token(Ergo) or not native tokens and also as NFTs 
+* Donate Tokens/NFTs to winners by anyone meanwhile raffle is open
+* Raffle creators must pay service fee at the creation time
 
 ## Getting started
 
