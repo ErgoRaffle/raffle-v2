@@ -1,7 +1,9 @@
-import * as fs from 'fs';
-import * as path from 'node:path';
-import { compile } from '@fleet-sdk/compiler';
-import { RECOMMENDED_MIN_FEE_VALUE } from '@fleet-sdk/core'
+import * as fs from 'fs'
+import * as path from 'node:path'
+
+import { compile } from '@fleet-sdk/compiler'
+import { SType, SConstant } from '@fleet-sdk/serializer'
+import { SAFE_MIN_BOX_VALUE, RECOMMENDED_MIN_FEE_VALUE } from '@fleet-sdk/core'
 
 import { logger } from './logger.js';
 
@@ -27,8 +29,8 @@ export const defaultScriptsVariables = {
         "OWNER_NFT_B64": "",
         "INACTIVE_RAFFLE_SCRIPT_HASH_B64": "",
         "TICKET_REPO_SCRIPT_HASH_B64": "",
-        "FEE": 15000000,
-        "MIN_BOX_VALUE": 30000000
+        "FEE": 15000000n,
+        "MIN_BOX_VALUE": SAFE_MIN_BOX_VALUE,
     },
     "inactiveRaffle": {},
     "ticketRepo": {},
@@ -45,7 +47,7 @@ export const defaultScriptsVariables = {
 export type ScriptNamesType = 'service' | 'inactiveRaffle' | 'ticketRepo' | 'activeRaffle' |
                     'winner' | 'ticket' | 'successRaffle' | 'winnerPrize' |
                     'gift' | 'giftRedeem' | 'ticketRedeem';
-export type ContextVarsType = Map<ScriptNamesType, Map<string, string>>;
+export type ContextVarsType = Map<ScriptNamesType, Map<string, string | Map<string, string>>>;
 
 
 export function compileAll(contextVars?: ContextVarsType, outputsAsHex: boolean = false): {[key: string]: string} {
@@ -60,9 +62,13 @@ export function compileAll(contextVars?: ContextVarsType, outputsAsHex: boolean 
 
         for(const nameAndValue of Object.entries(scriptVars))
             script = script.replace(nameAndValue[0], nameAndValue[1]);
-
+        
+        let vars: {[key: string | number]: string | SType} = {};
         try {
-            let contract = compile(script, {});
+            let contract = compile(
+                script,
+                { map: vars }
+            );
             if(outputsAsHex) {
                 contracts[scriptName] = contract.toHex().toString();
             }else {
