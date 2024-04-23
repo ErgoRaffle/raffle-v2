@@ -63,7 +63,7 @@
       val inactiveRaffle = OUTPUTS(2)
       val serviceFeePercent = SELF.R4[Coll[Long]].get(0)
       val implementerFeePercent = SELF.R4[Coll[Long]].get(1)
-      val creationFee = SELF.R4[Coll[Long]].get(1)
+      val creationFee = SELF.R4[Coll[Long]].get(2)
       val serviceAddress = SELF.R5[Coll[Coll[Byte]]].get(0)
 
       sigmaProp(allOf(Coll(
