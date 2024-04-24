@@ -11,7 +11,9 @@
     "build": "npm run build --workspaces",
     "prepare": "husky install",
     "release": "npm run release --workspaces",
-    "type-check": "npm run type-check --workspaces"
+    "type-check": "npm run type-check --workspaces",
+    "test": "vitest",
+    "postinstall": "patch-package"
   },
   "devDependencies": {
     "husky": "^8.0.0",

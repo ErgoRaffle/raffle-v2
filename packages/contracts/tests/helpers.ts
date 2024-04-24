@@ -1,10 +1,15 @@
-import { TransactionBuilder, OutputBuilder, TokenAmount, Amount } from '@fleet-sdk/core'
-import { MockChain, KeyedMockChainParty } from '@fleet-sdk/mock-chain';
+import { MockChain } from '@fleet-sdk/mock-chain';
 
 
 export const RAFFLE_NFT_ID = '1'.repeat(64)
 export const LICENSE_TOKEN_ID = '2'.repeat(64)
-// export const TIKET_REPO_TOKEN_ID = '3'.repeat(64)
+
+
+export function bigIntToUint8Array(num: bigint) {
+    const b = new ArrayBuffer(8);
+    new DataView(b).setBigUint64(0, num);
+    return new Uint8Array(b);
+  }
 
 
 export function initServiceContractParty(chain: MockChain, partyTreeHex: string) {

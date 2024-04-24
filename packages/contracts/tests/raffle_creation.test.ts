@@ -124,6 +124,8 @@ test('Create raffle successfuly', () => {
         decimals: 0
     });
 
+    console.log(`>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ${serviceBox.boxId}`);
+
     let inactiveRaffleOutputBox = new OutputBuilder(
         (
             (5n * (FEE + SAFE_MIN_BOX_VALUE)) + (((2n * FEE) + SAFE_MIN_BOX_VALUE) + 1_000_000_000n)
@@ -169,29 +171,24 @@ test('Create raffle successfuly', () => {
             R7: SColl(
                 SColl(SByte),
                 [
-                    Array.from(Buffer.from(serviceBox.boxId)),
+                    Array.from(Buffer.from(serviceBox.boxId, 'hex')),
                     Array.from(
                         // blake2b256(SColl(SLong, [200n, 200n, 200n, 200n, 200n]).toBytes())
                         blake2b256(Buffer.concat([
-                            SLong(200n).toBytes(),
-                            SLong(200n).toBytes(),
-                            SLong(200n).toBytes(),
-                            SLong(200n).toBytes(),
-                            SLong(200n).toBytes()
-                        ]))
-                        // SLong("20").toBytes()
+                            200n,
+                            200n,
+                            200n,
+                            200n,
+                            200n,
+                        ].map(n => helpers.bigIntToUint8Array(n))))
                     )
                 ]
-            )
+            ).toHex()
         });
 
-        console.log(`---------------> ${blake2b256(Buffer.concat([
-            SLong(200n).toBytes(),
-            SLong(200n).toBytes(),
-            SLong(200n).toBytes(),
-            SLong(200n).toBytes(),
-            SLong(200n).toBytes()
-        ]))}`);
+    console.log(
+        `+-----------+++> ${Buffer.from(serviceBox.boxId, 'hex')} <> ${Buffer.from(serviceBox.boxId)}`
+    );
 
     serviceBox.setContextExtension({
         0: SColl(
@@ -206,7 +203,8 @@ test('Create raffle successfuly', () => {
         )
     });
     let inputBoxes: Box<bigint>[] = [ serviceBox, ...creator.utxos.toArray() ];
-    // inputBoxes.push(serviceBox);
+
+    console.log(`+++++++++++++++++++++++++> ${creator.utxos.toArray()[0].boxId}`)
 
     console.log(`3 >>>>>>>>>>>>>>>>>>>>>>>>> V`);
     let _out3: any[] = []
@@ -231,6 +229,7 @@ test('Create raffle successfuly', () => {
         });
         _out3.push(el_);
     });
+    console.log(_out3);
     console.log(`4 >>>>>>>>>>>>>>>>>>>>>>>>> V`);
     let _out4: any[] = []
     const _ = [
@@ -259,6 +258,7 @@ test('Create raffle successfuly', () => {
         });
         _out4.push(el_);
     });
+    console.log(_out4);
 
     const transaction = new TransactionBuilder(chain.height)
         .from(inputBoxes)
