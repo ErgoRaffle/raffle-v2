@@ -4,8 +4,9 @@ import { compile } from '@fleet-sdk/compiler';
 
 import { logger } from './logger';
 
-const __dirname = path.resolve(path.dirname(''));
+import { ScriptNamesType, ContextVarsType } from './types';
 
+const __dirname = path.resolve(path.dirname(''));
 const scriptList = [
   'service',
   'inactiveRaffle',
@@ -19,20 +20,6 @@ const scriptList = [
   'giftRedeem',
   'ticketRedeem',
 ];
-
-export type ScriptNamesType =
-  | 'service'
-  | 'inactiveRaffle'
-  | 'ticketRepo'
-  | 'activeRaffle'
-  | 'winner'
-  | 'ticket'
-  | 'successRaffle'
-  | 'winnerPrize'
-  | 'gift'
-  | 'giftRedeem'
-  | 'ticketRedeem';
-export type ContextVarsType = Map<ScriptNamesType, Map<string, string>>;
 
 export function compileAll(contextVars?: ContextVarsType): {
   [key: string]: string;

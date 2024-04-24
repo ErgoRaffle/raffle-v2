@@ -13,9 +13,10 @@
     "lint": "npm run lint --workspaces",
     "prepare": "husky install",
     "release": "npm run release --workspaces",
-    "test": "vitest",
+    "test": "npm run release --workspaces",
     "test:related": "npm run test:related --workspaces",
     "type-check": "npm run type-check --workspaces",
+    "postinstall": "npx patch-package",
     "version": "npx changeset version && npm i"
   },
   "devDependencies": {
@@ -30,7 +31,6 @@
     "prettier": "^3.2.5"
   },
   "dependencies": {
-    "@fleet-sdk/compiler": "^0.3.4",
-    "winston": "^3.13.0"
+    "patch-package": "^8.0.0"
   }
 }

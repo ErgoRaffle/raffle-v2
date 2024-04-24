@@ -4,7 +4,8 @@ import { exit } from 'process';
 import { program } from 'commander';
 
 import { logger } from './logger';
-import { compileAll, ContextVarsType } from './utils';
+import { ContextVarsType } from './types';
+import { compileAll } from './utils';
 
 program
   .name('contracts')
