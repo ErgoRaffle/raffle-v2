@@ -9,24 +9,29 @@
   },
   "scripts": {
     "build": "npm run build --workspaces",
+    "coverage": "npm run coverage --workspaces",
+    "lint": "npm run lint --workspaces",
     "prepare": "husky install",
     "release": "npm run release --workspaces",
+    "test": "npm run release --workspaces",
+    "test:related": "npm run test:related --workspaces",
     "type-check": "npm run type-check --workspaces",
-    "test": "vitest",
-    "postinstall": "patch-package"
+    "postinstall": "npx patch-package",
+    "version": "npx changeset version && npm i"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.27.1",
+    "@rosen-bridge/changeset-formatter": "^0.1.0",
+    "@typescript-eslint/eslint-plugin": "^6.19.1",
+    "@typescript-eslint/parser": "^6.19.1",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
     "husky": "^8.0.0",
     "lint-staged": "^13.0.3",
-    "patch-package": "^8.0.0",
-    "patch-packages": "^1.0.0",
-    "vitest": "^1.5.0"
+    "prettier": "^3.2.5",
+    "ts-node": "^10.9.2"
   },
   "dependencies": {
-    "@fleet-sdk/compiler": "^0.3.4",
-    "@fleet-sdk/core": "^0.3.4",
-    "@fleet-sdk/mock-chain": "^0.3.4",
-    "sigmastate-js": "^0.4.0",
-    "winston": "^3.13.0"
+    "patch-package": "^8.0.0"
   }
 }

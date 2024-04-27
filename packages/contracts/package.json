@@ -1,35 +1,41 @@
 {
   "name": "contracts",
   "version": "0.0.0",
-  "description": "",
-  "repository": "",
+  "description": "Raffle v2 related contracts",
   "license": "GPL-3.0",
   "author": "Rosen Team",
   "type": "module",
-  "main": "dist/index.js",
+  "main": "dist/lib/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc --build tsconfig.build.json",
-    "release": "npm run build && npm publish --access public",
+    "build": "tsc --build tsconfig.build.json && tsc-alias -p tsconfig.build.json",
+    "coverage": "npm run test -- --coverage",
+    "lint": "eslint --fix . && npm run prettify",
+    "prettify": "prettier --write . --ignore-path ./.gitignore",
+    "release": "npm run test -- --run && npm run build && npm publish --access public",
+    "test": "NODE_OPTIONS=--loader=extensionless vitest",
+    "test:related": "NODE_OPTIONS=--loader=extensionless vitest related --run",
     "type-check": "tsc --noEmit",
-    "test": "vitest",
-    "postinstall": "patch-package",
-    "compile-contracts": "node ./dist/index.js compile-all",
-    "make-input-template": "node ./dist/index.js make-input-template"
+    "compile-contracts": "node ./dist/cli/index.js compile-contracts",
+    "make-input-template": "node ./dist/cli/index.js make-input-template"
   },
   "devDependencies": {
     "@fleet-sdk/mock-chain": "^0.3.4",
-    "@types/node": "^20.12.7",
+    "@types/node": "^20.11.9",
+    "@typescript-eslint/eslint-plugin": "^6.19.1",
+    "@typescript-eslint/parser": "^6.19.1",
+    "@vitest/coverage-istanbul": "^1.2.2",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "extensionless": "^1.9.6",
+    "prettier": "^3.2.4",
+    "tsc-alias": "^1.8.8",
     "typescript": "^5.3.3",
-    "vitest": "^1.4.0"
+    "vitest": "^1.2.2"
   },
   "dependencies": {
     "@fleet-sdk/compiler": "^0.3.4",
-    "@fleet-sdk/core": "^0.3.4",
-    "chalk": "^5.3.0",
     "commander": "^12.0.0",
-    "ergo-lib-wasm-nodejs": "^0.26.0",
-    "patch-package": "^8.0.0",
     "winston": "^3.13.0"
   },
   "engines": {
