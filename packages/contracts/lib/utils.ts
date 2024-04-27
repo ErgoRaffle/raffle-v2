@@ -2,8 +2,9 @@ import * as fs from 'fs';
 import * as path from 'node:path';
 import { compile } from '@fleet-sdk/compiler';
 
-import { logger } from './logger';
+import { Logger } from 'winston';
 
+import { logger as defaultLogger } from './logger';
 import { ScriptNamesType, ContextVarsType } from './types';
 
 const __dirname = path.resolve(path.dirname(''));
@@ -21,7 +22,10 @@ const scriptList = [
   'ticketRedeem',
 ];
 
-export function compileAll(contextVars?: ContextVarsType): {
+export function compileAll(
+  contextVars?: ContextVarsType,
+  logger: Logger = defaultLogger,
+): {
   [key: string]: string;
 } {
   const contracts: { [key: string]: string } = {};
