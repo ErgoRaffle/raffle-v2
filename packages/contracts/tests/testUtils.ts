@@ -180,7 +180,6 @@ export function createInactiveRaffleOutputBox(
       R7: SColl(SColl(SByte), [
         Array.from(Buffer.from(serviceBoxId, 'hex')),
         Array.from(
-          // blake2b256(SColl(SLong, [200n, 200n, 200n, 200n, 200n]).toBytes())
           blake2b256(
             Buffer.concat(
               [200n, 200n, 200n, 200n, 200n].map((n) =>

@@ -1,9 +1,7 @@
 import { describe, test, expect } from 'vitest';
-
-import { Box } from '@fleet-sdk/core';
-import { MockChain, mockUTxO } from '@fleet-sdk/mock-chain';
 import { SColl, SLong } from '@fleet-sdk/serializer';
-import { TransactionBuilder } from '@fleet-sdk/core';
+import { Box, TransactionBuilder } from '@fleet-sdk/core';
+import { MockChain, mockUTxO } from '@fleet-sdk/mock-chain';
 
 import * as testUtils from '../testUtils';
 
