@@ -5,7 +5,7 @@
   "license": "GPL-3.0",
   "author": "Rosen Team",
   "type": "module",
-  "main": "dist/index.js",
+  "main": "dist/lib/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
@@ -14,7 +14,10 @@
     "prettify": "prettier --write . --ignore-path ./.gitignore",
     "release": "npm run test -- --run && npm run build && npm publish --access public",
     "test": "NODE_OPTIONS=--loader=extensionless vitest",
-    "type-check": "tsc --noEmit"
+    "test:related": "NODE_OPTIONS=--loader=extensionless vitest related --run",
+    "type-check": "tsc --noEmit",
+    "compile-contracts": "node --loader=extensionless ./dist/cli/index.js compile-contracts",
+    "make-input-template": "node --loader=extensionless ./dist/cli/index.js make-input-template"
   },
   "devDependencies": {
     "@types/node": "^20.11.9",
@@ -23,10 +26,15 @@
     "@vitest/coverage-istanbul": "^1.2.2",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
-    "extensionless": "^1.9.6",
     "prettier": "^3.2.4",
     "typescript": "^5.3.3",
     "vitest": "^1.2.2"
+  },
+  "dependencies": {
+    "@fleet-sdk/compiler": "^0.3.4",
+    "extensionless": "^1.9.6",
+    "commander": "^12.0.0",
+    "winston": "^3.13.0"
   },
   "engines": {
     "node": ">=20.11.0"

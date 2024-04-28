@@ -13,8 +13,10 @@
     "lint": "npm run lint --workspaces",
     "prepare": "husky install",
     "release": "npm run release --workspaces",
-    "test": "npm run test --workspaces",
+    "test": "npm run release --workspaces",
+    "test:related": "npm run test:related --workspaces",
     "type-check": "npm run type-check --workspaces",
+    "postinstall": "npx patch-package",
     "version": "npx changeset version && npm i"
   },
   "devDependencies": {
@@ -26,7 +28,10 @@
     "eslint-config-prettier": "^9.1.0",
     "husky": "^8.0.0",
     "lint-staged": "^13.0.3",
-    "prettier": "^3.2.4",
-    "vitest": "^1.5.0"
+    "prettier": "^3.2.5",
+    "ts-node": "^10.9.2"
+  },
+  "dependencies": {
+    "patch-package": "^8.0.0"
   }
 }
