@@ -3,10 +3,5 @@
   "compilerOptions": {
     "rootDir": "./"
   },
-  "exclude": ["tests", "vitest.config.ts"],
-
-  "tsc-alias": {
-    "resolveFullPaths": true,
-    "verbose": true
-  }
+  "exclude": ["tests", "vitest.config.ts"]
 }

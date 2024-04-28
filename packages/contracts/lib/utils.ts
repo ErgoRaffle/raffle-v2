@@ -22,6 +22,16 @@ const scriptList = [
   'ticketRedeem',
 ];
 
+/**
+ * Returns all of compiled Raffle-v2 contracts
+ *
+ * @remarks
+ * This method is part of the {@link raffle-v2#contracts | contracts subsystem}.
+ *
+ * @param contextVars - variables of raffle-v2 scripts
+ * @param logger - logger object
+ * @returns object that contains compiled contracts
+ */
 export function compileAll(
   contextVars?: ContextVarsType,
   logger: Logger = defaultLogger,
