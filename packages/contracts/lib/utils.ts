@@ -108,6 +108,11 @@ export function compileAll(
   return contracts;
 }
 
+/**
+ * Convert bigint to Uint8Array
+ * @param num
+ * @returns Uint8Array object
+ */
 export function bigIntToUint8Array(num: bigint) {
   const b = new ArrayBuffer(8);
   new DataView(b).setBigUint64(0, num);
