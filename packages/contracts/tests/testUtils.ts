@@ -35,10 +35,10 @@ export const xToken = { amount: 1000n, tokenId: X_TOKEN_ID };
  * @param partners
  * @returns partner objects
  */
-export function createPartners(
+export const createPartners = (
   chain: MockChain,
   partners: { [key: string]: bigint },
-) {
+) => {
   const results: { [key: string]: KeyedMockChainParty } = {};
   for (const partner_ of Object.keys(partners)) {
     const partner = chain.newParty(partner_);
@@ -46,14 +46,14 @@ export function createPartners(
     results[partner_.toLowerCase()] = partner;
   }
   return results;
-}
+};
 
 /**
  * Compile all contracts and return
  * @param ergoTree
  * @returns all of contracs
  */
-export function initialContracts(ergoTree: string) {
+export const initialContracts = (ergoTree: string) => {
   const scriptsVars = { ...defaultScriptsVariables };
   scriptsVars['service'] = {
     OWNER_NFT_B64: Buffer.from(OWNER_NFT_ID, 'hex').toString('base64'),
@@ -72,7 +72,7 @@ export function initialContracts(ergoTree: string) {
   );
 
   return contractsAddresses;
-}
+};
 
 /**
  * Create input Service-Box
@@ -80,11 +80,11 @@ export function initialContracts(ergoTree: string) {
  * @param partnerAddress
  * @returns Service Box
  */
-export function createServiceBoxMock(
+export const createServiceBoxMock = (
   serviceContractAddress: string,
   partnerAddress: string,
   licenseTokenCount: bigint = 1000000000n,
-) {
+) => {
   return new ErgoUnsignedInput(
     mockUTxO({
       ergoTree: serviceContractAddress,
@@ -102,7 +102,7 @@ export function createServiceBoxMock(
       },
     }),
   );
-}
+};
 
 /**
  * create and return mocked Service-Box
@@ -110,10 +110,10 @@ export function createServiceBoxMock(
  * @param partyTreeHex
  * @returns ServiceContractParty
  */
-export function initServiceContractParty(
+export const initServiceContractParty = (
   chain: MockChain,
   partyTreeHex: string,
-) {
+) => {
   const serviceContractParty = chain.addParty(partyTreeHex, 'Service Contract');
   serviceContractParty.addUTxOs([
     {
@@ -139,7 +139,7 @@ export function initServiceContractParty(
     },
   ]);
   return serviceContractParty;
-}
+};
 
 /**
  * create output Service-Box
@@ -147,14 +147,14 @@ export function initServiceContractParty(
  * @param partnerAddress
  * @returns ServiceBox
  */
-export function createServiceOuputBox(
+export const createServiceOuputBox = (
   serviceContractPartyErgoTree: string,
   partnerAddress: string,
   licenseTokenCount: bigint = 999999999n,
   serviceFeePercent?: bigint,
   implementerFeePercent?: bigint,
   creationFee?: bigint,
-) {
+) => {
   serviceFeePercent = serviceFeePercent || 10n;
   implementerFeePercent = implementerFeePercent || 0n;
   creationFee = creationFee || 1_000_000_000n;
@@ -176,20 +176,22 @@ export function createServiceOuputBox(
         Array.from(Buffer.from(partnerAddress)),
       ]).toHex(),
     });
-}
+};
 
 /**
  * create output Ticket-Box
  * @param ticketRepoOutputBoxErgoTree
  * @returns TicketBox
  */
-export function createTicketRepoOutputBox(ticketRepoOutputBoxErgoTree: string) {
+export const createTicketRepoOutputBox = (
+  ticketRepoOutputBoxErgoTree: string,
+) => {
   return new OutputBuilder(15_000_000n, ticketRepoOutputBoxErgoTree).mintToken({
     amount: 1000000000n,
     name: 'TiketRepoToken',
     decimals: 0,
   });
-}
+};
 
 /**
  * create output Inactive-Raffle-box
@@ -200,7 +202,7 @@ export function createTicketRepoOutputBox(ticketRepoOutputBoxErgoTree: string) {
  * @param charityToken if sets then raffle can only pay charity by this token instead of Ergo
  * @returns InactiveRaffleBox
  */
-export function createInactiveRaffleOutputBox(
+export const createInactiveRaffleOutputBox = (
   rosenPartnerAddress: string,
   creatorPartnerAddress: string,
   serviceBoxId: string,
@@ -209,7 +211,7 @@ export function createInactiveRaffleOutputBox(
   winnersPercents?: bigint[],
   serviceFeePercent?: bigint,
   invalidWinnerHash?: string,
-) {
+) => {
   const tokens = [
     {
       // raffleLicense
@@ -268,14 +270,14 @@ export function createInactiveRaffleOutputBox(
           ),
         ]).toHex(),
     });
-}
+};
 
-export function createActiveRaffleBox(
+export const createActiveRaffleBox = (
   contractTreeAddress: string,
   partnerAddress: string,
   winnersCount: bigint = 1n,
   charityToken?: TokenAmount<bigint>,
-) {
+) => {
   const winnersPercents = [];
   for (let i = 0; i < winnersCount; i++)
     winnersPercents.push(1000n / winnersCount);
@@ -303,4 +305,4 @@ export function createActiveRaffleBox(
       ]).toHex(),
     },
   });
-}
+};
