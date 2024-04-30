@@ -10,7 +10,7 @@ import * as testUtils from '../testUtils';
 describe('Service Contract', () => {
   describe('Success scenarios of creating raffle', () => {
     /**
-     * @target Must create new raffle by 1 winner successfully
+     * @target service should create new raffle by 1 winner successfully
      * @scenario
      * - mock chain and partners
      * - compile contracts
@@ -22,7 +22,7 @@ describe('Service Contract', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    it('Create raffle by 1 winner and donatable with Ergo successfuly', () => {
+    it('Should create raffle by 1 winner and donatable with Ergo successfuly', () => {
       // Mock Required Things
       const chain = new MockChain({ height: 1000 });
       const { creator, rosen } = testUtils.createPartners(chain, {
@@ -79,7 +79,7 @@ describe('Service Contract', () => {
     });
 
     /**
-     * @target Must create new raffle by 10 winners successfully
+     * @target service should create new raffle by 10 winners successfully
      * @scenario
      * - mock chain and partners
      * - compile contracts
@@ -91,7 +91,7 @@ describe('Service Contract', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    it('Create raffle by 10 winners and donatable with Ergo successfuly', () => {
+    it('Should create raffle by 10 winners and donatable with Ergo successfuly', () => {
       // Mock Required Things
       const chain = new MockChain({ height: 1000 });
       const { creator, rosen } = testUtils.createPartners(chain, {
@@ -159,7 +159,7 @@ describe('Service Contract', () => {
     });
 
     /**
-     * @target Must create new raffle by 1 winner and donateable
+     * @target service should create new raffle by 1 winner and donateable
      * by X token instead of Ergo successfully
      * @scenario
      * - mock chain and partners
@@ -172,7 +172,7 @@ describe('Service Contract', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    it('Create raffle by 1 winner and donatable with X token successfuly', () => {
+    it('Should create raffle by 1 winner and donatable with X token successfuly', () => {
       // Mock Required Things
       const chain = new MockChain({ height: 1000 });
       const { creator, rosen } = testUtils.createPartners(chain, {
@@ -235,7 +235,7 @@ describe('Service Contract', () => {
     });
 
     /**
-     * @target Spend ServiceBox by OwnerNFT
+     * @target service should spend ServiceBox by OwnerNFT
      * @scenario
      * - mock chain and partners
      * - compile contracts
@@ -246,7 +246,7 @@ describe('Service Contract', () => {
      * @expected
      * - transaction result must be true
      */
-    it('Spend raffle ServiceBox by OwnerNFT', () => {
+    it('should spend raffle ServiceBox by OwnerNFT', () => {
       // Mock Required Things
       const chain = new MockChain({ height: 1000 });
       const { creator, rosen } = testUtils.createPartners(chain, {
@@ -299,7 +299,7 @@ describe('Service Contract', () => {
     });
 
     /**
-     * @target SuccessRaffle or TicketRedeem Raffle
+     * @target service should close raffle or Redeem Raffle
      * @scenario
      * - mock chain and partners
      * - compile contracts
@@ -310,7 +310,7 @@ describe('Service Contract', () => {
      * @expected
      * - transaction result must be true
      */
-    it('Close Success Raffle or TicketRedeem Raffle successfuly', () => {
+    it('should close raffle or Redeem Raffle', () => {
       // Mock Required Things
       const chain = new MockChain({ height: 1000 });
       const { creator, rosen } = testUtils.createPartners(chain, {
@@ -368,7 +368,7 @@ describe('Service Contract', () => {
 
   describe('Fail scenarios of creating raffle', () => {
     /**
-     * @target Faile of try to create new raffle without LicenseToken
+     * @target service should fail when try to create new raffle without LicenseToken
      * @scenario
      * - mock chain and partners
      * - compile contracts
@@ -380,7 +380,7 @@ describe('Service Contract', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    it('Faile of creating raffle without LicenseToken', () => {
+    it('service should fail when try to create new raffle without LicenseToken', () => {
       // Mock Required Things
       const chain = new MockChain({ height: 1000 });
       const { creator, rosen } = testUtils.createPartners(chain, {
@@ -442,7 +442,7 @@ describe('Service Contract', () => {
     });
 
     /**
-     * @target Faile of try to create new raffle without LicenseToken
+     * @target service should fail when try to create new raffle with unbalanced LicenseToken
      * @scenario
      * - mock chain and partners
      * - compile contracts
@@ -455,7 +455,7 @@ describe('Service Contract', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    it('Faile of creating raffle with unbalanced LicenseToken', () => {
+    it('service should fail when try to create new raffle with unbalanced LicenseToken', () => {
       // Mock Required Things
       const chain = new MockChain({ height: 1000 });
       const { creator, rosen } = testUtils.createPartners(chain, {
@@ -517,7 +517,7 @@ describe('Service Contract', () => {
     });
 
     /**
-     * @target Faile of try to create new raffle with incorrect sum of winners percents
+     * @target service should fail when try to create new raffle with incorrect sum of winners percents
      * @scenario
      * - mock chain and partners
      * - compile contracts
@@ -529,7 +529,7 @@ describe('Service Contract', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    it('Faile of try to create new raffle with incorrect sum of winners percents', () => {
+    it('should fail when try to create new raffle with incorrect sum of winners percents', () => {
       // Mock Required Things
       const chain = new MockChain({ height: 1000 });
       const { creator, rosen } = testUtils.createPartners(chain, {
@@ -590,7 +590,7 @@ describe('Service Contract', () => {
     });
 
     /**
-     * @target Faile of try to create new raffle with incorrect service fee
+     * @target service should fail when try to create new raffle with incorrect service fee
      * @scenario
      * - mock chain and partners
      * - compile contracts
@@ -602,7 +602,7 @@ describe('Service Contract', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    it('Faile of try to create new raffle with incorrect service fee', () => {
+    it('should fail when try to create new raffle with incorrect service fee', () => {
       // Mock Required Things
       const chain = new MockChain({ height: 1000 });
       const { creator, rosen } = testUtils.createPartners(chain, {
@@ -664,7 +664,7 @@ describe('Service Contract', () => {
     });
 
     /**
-     * @target Faile of try to create new raffle with invalid license fee onn the output service box
+     * @target service should fail when try to create new raffle with invalid license fee on the output service box
      * @scenario
      * - mock chain and partners
      * - compile contracts
@@ -676,7 +676,7 @@ describe('Service Contract', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    it('Faile of try to create new raffle with invalid license fee onn the output service box', () => {
+    it('should fail when try to create new raffle with invalid license fee on the output service box', () => {
       // Mock Required Things
       const chain = new MockChain({ height: 1000 });
       const { creator, rosen } = testUtils.createPartners(chain, {
@@ -738,7 +738,7 @@ describe('Service Contract', () => {
     });
 
     /**
-     * @target Faile of try to create new raffle with invalid winners hash
+     * @target service should faile when try to create new raffle with invalid winners hash
      * @scenario
      * - mock chain and partners
      * - compile contracts
@@ -750,7 +750,7 @@ describe('Service Contract', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    it('Faile of try to create new raffle with invalid winners hash', () => {
+    it('should faile when try to create new raffle with invalid winners hash', () => {
       // Mock Required Things
       const chain = new MockChain({ height: 1000 });
       const { creator, rosen } = testUtils.createPartners(chain, {
@@ -813,7 +813,7 @@ describe('Service Contract', () => {
     });
 
     /**
-     * @target Faile of try to create new raffle with incorrect winners count
+     * @target service should Faile of try to create new raffle with incorrect winners count
      * @scenario
      * - mock chain and partners
      * - compile contracts
@@ -825,7 +825,7 @@ describe('Service Contract', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    it('Faile of try to create new raffle with incorrect winners count', () => {
+    it('should Faile of try to create new raffle with incorrect winners count', () => {
       // Mock Required Things
       const chain = new MockChain({ height: 1000 });
       const { creator, rosen } = testUtils.createPartners(chain, {
@@ -886,7 +886,7 @@ describe('Service Contract', () => {
     });
 
     /**
-     * @target Faile of try to create new raffle with incorrect winners count in extension
+     * @target service should faile when try to create new raffle with incorrect winners count in extension
      * @scenario
      * - mock chain and partners
      * - compile contracts
@@ -898,7 +898,7 @@ describe('Service Contract', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    it('Faile of try to create new raffle with incorrect winners count in extension', () => {
+    it('service should faile when try to create new raffle with incorrect winners count in extension', () => {
       // Mock Required Things
       const chain = new MockChain({ height: 1000 });
       const { creator, rosen } = testUtils.createPartners(chain, {
@@ -957,7 +957,7 @@ describe('Service Contract', () => {
     });
 
     /**
-     * @target Faile of try to create new raffle with incorrect sum of winners percents
+     * @target service should faile when try to create new raffle with incorrect sum of winners percents
      * @scenario
      * - mock chain and partners
      * - compile contracts
@@ -969,7 +969,7 @@ describe('Service Contract', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    it('Faile of try to create new raffle with incorrect sum of winners percents', () => {
+    it('service should faile when try to create new raffle with incorrect sum of winners percents', () => {
       // Mock Required Things
       const chain = new MockChain({ height: 1000 });
       const { creator, rosen } = testUtils.createPartners(chain, {
@@ -1030,7 +1030,7 @@ describe('Service Contract', () => {
     });
 
     /**
-     * @target Faile of try to create new raffle with incorrect ticket-id
+     * @target service should faile when try to create new raffle with incorrect ticket-id
      * @scenario
      * - mock chain and partners
      * - compile contracts
@@ -1042,7 +1042,7 @@ describe('Service Contract', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    it('Faile of try to create new raffle with incorrect ticket-id', () => {
+    it('should faile when try to create new raffle with incorrect ticket-id', () => {
       // Mock Required Things
       const chain = new MockChain({ height: 1000 });
       const { creator, rosen } = testUtils.createPartners(chain, {
