@@ -380,7 +380,7 @@ describe('Service Contract', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    it('service should fail when try to create new raffle without LicenseToken', () => {
+    it('should fail when try to create new raffle without LicenseToken', () => {
       // Mock Required Things
       const chain = new MockChain({ height: 1000 });
       const { creator, rosen } = testUtils.createPartners(chain, {
@@ -455,7 +455,7 @@ describe('Service Contract', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    it('service should fail when try to create new raffle with unbalanced LicenseToken', () => {
+    it('should fail when try to create new raffle with unbalanced LicenseToken', () => {
       // Mock Required Things
       const chain = new MockChain({ height: 1000 });
       const { creator, rosen } = testUtils.createPartners(chain, {
@@ -898,7 +898,7 @@ describe('Service Contract', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    it('service should faile when try to create new raffle with incorrect winners count in extension', () => {
+    it('should faile when try to create new raffle with incorrect winners count in extension', () => {
       // Mock Required Things
       const chain = new MockChain({ height: 1000 });
       const { creator, rosen } = testUtils.createPartners(chain, {
@@ -969,7 +969,7 @@ describe('Service Contract', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    it('service should faile when try to create new raffle with incorrect sum of winners percents', () => {
+    it('should faile when try to create new raffle with incorrect sum of winners percents', () => {
       // Mock Required Things
       const chain = new MockChain({ height: 1000 });
       const { creator, rosen } = testUtils.createPartners(chain, {
