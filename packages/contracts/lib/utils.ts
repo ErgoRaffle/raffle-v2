@@ -5,9 +5,8 @@ import { compile } from '@fleet-sdk/compiler';
 import { SType } from '@fleet-sdk/serializer';
 import { SAFE_MIN_BOX_VALUE } from '@fleet-sdk/core';
 
+import * as constants from '../constants';
 import { logger } from './logger.js';
-
-const __dirname = path.resolve(path.dirname(''));
 
 const scriptList = [
   'service',
@@ -28,7 +27,7 @@ export const defaultScriptsVariables = {
     OWNER_NFT_B64: '',
     INACTIVE_RAFFLE_SCRIPT_HASH_B64: '',
     TICKET_REPO_SCRIPT_HASH_B64: '',
-    FEE: 15000000n,
+    FEE: constants.DEFAULT_FEE,
     MIN_BOX_VALUE: SAFE_MIN_BOX_VALUE,
   },
   inactiveRaffle: {},
@@ -83,7 +82,7 @@ export function compileAll(
           new Map<string, string>()
         : new Map<string, string>();
     let script: string = fs.readFileSync(
-      path.join(__dirname, `lib/scripts/${scriptName}.es`),
+      path.join(constants.SCRIPT_DIR, `${scriptName}.es`),
       'utf8',
     );
 

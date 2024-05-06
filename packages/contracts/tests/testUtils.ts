@@ -1,3 +1,4 @@
+import { it } from 'vitest';
 import {
   ErgoUnsignedInput,
   OutputBuilder,
@@ -18,15 +19,22 @@ import {
   defaultScriptsVariables,
   ContextVarsType,
 } from '../lib/utils';
+import * as constants from '../constants';
 
-export const FEE = 15_000_000n;
+export const FEE = constants.DEFAULT_FEE;
 export const OWNER_NFT_ID = '1234'.repeat(16);
 export const RAFFLE_NFT_ID = '1'.repeat(64);
 export const LICENSE_TOKEN_ID = '2'.repeat(64);
 export const X_TOKEN_ID = '3'.repeat(64);
 export const raffleNFTToken = { amount: 1n, tokenId: RAFFLE_NFT_ID };
-export const licenseToken = { amount: 1000000000n, tokenId: LICENSE_TOKEN_ID };
+export const licenseToken = {
+  amount: 1_000_000_000n,
+  tokenId: LICENSE_TOKEN_ID,
+};
 export const xToken = { amount: 1000n, tokenId: X_TOKEN_ID };
+export const LICENSE_TOKEN_COUNT = 1_000_000_000n;
+export const CREATOR_DEFAULT_BALANCE = 10_000_000_000n;
+export const ROSEN_DEFAULT_BALANCE = 10_000_000_000n;
 
 /**
  * get an object by partner-name as keys and partner-balance as values
@@ -50,28 +58,32 @@ export const createPartners = (
 
 /**
  * Compile all contracts and return
- * @param ergoTree
  * @returns all of contracs
  */
-export const initialContracts = (ergoTree: string) => {
+export const initialContracts = (): { [key: string]: string } => {
+  const initialContractsAddresses = compileAll(
+    new Map(Object.entries(defaultScriptsVariables)) as ContextVarsType,
+    true,
+  );
+
   const scriptsVars = { ...defaultScriptsVariables };
   scriptsVars['service'] = {
     OWNER_NFT_B64: Buffer.from(OWNER_NFT_ID, 'hex').toString('base64'),
-    INACTIVE_RAFFLE_SCRIPT_HASH_B64: Buffer.from(blake2b256(ergoTree)).toString(
-      'base64',
-    ),
-    TICKET_REPO_SCRIPT_HASH_B64: Buffer.from(blake2b256(ergoTree)).toString(
-      'base64',
-    ),
-    FEE: 15_000_000n,
+    INACTIVE_RAFFLE_SCRIPT_HASH_B64: Buffer.from(
+      blake2b256(initialContractsAddresses['inactiveRaffle']),
+    ).toString('base64'),
+    TICKET_REPO_SCRIPT_HASH_B64: Buffer.from(
+      blake2b256(initialContractsAddresses['ticketRepo']),
+    ).toString('base64'),
+    FEE: constants.DEFAULT_FEE,
     MIN_BOX_VALUE: SAFE_MIN_BOX_VALUE,
   };
-  const contractsAddresses = compileAll(
+  const finalContractsAddresses = compileAll(
     new Map(Object.entries(scriptsVars)) as ContextVarsType,
     true,
   );
 
-  return contractsAddresses;
+  return finalContractsAddresses;
 };
 
 /**
@@ -82,8 +94,7 @@ export const initialContracts = (ergoTree: string) => {
  */
 export const createServiceBoxMock = (
   serviceContractAddress: string,
-  partnerAddress: string,
-  licenseTokenCount: bigint = 1000000000n,
+  licenseTokenCount: bigint = LICENSE_TOKEN_COUNT,
 ) => {
   return new ErgoUnsignedInput(
     mockUTxO({
@@ -97,7 +108,7 @@ export const createServiceBoxMock = (
       additionalRegisters: {
         R4: SColl(SLong, [10n, 0n, 1_000_000_000n]).toHex(),
         R5: SColl(SColl(SByte), [
-          Array.from(Buffer.from(partnerAddress)),
+          Array.from(Buffer.from(serviceContractAddress, 'hex')),
         ]).toHex(),
       },
     }),
@@ -105,51 +116,14 @@ export const createServiceBoxMock = (
 };
 
 /**
- * create and return mocked Service-Box
- * @param chain
- * @param partyTreeHex
- * @returns ServiceContractParty
- */
-export const initServiceContractParty = (
-  chain: MockChain,
-  partyTreeHex: string,
-) => {
-  const serviceContractParty = chain.addParty(partyTreeHex, 'Service Contract');
-  serviceContractParty.addUTxOs([
-    {
-      boxId: '01'.repeat(32),
-      transactionId: '12ab34cd'.repeat(8),
-      index: 0,
-      ergoTree: 'a0ec11'.repeat(203),
-      creationHeight: 1,
-      value: 1_500_000n,
-      assets: [
-        {
-          // serviceNft
-          tokenId: RAFFLE_NFT_ID,
-          amount: 1n,
-        },
-        {
-          // raffleLicense
-          tokenId: LICENSE_TOKEN_ID,
-          amount: 1_000_000_000n,
-        },
-      ],
-      additionalRegisters: {},
-    },
-  ]);
-  return serviceContractParty;
-};
-
-/**
  * create output Service-Box
- * @param serviceContractPartyErgoTree
- * @param partnerAddress
+ * @param licenseTokenCount
+ * @param serviceFeePercent
+ * @param implementerFeePercent
+ * @param creationFee
  * @returns ServiceBox
  */
-export const createServiceOuputBox = (
-  serviceContractPartyErgoTree: string,
-  partnerAddress: string,
+export const createServiceOutputBox = (
   licenseTokenCount: bigint = 999999999n,
   serviceFeePercent?: bigint,
   implementerFeePercent?: bigint,
@@ -158,7 +132,7 @@ export const createServiceOuputBox = (
   serviceFeePercent = serviceFeePercent || 10n;
   implementerFeePercent = implementerFeePercent || 0n;
   creationFee = creationFee || 1_000_000_000n;
-  return new OutputBuilder(15_000_000n, serviceContractPartyErgoTree)
+  return new OutputBuilder(15_000_000n, contractsAddresses['service'])
     .addTokens([
       raffleNFTToken,
       {
@@ -173,21 +147,21 @@ export const createServiceOuputBox = (
         creationFee,
       ]).toHex(),
       R5: SColl(SColl(SByte), [
-        Array.from(Buffer.from(partnerAddress)),
+        Array.from(Buffer.from(contractsAddresses['service'], 'hex')),
       ]).toHex(),
     });
 };
 
 /**
  * create output Ticket-Box
- * @param ticketRepoOutputBoxErgoTree
  * @returns TicketBox
  */
-export const createTicketRepoOutputBox = (
-  ticketRepoOutputBoxErgoTree: string,
-) => {
-  return new OutputBuilder(15_000_000n, ticketRepoOutputBoxErgoTree).mintToken({
-    amount: 1000000000n,
+export const createTicketRepoOutputBox = () => {
+  return new OutputBuilder(
+    15_000_000n,
+    contractsAddresses['ticketRepo'],
+  ).mintToken({
+    amount: 1_000_000_000n,
     name: 'TiketRepoToken',
     decimals: 0,
   });
@@ -195,31 +169,31 @@ export const createTicketRepoOutputBox = (
 
 /**
  * create output Inactive-Raffle-box
- * @param rosenPartnerAddress
  * @param creatorPartnerAddress
  * @param serviceBoxId
  * @param winnersCount
- * @param charityToken if sets then raffle can only pay charity by this token instead of Ergo
+ * @param collectingToken if sets then raffle can only pay charity by this token instead of Erg
+ * @param winnersPercents
+ * @param serviceFeePercent
+ * @param invalidWinnerHash
  * @returns InactiveRaffleBox
  */
 export const createInactiveRaffleOutputBox = (
-  rosenPartnerAddress: string,
   creatorPartnerAddress: string,
   serviceBoxId: string,
   winnersCount: bigint = 1n,
-  charityToken?: TokenAmount<bigint>,
+  collectingToken?: TokenAmount<bigint>,
   winnersPercents?: bigint[],
   serviceFeePercent?: bigint,
   invalidWinnerHash?: string,
 ) => {
   const tokens = [
     {
-      // raffleLicense
       tokenId: LICENSE_TOKEN_ID,
       amount: 1n,
     },
   ];
-  if (charityToken != null) tokens.push(charityToken);
+  if (collectingToken != null) tokens.push(collectingToken);
 
   winnersPercents = winnersPercents || [];
   if (winnersPercents.length === 0)
@@ -233,7 +207,7 @@ export const createInactiveRaffleOutputBox = (
       winnersCount * (FEE + SAFE_MIN_BOX_VALUE) +
       (2n * FEE + SAFE_MIN_BOX_VALUE + 1_000_000_000n)
     ).toString(),
-    rosenPartnerAddress,
+    contractsAddresses['inactiveRaffle'],
   )
     .addTokens(tokens)
     .setAdditionalRegisters({
@@ -249,7 +223,7 @@ export const createInactiveRaffleOutputBox = (
         1_000_000_000n, // CreationFee
       ]),
       R5: SColl(SColl(SByte), [
-        Array.from(Buffer.from(rosenPartnerAddress)),
+        Array.from(Buffer.from(contractsAddresses['service'], 'hex')),
         Array.from(Buffer.from('')),
         Array.from(Buffer.from(creatorPartnerAddress)),
       ]),
@@ -272,11 +246,17 @@ export const createInactiveRaffleOutputBox = (
     });
 };
 
+/**
+ * Create and return active-raffle box
+ * @param partnerAddress
+ * @param winnersCount
+ * @param collectingToken
+ * @returns
+ */
 export const createActiveRaffleBox = (
-  contractTreeAddress: string,
   partnerAddress: string,
   winnersCount: bigint = 1n,
-  charityToken?: TokenAmount<bigint>,
+  collectingToken?: TokenAmount<bigint>,
 ) => {
   const winnersPercents = [];
   for (let i = 0; i < winnersCount; i++)
@@ -289,10 +269,10 @@ export const createActiveRaffleBox = (
       amount: 1n,
     },
   ];
-  if (charityToken != null) tokens.push(charityToken);
+  if (collectingToken != null) tokens.push(collectingToken);
 
   return mockUTxO({
-    ergoTree: contractTreeAddress,
+    ergoTree: contractsAddresses['activeRaffle'],
     value:
       winnersCount * (FEE + SAFE_MIN_BOX_VALUE) +
       (2n * FEE + SAFE_MIN_BOX_VALUE + 1_000_000_000n),
@@ -306,3 +286,25 @@ export const createActiveRaffleBox = (
     },
   });
 };
+
+export const createRaffleTest = () => {
+  const chain_ = new MockChain({ height: 1000 });
+  const { creator, rosen } = createPartners(chain_, {
+    Creator: CREATOR_DEFAULT_BALANCE,
+    Rosen: ROSEN_DEFAULT_BALANCE,
+  });
+  // Created input service-box
+  const serviceBox = createServiceBoxMock(contractsAddresses['service']);
+
+  const raffleTest = it.extend({
+    chain: chain_,
+    creator: creator,
+    rosen: rosen,
+    inputBoxes: [serviceBox, ...creator.utxos.toArray()],
+    contractsAddresses: contractsAddresses,
+  });
+
+  return raffleTest;
+};
+
+export const contractsAddresses = initialContracts();
