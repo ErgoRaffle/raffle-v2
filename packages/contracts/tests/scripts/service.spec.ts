@@ -664,7 +664,7 @@ describe('Service Contract', () => {
     });
 
     /**
-     * @target service should fail when try to create new raffle with invalid license fee on the output service box
+     * @target service should fail when try to create new raffle with invalid service fee on the output service box
      * @scenario
      * - mock chain and partners
      * - compile contracts
