@@ -55,25 +55,18 @@ export const createPartners = (
 
 /**
  * Compile all contracts and return
- * @returns all of contracs
+ * @returns all of contracts
  */
 export const initialContracts = (): { [key: string]: string } => {
-  const initialContractsAddresses = compileAll(
-    new Map(
-      Object.entries(constants.defaultScriptsVariables),
-    ) as ContextVarsType,
-    true,
-  );
-
   const scriptsVars = { ...constants.defaultScriptsVariables };
   scriptsVars['service'] = {
     OWNER_NFT_B64: Buffer.from(OWNER_NFT_ID, 'hex').toString('base64'),
-    INACTIVE_RAFFLE_SCRIPT_HASH_B64: Buffer.from(
-      blake2b256(initialContractsAddresses['inactiveRaffle']),
-    ).toString('base64'),
-    TICKET_REPO_SCRIPT_HASH_B64: Buffer.from(
-      blake2b256(initialContractsAddresses['ticketRepo']),
-    ).toString('base64'),
+    // INACTIVE_RAFFLE_SCRIPT_HASH_B64: Buffer.from(
+    //   blake2b256(initialContractsAddresses['inactiveRaffle']),
+    // ).toString('base64'),
+    // TICKET_REPO_SCRIPT_HASH_B64: Buffer.from(
+    //   blake2b256(initialContractsAddresses['ticketRepo']),
+    // ).toString('base64'),
     FEE: constants.DEFAULT_FEE,
     MIN_BOX_VALUE: SAFE_MIN_BOX_VALUE,
   };
@@ -105,7 +98,7 @@ export const createServiceBoxMock = (
         { tokenId: LICENSE_TOKEN_ID, amount: licenseTokenCount },
       ],
       additionalRegisters: {
-        R4: SColl(SLong, [10n, 0n, 1_000_000_000n]).toHex(),
+        R4: SColl(SLong, [10n, 10n, 1_000_000_000n]).toHex(),
         R5: SColl(SColl(SByte), [
           Array.from(Buffer.from(serviceContractAddress, 'hex')),
         ]).toHex(),
@@ -129,7 +122,7 @@ export const createServiceOutputBox = (
   creationFee?: bigint,
 ) => {
   serviceFeePercent = serviceFeePercent || 10n;
-  implementerFeePercent = implementerFeePercent || 0n;
+  implementerFeePercent = implementerFeePercent || 10n;
   creationFee = creationFee || 1_000_000_000n;
   return new OutputBuilder(15_000_000n, contractsAddresses['service'])
     .addTokens([
@@ -161,13 +154,14 @@ export const createTicketRepoOutputBox = () => {
     contractsAddresses['ticketRepo'],
   ).mintToken({
     amount: 1_000_000_000n,
-    name: 'TiketRepoToken',
+    name: 'TicketRepoToken',
     decimals: 0,
   });
 };
 
 /**
  * create output Inactive-Raffle-box
+ * @param implementerPartnerAddress
  * @param creatorPartnerAddress
  * @param serviceBoxId
  * @param winnersCount
@@ -178,6 +172,7 @@ export const createTicketRepoOutputBox = () => {
  * @returns InactiveRaffleBox
  */
 export const createInactiveRaffleOutputBox = (
+  implementerPartnerAddress: string,
   creatorPartnerAddress: string,
   serviceBoxId: string,
   winnersCount: bigint = 1n,
@@ -211,9 +206,9 @@ export const createInactiveRaffleOutputBox = (
     .addTokens(tokens)
     .setAdditionalRegisters({
       R4: SColl(SLong, [
-        70n, // CharityPercentage,
+        60n, // CharityPercentage,
         serviceFeePercent, // ServiceFeePercent,
-        0n, // ImplementerFeePercent,
+        10n, // ImplementerFeePercent,
         10n, // TicketPrice,
         1000n, // Goal,
         0n, // DeadlineTimestamp,
@@ -223,7 +218,7 @@ export const createInactiveRaffleOutputBox = (
       ]),
       R5: SColl(SColl(SByte), [
         Array.from(Buffer.from(contractsAddresses['service'], 'hex')),
-        Array.from(Buffer.from('')),
+        Array.from(Buffer.from(implementerPartnerAddress)),
         Array.from(Buffer.from(creatorPartnerAddress)),
       ]),
       R6: SColl(SColl(SByte), [
@@ -286,19 +281,49 @@ export const createActiveRaffleBox = (
   });
 };
 
+/**
+ * Create and return active-raffle box
+ * @param partnerAddress
+ * @param winnersCount
+ * @param collectingToken
+ * @returns
+ */
+export const createSuccessRaffleBox = (
+  partnerAddress: string,
+  winnersCount: bigint = 1n,
+  collectingToken?: TokenAmount<bigint>,
+) => {
+  const successRaffleBox = createActiveRaffleBox(
+    partnerAddress,
+    winnersCount,
+    collectingToken,
+  );
+  successRaffleBox.ergoTree = contractsAddresses['successRaffle'];
+
+  return successRaffleBox;
+};
+
+/**
+ * create fixtures that contains below steps data:
+ *   - mock chain and partners
+ *   - compile contracts
+ *   - create service input box
+ * @returns vitest customized "it" object
+ */
 export const createRaffleTest = () => {
   const chain_ = new MockChain({ height: 1000 });
   const { creator, rosen } = createPartners(chain_, {
     Creator: CREATOR_DEFAULT_BALANCE,
     Rosen: ROSEN_DEFAULT_BALANCE,
   });
+  creator.addBalance({ tokens: [{ tokenId: X_TOKEN_ID, amount: 100n }] });
   // Created input service-box
   const serviceBox = createServiceBoxMock(contractsAddresses['service']);
 
   const raffleTest = it.extend({
     chain: chain_,
-    creator: creator,
     rosen: rosen,
+    creator: creator,
     inputBoxes: [serviceBox, ...creator.utxos.toArray()],
     contractsAddresses: contractsAddresses,
   });

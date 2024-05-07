@@ -20,8 +20,8 @@ program
     'Address of output file that contains contracts addresses',
   )
   .argument(
-    '-i, --input <intput file path>',
-    'Address of intput file that contains JSON contract name and variables',
+    '-i, --input <input file path>',
+    'Address of input file that contains JSON contract name and variables',
   )
   .action((options) => {
     logger.info('compile-all command started');
@@ -65,7 +65,7 @@ program
       console.log(JSON.stringify(contracts, null, 4));
     }
 
-    logger.info('compile-all command ran successfull');
+    logger.info('compile-all command ran successful');
   });
 
 // Create template file of input variables
@@ -92,7 +92,7 @@ program
     }
 
     if (!fileCreatedSuccess)
-      logger.info('Create input file template command ran successfull');
+      logger.info('Create input file template command ran successful');
   });
 
 program.parse();

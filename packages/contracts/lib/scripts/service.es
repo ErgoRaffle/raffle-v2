@@ -12,7 +12,7 @@
   //
   // Spent in 3 transactions:
   //   - Owner config update with OwnerNft
-  //   - RaffleLicense redeem from SucessRaffle or TicketRedeem
+  //   - RaffleLicense redeem from SuccessRaffle or TicketRedeem
   //      [Service, (SuccessRaffle | TicketRedeem)] --> [Service]
   //   - New raffle creation
   //      [Service, UserBox] --> [Service, TicketRepo, InactiveRaffle, Change]

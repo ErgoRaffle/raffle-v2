@@ -3,10 +3,36 @@ import * as path from 'node:path';
 
 import { compile } from '@fleet-sdk/compiler';
 import { SType } from '@fleet-sdk/serializer';
+import { blake2b256 } from '@fleet-sdk/crypto';
 
 import * as constants from '../constants';
 import { logger } from './logger';
 import { ScriptNamesType, ContextVarsType } from './types';
+
+const NotSet = '';
+
+function mergeContextVarsAndRequiredAddress(contextVars?: ContextVarsType) {
+  const finalVars: { [s: string]: { [key: string]: string } } = {};
+  for (const scriptName of constants.scriptList) {
+    finalVars[scriptName] = {};
+    const scriptVars =
+      contextVars !== undefined
+        ? contextVars.get(scriptName as ScriptNamesType) ||
+          new Map<string, string>()
+        : new Map<string, string>();
+    for (const nameAndValue of Object.entries(scriptVars))
+      finalVars[scriptName][nameAndValue[0]] = nameAndValue[1];
+    for (const key of Object.keys(
+      constants.scriptsRequireAddresses[scriptName],
+    )) {
+      finalVars[scriptName][
+        constants.scriptsRequireAddresses[scriptName][key]
+      ] = NotSet;
+    }
+  }
+
+  return finalVars;
+}
 
 /**
  * Returns all of compiled Raffle-v2 contracts
@@ -23,35 +49,83 @@ export function compileAll(
   outputsAsHex: boolean = false,
 ): { [key: string]: string } {
   const contracts: { [key: string]: string } = {};
-
-  for (const scriptName of constants.scriptList) {
-    const scriptVars =
-      contextVars !== undefined
-        ? contextVars.get(scriptName as ScriptNamesType) ||
-          new Map<string, string>()
-        : new Map<string, string>();
-    let script: string = fs.readFileSync(
-      path.join(constants.SCRIPT_DIR, `${scriptName}.es`),
-      'utf8',
-    );
-
-    for (const nameAndValue of Object.entries(scriptVars))
-      script = script.replace(nameAndValue[0], nameAndValue[1]);
-
-    const vars: { [key: string | number]: string | SType } = {};
-    try {
-      const contract = compile(script, { map: vars });
-      if (outputsAsHex) {
-        contracts[scriptName] = contract.toHex().toString();
-      } else {
-        contracts[scriptName] = contract.toAddress().toString();
+  const compiledScripts = [];
+  const compiledDependenciesStatus =
+    mergeContextVarsAndRequiredAddress(contextVars);
+  let notCompiledAnyScript = false;
+  while (
+    !notCompiledAnyScript &&
+    compiledScripts.length < constants.scriptList.length
+  ) {
+    notCompiledAnyScript = true;
+    for (const scriptName of constants.scriptList) {
+      // Check that precompiled required script already compiled or not
+      let readyToCompile = true;
+      const precompileScript =
+        constants.scriptsRequireAddresses[scriptName] || {};
+      for (const key of Object.keys(precompileScript)) {
+        if (
+          compiledDependenciesStatus[scriptName][precompileScript[key]] ===
+          NotSet
+        ) {
+          readyToCompile = false;
+          break;
+        }
       }
-    } catch (err) {
-      logger.error(`The compileAll function raised error: ${err}`);
-      throw err;
+
+      if (!readyToCompile || compiledScripts.indexOf(scriptName) >= 0) continue;
+      notCompiledAnyScript = false;
+      logger.info(`the ${scriptName} script ready to compile`);
+
+      const scriptVars =
+        compiledDependenciesStatus !== undefined
+          ? compiledDependenciesStatus[scriptName as ScriptNamesType] ||
+            new Map<string, string>()
+          : new Map<string, string>();
+      let script: string = fs.readFileSync(
+        path.join(constants.SCRIPT_DIR, `${scriptName}.es`),
+        'utf8',
+      );
+
+      for (const nameAndValue of Object.entries(scriptVars))
+        script = script.replace(nameAndValue[0], nameAndValue[1]);
+
+      const vars: { [key: string | number]: string | SType } = {};
+      let contract;
+      try {
+        contract = compile(script, { map: vars });
+        if (outputsAsHex) {
+          contracts[scriptName] = contract.toHex().toString();
+        } else {
+          contracts[scriptName] = contract.toAddress().toString();
+        }
+      } catch (err) {
+        logger.error(`The compileAll function raised error: ${err}`);
+        throw err;
+      }
+
+      compiledScripts.push(scriptName);
+      logger.info(`the ${scriptName} script compiled`);
+      for (const script_ of constants.scriptList) {
+        const updateScriptKey =
+          constants.scriptsRequireAddresses[script_][scriptName];
+        if (updateScriptKey !== undefined) {
+          const contractString = Buffer.from(
+            blake2b256(contract?.toHex()),
+          ).toString('base64');
+          compiledDependenciesStatus[script_][updateScriptKey] = contractString;
+        }
+      }
     }
   }
-  logger.info(`The compileAll function done successful`);
+  if (notCompiledAnyScript) {
+    logger.error('Error: The compileAll function infinity loop');
+    // Below situation occurring when defining
+    // recursive dependencies between multiple scripts
+    throw 'Error: The compileAll function infinity loop';
+  } else {
+    logger.info(`The compileAll function done successfully`);
+  }
 
   return contracts;
 }
