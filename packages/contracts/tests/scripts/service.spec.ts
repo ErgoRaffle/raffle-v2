@@ -157,105 +157,7 @@ describe('Service', () => {
         expect(res).true;
       },
     );
-  });
 
-  describe('Spend raffle', () => {
-    /**
-     * @target service should spend ServiceBox by OwnerNFT
-     * @scenario
-     * - mock chain and partners
-     * - compile contracts
-     * - create service input box
-     * - create service output box by value OwnerNFTToken
-     * - execute transaction
-     * - check execution done successfully
-     * @expected
-     * - transaction result must be true
-     */
-    raffleTest(
-      'Should spend raffle ServiceBox by OwnerNFT',
-      ({ chain, creator, inputBoxes }) => {
-        const serviceBox = inputBoxes[0];
-        creator.addBalance({
-          tokens: [{ tokenId: testUtils.OWNER_NFT_ID, amount: 1n }],
-        });
-        const newInputBoxes: Box<bigint>[] = [
-          serviceBox,
-          ...creator.utxos.toArray(),
-        ];
-        // Create output boxes
-        const outputBox = new OutputBuilder(
-          15_000_000n,
-          serviceBox.ergoTree,
-        ).addTokens([
-          {
-            tokenId: testUtils.OWNER_NFT_ID,
-            amount: 1n,
-          },
-        ]);
-        // Execute transaction
-        const transaction = new TransactionBuilder(chain.height)
-          .from(newInputBoxes)
-          .to([outputBox])
-          .payFee(testUtils.FEE)
-          .sendChangeTo(creator.address)
-          .build();
-        const res = chain.execute(transaction, { signers: [creator] });
-        // Check execution result
-        expect(res).true;
-      },
-    );
-  });
-
-  describe('Close/Redeem raffle', () => {
-    /**
-     * @target service should close raffle or Redeem Raffle
-     * @scenario
-     * - mock chain and partners
-     * - compile contracts
-     * - create service input box by decreased licenseToken value
-     * - create service output box by increased licenseToken value
-     * - execute transaction
-     * - check execution done successfully
-     * @expected
-     * - transaction result must be true
-     */
-    raffleTest(
-      'Should close raffle or Redeem Raffle',
-      ({ chain, creator, rosen, contractsAddresses }) => {
-        // Mock Required Things
-        const serviceBox = testUtils.createServiceBoxMock(
-          (contractsAddresses as { [key: string]: string })['service'],
-          999_999_999n,
-        );
-        const successRaffleIntputBox = testUtils.createActiveRaffleBox(
-          rosen.address.toString(),
-          1n,
-        );
-        // Create output boxes
-        const serviceoutputBox =
-          testUtils.createServiceOutputBox(1_000_000_000n);
-        const inputBoxes: Box<bigint>[] = [
-          serviceBox,
-          successRaffleIntputBox,
-          ...creator.utxos.toArray(),
-        ];
-        // Execute transaction
-        const transaction = new TransactionBuilder(chain.height)
-          .from(inputBoxes)
-          .to([serviceoutputBox])
-          .payFee(testUtils.FEE)
-          .sendChangeTo(creator.address)
-          .build();
-
-        const res = chain.execute(transaction, { signers: [rosen] });
-        // Check execution result
-        expect(res).true;
-      },
-    );
-  });
-
-  describe('Invalid LicenseToken', () => {
     /**
      * @target service should fail when try to create new raffle without LicenseToken
      * @scenario
@@ -344,9 +246,7 @@ describe('Service', () => {
         ).toThrowError('Script reduced to false');
       },
     );
-  });
 
-  describe('Incorrect fees', () => {
     /**
      * @target service should fail when try to create new raffle with incorrect service fee
      * @scenario
@@ -437,9 +337,7 @@ describe('Service', () => {
         ).toThrowError('Script reduced to false');
       },
     );
-  });
 
-  describe('Invalid winners data', () => {
     /**
      * @target service should fail when try to create new raffle with incorrect sum of winners percents
      * @scenario
@@ -662,9 +560,7 @@ describe('Service', () => {
         ).toThrowError('Script reduced to false');
       },
     );
-  });
 
-  describe('Invalid Ticket-Token', () => {
     /**
      * @target service should fail when try to create new raffle with incorrect ticket-id
      * @scenario
@@ -704,6 +600,102 @@ describe('Service', () => {
         expect(() =>
           chain.execute(transaction, { signers: [creator] }),
         ).toThrowError('Script reduced to false');
+      },
+    );
+  });
+
+  describe('Spend raffle', () => {
+    /**
+     * @target service should spend ServiceBox by OwnerNFT
+     * @scenario
+     * - mock chain and partners
+     * - compile contracts
+     * - create service input box
+     * - create service output box by value OwnerNFTToken
+     * - execute transaction
+     * - check execution done successfully
+     * @expected
+     * - transaction result must be true
+     */
+    raffleTest(
+      'Should spend raffle ServiceBox by OwnerNFT',
+      ({ chain, creator, inputBoxes }) => {
+        const serviceBox = inputBoxes[0];
+        creator.addBalance({
+          tokens: [{ tokenId: testUtils.OWNER_NFT_ID, amount: 1n }],
+        });
+        const newInputBoxes: Box<bigint>[] = [
+          serviceBox,
+          ...creator.utxos.toArray(),
+        ];
+        // Create output boxes
+        const outputBox = new OutputBuilder(
+          15_000_000n,
+          serviceBox.ergoTree,
+        ).addTokens([
+          {
+            tokenId: testUtils.OWNER_NFT_ID,
+            amount: 1n,
+          },
+        ]);
+        // Execute transaction
+        const transaction = new TransactionBuilder(chain.height)
+          .from(newInputBoxes)
+          .to([outputBox])
+          .payFee(testUtils.FEE)
+          .sendChangeTo(creator.address)
+          .build();
+        const res = chain.execute(transaction, { signers: [creator] });
+        // Check execution result
+        expect(res).true;
+      },
+    );
+  });
+
+  describe('Close/Redeem raffle', () => {
+    /**
+     * @target service should close raffle or Redeem Raffle
+     * @scenario
+     * - mock chain and partners
+     * - compile contracts
+     * - create service input box by decreased licenseToken value
+     * - create service output box by increased licenseToken value
+     * - execute transaction
+     * - check execution done successfully
+     * @expected
+     * - transaction result must be true
+     */
+    raffleTest(
+      'Should close raffle or Redeem Raffle',
+      ({ chain, creator, rosen, contractsAddresses }) => {
+        // Mock Required Things
+        const serviceBox = testUtils.createServiceBoxMock(
+          (contractsAddresses as { [key: string]: string })['service'],
+          999_999_999n,
+        );
+        const successRaffleIntputBox = testUtils.createActiveRaffleBox(
+          rosen.address.toString(),
+          1n,
+        );
+        // Create output boxes
+        const serviceoutputBox =
+          testUtils.createServiceOutputBox(1_000_000_000n);
+        const inputBoxes: Box<bigint>[] = [
+          serviceBox,
+          successRaffleIntputBox,
+          ...creator.utxos.toArray(),
+        ];
+        // Execute transaction
+        const transaction = new TransactionBuilder(chain.height)
+          .from(inputBoxes)
+          .to([serviceoutputBox])
+          .payFee(testUtils.FEE)
+          .sendChangeTo(creator.address)
+          .build();
+
+        const res = chain.execute(transaction, { signers: [rosen] });
+        // Check execution result
+        expect(res).true;
       },
     );
   });
