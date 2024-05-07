@@ -3,61 +3,10 @@ import * as path from 'node:path';
 
 import { compile } from '@fleet-sdk/compiler';
 import { SType } from '@fleet-sdk/serializer';
-import { SAFE_MIN_BOX_VALUE } from '@fleet-sdk/core';
 
 import * as constants from '../constants';
-import { logger } from './logger.js';
-
-const scriptList = [
-  'service',
-  'inactiveRaffle',
-  'ticketRepo',
-  'activeRaffle',
-  'winner',
-  'ticket',
-  'successRaffle',
-  'winnerPrize',
-  'gift',
-  'giftRedeem',
-  'ticketRedeem',
-];
-
-export const defaultScriptsVariables = {
-  service: {
-    OWNER_NFT_B64: '',
-    INACTIVE_RAFFLE_SCRIPT_HASH_B64: '',
-    TICKET_REPO_SCRIPT_HASH_B64: '',
-    FEE: constants.DEFAULT_FEE,
-    MIN_BOX_VALUE: SAFE_MIN_BOX_VALUE,
-  },
-  inactiveRaffle: {},
-  ticketRepo: {},
-  activeRaffle: {},
-  winner: {},
-  ticket: {},
-  successRaffle: {},
-  winnerPrize: {},
-  gift: {},
-  giftRedeem: {},
-  ticketRedeem: {},
-};
-
-export type ScriptNamesType =
-  | 'service'
-  | 'inactiveRaffle'
-  | 'ticketRepo'
-  | 'activeRaffle'
-  | 'winner'
-  | 'ticket'
-  | 'successRaffle'
-  | 'winnerPrize'
-  | 'gift'
-  | 'giftRedeem'
-  | 'ticketRedeem';
-export type ContextVarsType = Map<
-  ScriptNamesType,
-  Map<string, string | Map<string, string>>
->;
+import { logger } from './logger';
+import { ScriptNamesType, ContextVarsType } from './types';
 
 /**
  * Returns all of compiled Raffle-v2 contracts
@@ -75,7 +24,7 @@ export function compileAll(
 ): { [key: string]: string } {
   const contracts: { [key: string]: string } = {};
 
-  for (const scriptName of scriptList) {
+  for (const scriptName of constants.scriptList) {
     const scriptVars =
       contextVars !== undefined
         ? contextVars.get(scriptName as ScriptNamesType) ||

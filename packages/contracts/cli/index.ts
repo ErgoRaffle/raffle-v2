@@ -6,6 +6,7 @@ import { program } from 'commander';
 import { logger } from '../lib/logger';
 import { ContextVarsType } from '../lib/types';
 import { compileAll } from '../lib/utils';
+import { defaultScriptsVariables } from '../constants';
 
 program
   .name('contracts')
@@ -73,23 +74,18 @@ program
   .argument('<destination>', 'Destination address of file')
   .action((destination) => {
     logger.info('Create input file template started');
-    const scriptVariables = {
-      service: {},
-      inactiveRaffle: {},
-      ticketRepo: {},
-      activeRaffle: {},
-      winner: {},
-      ticket: {},
-      successRaffle: {},
-      winnerPrize: {},
-      gift: {},
-      giftRedeem: {},
-      ticketRedeem: {},
-    };
 
     let fileCreatedSuccess = false;
     try {
-      fs.writeFileSync(destination, JSON.stringify(scriptVariables, null, 4));
+      fs.writeFileSync(
+        destination,
+        JSON.stringify(
+          defaultScriptsVariables,
+          (key, value) =>
+            typeof value === 'bigint' ? value.toString() : value,
+          4,
+        ),
+      );
       fileCreatedSuccess = true;
     } catch (err) {
       logger.error(`Create input file template failed: ${err}`);

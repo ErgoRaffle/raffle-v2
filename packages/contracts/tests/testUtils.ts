@@ -14,11 +14,8 @@ import { SColl, SByte, SLong } from '@fleet-sdk/serializer';
 import { blake2b256 } from '@fleet-sdk/crypto';
 
 import * as utils from '../lib/utils';
-import {
-  compileAll,
-  defaultScriptsVariables,
-  ContextVarsType,
-} from '../lib/utils';
+import { compileAll } from '../lib/utils';
+import { ContextVarsType } from '../lib/types';
 import * as constants from '../constants';
 
 export const FEE = constants.DEFAULT_FEE;
@@ -62,11 +59,13 @@ export const createPartners = (
  */
 export const initialContracts = (): { [key: string]: string } => {
   const initialContractsAddresses = compileAll(
-    new Map(Object.entries(defaultScriptsVariables)) as ContextVarsType,
+    new Map(
+      Object.entries(constants.defaultScriptsVariables),
+    ) as ContextVarsType,
     true,
   );
 
-  const scriptsVars = { ...defaultScriptsVariables };
+  const scriptsVars = { ...constants.defaultScriptsVariables };
   scriptsVars['service'] = {
     OWNER_NFT_B64: Buffer.from(OWNER_NFT_ID, 'hex').toString('base64'),
     INACTIVE_RAFFLE_SCRIPT_HASH_B64: Buffer.from(
