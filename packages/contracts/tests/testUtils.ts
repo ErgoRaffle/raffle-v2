@@ -61,12 +61,6 @@ export const initialContracts = (): { [key: string]: string } => {
   const scriptsVars = { ...constants.defaultScriptsVariables };
   scriptsVars['service'] = {
     OWNER_NFT_B64: Buffer.from(OWNER_NFT_ID, 'hex').toString('base64'),
-    // INACTIVE_RAFFLE_SCRIPT_HASH_B64: Buffer.from(
-    //   blake2b256(initialContractsAddresses['inactiveRaffle']),
-    // ).toString('base64'),
-    // TICKET_REPO_SCRIPT_HASH_B64: Buffer.from(
-    //   blake2b256(initialContractsAddresses['ticketRepo']),
-    // ).toString('base64'),
     FEE: constants.DEFAULT_FEE,
     MIN_BOX_VALUE: SAFE_MIN_BOX_VALUE,
   };
