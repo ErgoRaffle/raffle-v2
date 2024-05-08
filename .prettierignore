@@ -1,4 +1,2 @@
 dist
 scripts
-# Ignore ergo script files
-*.es
