@@ -23,27 +23,26 @@ program
     '-i, --input <input file path>',
     'Address of input file that contains JSON contract name and variables',
   )
-  .action((options) => {
+  .action((input, options) => {
     logger.info('compile-all command started');
 
     let inputs: ContextVarsType = new Map();
-    if (options.input) {
-      let inputContent = '';
-      try {
-        inputContent = fs.readFileSync(options.input).toString();
-      } catch (err) {
-        logger.error(`The compile-all command failed: ${err}`);
-        exit(1);
-      }
 
-      try {
-        inputs = new Map(
-          Object.entries(JSON.parse(inputContent)),
-        ) as ContextVarsType;
-      } catch (err) {
-        logger.error(`The compile-all command failed: Input file is not json`);
-        exit(1);
-      }
+    let inputContent = '';
+    try {
+      inputContent = fs.readFileSync(input).toString();
+    } catch (err) {
+      logger.error(`The compile-all command failed: ${err}`);
+      exit(1);
+    }
+
+    try {
+      inputs = new Map(
+        Object.entries(JSON.parse(inputContent)),
+      ) as ContextVarsType;
+    } catch (err) {
+      logger.error(`The compile-all command failed: Input file is not json`);
+      exit(1);
     }
 
     let contracts = {};

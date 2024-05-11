@@ -11,17 +11,36 @@ import { ScriptNamesType, ContextVarsType } from './types';
 
 const NotSet = '';
 
+/**
+ * Merge compiling context vars by shared keys default values
+ * and add required script hash keys
+ * @param contextVars
+ * @returns JSON Object
+ */
 function mergeContextVarsAndRequiredAddress(contextVars?: ContextVarsType) {
   const finalVars: { [s: string]: { [key: string]: string } } = {};
+  const defaults = (contextVars?.get('defaults') || {}) as {
+    [k: string]: string | bigint | null;
+  };
   for (const scriptName of constants.scriptList) {
     finalVars[scriptName] = {};
     const scriptVars =
       contextVars !== undefined
-        ? contextVars.get(scriptName as ScriptNamesType) ||
-          new Map<string, string>()
-        : new Map<string, string>();
+        ? contextVars.get(scriptName as ScriptNamesType) || {}
+        : {};
+
+    // Update values by defaults JSON
+    for (const defaultKey of Object.keys(contextVars?.get('defaults') || {}))
+      if (Object.keys(scriptVars).indexOf(defaultKey) < 0)
+        finalVars[scriptName][defaultKey] = (
+          defaults[defaultKey] || ''
+        ).toString();
+    // Update values by script-name specific config JSON
     for (const nameAndValue of Object.entries(scriptVars))
-      finalVars[scriptName][nameAndValue[0]] = nameAndValue[1];
+      finalVars[scriptName][nameAndValue[0]] = (
+        nameAndValue[1] || ''
+      ).toString();
+    // Add only script hash keys by NotSet values
     for (const key of Object.keys(
       constants.scriptsRequireAddresses[scriptName],
     )) {

@@ -65,7 +65,7 @@ export const initialContracts = (): { [key: string]: string } => {
     MIN_BOX_VALUE: SAFE_MIN_BOX_VALUE,
   };
   const finalContractsAddresses = compileAll(
-    new Map(Object.entries(scriptsVars)) as ContextVarsType,
+    new Map(Object.entries(scriptsVars)) as unknown as ContextVarsType,
     true,
   );
 
