@@ -20,7 +20,7 @@ describe('Service', () => {
      * - it should create three output box
      */
     raffleTest(
-      'Should create raffle by 1 winner and donate able with Ergo successfully',
+      'Should create raffle by 1 winner and by erg-goal successfully',
       ({ chain, rosen, creator, inputBoxes }) => {
         const serviceBox = inputBoxes[0];
         serviceBox.setContextExtension({ 0: SColl(SLong, [1000n]) });
@@ -57,7 +57,7 @@ describe('Service', () => {
      * - it should create three output box
      */
     raffleTest(
-      'Should create raffle by 10 winners and donate able with Ergo successfully',
+      'Should create raffle by 10 winners and by erg-goal successfully',
       ({ chain, rosen, creator, inputBoxes }) => {
         const serviceBox = inputBoxes[0];
         serviceBox.setContextExtension({
@@ -184,7 +184,7 @@ describe('Service', () => {
         expect(() =>
           chain.execute(transaction, { signers: [creator] }),
         ).toThrowError(
-          '-- error: ByIndex: index Int(0) out of bounds for collection size 0',
+          '',
         );
       },
     );

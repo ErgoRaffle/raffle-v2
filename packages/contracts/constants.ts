@@ -41,7 +41,10 @@ export const scriptsRequireAddresses: {
   ticketRedeem: {},
 };
 
-export const defaultScriptsVariables = {
+export const defaultScriptsVariables: {
+  [key1: string]: { [key2: string]: string | bigint | undefined };
+} = {
+  defaults: {},
   service: {
     OWNER_NFT_B64: '',
     FEE: constants.DEFAULT_FEE,
