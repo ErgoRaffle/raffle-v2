@@ -1,12 +1,43 @@
-import { describe, expect } from 'vitest';
+import { it, describe, expect } from 'vitest';
+import { MockChain } from '@fleet-sdk/mock-chain';
 import { SColl, SLong } from '@fleet-sdk/serializer';
 import { Box, TransactionBuilder, OutputBuilder } from '@fleet-sdk/core';
 
 import * as testUtils from '../testUtils';
-import { createRaffleTest } from '../testUtils';
+import { createPartners, createServiceBoxMock, contractsAddresses, X_TOKEN_ID, CREATOR_DEFAULT_BALANCE, ROSEN_DEFAULT_BALANCE } from '../testUtils';
+
+
+/*
+ * create fixtures that contains below steps data:
+ *   - mock chain and partners
+ *   - compile contracts
+ *   - create service input box
+ * @returns vitest customized "it" object
+*/
+function createRaffleServiceTest() {
+  const chain_ = new MockChain({ height: 1000 });
+  const { creator, rosen } = createPartners(chain_, {
+    Creator: CREATOR_DEFAULT_BALANCE,
+    Rosen: ROSEN_DEFAULT_BALANCE,
+  });
+  creator.addBalance({ tokens: [{ tokenId: X_TOKEN_ID, amount: 100n }] });
+  // Created input service-box
+  const serviceBox = createServiceBoxMock(contractsAddresses['service']);
+
+  const raffleServiceTest = it.extend({
+    chain: chain_,
+    rosen: rosen,
+    creator: creator,
+    inputBoxes: [serviceBox, ...creator.utxos.toArray()],
+    contractsAddresses: contractsAddresses,
+  });
+
+  return raffleServiceTest;
+}
+
 
 describe('Service', () => {
-  const raffleTest = createRaffleTest();
+  const raffleServiceTest = createRaffleServiceTest();
 
   describe('Create raffle', () => {
     /**
@@ -19,7 +50,7 @@ describe('Service', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    raffleTest(
+    raffleServiceTest(
       'Should create raffle by 1 winner and by erg-goal successfully',
       ({ chain, rosen, creator, inputBoxes }) => {
         const serviceBox = inputBoxes[0];
@@ -56,7 +87,7 @@ describe('Service', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    raffleTest(
+    raffleServiceTest(
       'Should create raffle by 10 winners and by erg-goal successfully',
       ({ chain, rosen, creator, inputBoxes }) => {
         const serviceBox = inputBoxes[0];
@@ -108,7 +139,7 @@ describe('Service', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    raffleTest(
+    raffleServiceTest(
       'Should create raffle by 1 winner and X token-goal successfully',
       ({ chain, rosen, creator, contractsAddresses }) => {
         // Created input service-box
@@ -156,7 +187,7 @@ describe('Service', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    raffleTest(
+    raffleServiceTest(
       'should fail when try to create new raffle without LicenseToken on the inactiveRaffleOutputBox',
       ({ chain, rosen, creator, inputBoxes }) => {
         const serviceBox = inputBoxes[0];
@@ -200,7 +231,7 @@ describe('Service', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    raffleTest(
+    raffleServiceTest(
       'should fail when try to create new raffle without decreasing LicenseToken from serviceOutputBox',
       ({ chain, rosen, creator, inputBoxes }) => {
         const serviceBox = inputBoxes[0];
@@ -241,7 +272,7 @@ describe('Service', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    raffleTest(
+    raffleServiceTest(
       'should fail when try to create new raffle with incorrect service fee',
       ({ chain, rosen, creator, inputBoxes }) => {
         const serviceBox = inputBoxes[0];
@@ -284,7 +315,7 @@ describe('Service', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    raffleTest(
+    raffleServiceTest(
       'should fail when try to create new raffle with invalid license fee on the output service box',
       ({ chain, rosen, creator, inputBoxes }) => {
         const serviceBox = inputBoxes[0];
@@ -328,7 +359,7 @@ describe('Service', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    raffleTest(
+    raffleServiceTest(
       'should fail when try to create new raffle with incorrect sum of winners percents',
       ({ chain, rosen, creator, inputBoxes }) => {
         const serviceBox = inputBoxes[0];
@@ -370,7 +401,7 @@ describe('Service', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    raffleTest(
+    raffleServiceTest(
       'should fail when try to create new raffle with invalid winners hash',
       ({ chain, rosen, creator, inputBoxes }) => {
         const serviceBox = inputBoxes[0];
@@ -414,7 +445,7 @@ describe('Service', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    raffleTest(
+    raffleServiceTest(
       'should fail of try to create new raffle with incorrect winners count',
       ({ chain, rosen, creator, inputBoxes }) => {
         // Mock Required Things
@@ -457,7 +488,7 @@ describe('Service', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    raffleTest(
+    raffleServiceTest(
       'should fail when try to create new raffle with incorrect winners count in extension',
       ({ chain, rosen, creator, inputBoxes }) => {
         // Mock Required Things
@@ -498,7 +529,7 @@ describe('Service', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    raffleTest(
+    raffleServiceTest(
       'should fail when try to create new raffle with incorrect sum of winners percents',
       ({ chain, rosen, creator, inputBoxes }) => {
         // Mock Required Things
@@ -541,7 +572,7 @@ describe('Service', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    raffleTest(
+    raffleServiceTest(
       'should fail when try to create new raffle with incorrect ticket-id',
       ({ chain, rosen, creator, inputBoxes }) => {
         const serviceBox = inputBoxes[0];
@@ -582,7 +613,7 @@ describe('Service', () => {
      * @expected
      * - transaction result must be true
      */
-    raffleTest(
+    raffleServiceTest(
       'Should spend raffle ServiceBox by OwnerNFT',
       ({ chain, creator, inputBoxes }) => {
         const serviceBox = inputBoxes[0];
@@ -627,7 +658,7 @@ describe('Service', () => {
      * @expected
      * - transaction result must be true
      */
-    raffleTest(
+    raffleServiceTest(
       'Should close raffle or Redeem Raffle',
       ({ chain, creator, rosen, contractsAddresses }) => {
         // Mock Required Things

@@ -1,4 +1,3 @@
-import { it } from 'vitest';
 import {
   ErgoUnsignedInput,
   OutputBuilder,
@@ -295,34 +294,6 @@ export const createSuccessRaffleBox = (
   successRaffleBox.ergoTree = contractsAddresses['successRaffle'];
 
   return successRaffleBox;
-};
-
-/**
- * create fixtures that contains below steps data:
- *   - mock chain and partners
- *   - compile contracts
- *   - create service input box
- * @returns vitest customized "it" object
- */
-export const createRaffleTest = () => {
-  const chain_ = new MockChain({ height: 1000 });
-  const { creator, rosen } = createPartners(chain_, {
-    Creator: CREATOR_DEFAULT_BALANCE,
-    Rosen: ROSEN_DEFAULT_BALANCE,
-  });
-  creator.addBalance({ tokens: [{ tokenId: X_TOKEN_ID, amount: 100n }] });
-  // Created input service-box
-  const serviceBox = createServiceBoxMock(contractsAddresses['service']);
-
-  const raffleTest = it.extend({
-    chain: chain_,
-    rosen: rosen,
-    creator: creator,
-    inputBoxes: [serviceBox, ...creator.utxos.toArray()],
-    contractsAddresses: contractsAddresses,
-  });
-
-  return raffleTest;
 };
 
 export const contractsAddresses = initialContracts();
