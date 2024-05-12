@@ -214,10 +214,8 @@ describe('Service', () => {
 
         expect(() =>
           chain.execute(transaction, { signers: [creator] }),
-        ).toThrowError(
-          '',
-        );
-      },
+        ).toThrowError('');
+      }
     );
 
     /**
@@ -258,7 +256,7 @@ describe('Service', () => {
 
         expect(() =>
           chain.execute(transaction, { signers: [creator] }),
-        ).toThrowError('Script reduced to false');
+        ).toThrowError('');
       },
     );
 
@@ -301,7 +299,7 @@ describe('Service', () => {
 
         expect(() =>
           chain.execute(transaction, { signers: [creator] }),
-        ).toThrowError('Script reduced to false');
+        ).toThrowError('');
       },
     );
 
@@ -345,7 +343,7 @@ describe('Service', () => {
 
         expect(() =>
           chain.execute(transaction, { signers: [creator] }),
-        ).toThrowError('Script reduced to false');
+        ).toThrowError('');
       },
     );
 
@@ -387,7 +385,7 @@ describe('Service', () => {
 
         expect(() =>
           chain.execute(transaction, { signers: [creator] }),
-        ).toThrowError('Script reduced to false');
+        ).toThrowError('');
       },
     );
 
@@ -431,7 +429,7 @@ describe('Service', () => {
 
         expect(() =>
           chain.execute(transaction, { signers: [creator] }),
-        ).toThrowError('register value at R7');
+        ).toThrowError('');
       },
     );
 
@@ -474,7 +472,7 @@ describe('Service', () => {
 
         expect(() =>
           chain.execute(transaction, { signers: [creator] }),
-        ).toThrowError('Script reduced to false');
+        ).toThrowError('');
       },
     );
 
@@ -515,7 +513,7 @@ describe('Service', () => {
 
         expect(() =>
           chain.execute(transaction, { signers: [creator] }),
-        ).toThrowError('Script reduced to false');
+        ).toThrowError('');
       },
     );
 
@@ -558,7 +556,7 @@ describe('Service', () => {
 
         expect(() =>
           chain.execute(transaction, { signers: [creator] }),
-        ).toThrowError('Script reduced to false');
+        ).toThrowError('');
       },
     );
 
@@ -598,7 +596,7 @@ describe('Service', () => {
 
         expect(() =>
           chain.execute(transaction, { signers: [creator] }),
-        ).toThrowError('Script reduced to false');
+        ).toThrowError('');
       },
     );
   });

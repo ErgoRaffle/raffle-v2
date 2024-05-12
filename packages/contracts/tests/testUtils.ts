@@ -286,14 +286,14 @@ export const createSuccessRaffleBox = (
   winnersCount: bigint = 1n,
   collectingToken?: TokenAmount<bigint>,
 ) => {
-  const successRaffleBox = createActiveRaffleBox(
+  const raffleBox = createActiveRaffleBox(
     partnerAddress,
     winnersCount,
     collectingToken,
   );
-  successRaffleBox.ergoTree = contractsAddresses['successRaffle'];
+  raffleBox.ergoTree = contractsAddresses['successRaffle'];
 
-  return successRaffleBox;
+  return raffleBox;
 };
 
 export const contractsAddresses = initialContracts();
