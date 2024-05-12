@@ -275,7 +275,7 @@ export const createActiveRaffleBox = (
 };
 
 /**
- * Create and return active-raffle box
+ * Create and return success-raffle box
  * @param partnerAddress
  * @param winnersCount
  * @param collectingToken
