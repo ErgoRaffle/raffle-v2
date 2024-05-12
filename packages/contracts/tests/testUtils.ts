@@ -286,14 +286,33 @@ export const createSuccessRaffleBox = (
   winnersCount: bigint = 1n,
   collectingToken?: TokenAmount<bigint>,
 ) => {
-  const raffleBox = createActiveRaffleBox(
-    partnerAddress,
-    winnersCount,
-    collectingToken,
-  );
-  raffleBox.ergoTree = contractsAddresses['successRaffle'];
+  const winnersPercents = [];
+  for (let i = 0; i < winnersCount; i++)
+    winnersPercents.push(1000n / winnersCount);
 
-  return raffleBox;
+  const tokens = [
+    raffleNFTToken,
+    {
+      tokenId: LICENSE_TOKEN_ID,
+      amount: 1n,
+    },
+  ];
+  if (collectingToken != null) tokens.push(collectingToken);
+
+  return mockUTxO({
+    ergoTree: contractsAddresses['successRaffle'],
+    value:
+      winnersCount * (FEE + SAFE_MIN_BOX_VALUE) +
+      (2n * FEE + SAFE_MIN_BOX_VALUE + 1_000_000_000n),
+    creationHeight: 5,
+    assets: tokens,
+    additionalRegisters: {
+      R4: SColl(SLong, [10n, 10n, 1_000_000_000n]).toHex(),
+      R5: SColl(SColl(SByte), [
+        Array.from(Buffer.from(partnerAddress)),
+      ]).toHex(),
+    },
+  });
 };
 
 export const contractsAddresses = initialContracts();
