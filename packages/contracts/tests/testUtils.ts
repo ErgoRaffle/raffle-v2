@@ -266,7 +266,7 @@ export const createActiveRaffleBox = (
     creationHeight: 5,
     assets: tokens,
     additionalRegisters: {
-      R4: SColl(SLong, [10n, 0n, 1_000_000_000n]).toHex(),
+      R4: SColl(SLong, [10n, 10n, 1_000_000_000n]).toHex(),
       R5: SColl(SColl(SByte), [
         Array.from(Buffer.from(partnerAddress)),
       ]).toHex(),

@@ -666,7 +666,7 @@ describe('Service', () => {
         );
         const successRaffleInputBox = testUtils.createSuccessRaffleBox(
           rosen.address.toString(),
-          1n,
+          1n
         );
         // Create output boxes
         const serviceOutputBox =
