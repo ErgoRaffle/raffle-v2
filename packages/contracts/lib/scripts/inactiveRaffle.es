@@ -82,7 +82,7 @@
 
     // Correct GiftTokenRepo format
     // R4, R5, R6: GiftToken metadata
-    // R7: [WinnerIndex, rewardPercent]
+    // R7: [GiftTokenCount, WinnersCount]
     giftTokenRepo.tokens(1)._1 == SELF.id,
     giftTokenRepo.tokens(1)._2 == giftTokenCount * winnersCount,
     giftTokenRepo.R7[Coll[Int]].get == Coll[Int](giftTokenCount, winnersCount),
