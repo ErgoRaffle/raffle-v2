@@ -14,7 +14,7 @@ import { createPartners, createServiceBoxMock, contractsAddresses, X_TOKEN_ID, C
  *   - create service input box
  * @returns vitest customized "it" object
 */
-function createRaffleServiceTest() {
+const createRaffleServiceTest = () => {
   const chain_ = new MockChain({ height: 1000 });
   const { creator, rosen } = createPartners(chain_, {
     Creator: CREATOR_DEFAULT_BALANCE,
