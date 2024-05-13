@@ -1,4 +1,5 @@
 export type ScriptNamesType =
+  | 'defaults'
   | 'service'
   | 'inactiveRaffle'
   | 'ticketRepo'
@@ -10,4 +11,7 @@ export type ScriptNamesType =
   | 'gift'
   | 'giftRedeem'
   | 'ticketRedeem';
-export type ContextVarsType = Map<ScriptNamesType, Map<string, string>>;
+export type ContextVarsType = Map<
+  ScriptNamesType,
+  Map<string, string | bigint | null>
+>;

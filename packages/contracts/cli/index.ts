@@ -6,6 +6,7 @@ import { program } from 'commander';
 import { logger } from '../lib/logger';
 import { ContextVarsType } from '../lib/types';
 import { compileAll } from '../lib/utils';
+import { defaultScriptsVariables } from '../constants';
 
 program
   .name('contracts')
@@ -19,30 +20,29 @@ program
     'Address of output file that contains contracts addresses',
   )
   .argument(
-    '-i, --input <intput file path>',
-    'Address of intput file that contains JSON contract name and variables',
+    '-i, --input <input file path>',
+    'Address of input file that contains JSON contract name and variables',
   )
-  .action((options) => {
+  .action((input, options) => {
     logger.info('compile-all command started');
 
     let inputs: ContextVarsType = new Map();
-    if (options.input) {
-      let inputContent = '';
-      try {
-        inputContent = fs.readFileSync(options.input).toString();
-      } catch (err) {
-        logger.error(`The compile-all command failed: ${err}`);
-        exit(1);
-      }
 
-      try {
-        inputs = new Map(
-          Object.entries(JSON.parse(inputContent)),
-        ) as ContextVarsType;
-      } catch (err) {
-        logger.error(`The compile-all command failed: Input file is not json`);
-        exit(1);
-      }
+    let inputContent = '';
+    try {
+      inputContent = fs.readFileSync(input).toString();
+    } catch (err) {
+      logger.error(`The compile-all command failed: ${err}`);
+      exit(1);
+    }
+
+    try {
+      inputs = new Map(
+        Object.entries(JSON.parse(inputContent)),
+      ) as ContextVarsType;
+    } catch (err) {
+      logger.error(`The compile-all command failed: Input file is not json`);
+      exit(1);
     }
 
     let contracts = {};
@@ -64,7 +64,7 @@ program
       console.log(JSON.stringify(contracts, null, 4));
     }
 
-    logger.info('compile-all command ran successfull');
+    logger.info('compile-all command ran successful');
   });
 
 // Create template file of input variables
@@ -73,30 +73,25 @@ program
   .argument('<destination>', 'Destination address of file')
   .action((destination) => {
     logger.info('Create input file template started');
-    const scriptVariables = {
-      service: {},
-      inactiveRaffle: {},
-      ticketRepo: {},
-      activeRaffle: {},
-      winner: {},
-      ticket: {},
-      successRaffle: {},
-      winnerPrize: {},
-      gift: {},
-      giftRedeem: {},
-      ticketRedeem: {},
-    };
 
     let fileCreatedSuccess = false;
     try {
-      fs.writeFileSync(destination, JSON.stringify(scriptVariables, null, 4));
+      fs.writeFileSync(
+        destination,
+        JSON.stringify(
+          defaultScriptsVariables,
+          (key, value) =>
+            typeof value === 'bigint' ? value.toString() : value,
+          4,
+        ),
+      );
       fileCreatedSuccess = true;
     } catch (err) {
       logger.error(`Create input file template failed: ${err}`);
     }
 
     if (!fileCreatedSuccess)
-      logger.info('Create input file template command ran successfull');
+      logger.info('Create input file template command ran successful');
   });
 
 program.parse();

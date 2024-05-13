@@ -1,26 +1,57 @@
 import * as fs from 'fs';
 import * as path from 'node:path';
+
 import { compile } from '@fleet-sdk/compiler';
+import { SType } from '@fleet-sdk/serializer';
+import { blake2b256 } from '@fleet-sdk/crypto';
 
-import { Logger } from 'winston';
-
-import { logger as defaultLogger } from './logger';
+import * as constants from '../constants';
+import { logger } from './logger';
 import { ScriptNamesType, ContextVarsType } from './types';
 
-const __dirname = path.resolve(path.dirname(''));
-const scriptList = [
-  'service',
-  'inactiveRaffle',
-  'ticketRepo',
-  'activeRaffle',
-  'winner',
-  'ticket',
-  'successRaffle',
-  'winnerPrize',
-  'gift',
-  'giftRedeem',
-  'ticketRedeem',
-];
+const NotSet = '';
+
+/**
+ * Merge compiling context vars by shared keys default values
+ * and add required script hash keys
+ * @param contextVars
+ * @returns JSON Object
+ */
+function mergeContextVarsAndRequiredAddress(contextVars?: ContextVarsType) {
+  const finalVars: { [s: string]: { [key: string]: string } } = {};
+  const defaults = (contextVars?.get('defaults') || {}) as {
+    [k: string]: string | bigint | null;
+  };
+  for (const scriptName of constants.scriptList) {
+    finalVars[scriptName] = {};
+    const scriptVars =
+      contextVars !== undefined
+        ? contextVars.get(scriptName as ScriptNamesType) || {}
+        : {};
+
+    // Update values by defaults JSON
+    for (const defaultKey of Object.keys(contextVars?.get('defaults') || {}))
+      if (Object.keys(scriptVars).indexOf(defaultKey) < 0)
+        finalVars[scriptName][defaultKey] = (
+          defaults[defaultKey] || ''
+        ).toString();
+    // Update values by script-name specific config JSON
+    for (const nameAndValue of Object.entries(scriptVars))
+      finalVars[scriptName][nameAndValue[0]] = (
+        nameAndValue[1] || ''
+      ).toString();
+    // Add only script hash keys by NotSet values
+    for (const key of Object.keys(
+      constants.scriptsRequireAddresses[scriptName],
+    )) {
+      finalVars[scriptName][
+        constants.scriptsRequireAddresses[scriptName][key]
+      ] = NotSet;
+    }
+  }
+
+  return finalVars;
+}
 
 /**
  * Returns all of compiled Raffle-v2 contracts
@@ -34,35 +65,97 @@ const scriptList = [
  */
 export function compileAll(
   contextVars?: ContextVarsType,
-  logger: Logger = defaultLogger,
-): {
-  [key: string]: string;
-} {
+  outputsAsHex: boolean = false,
+): { [key: string]: string } {
   const contracts: { [key: string]: string } = {};
+  const compiledScripts = [];
+  const compiledDependenciesStatus =
+    mergeContextVarsAndRequiredAddress(contextVars);
+  let notCompiledAnyScript = false;
+  while (
+    !notCompiledAnyScript &&
+    compiledScripts.length < constants.scriptList.length
+  ) {
+    notCompiledAnyScript = true;
+    for (const scriptName of constants.scriptList) {
+      // Check that precompiled required script already compiled or not
+      let readyToCompile = true;
+      const precompileScript =
+        constants.scriptsRequireAddresses[scriptName] || {};
+      for (const key of Object.keys(precompileScript)) {
+        if (
+          compiledDependenciesStatus[scriptName][precompileScript[key]] ===
+          NotSet
+        ) {
+          readyToCompile = false;
+          break;
+        }
+      }
 
-  for (const scriptName of scriptList) {
-    const scriptVars =
-      contextVars !== undefined
-        ? contextVars.get(scriptName as ScriptNamesType) ||
-          new Map<string, string>()
-        : new Map<string, string>();
-    let script: string = fs.readFileSync(
-      path.join(__dirname, `lib/scripts/${scriptName}.es`),
-      'utf8',
-    );
+      if (!readyToCompile || compiledScripts.indexOf(scriptName) >= 0) continue;
+      notCompiledAnyScript = false;
+      logger.info(`the ${scriptName} script ready to compile`);
 
-    for (const nameAndValue of Object.entries(scriptVars))
-      script = script.replace(nameAndValue[0], nameAndValue[1]);
+      const scriptVars =
+        compiledDependenciesStatus !== undefined
+          ? compiledDependenciesStatus[scriptName as ScriptNamesType] ||
+            new Map<string, string>()
+          : new Map<string, string>();
+      let script: string = fs.readFileSync(
+        path.join(constants.SCRIPT_DIR, `${scriptName}.es`),
+        'utf8',
+      );
 
-    try {
-      const contract = compile(script, {});
-      contracts[scriptName] = contract.toAddress().toString();
-    } catch (err) {
-      logger.error(`The compileAll function raised error: ${err}`);
-      throw err;
+      for (const nameAndValue of Object.entries(scriptVars))
+        script = script.replace(nameAndValue[0], nameAndValue[1]);
+
+      const vars: { [key: string | number]: string | SType } = {};
+      let contract;
+      try {
+        contract = compile(script, { map: vars });
+        if (outputsAsHex) {
+          contracts[scriptName] = contract.toHex().toString();
+        } else {
+          contracts[scriptName] = contract.toAddress().toString();
+        }
+      } catch (err) {
+        logger.error(`The compileAll function raised error: ${err}`);
+        throw err;
+      }
+
+      compiledScripts.push(scriptName);
+      logger.info(`the ${scriptName} script compiled`);
+      for (const script_ of constants.scriptList) {
+        const updateScriptKey =
+          constants.scriptsRequireAddresses[script_][scriptName];
+        if (updateScriptKey !== undefined) {
+          const contractString = Buffer.from(
+            blake2b256(contract?.toHex()),
+          ).toString('base64');
+          compiledDependenciesStatus[script_][updateScriptKey] = contractString;
+        }
+      }
     }
   }
-  logger.info(`The compileAll function done successful`);
+  if (notCompiledAnyScript) {
+    logger.error('Error: The compileAll function infinity loop');
+    // Below situation occurring when defining
+    // recursive dependencies between multiple scripts
+    throw 'Error: The compileAll function infinity loop';
+  } else {
+    logger.info(`The compileAll function done successfully`);
+  }
 
   return contracts;
+}
+
+/**
+ * Convert bigint to Uint8Array
+ * @param num
+ * @returns Uint8Array object
+ */
+export function bigIntToUint8Array(num: bigint) {
+  const b = new ArrayBuffer(8);
+  new DataView(b).setBigUint64(0, num);
+  return new Uint8Array(b);
 }
