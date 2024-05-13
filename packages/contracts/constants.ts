@@ -19,7 +19,9 @@ export const scriptList = [
   'winnerPrize',
   'gift',
   'giftRedeem',
+  'giftTokenRepo',
   'ticketRedeem',
+  'raffleDetails',
 ];
 
 export const scriptsRequireAddresses: {
@@ -29,7 +31,11 @@ export const scriptsRequireAddresses: {
     inactiveRaffle: 'INACTIVE_RAFFLE_SCRIPT_HASH_B64',
     ticketRepo: 'TICKET_REPO_SCRIPT_HASH_B64',
   },
-  inactiveRaffle: {},
+  inactiveRaffle: {
+    activeRaffle: 'ACTIVE_RAFFLE_SCRIPT_HASH_B64',
+    raffleDetails: 'RAFFLE_DETAILS_SCRIPT_HASH_B64',
+    winner: 'WINNER_SCRIPT_HASH_B64',
+  },
   ticketRepo: {},
   activeRaffle: {},
   winner: {},
@@ -38,7 +44,9 @@ export const scriptsRequireAddresses: {
   winnerPrize: {},
   gift: {},
   giftRedeem: {},
+  giftTokenRepo: {},
   ticketRedeem: {},
+  raffleDetails: {},
 };
 
 export const defaultScriptsVariables: {
@@ -50,7 +58,11 @@ export const defaultScriptsVariables: {
     FEE: constants.DEFAULT_FEE,
     MIN_BOX_VALUE: SAFE_MIN_BOX_VALUE,
   },
-  inactiveRaffle: {},
+  inactiveRaffle: {
+    GIFT_TOKEN_COUNT: 1n,
+    FEE: constants.DEFAULT_FEE,
+    MIN_BOX_VALUE: SAFE_MIN_BOX_VALUE,
+  },
   ticketRepo: {},
   activeRaffle: {},
   winner: {},
@@ -59,5 +71,7 @@ export const defaultScriptsVariables: {
   winnerPrize: {},
   gift: {},
   giftRedeem: {},
+  giftTokenRepo: {},
   ticketRedeem: {},
+  raffleDetails: {},
 };

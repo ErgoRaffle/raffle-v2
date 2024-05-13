@@ -4,7 +4,7 @@ import { SColl, SLong } from '@fleet-sdk/serializer';
 import { Box, TransactionBuilder, OutputBuilder } from '@fleet-sdk/core';
 
 import * as testUtils from '../testUtils';
-import { createPartners, createServiceBoxMock, contractsAddresses, X_TOKEN_ID, CREATOR_DEFAULT_BALANCE, ROSEN_DEFAULT_BALANCE } from '../testUtils';
+import { createPartners, createServiceBoxMock, X_TOKEN_ID, CREATOR_DEFAULT_BALANCE, ROSEN_DEFAULT_BALANCE } from '../testUtils';
 
 
 /*
@@ -14,7 +14,7 @@ import { createPartners, createServiceBoxMock, contractsAddresses, X_TOKEN_ID, C
  *   - create service input box
  * @returns vitest customized "it" object
 */
-function createRaffleServiceTest() {
+const createRaffleServiceTest = () => {
   const chain_ = new MockChain({ height: 1000 });
   const { creator, rosen } = createPartners(chain_, {
     Creator: CREATOR_DEFAULT_BALANCE,
@@ -22,17 +22,14 @@ function createRaffleServiceTest() {
   });
   creator.addBalance({ tokens: [{ tokenId: X_TOKEN_ID, amount: 100n }] });
   // Created input service-box
-  const serviceBox = createServiceBoxMock(contractsAddresses['service']);
+  const serviceBox = createServiceBoxMock();
 
-  const raffleServiceTest = it.extend({
+  return it.extend({
     chain: chain_,
     rosen: rosen,
     creator: creator,
     inputBoxes: [serviceBox, ...creator.utxos.toArray()],
-    contractsAddresses: contractsAddresses,
   });
-
-  return raffleServiceTest;
 }
 
 
@@ -61,7 +58,7 @@ describe('Service', () => {
           rosen.address.toString(),
           creator.address.toString(),
           serviceBox.boxId,
-          1n,
+          1n
         );
         // Execute transaction
         const transaction = new TransactionBuilder(chain.height)
@@ -141,11 +138,9 @@ describe('Service', () => {
      */
     raffleServiceTest(
       'Should create raffle by 1 winner and X token-goal successfully',
-      ({ chain, rosen, creator, contractsAddresses }) => {
+      ({ chain, rosen, creator }) => {
         // Created input service-box
-        const serviceBox = testUtils.createServiceBoxMock(
-          (contractsAddresses as { [key: string]: string })['service'],
-        );
+        const serviceBox = testUtils.createServiceBoxMock();
         const inputBoxes: Box<bigint>[] = [
           serviceBox,
           ...creator.utxos.toArray(),
@@ -658,15 +653,12 @@ describe('Service', () => {
      */
     raffleServiceTest(
       'Should close raffle or Redeem Raffle',
-      ({ chain, creator, rosen, contractsAddresses }) => {
+      ({ chain, creator, rosen }) => {
         // Mock Required Things
-        const serviceBox = testUtils.createServiceBoxMock(
-          (contractsAddresses as { [key: string]: string })['service'],
-          999_999_999n,
-        );
+        const serviceBox = testUtils.createServiceBoxMock(999_999_999n);
         const successRaffleInputBox = testUtils.createSuccessRaffleBox(
           rosen.address.toString(),
-          1n
+          1n,
         );
         // Create output boxes
         const serviceOutputBox =

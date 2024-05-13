@@ -15,9 +15,9 @@
   //      [InactiveRaffle(Self), TicketRepo] --> [ActiveRaffle, RaffleDetails, GiftTokenRepo, Winner[]]
   // 
 
-  val activeRaffleScriptHash = fromBase64("ACTIVE_RAFFLE_SCRIPT_HASH")
-  val raffleDetailsScriptHash = fromBase64("RAFFLE_DETAILS_SCRIPT_HASH")
-  val winnerScriptHash = fromBase64("WINNER_SCRIPT_HASH")
+  val activeRaffleScriptHash = fromBase64("ACTIVE_RAFFLE_SCRIPT_HASH_B64")
+  val raffleDetailsScriptHash = fromBase64("RAFFLE_DETAILS_SCRIPT_HASH_B64")
+  val winnerScriptHash = fromBase64("WINNER_SCRIPT_HASH_B64")
   val giftTokenCount = GIFT_TOKEN_COUNT
   val fee = FEE
   val minBoxValue = MIN_BOX_VALUE
@@ -26,8 +26,8 @@
   val raffleDetails = OUTPUTS(1)
   val giftTokenRepo = OUTPUTS(2)
   val winnersCount = SELF.R4[Coll[Long]].get(7).toInt
-  val ticketId = SELF.R6[Coll[Coll[Byte]]].get(0)
-  val winnersPercentListHash = SELF.R6[Coll[Coll[Byte]]].get(1)
+  val ticketId = SELF.R7[Coll[Coll[Byte]]].get(0)
+  val winnersPercentListHash = SELF.R7[Coll[Coll[Byte]]].get(1)
   val winnerBoxes = OUTPUTS.slice(3, winnersCount + 3)
 
   val winnersVerification = winnerBoxes.indices.forall({(i: Int) => {
@@ -77,7 +77,7 @@
     raffleDetails.R4[Coll[Coll[Byte]]].get == SELF.R6[Coll[Coll[Byte]]].get,
     raffleDetails.tokens(0)._1 == ticketId, // Ticket token as identifier
 
-    // Correct Winnners format
+    // Correct Winners format
     winnersVerification == true,
 
     // Correct GiftTokenRepo format
@@ -85,7 +85,7 @@
     // R7: [WinnerIndex, rewardPercent]
     giftTokenRepo.tokens(1)._1 == SELF.id,
     giftTokenRepo.tokens(1)._2 == giftTokenCount * winnersCount,
-    giftTokenRepo.R7[Coll[Int]].get == Coll[Int](giftTokenCount, winnersCount)
+    giftTokenRepo.R7[Coll[Int]].get == Coll[Int](giftTokenCount, winnersCount),
 
     // Transaction constraints
     winnersPercentListHash == blake2b256(winnersPercentBytes),
