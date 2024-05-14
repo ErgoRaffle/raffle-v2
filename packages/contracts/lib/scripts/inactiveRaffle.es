@@ -33,11 +33,12 @@
     val box = OUTPUTS(i + 3)
     allOf(Coll(
       // Correct Winner boxes format
-      // R4: [WinnerIndex, rewardPercent]
+      // R4: [WinnerIndex, RewardPercent, TxFee]
       blake2b256(box.propositionBytes) == winnerScriptHash,
       box.tokens(0)._1 == ticketId, // Ticket token as identifier
       box.value == 2 * txFee,
       box.R4[Coll[Long]].get(0) == i + 1,
+      box.R4[Coll[Long]].get(2) == txFee,
     ))
   }})
   val winnersPercentBytes = winnerBoxes.fold(
@@ -87,12 +88,12 @@
 
     // Correct GiftTokenRepo format
     // R4, R5, R6: GiftToken metadata
-    // R7: [GiftTokenCount, WinnersCount]
+    // R7: [GiftTokenCount, WinnersCount, TxFee]
     // R8: TicketId
     giftTokenRepo.tokens.size == 1,
     giftTokenRepo.tokens(0)._1 == SELF.id,
     giftTokenRepo.tokens(0)._2 == giftTokenCount * winnersCount,
-    giftTokenRepo.R7[Coll[Int]].get == Coll[Int](giftTokenCount, winnersCount),
+    giftTokenRepo.R7[Coll[Int]].get == Coll[Int](giftTokenCount, winnersCount, txFee),
     giftTokenRepo.R8[Coll[Byte]].get == ticketId,
     giftTokenRepo.value == (txFee * winnersCount),
 
