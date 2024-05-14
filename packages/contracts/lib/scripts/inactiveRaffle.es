@@ -2,7 +2,7 @@
   // ErgoRaffle V2 Inactive Raffle Contract
   //
   // Registers:
-  //   R4[Coll[Long]]: [CharityPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, DeadlineTimestamp, TotalSoldTicket, WinnersCount, CreationFee]
+  //   R4[Coll[Long]]: [CharityPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, DeadlineTimestamp, TotalSoldTicket, WinnersCount, txFee]
   //   R5[Coll[Coll[Byte]]]: [ServiceAddress, ImplementerAddress, CharityAddress]
   //   R6[Coll[Coll[Byte]]]: [Name, Description, Pictures(optional)]
   //   R7[Coll[Coll[Byte]]]: [TicketId, WinnersPercentListHash]
@@ -19,13 +19,12 @@
   val raffleDetailsScriptHash = fromBase64("RAFFLE_DETAILS_SCRIPT_HASH_B64")
   val winnerScriptHash = fromBase64("WINNER_SCRIPT_HASH_B64")
   val giftTokenCount = GIFT_TOKEN_COUNT
-  val fee = FEE
-  val minBoxValue = MIN_BOX_VALUE
 
   val activeRaffle = OUTPUTS(0)
   val raffleDetails = OUTPUTS(1)
   val giftTokenRepo = OUTPUTS(2)
   val winnersCount = SELF.R4[Coll[Long]].get(7).toInt
+  val txFee = SELF.R4[Coll[Long]].get(8).toInt
   val ticketId = SELF.R7[Coll[Coll[Byte]]].get(0)
   val winnersPercentListHash = SELF.R7[Coll[Coll[Byte]]].get(1)
   val winnerBoxes = OUTPUTS.slice(3, winnersCount + 3)
@@ -37,7 +36,7 @@
       // R4: [WinnerIndex, rewardPercent]
       blake2b256(box.propositionBytes) == winnerScriptHash,
       box.tokens(0)._1 == ticketId, // Ticket token as identifier
-      box.value == fee + minBoxValue,
+      box.value == 2 * txFee,
       box.R4[Coll[Long]].get(0) == i + 1,
     ))
   }})
@@ -66,7 +65,7 @@
     blake2b256(activeRaffle.propositionBytes) == activeRaffleScriptHash,
     activeRaffle.tokens(0)._1 == SELF.tokens(0)._1,
     activeRaffle.tokens(1)._1 == ticketId, // Match with TicketRepo
-    activeRaffle.value == SELF.value - (winnersCount * (fee + minBoxValue)),
+    activeRaffle.value == SELF.value - (3 * txFee * winnersCount),
     activeRaffle.R4[Coll[Long]].get == SELF.R4[Coll[Long]].get,
     activeRaffle.R5[Coll[Coll[Byte]]].get == SELF.R5[Coll[Coll[Byte]]].get,
     activeRaffleExtraTokensVerification == true,
@@ -76,6 +75,7 @@
     blake2b256(raffleDetails.propositionBytes) == raffleDetailsScriptHash,
     raffleDetails.R4[Coll[Coll[Byte]]].get == SELF.R6[Coll[Coll[Byte]]].get,
     raffleDetails.tokens(0)._1 == ticketId, // Ticket token as identifier
+    raffleDetails.value == txFee,
 
     // Correct Winners format
     winnersVerification == true,
@@ -88,6 +88,7 @@
     giftTokenRepo.tokens(0)._2 == giftTokenCount * winnersCount,
     giftTokenRepo.R7[Coll[Int]].get == Coll[Int](giftTokenCount, winnersCount),
     giftTokenRepo.R8[Coll[Byte]].get == ticketId,
+    giftTokenRepo.value == (txFee * winnersCount),
 
     // Transaction constraints
     winnersPercentListHash == blake2b256(winnersPercentBytes),

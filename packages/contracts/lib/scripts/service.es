@@ -2,7 +2,7 @@
   // ErgoRaffle V2 Service Contract
   //
   // Registers:
-  //   R4[Coll[Long]]: [ServiceFeePercent, ImplementerFeePercent, CreationFee]
+  //   R4[Coll[Long]]: [ServiceFeePercent, ImplementerFeePercent, CreationFee, TxFee]
   //   R5[Coll[Coll[Byte]]]: [OwnerAddress]
   // Tokens:
   //   0: ServiceNft
@@ -21,8 +21,6 @@
   val ownerNft = fromBase64("OWNER_NFT_B64")
   val inactiveRaffleScriptHash = fromBase64("INACTIVE_RAFFLE_SCRIPT_HASH_B64")
   val ticketRepoScriptHash = fromBase64("TICKET_REPO_SCRIPT_HASH_B64")
-  val fee = FEE
-  val minBoxValue = MIN_BOX_VALUE
 
   if (OUTPUTS(0).tokens(0)._1 == ownerNft) {
     // Owner can spend and update the service box with the owner nft
@@ -64,6 +62,8 @@
       val serviceFeePercent = SELF.R4[Coll[Long]].get(0)
       val implementerFeePercent = SELF.R4[Coll[Long]].get(1)
       val creationFee = SELF.R4[Coll[Long]].get(2)
+      val feePerWinner = SELF.R4[Coll[Long]].get(3)
+      val txFee = SELF.R4[Coll[Long]].get(4)
       val serviceAddress = SELF.R5[Coll[Coll[Byte]]].get(0)
 
       sigmaProp(allOf(Coll(
@@ -74,10 +74,10 @@
         blake2b256(ticketRepo.propositionBytes) == ticketRepoScriptHash,
         ticketRepo.tokens(0)._1 == SELF.id,
         ticketRepo.tokens.size == 1, // Not to steal tickets
-        ticketRepo.value == fee,
+        ticketRepo.value == txFee,
 
         // Correct InactiveRaffle format
-        // R4: [CharityPercentage, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, DeadlineTimestamp, TotalSoldTicket, WinnersCount, CreationFee]
+        // R4: [CharityPercentage, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, DeadlineTimestamp, TotalSoldTicket, WinnersCount, TxFee]
         // R5: [ServiceAddress, ImplementerAddress, CharityAddress]
         // R6: [Name, Description, Pictures(optional)]
         // R7: [TicketId, WinnersPercentListHash]
@@ -96,7 +96,7 @@
         inactiveRaffle.R6[Coll[Coll[Byte]]].get.size >= 2,
         inactiveRaffle.R7[Coll[Coll[Byte]]].get(0) == SELF.id, // Storing TicketId to match with TicketRepo
         inactiveRaffle.R7[Coll[Coll[Byte]]].get(1) == blake2b256(winnersPercentBytes),
-        inactiveRaffle.value == (winnersCount * (fee + minBoxValue)) + ((2 * fee) + minBoxValue) + creationFee,
+        inactiveRaffle.value >= (4 * txFee * winnersCount) + creationFee,
 
         // Transaction constraints
         winnerPercentsSum == 1000L,
