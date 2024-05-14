@@ -44,7 +44,7 @@
       sigmaProp(selfReplication)
     } else if (outputService.tokens(1)._2 == SELF.tokens(1)._2 - 1L) {
       // New raffle creation
-      // [Service(Self), UserBox] --> [Service, TicketRepo, InactiveRaffle, Change]
+      // [Service, UserBox] --> [Service, TicketRepo, InactiveRaffle, Change]
       val winnersPercent = getVar[Coll[Long]](0).get
       val winnersPercentBytes = winnersPercent.fold(
         Coll[Byte](), 
