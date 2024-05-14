@@ -83,9 +83,11 @@
     // Correct GiftTokenRepo format
     // R4, R5, R6: GiftToken metadata
     // R7: [GiftTokenCount, WinnersCount]
-    giftTokenRepo.tokens(1)._1 == SELF.id,
-    giftTokenRepo.tokens(1)._2 == giftTokenCount * winnersCount,
+    // R8: TicketId
+    giftTokenRepo.tokens(0)._1 == SELF.id,
+    giftTokenRepo.tokens(0)._2 == giftTokenCount * winnersCount,
     giftTokenRepo.R7[Coll[Int]].get == Coll[Int](giftTokenCount, winnersCount),
+    giftTokenRepo.R8[Coll[Byte]].get == ticketId,
 
     // Transaction constraints
     winnersPercentListHash == blake2b256(winnersPercentBytes),
