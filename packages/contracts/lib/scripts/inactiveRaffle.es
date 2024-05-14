@@ -55,6 +55,11 @@
       activeRaffle.tokens(2)._2 == SELF.tokens(1)._2
     ))
   }
+  val hasStolenGiftTokens = OUTPUTS.exists{
+    (box: Box) => 
+      box.id != giftTokenRepo.id &&
+      box.tokens.exists{(token: (Coll[Byte], Long)) => token._1 == SELF.id}
+  }
 
   // Active raffle creation
   // [InactiveRaffle(Self), TicketRepo] --> [ActiveRaffle, RaffleDetails, Winner[]]
@@ -84,6 +89,7 @@
     // R4, R5, R6: GiftToken metadata
     // R7: [GiftTokenCount, WinnersCount]
     // R8: TicketId
+    giftTokenRepo.tokens.size == 1,
     giftTokenRepo.tokens(0)._1 == SELF.id,
     giftTokenRepo.tokens(0)._2 == giftTokenCount * winnersCount,
     giftTokenRepo.R7[Coll[Int]].get == Coll[Int](giftTokenCount, winnersCount),
@@ -92,5 +98,6 @@
 
     // Transaction constraints
     winnersPercentListHash == blake2b256(winnersPercentBytes),
+    hasStolenGiftTokens == false
   )))
 }
