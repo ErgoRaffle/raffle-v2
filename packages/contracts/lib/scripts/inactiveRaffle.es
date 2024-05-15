@@ -33,12 +33,18 @@
     val box = OUTPUTS(i + 3)
     allOf(Coll(
       // Correct Winner boxes format
-      // R4: [WinnerIndex, RewardPercent, TxFee]
+      // R4: [WinnerIndex, RewardPercent, DeadlineTimestamp, TxFee]
+      // R5: GiftCount
+      // R6: GiftTokenId
       blake2b256(box.propositionBytes) == winnerScriptHash,
       box.tokens(0)._1 == ticketId, // Ticket token as identifier
+      box.tokens.size == 1,
       box.value == 2 * txFee,
       box.R4[Coll[Long]].get(0) == i + 1,
-      box.R4[Coll[Long]].get(2) == txFee,
+      box.R4[Coll[Long]].get(2) == deadlineTimestamp,
+      box.R4[Coll[Long]].get(3) == txFee,
+      box.R5[Long].get == 0, // No gift at the beginning
+      box.R6[Coll[Byte]].get == SELF.id,
     ))
   }})
   val winnersPercentBytes = winnerBoxes.fold(
