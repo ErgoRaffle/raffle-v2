@@ -2,7 +2,7 @@
   // ErgoRaffle V2 Inactive Raffle Contract
   //
   // Registers:
-  //   R4[Coll[Long]]: [CharityPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, DeadlineTimestamp, TotalSoldTicket, WinnersCount, txFee]
+  //   R4[Coll[Long]]: [CharityPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, DeadlineTimestamp, WinnersCount, txFee]
   //   R5[Coll[Coll[Byte]]]: [ServiceAddress, ImplementerAddress, CharityAddress]
   //   R6[Coll[Coll[Byte]]]: [Name, Description, Pictures(optional)]
   //   R7[Coll[Coll[Byte]]]: [TicketId, WinnersPercentListHash]
@@ -23,6 +23,7 @@
   val activeRaffle = OUTPUTS(0)
   val raffleDetails = OUTPUTS(1)
   val giftTokenRepo = OUTPUTS(2)
+  val deadlineTimestamp = SELF.R4[Coll[Long]].get(5)
   val winnersCount = SELF.R4[Coll[Long]].get(7).toInt
   val txFee = SELF.R4[Coll[Long]].get(8).toInt
   val ticketId = SELF.R7[Coll[Coll[Byte]]].get(0)
