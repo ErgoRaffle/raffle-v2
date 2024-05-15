@@ -66,15 +66,17 @@
   // [InactiveRaffle(Self), TicketRepo] --> [ActiveRaffle, RaffleDetails, Winner[]]
   sigmaProp(allOf(Coll(
     // Correct ActiveRaffle format
-    // R4: [CharityPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, DeadlineTimestamp, TotalSoldTicket, WinnersCount, TxFee]
+    // R4: [CharityPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, DeadlineTimestamp, WinnersCount, TxFee]
     // R5: [ServiceAddress, ImplementerAddress, CharityAddress]
+    // R6: [TotalSoldTicket]
     blake2b256(activeRaffle.propositionBytes) == activeRaffleScriptHash,
     activeRaffle.tokens(0)._1 == SELF.tokens(0)._1,
     activeRaffle.tokens(1)._1 == ticketId, // Match with TicketRepo
     activeRaffle.value == SELF.value - (3 * txFee * winnersCount),
     activeRaffle.R4[Coll[Long]].get == SELF.R4[Coll[Long]].get,
     activeRaffle.R5[Coll[Coll[Byte]]].get == SELF.R5[Coll[Coll[Byte]]].get,
-    activeRaffleExtraTokensVerification == true,pg
+    activeRaffle.R6[Coll[Long]].get(0) == 0L, // No sold ticket at beginning
+    activeRaffleExtraTokensVerification == true,
 
     // Correct RaffleDetails format
     // R4: [Name, Description, Pictures(optional)]

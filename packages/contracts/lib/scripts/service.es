@@ -76,7 +76,7 @@
         ticketRepo.value == txFee,
 
         // Correct InactiveRaffle format
-        // R4: [CharityPercentage, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, DeadlineTimestamp, TotalSoldTicket, WinnersCount, TxFee]
+        // R4: [CharityPercentage, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, DeadlineTimestamp, WinnersCount, TxFee]
         // R5: [ServiceAddress, ImplementerAddress, CharityAddress]
         // R6: [Name, Description, Pictures(optional)]
         // R7: [TicketId, WinnersPercentListHash]
@@ -87,9 +87,8 @@
         inactiveRaffle.R4[Coll[Long]].get(1) == serviceFeePercent,
         inactiveRaffle.R4[Coll[Long]].get(2) == implementerFeePercent,
         inactiveRaffle.R4[Coll[Long]].get(0) + serviceFeePercent + implementerFeePercent <= 100L,
-        inactiveRaffle.R4[Coll[Long]].get(6) == 0L, // No sold ticket at beginning
-        inactiveRaffle.R4[Coll[Long]].get(7) == winnersCount,
-        inactiveRaffle.R4[Coll[Long]].get(8) == txFee,
+        inactiveRaffle.R4[Coll[Long]].get(6) == winnersCount,
+        inactiveRaffle.R4[Coll[Long]].get(7) == txFee,
         inactiveRaffle.R5[Coll[Coll[Byte]]].get.size == 3,
         inactiveRaffle.R5[Coll[Coll[Byte]]].get(0) == serviceAddress,
         inactiveRaffle.R6[Coll[Coll[Byte]]].get.size >= 2,
