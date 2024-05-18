@@ -99,8 +99,8 @@ describe('Service', () => {
             100n,
             100n,
             100n,
-            100n,
-          ]),
+            100n
+          ])
         });
         // Create output boxes
         const serviceOutputBox = testUtils.createServiceOutputBox();
@@ -109,7 +109,7 @@ describe('Service', () => {
           rosen.address.toString(),
           creator.address.toString(),
           serviceBox.boxId,
-          10n,
+          10n
         );
         // Execute transaction
         const transaction = new TransactionBuilder(chain.height)
@@ -209,7 +209,7 @@ describe('Service', () => {
 
         expect(() =>
           chain.execute(transaction, { signers: [creator] }),
-        ).toThrowError('');
+        ).toThrowError();
       }
     );
 
@@ -251,7 +251,7 @@ describe('Service', () => {
 
         expect(() =>
           chain.execute(transaction, { signers: [creator] }),
-        ).toThrowError('');
+        ).toThrowError();
       },
     );
 
@@ -294,7 +294,7 @@ describe('Service', () => {
 
         expect(() =>
           chain.execute(transaction, { signers: [creator] }),
-        ).toThrowError('');
+        ).toThrowError();
       },
     );
 
@@ -338,7 +338,7 @@ describe('Service', () => {
 
         expect(() =>
           chain.execute(transaction, { signers: [creator] }),
-        ).toThrowError('');
+        ).toThrowError();
       },
     );
 
@@ -380,7 +380,7 @@ describe('Service', () => {
 
         expect(() =>
           chain.execute(transaction, { signers: [creator] }),
-        ).toThrowError('');
+        ).toThrowError();
       },
     );
 
@@ -424,7 +424,7 @@ describe('Service', () => {
 
         expect(() =>
           chain.execute(transaction, { signers: [creator] }),
-        ).toThrowError('');
+        ).toThrowError();
       },
     );
 
@@ -467,7 +467,7 @@ describe('Service', () => {
 
         expect(() =>
           chain.execute(transaction, { signers: [creator] }),
-        ).toThrowError('');
+        ).toThrowError();
       },
     );
 
@@ -508,7 +508,7 @@ describe('Service', () => {
 
         expect(() =>
           chain.execute(transaction, { signers: [creator] }),
-        ).toThrowError('');
+        ).toThrowError();
       },
     );
 
@@ -551,7 +551,7 @@ describe('Service', () => {
 
         expect(() =>
           chain.execute(transaction, { signers: [creator] }),
-        ).toThrowError('');
+        ).toThrowError();
       },
     );
 
@@ -591,7 +591,7 @@ describe('Service', () => {
 
         expect(() =>
           chain.execute(transaction, { signers: [creator] }),
-        ).toThrowError('');
+        ).toThrowError();
       },
     );
   });

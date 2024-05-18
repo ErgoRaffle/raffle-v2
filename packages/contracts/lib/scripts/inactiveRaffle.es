@@ -24,8 +24,8 @@
   val raffleDetails = OUTPUTS(1)
   val giftTokenRepo = OUTPUTS(2)
   val deadlineTimestamp = SELF.R4[Coll[Long]].get(5)
-  val winnersCount = SELF.R4[Coll[Long]].get(7).toInt
-  val txFee = SELF.R4[Coll[Long]].get(8).toInt
+  val winnersCount = SELF.R4[Coll[Long]].get(6).toInt
+  val txFee = SELF.R4[Coll[Long]].get(7).toInt
   val ticketId = SELF.R7[Coll[Coll[Byte]]].get(0)
   val winnersPercentListHash = SELF.R7[Coll[Coll[Byte]]].get(1)
   val winnerBoxes = OUTPUTS.slice(3, winnersCount + 3)

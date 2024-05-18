@@ -82,7 +82,7 @@
         // R7: [TicketId, WinnersPercentListHash]
         blake2b256(inactiveRaffle.propositionBytes) == inactiveRaffleScriptHash,
         inactiveRaffle.tokens(0)._1 == raffleLicense,
-        inactiveRaffle.R4[Coll[Long]].get.size == 9,
+        inactiveRaffle.R4[Coll[Long]].get.size == 8,
         inactiveRaffle.R4[Coll[Long]].get(0) > 0L,
         inactiveRaffle.R4[Coll[Long]].get(1) == serviceFeePercent,
         inactiveRaffle.R4[Coll[Long]].get(2) == implementerFeePercent,
