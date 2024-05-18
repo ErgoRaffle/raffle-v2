@@ -112,7 +112,6 @@ export function compileAll(
       const vars: { [key: string | number]: string | SType } = {};
       let contract;
       try {
-        console.log(script);
         contract = compile(script, { map: vars });
         if (outputsAsHex) {
           contracts[scriptName] = contract.toHex().toString();
