@@ -3,7 +3,7 @@
   //
   // Registers:
   //   R4[Coll[Long]]: [CharityPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, DeadlineTimestamp, WinnersCount, txFee]
-  //   R5[Coll[Coll[Byte]]]: [ServiceAddress, ImplementerAddress, CharityAddress]
+  //   R5[Coll[Coll[Byte]]]: [ServiceAddressHash, ImplementerAddressHash, CreatorAddressHash]
   //   R6[Coll[Coll[Byte]]]: [Name, Description, Pictures(optional)]
   //   R7[Coll[Coll[Byte]]]: [TicketId, WinnersPercentListHash]
   // Tokens:
@@ -74,7 +74,7 @@
   sigmaProp(allOf(Coll(
     // Correct ActiveRaffle format
     // R4: [CharityPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, DeadlineTimestamp, WinnersCount, TxFee]
-    // R5: [ServiceAddress, ImplementerAddress, CharityAddress]
+    // R5: [ServiceAddressHash, ImplementerAddressHash, CreatorAddressHash]
     // R6: [TotalSoldTicket]
     blake2b256(activeRaffle.propositionBytes) == activeRaffleScriptHash,
     activeRaffle.tokens(0)._1 == SELF.tokens(0)._1,
@@ -104,6 +104,7 @@
     giftTokenRepo.tokens(0)._2 == giftTokenCount * winnersCount,
     giftTokenRepo.R7[Coll[Int]].get == Coll[Int](giftTokenCount, winnersCount, txFee),
     giftTokenRepo.R8[Coll[Byte]].get == ticketId,
+    giftTokenRepo.R9[Int].get == 1,
     giftTokenRepo.value == (txFee * winnersCount),
 
     // Transaction constraints

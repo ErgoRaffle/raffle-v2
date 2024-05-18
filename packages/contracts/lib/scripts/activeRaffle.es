@@ -3,7 +3,7 @@
   //
   // Registers:
   //   R4[Coll[Long]]: [CharityPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, DeadlineTimestamp, WinnersCount, txFee]
-  //   R5[Coll[Coll[Byte]]]: [ServiceAddress, ImplementerAddress, CharityAddress]
+  //   R5[Coll[Coll[Byte]]]: [ServiceAddressHash, ImplementerAddressHash, CreatorAddressHash]
   //   R6[Coll[Long]]: [TotalSoldTicket]
   // Tokens:
   //   0: RaffleLicense
@@ -12,9 +12,9 @@
   //
   // Spent in 3 transactions:
   //   - Donation
-  //      [AvtiveRaffle, UserBox] --> [ActiveRaffle, Ticket]
+  //      [ActiveRaffle, UserBox] --> [ActiveRaffle, Ticket]
   //   - Successful end
-  //      [AvtiveRaffle, RaffleDetail] + [(DataInput)Oracle] --> [SuccessRaffle, ProjectFund, ServiceFee, ImplementerFee]
+  //      [ActiveRaffle, RaffleDetail] + [(DataInput)Oracle] --> [SuccessRaffle, ProjectFund, ServiceFee, ImplementerFee]
   //   - Failure end
   //      [ActiveRaffle, RaffleDetail] --> [GiftRedeem]
   // 

@@ -4,7 +4,7 @@
   // Registers:
   // Registers:
   //   R4[Coll[Long]]: [TotalSoldTicket, TicketPrice, txFee]
-  //   R5[Coll[Long]]: [RedeemedTickets]
+  //   R5[Long]: RedeemedTickets
   // Tokens:
   //   0: RaffleLicense
   //   1: Ticket

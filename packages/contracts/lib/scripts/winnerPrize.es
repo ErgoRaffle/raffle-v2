@@ -3,7 +3,7 @@
   //
   // Registers:
   //   R4[Coll[Long]]: [WinnerTicketIndex, WinnerIndex, GiftCount]
-  //   R5[Coll[Long]]: [UnwrappedGiftCount]
+  //   R5[Long]: UnwrappedGiftCount
   // Tokens:
   //   0: Ticket
   //   1: CollectingToken (if token-goal raffle)
