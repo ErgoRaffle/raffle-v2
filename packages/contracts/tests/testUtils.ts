@@ -554,19 +554,20 @@ export const createGiftTokenRepoOutputBox = (
   giftTokenCount: number,
   winnersCount: number,
   ticketId: string,
+  mintingToken: boolean = true,
 ) => {
   const giftBox = new OutputBuilder(
     FEE * BigInt(winnersCount),
     contractsAddresses['giftTokenRepo'],
-  )
-    .setAdditionalRegisters({
-      R4: SColl(SInt, [1]).toHex(),
-      R5: SColl(SInt, [2]).toHex(),
-      R6: SColl(SInt, [3]).toHex(),
-      R7: SColl(SInt, [giftTokenCount, winnersCount, Number(FEE)]).toHex(),
-      R8: SColl(SByte, Array.from(Buffer.from(ticketId, 'hex'))),
-    })
-    .mintToken({
+  ).setAdditionalRegisters({
+    R4: SColl(SInt, [1]).toHex(),
+    R5: SColl(SInt, [2]).toHex(),
+    R6: SColl(SInt, [3]).toHex(),
+    R7: SColl(SInt, [giftTokenCount, winnersCount, Number(FEE)]).toHex(),
+    R8: SColl(SByte, Array.from(Buffer.from(ticketId, 'hex'))),
+  });
+  if (mintingToken)
+    giftBox.mintToken({
       amount: BigInt(giftTokenCount) * BigInt(winnersCount),
       name: 'RaffleGiftToken',
       decimals: 0,
