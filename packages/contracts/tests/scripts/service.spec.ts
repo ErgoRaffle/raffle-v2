@@ -57,8 +57,13 @@ describe('Service', () => {
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           rosen.address.toString(),
           creator.address.toString(),
-          serviceBox.boxId,
-          1n
+          1n,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          1_000_000_000n,
+          serviceBox.boxId.toString()
         );
         // Execute transaction
         const transaction = new TransactionBuilder(chain.height)
@@ -108,8 +113,13 @@ describe('Service', () => {
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           rosen.address.toString(),
           creator.address.toString(),
-          serviceBox.boxId,
-          10n
+          10n,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          1_000_000_000n,
+          serviceBox.boxId.toString()
         );
         // Execute transaction
         const transaction = new TransactionBuilder(chain.height)
@@ -154,9 +164,13 @@ describe('Service', () => {
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           rosen.address.toString(),
           creator.address.toString(),
-          serviceBox.boxId,
           1n,
           { tokenId: testUtils.X_TOKEN_ID, amount: 1n },
+          undefined,
+          undefined,
+          undefined,
+          1_000_000_000n,
+          serviceBox.boxId.toString()
         );
         // Execute transaction
         const transaction = new TransactionBuilder(chain.height)
@@ -195,7 +209,6 @@ describe('Service', () => {
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           rosen.address.toString(),
           creator.address.toString(),
-          serviceBox.boxId,
           1n,
         );
         inactiveRaffleOutputBox.assets.remove(testUtils.LICENSE_TOKEN_ID);
@@ -237,7 +250,6 @@ describe('Service', () => {
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           rosen.address.toString(),
           creator.address.toString(),
-          serviceBox.boxId,
           1n,
         );
         inactiveRaffleOutputBox.assets.remove(testUtils.LICENSE_TOKEN_ID);
@@ -278,7 +290,6 @@ describe('Service', () => {
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           rosen.address.toString(),
           creator.address.toString(),
-          serviceBox.boxId,
           1n,
           undefined,
           undefined,
@@ -325,7 +336,6 @@ describe('Service', () => {
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           rosen.address.toString(),
           creator.address.toString(),
-          serviceBox.boxId,
           1n,
         );
         // Execute transaction
@@ -365,7 +375,6 @@ describe('Service', () => {
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           rosen.address.toString(),
           creator.address.toString(),
-          serviceBox.boxId,
           2n,
           undefined,
           [500n, 600n],
@@ -407,7 +416,6 @@ describe('Service', () => {
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           rosen.address.toString(),
           creator.address.toString(),
-          serviceBox.boxId,
           1n,
           undefined,
           undefined,
@@ -452,7 +460,6 @@ describe('Service', () => {
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           rosen.address.toString(),
           creator.address.toString(),
-          serviceBox.boxId,
           2n,
           undefined,
           [1000n],
@@ -495,7 +502,6 @@ describe('Service', () => {
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           rosen.address.toString(),
           creator.address.toString(),
-          serviceBox.boxId,
           2n,
         );
         // Execute transaction
@@ -536,7 +542,6 @@ describe('Service', () => {
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           rosen.address.toString(),
           creator.address.toString(),
-          serviceBox.boxId,
           2n,
           undefined,
           [450n, 450n],
@@ -578,8 +583,13 @@ describe('Service', () => {
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           rosen.address.toString(),
           creator.address.toString(),
-          '0'.repeat(64),
           2n,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          1_000_000_000n,
+          '0'.repeat(64)  // set invalid ticket-token-id
         );
         // Execute transaction
         const transaction = new TransactionBuilder(chain.height)

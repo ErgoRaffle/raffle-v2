@@ -22,6 +22,7 @@ export const OWNER_NFT_ID = '1234'.repeat(16);
 export const RAFFLE_NFT_ID = '1'.repeat(64);
 export const LICENSE_TOKEN_ID = '2'.repeat(64);
 export const X_TOKEN_ID = '3'.repeat(64);
+export const TICKET_TOKEN_ID = '4'.repeat(64);
 export const raffleNFTToken = { amount: 1n, tokenId: RAFFLE_NFT_ID };
 export const licenseToken = {
   amount: 1_000_000_000n,
@@ -74,6 +75,9 @@ export const initialContracts = (): { [key: string]: string } => {
 /**
  * Create input Service-Box
  * @param partnerAddress
+ * @param serviceFeePercent
+ * @param implementerFeePercent
+ * @param creationFee
  * @returns Service Box
  */
 export const createServiceBoxMock = (
@@ -149,12 +153,12 @@ export const createTicketRepoBoxMock = () => {
   return new ErgoUnsignedInput(
     mockUTxO({
       ergoTree: contractsAddresses['ticketRepo'],
-      value: 1_000_000_000n,
+      value: 10_000_000_000n,
       creationHeight: 5,
       assets: [
         raffleNFTToken,
         {
-          tokenId: '1901'.repeat(16),
+          tokenId: TICKET_TOKEN_ID,
           amount: 1_000_000_000n,
         },
       ],
@@ -181,18 +185,17 @@ export const createTicketRepoOutputBox = () => {
  * create Inactive-Raffle UTxO
  * @param implementerPartnerAddress
  * @param creatorPartnerAddress
- * @param serviceBoxId
  * @param winnersCount
  * @param collectingToken if sets then raffle can only pay charity by this token instead of Erg
  * @param winnersPercents
  * @param serviceFeePercent
  * @param invalidWinnerHash
+ * @param creationFee
  * @returns InactiveRaffleBox
  */
 export const createInactiveRaffleBoxMock = (
   implementerPartnerAddress: string,
   creatorPartnerAddress: string,
-  serviceBoxId: string,
   winnersCount: bigint = 1n,
   collectingToken?: TokenAmount<bigint>,
   winnersPercents?: bigint[],
@@ -215,9 +218,6 @@ export const createInactiveRaffleBoxMock = (
     }
 
   serviceFeePercent = serviceFeePercent || 10n;
-
-  const aa = winnersPercents.map((n) => utils.bigIntToUint8Array(n));
-  console.log(`+++++++++++===--=> ${winnersPercents} > ${aa}`);
 
   return new ErgoUnsignedInput(
     mockUTxO({
@@ -249,7 +249,7 @@ export const createInactiveRaffleBoxMock = (
         R7:
           invalidWinnerHash ||
           SColl(SColl(SByte), [
-            Array.from(Buffer.from(serviceBoxId, 'hex')),
+            Array.from(Buffer.from(TICKET_TOKEN_ID, 'hex')),
             Array.from(
               blake2b256(
                 Buffer.concat(
@@ -267,24 +267,25 @@ export const createInactiveRaffleBoxMock = (
  * create output Inactive-Raffle-box
  * @param implementerPartnerAddress
  * @param creatorPartnerAddress
- * @param serviceBoxId
  * @param winnersCount
  * @param collectingToken if sets then raffle can only pay charity by this token instead of Erg
  * @param winnersPercents
  * @param serviceFeePercent
  * @param invalidWinnerHash
+ * @param creationFee
+ * @param ticketToken
  * @returns InactiveRaffleBox
  */
 export const createInactiveRaffleOutputBox = (
   implementerPartnerAddress: string,
   creatorPartnerAddress: string,
-  serviceBoxId: string,
   winnersCount: bigint = 1n,
   collectingToken?: TokenAmount<bigint>,
   winnersPercents?: bigint[],
   serviceFeePercent?: bigint,
   invalidWinnerHash?: string,
   creationFee: bigint = 1_000_000_000n,
+  ticketToken: string = TICKET_TOKEN_ID,
 ) => {
   const tokens = [
     {
@@ -329,7 +330,7 @@ export const createInactiveRaffleOutputBox = (
       R7:
         invalidWinnerHash ||
         SColl(SColl(SByte), [
-          Array.from(Buffer.from(serviceBoxId, 'hex')),
+          Array.from(Buffer.from(ticketToken, 'hex')),
           Array.from(
             blake2b256(
               Buffer.concat(
@@ -378,8 +379,11 @@ export const createActiveRaffleBoxMock = (
 
 /**
  * Create output box of active-raffle
- * @param partnerAddress
+ * @param creatorPartnerAddress
+ * @param implementerPartnerAddress
  * @param winnersCount
+ * @param inactiveRaffle1WinnerInputBox
+ * @param serviceFeePercent
  * @param collectingToken
  * @returns
  */
@@ -388,14 +392,13 @@ export const createActiveRaffleOutputBox = (
   implementerPartnerAddress: string,
   winnersCount: bigint = 1n,
   inactiveRaffle1WinnerInputBox: ErgoUnsignedInput,
-  ticketTokenId: string,
   serviceFeePercent: bigint = 10n,
   collectingToken?: TokenAmount<bigint>,
 ) => {
   const tokens = [
     inactiveRaffle1WinnerInputBox.assets[0],
     {
-      tokenId: ticketTokenId,
+      tokenId: TICKET_TOKEN_ID,
       amount: 1n,
     },
   ];
@@ -436,7 +439,6 @@ export const createActiveRaffleOutputBox = (
  * Create and return success-raffle input box
  * @param partnerAddress
  * @param winnersCount
- * @param collectingToken
  * @returns
  */
 export const createSuccessRaffleBox = (
@@ -469,10 +471,12 @@ export const createSuccessRaffleBox = (
 
 /**
  * Create and return Raffle-details input box
- * @param serviceBoxId
+ * @param ticket_token_id
  * @returns
  */
-export const createRaffleDetailsBoxMock = (serviceBoxId: string) => {
+export const createRaffleDetailsBoxMock = (
+  ticket_token_id: string = TICKET_TOKEN_ID,
+) => {
   return new ErgoUnsignedInput(
     mockUTxO({
       ergoTree: contractsAddresses['raffleDetails'],
@@ -487,7 +491,7 @@ export const createRaffleDetailsBoxMock = (serviceBoxId: string) => {
       assets: [
         {
           amount: 1n,
-          tokenId: serviceBoxId,
+          tokenId: ticket_token_id,
         },
       ],
     }),
@@ -496,10 +500,12 @@ export const createRaffleDetailsBoxMock = (serviceBoxId: string) => {
 
 /**
  * Create raffle-details output box
- * @param serviceBoxId
+ * @param ticket_token_id
  * @returns Output Box
  */
-export const createRaffleDetailsOutputBox = (serviceBoxId: string) => {
+export const createRaffleDetailsOutputBox = (
+  ticket_token_id: string = TICKET_TOKEN_ID,
+) => {
   const detailsBox = new OutputBuilder(FEE, contractsAddresses['raffleDetails'])
     .setAdditionalRegisters({
       R4: SColl(SColl(SByte), [
@@ -510,7 +516,7 @@ export const createRaffleDetailsOutputBox = (serviceBoxId: string) => {
     .addTokens([
       {
         amount: 1n,
-        tokenId: serviceBoxId,
+        tokenId: ticket_token_id,
       },
     ]);
 
@@ -519,13 +525,14 @@ export const createRaffleDetailsOutputBox = (serviceBoxId: string) => {
 
 /**
  * Create and return gift token repo input box
- * @param giftTokenCount
  * @param winnersCount
+ * @param ticketId
+ * @param giftTokenCount
  * @returns
  */
 export const createGiftTokenRepoBoxMock = (
   winnersCount: number,
-  ticketId: string,
+  ticketId: string = TICKET_TOKEN_ID,
   giftTokenCount: number = 1_000,
 ) => {
   return new ErgoUnsignedInput(
@@ -548,12 +555,14 @@ export const createGiftTokenRepoBoxMock = (
  * Create and return gift token repo output box
  * @param giftTokenCount
  * @param winnersCount
+ * @param ticketId
+ * @param mintingToken
  * @returns
  */
 export const createGiftTokenRepoOutputBox = (
   giftTokenCount: number,
   winnersCount: number,
-  ticketId: string,
+  ticketId: string = TICKET_TOKEN_ID,
   mintingToken: boolean = true,
 ) => {
   const giftBox = new OutputBuilder(
@@ -579,12 +588,11 @@ export const createGiftTokenRepoOutputBox = (
 /**
  * create winners output boxes
  * @param winnersCount
- * @param tokenId
+ * @param inactiveRaffleBoxId
  * @returns
  */
 export const createWinnersOutputBox = (
   winnersCount: bigint = 1n,
-  tokenId: string,
   inactiveRaffleBoxId: string,
 ) => {
   const winnersBoxes = [];
@@ -598,13 +606,29 @@ export const createWinnersOutputBox = (
         })
         .addTokens([
           {
-            tokenId: tokenId,
+            tokenId: TICKET_TOKEN_ID,
             amount: 1n,
           },
         ]),
     );
 
   return winnersBoxes;
+};
+
+/**
+ * Get content and print on the output pretty
+ * @param content
+ * @param prefix
+ */
+export const prettyPrintJson = (content: object, prefix: string = '') => {
+  console.log(
+    prefix,
+    JSON.stringify(
+      content,
+      (k, v) => (typeof v == 'bigint' ? String(v) : v),
+      4,
+    ),
+  );
 };
 
 export const contractsAddresses = initialContracts();
