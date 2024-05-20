@@ -157,7 +157,7 @@ export const createTicketRepoBoxMock = () => {
   return new ErgoUnsignedInput(
     mockUTxO({
       ergoTree: contractsAddresses['ticketRepo'],
-      value: 10_000_000_000n,
+      value: SAFE_MIN_BOX_VALUE,
       creationHeight: 5,
       assets: [
         raffleNFTToken,
@@ -223,9 +223,7 @@ export const createInactiveRaffleBoxMock = (
 
   return new ErgoUnsignedInput(
     mockUTxO({
-      value:
-        winnersCount * (FEE + SAFE_MIN_BOX_VALUE) +
-        (2n * FEE + SAFE_MIN_BOX_VALUE + creationFee),
+      value: 4n * FEE * winnersCount + creationFee,
       ergoTree: contractsAddresses['inactiveRaffle'],
       assets: tokens,
       additionalRegisters: {
@@ -359,7 +357,7 @@ export const createActiveRaffleBoxMock = (
   creationFee: bigint = 1_000_000_000n,
 ) => {
   return mockUTxO({
-    value: 4n * FEE * winnersCount + creationFee,
+    value: (FEE * winnersCount + creationFee),
     ergoTree: contractsAddresses['activeRaffle'],
     creationHeight: 5,
     additionalRegisters: {
@@ -398,6 +396,7 @@ export const createActiveRaffleOutputBox = (
   inactiveRaffle1WinnerInputBox: ErgoUnsignedInput,
   serviceFeePercent: bigint = 10n,
   collectingToken?: TokenAmount<bigint>,
+  creationFee: bigint = 1_000_000_000n
 ) => {
   const tokens = [
     inactiveRaffle1WinnerInputBox.assets[0],
@@ -413,9 +412,7 @@ export const createActiveRaffleOutputBox = (
     winnersPercents.push(1000n / winnersCount);
 
   return new OutputBuilder(
-    winnersCount * (FEE + SAFE_MIN_BOX_VALUE) +
-      (2n * FEE + SAFE_MIN_BOX_VALUE + 1_000_000_000n) -
-      3n * FEE * winnersCount,
+    (FEE * winnersCount + creationFee),
     contractsAddresses['activeRaffle'],
   )
     .addTokens(tokens)
