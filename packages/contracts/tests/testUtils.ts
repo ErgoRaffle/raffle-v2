@@ -74,6 +74,7 @@ export const initialContracts = (): { [key: string]: string } => {
 
 /**
  * Create input Service-Box
+ * @param ownerAddress
  * @param partnerAddress
  * @param serviceFeePercent
  * @param implementerFeePercent
@@ -81,6 +82,7 @@ export const initialContracts = (): { [key: string]: string } => {
  * @returns Service Box
  */
 export const createServiceBoxMock = (
+  ownerAddress: string,
   licenseTokenCount: bigint = LICENSE_TOKEN_COUNT,
   serviceFeePercent: bigint = 10n,
   implementerFeePercent: bigint = 10n,
@@ -103,7 +105,7 @@ export const createServiceBoxMock = (
           FEE,
         ]).toHex(),
         R5: SColl(SColl(SByte), [
-          Array.from(Buffer.from(contractsAddresses['service'], 'hex')),
+          Array.from(Buffer.from(ownerAddress, 'hex')),
         ]).toHex(),
       },
     }),
@@ -112,6 +114,7 @@ export const createServiceBoxMock = (
 
 /**
  * create output Service-Box
+ * @param ownerAddress
  * @param licenseTokenCount
  * @param serviceFeePercent
  * @param implementerFeePercent
@@ -119,6 +122,7 @@ export const createServiceBoxMock = (
  * @returns ServiceBox
  */
 export const createServiceOutputBox = (
+  ownerAddress: string,
   licenseTokenCount: bigint = 999999999n,
   serviceFeePercent: bigint = 10n,
   implementerFeePercent: bigint = 10n,
@@ -140,7 +144,7 @@ export const createServiceOutputBox = (
         FEE,
       ]).toHex(),
       R5: SColl(SColl(SByte), [
-        Array.from(Buffer.from(contractsAddresses['service'], 'hex')),
+        Array.from(Buffer.from(ownerAddress, 'hex')),
       ]).toHex(),
     });
 };
@@ -199,7 +203,7 @@ export const createInactiveRaffleBoxMock = (
   winnersCount: bigint = 1n,
   collectingToken?: TokenAmount<bigint>,
   winnersPercents?: bigint[],
-  serviceFeePercent?: bigint,
+  serviceFeePercent: bigint = 10n,
   invalidWinnerHash?: string,
   creationFee: bigint = 1_000_000_000n,
 ) => {
@@ -216,8 +220,6 @@ export const createInactiveRaffleBoxMock = (
     for (let i = 0; i < winnersCount; i++) {
       winnersPercents.push(1000n / winnersCount);
     }
-
-  serviceFeePercent = serviceFeePercent || 10n;
 
   return new ErgoUnsignedInput(
     mockUTxO({
@@ -238,7 +240,7 @@ export const createInactiveRaffleBoxMock = (
           FEE, // TxFee
         ]).toHex(),
         R5: SColl(SColl(SByte), [
-          Array.from(Buffer.from(contractsAddresses['service'], 'hex')),
+          Array.from(Buffer.from(creatorPartnerAddress, 'hex')),
           Array.from(Buffer.from(implementerPartnerAddress)),
           Array.from(Buffer.from(creatorPartnerAddress)),
         ]).toHex(),
@@ -319,7 +321,7 @@ export const createInactiveRaffleOutputBox = (
         FEE, // TxFee
       ]),
       R5: SColl(SColl(SByte), [
-        Array.from(Buffer.from(contractsAddresses['service'], 'hex')),
+        Array.from(Buffer.from(creatorPartnerAddress, 'hex')),
         Array.from(Buffer.from(implementerPartnerAddress)),
         Array.from(Buffer.from(creatorPartnerAddress)),
       ]),
@@ -347,15 +349,17 @@ export const createInactiveRaffleOutputBox = (
  * @param partnerAddress
  * @param winnersCount
  * @param collectingToken
+ * @param creationFee
  * @returns
  */
 export const createActiveRaffleBoxMock = (
   partnerAddress: string,
   winnersCount: bigint = 1n,
   serviceFeePercent: bigint = 10n,
+  creationFee: bigint = 1_000_000_000n,
 ) => {
   return mockUTxO({
-    value: 4n * FEE * winnersCount + 1_000_000_000n,
+    value: 4n * FEE * winnersCount + creationFee,
     ergoTree: contractsAddresses['activeRaffle'],
     creationHeight: 5,
     additionalRegisters: {
@@ -427,7 +431,7 @@ export const createActiveRaffleOutputBox = (
         FEE, // TxFee
       ]).toHex(),
       R5: SColl(SColl(SByte), [
-        Array.from(Buffer.from(contractsAddresses['service'], 'hex')),
+        Array.from(Buffer.from(creatorPartnerAddress, 'hex')),
         Array.from(Buffer.from(implementerPartnerAddress)),
         Array.from(Buffer.from(creatorPartnerAddress)),
       ]),

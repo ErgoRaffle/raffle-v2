@@ -22,7 +22,7 @@ const createRaffleServiceTest = () => {
   });
   creator.addBalance({ tokens: [{ tokenId: X_TOKEN_ID, amount: 100n }] });
   // Created input service-box
-  const serviceBox = createServiceBoxMock();
+  const serviceBox = createServiceBoxMock(creator.address.toString());
 
   return it.extend({
     chain: chain_,
@@ -52,7 +52,7 @@ describe('Service', () => {
       ({ chain, rosen, creator, inputBoxes }) => {
         const serviceBox = inputBoxes[0];
         serviceBox.setContextExtension({ 0: SColl(SLong, [1000n]) });
-        const serviceOutputBox = testUtils.createServiceOutputBox();
+        const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString());
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           rosen.address.toString(),
@@ -108,7 +108,7 @@ describe('Service', () => {
           ])
         });
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox();
+        const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString());
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           rosen.address.toString(),
@@ -150,7 +150,7 @@ describe('Service', () => {
       'Should create raffle by 1 winner and X token-goal successfully',
       ({ chain, rosen, creator }) => {
         // Created input service-box
-        const serviceBox = testUtils.createServiceBoxMock();
+        const serviceBox = testUtils.createServiceBoxMock(creator.address.toString());
         const inputBoxes: Box<bigint>[] = [
           serviceBox,
           ...creator.utxos.toArray(),
@@ -159,7 +159,7 @@ describe('Service', () => {
           0: SColl(SLong, [1000n]),
         });
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox();
+        const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString());
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           rosen.address.toString(),
@@ -204,7 +204,7 @@ describe('Service', () => {
           0: SColl(SLong, [1000n]),
         });
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox();
+        const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString());
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           rosen.address.toString(),
@@ -245,7 +245,7 @@ describe('Service', () => {
           0: SColl(SLong, [1000n]),
         });
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox(1000000000n);
+        const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString(), 1000000000n);
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           rosen.address.toString(),
@@ -285,7 +285,7 @@ describe('Service', () => {
           0: SColl(SLong, [1000n]),
         });
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox();
+        const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString());
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           rosen.address.toString(),
@@ -328,6 +328,7 @@ describe('Service', () => {
         });
         // Create output boxes
         const serviceOutputBox = testUtils.createServiceOutputBox(
+          creator.address.toString(),
           20n,
           10n,
           110n,
@@ -370,7 +371,7 @@ describe('Service', () => {
           0: SColl(SLong, [500n, 600n]),
         });
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox();
+        const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString());
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           rosen.address.toString(),
@@ -411,7 +412,7 @@ describe('Service', () => {
           0: SColl(SLong, [1000n]),
         });
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox();
+        const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString());
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           rosen.address.toString(),
@@ -455,7 +456,7 @@ describe('Service', () => {
           0: SColl(SLong, [500n, 500n]),
         });
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox();
+        const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString());
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           rosen.address.toString(),
@@ -497,7 +498,7 @@ describe('Service', () => {
           0: SColl(SLong, [1000n]),
         });
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox();
+        const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString());
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           rosen.address.toString(),
@@ -537,7 +538,7 @@ describe('Service', () => {
           0: SColl(SLong, [450n, 450n]),
         });
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox();
+        const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString());
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           rosen.address.toString(),
@@ -578,7 +579,7 @@ describe('Service', () => {
           0: SColl(SLong, [500n, 500n]),
         });
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox();
+        const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString());
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           rosen.address.toString(),
@@ -665,14 +666,14 @@ describe('Service', () => {
       'Should close raffle or Redeem Raffle',
       ({ chain, creator, rosen }) => {
         // Mock Required Things
-        const serviceBox = testUtils.createServiceBoxMock(999_999_999n);
+        const serviceBox = testUtils.createServiceBoxMock(creator.address.toString(), 999_999_999n);
         const successRaffleInputBox = testUtils.createSuccessRaffleBox(
           rosen.address.toString(),
           1n,
         );
         // Create output boxes
         const serviceOutputBox =
-          testUtils.createServiceOutputBox(1_000_000_000n);
+          testUtils.createServiceOutputBox(creator.address.toString(), 1_000_000_000n);
         const inputBoxes: Box<bigint>[] = [
           serviceBox,
           successRaffleInputBox,
