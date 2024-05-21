@@ -60,8 +60,7 @@ describe('inactiveRaffle', () => {
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
         creator.address.toString(),
         rosen.address.toString(),
-        1n,
-        inactiveRaffleInputBox
+        1n
       );
       const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
       const giftTokenRepoOutputBox = testUtils.createGiftTokenRepoOutputBox(1, 1);
@@ -106,8 +105,7 @@ describe('inactiveRaffle', () => {
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
         creator.address.toString(),
         rosen.address.toString(),
-        5n,
-        inactiveRaffleInputBox
+        5n
       );
       const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
       const giftTokenRepoOutputBox = testUtils.createGiftTokenRepoOutputBox(1, 5);
@@ -156,7 +154,6 @@ describe('inactiveRaffle', () => {
         creator.address.toString(),
         rosen.address.toString(),
         1n,
-        inactiveRaffleInputBox,
         10n,
         { tokenId: X_TOKEN_ID, amount: 1n }
       );
@@ -205,8 +202,7 @@ describe('inactiveRaffle', () => {
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
         creator.address.toString(),
         rosen.address.toString(),
-        1n,
-        inactiveRaffleInputBox
+        1n
       );
 
       const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
@@ -258,8 +254,7 @@ describe('inactiveRaffle', () => {
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
         creator.address.toString(),
         rosen.address.toString(),
-        1n,
-        inactiveRaffleInputBox
+        1n
       );
 
       const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
@@ -313,8 +308,7 @@ describe('inactiveRaffle', () => {
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
         creator.address.toString(),
         rosen.address.toString(),
-        1n,
-        inactiveRaffleInputBox
+        1n
       );
       const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
       const giftTokenRepoOutputBox = testUtils.createGiftTokenRepoOutputBox(1, 1);
@@ -367,8 +361,7 @@ describe('inactiveRaffle', () => {
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
         creator.address.toString(),
         rosen.address.toString(),
-        1n,
-        inactiveRaffleInputBox
+        1n
       );
       const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
       const giftTokenRepoOutputBox = testUtils.createGiftTokenRepoOutputBox(1, 1);
@@ -426,8 +419,7 @@ describe('inactiveRaffle', () => {
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
         creator.address.toString(),
         rosen.address.toString(),
-        1n,
-        inactiveRaffleInputBox
+        1n
       );
       const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
       const giftTokenRepoOutputBox = testUtils.createGiftTokenRepoOutputBox(1, 1);
@@ -474,7 +466,6 @@ describe('inactiveRaffle', () => {
         creator.address.toString(),
         rosen.address.toString(),
         1n,
-        inactiveRaffleInputBox,
         10n,
         { tokenId: X_TOKEN_ID, amount: 1n } // set collection token
       );
@@ -533,8 +524,7 @@ describe('inactiveRaffle', () => {
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
         creator.address.toString(),
         rosen.address.toString(),
-        1n,
-        inactiveRaffleInputBox,
+        1n
       );
       const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
       const giftTokenRepoOutputBox = testUtils.createGiftTokenRepoOutputBox(1, 1);
@@ -578,8 +568,7 @@ describe('inactiveRaffle', () => {
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
         creator.address.toString(),
         rosen.address.toString(),
-        1n,
-        inactiveRaffleInputBox
+        1n
       );
       const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
       const giftTokenRepoOutputBox = testUtils.createGiftTokenRepoOutputBox(1, 1);
@@ -626,8 +615,7 @@ describe('inactiveRaffle', () => {
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
         creator.address.toString(),
         rosen.address.toString(),
-        1n,
-        inactiveRaffleInputBox
+        1n
       );
       const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
       const giftTokenRepoOutputBox = testUtils.createGiftTokenRepoOutputBox(1, 1);
@@ -680,8 +668,7 @@ describe('inactiveRaffle', () => {
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
         creator.address.toString(),
         rosen.address.toString(),
-        1n,
-        inactiveRaffleInputBox
+        1n
       );
       const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
       const giftTokenRepoOutputBox = testUtils.createGiftTokenRepoOutputBox(1, 1);
@@ -737,8 +724,7 @@ describe('inactiveRaffle', () => {
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
         creator.address.toString(),
         rosen.address.toString(),
-        1n,
-        inactiveRaffleInputBox,
+        1n
       );
       const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
 
@@ -788,8 +774,7 @@ describe('inactiveRaffle', () => {
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
         creator.address.toString(),
         rosen.address.toString(),
-        1n,
-        inactiveRaffleInputBox,
+        1n
       );
       const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
       const giftTokenRepoOutputBox = testUtils.createGiftTokenRepoOutputBox(1, 1);
@@ -839,8 +824,7 @@ describe('inactiveRaffle', () => {
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
         creator.address.toString(),
         rosen.address.toString(),
-        1n,
-        inactiveRaffleInputBox
+        1n
       );
       const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
       const giftTokenRepoOutputBox = testUtils.createGiftTokenRepoOutputBox(
@@ -888,8 +872,7 @@ describe('inactiveRaffle', () => {
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
         creator.address.toString(),
         rosen.address.toString(),
-        1n,
-        inactiveRaffleInputBox
+        1n
       );
       const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
       const giftTokenRepoOutputBox = testUtils.createGiftTokenRepoOutputBox(1, 1);
@@ -901,6 +884,60 @@ describe('inactiveRaffle', () => {
         R6: SColl(SInt, [3]).toHex(),
         R7: SColl(SInt, [1, 1, Number(testUtils.FEE)]).toHex(),
         R8: SColl(SByte, Array.from(Buffer.from('abcd', 'hex'))),
+      });
+
+      const transaction = new TransactionBuilder(chain.height)
+        .from([
+          inactiveRaffleInputBox,
+          ticketRepoInputBox,
+        ])
+        .to([
+          activeRaffleOutputBox,
+          raffleDetailsOutputBox,
+          giftTokenRepoOutputBox,
+          ...testUtils.createWinnersOutputBox(
+            1n,
+            inactiveRaffleInputBox.boxId.toString()
+          )
+        ])
+        .payFee(testUtils.FEE)
+        .sendChangeTo(creator.address)
+        .build();
+
+      // Check execution result
+      expect(() => chain.execute(transaction, { signers: [creator] })).toThrowError();
+    });
+
+    /**
+     * @target inactive-raffle should fail to create active raffle by wrong giftToken placement
+     * @scenario
+     * - create three output boxes by valid values and one winner box(locate giftToken to activeRaffle Box)
+     * - execute transaction
+     * - check execution done fail
+     * @expected
+     * - transaction result must be true
+     */
+    inactiveRaffleBy1WinnerTest("Should fail create active raffle by wrong R7 value of gift-token box", ({
+      chain, rosen, creator, ticketRepoInputBox, inactiveRaffleInputBox
+    }) => {
+      const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
+        creator.address.toString(),
+        rosen.address.toString(),
+        1n
+      );
+      const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
+      const giftTokenRepoOutputBox = testUtils.createGiftTokenRepoOutputBox(
+        1,
+        1,
+        testUtils.TICKET_TOKEN_ID,
+        false
+      );
+
+      // locate giftToken to activeRaffle box wrongly
+      activeRaffleOutputBox.mintToken({
+        amount: 1n,
+        name: 'RaffleGiftToken',
+        decimals: 0,
       });
 
       const transaction = new TransactionBuilder(chain.height)

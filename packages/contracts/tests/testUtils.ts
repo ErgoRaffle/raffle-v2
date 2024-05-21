@@ -339,34 +339,42 @@ export const createInactiveRaffleOutputBox = (
 };
 
 /**
- * Create and return active-raffle box
- * @param partnerAddress
+ * Create output box of active-raffle
+ * @param creatorPartnerAddress
+ * @param implementerPartnerAddress
  * @param winnersCount
+ * @param serviceFeePercent
  * @param collectingToken
- * @param creationFee
  * @returns
  */
 export const createActiveRaffleBoxMock = (
-  partnerAddress: string,
+  creatorPartnerAddress: string,
+  implementerPartnerAddress: string,
   winnersCount: bigint = 1n,
   serviceFeePercent: bigint = 10n,
+  collectingToken?: TokenAmount<bigint>,
   creationFee: bigint = 1_000_000_000n,
   value?: bigint,
 ) => {
-  value =
-    value ||
-    4n * FEE * winnersCount + creationFee - 3n * FEE * winnersCount - FEE;
+  value = value || FEE * winnersCount + creationFee - FEE;
+
+  const tokens = [
+    {
+      tokenId: LICENSE_TOKEN_ID,
+      amount: 1n,
+    },
+    {
+      tokenId: TICKET_TOKEN_ID,
+      amount: 1_000_000_000n - 1n - winnersCount,
+    },
+  ];
+  if (collectingToken != null) tokens.push(collectingToken);
 
   return mockUTxO({
     value: value,
     ergoTree: contractsAddresses['activeRaffle'],
     creationHeight: 5,
-    assets: [
-      {
-        tokenId: TICKET_TOKEN_ID,
-        amount: 1_000_000_000n - 1n - winnersCount,
-      },
-    ],
+    assets: tokens,
     additionalRegisters: {
       R4: SColl(SLong, [
         60n, // CharityPercentage,
@@ -379,7 +387,9 @@ export const createActiveRaffleBoxMock = (
         FEE, // TxFee
       ]).toHex(),
       R5: SColl(SColl(SByte), [
-        Array.from(Buffer.from(partnerAddress)),
+        Array.from(Buffer.from(creatorPartnerAddress, 'hex')),
+        Array.from(Buffer.from(implementerPartnerAddress)),
+        Array.from(Buffer.from(creatorPartnerAddress)),
       ]).toHex(),
       R6: SColl(SLong, [0n]).toHex(),
     },
@@ -391,7 +401,6 @@ export const createActiveRaffleBoxMock = (
  * @param creatorPartnerAddress
  * @param implementerPartnerAddress
  * @param winnersCount
- * @param inactiveRaffle1WinnerInputBox
  * @param serviceFeePercent
  * @param collectingToken
  * @returns
@@ -400,7 +409,6 @@ export const createActiveRaffleOutputBox = (
   creatorPartnerAddress: string,
   implementerPartnerAddress: string,
   winnersCount: bigint = 1n,
-  inactiveRaffle1WinnerInputBox: ErgoUnsignedInput,
   serviceFeePercent: bigint = 10n,
   collectingToken?: TokenAmount<bigint>,
   creationFee: bigint = 1_000_000_000n,
@@ -409,17 +417,16 @@ export const createActiveRaffleOutputBox = (
   value = value || FEE * winnersCount + creationFee - FEE;
 
   const tokens = [
-    inactiveRaffle1WinnerInputBox.assets[0],
+    {
+      tokenId: LICENSE_TOKEN_ID,
+      amount: 1n,
+    },
     {
       tokenId: TICKET_TOKEN_ID,
       amount: 1_000_000_000n - 1n - winnersCount,
     },
   ];
   if (collectingToken != null) tokens.push(collectingToken);
-
-  const winnersPercents = [];
-  for (let i = 0; i < winnersCount; i++)
-    winnersPercents.push(1000n / winnersCount);
 
   return new OutputBuilder(value, contractsAddresses['activeRaffle'])
     .addTokens(tokens)
@@ -454,7 +461,6 @@ export const createSuccessRaffleBox = (
   winnersCount: bigint = 1n,
 ) => {
   const tokens = [
-    raffleNFTToken,
     {
       tokenId: LICENSE_TOKEN_ID,
       amount: 1n,
@@ -463,6 +469,7 @@ export const createSuccessRaffleBox = (
 
   return mockUTxO({
     ergoTree: contractsAddresses['successRaffle'],
+    // To Do: Update value in later implementations
     value: winnersCount * FEE + (2n * FEE + 1_000_000_000n),
     creationHeight: 5,
     assets: tokens,
