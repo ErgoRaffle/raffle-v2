@@ -79,7 +79,7 @@
     blake2b256(activeRaffle.propositionBytes) == activeRaffleScriptHash,
     activeRaffle.tokens(0)._1 == SELF.tokens(0)._1,
     activeRaffle.tokens(1)._1 == ticketId, // Match with TicketRepo
-    activeRaffle.value == SELF.value - (3 * txFee * winnersCount),
+    activeRaffle.value == SELF.value - (3 * txFee * winnersCount) - txFee,
     activeRaffle.R4[Coll[Long]].get == SELF.R4[Coll[Long]].get,
     activeRaffle.R5[Coll[Coll[Byte]]].get == SELF.R5[Coll[Coll[Byte]]].get,
     activeRaffle.R6[Coll[Long]].get(0) == 0L, // No sold ticket at beginning
