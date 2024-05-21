@@ -157,10 +157,9 @@ export const createTicketRepoBoxMock = () => {
   return new ErgoUnsignedInput(
     mockUTxO({
       ergoTree: contractsAddresses['ticketRepo'],
-      value: SAFE_MIN_BOX_VALUE,
+      value: FEE,
       creationHeight: 5,
       assets: [
-        raffleNFTToken,
         {
           tokenId: TICKET_TOKEN_ID,
           amount: 1_000_000_000n,
@@ -175,10 +174,7 @@ export const createTicketRepoBoxMock = () => {
  * @returns TicketBox
  */
 export const createTicketRepoOutputBox = () => {
-  return new OutputBuilder(
-    15_000_000n,
-    contractsAddresses['ticketRepo'],
-  ).mintToken({
+  return new OutputBuilder(FEE, contractsAddresses['ticketRepo']).mintToken({
     amount: 1_000_000_000n,
     name: 'TicketRepoToken',
     decimals: 0,
@@ -355,11 +351,22 @@ export const createActiveRaffleBoxMock = (
   winnersCount: bigint = 1n,
   serviceFeePercent: bigint = 10n,
   creationFee: bigint = 1_000_000_000n,
+  value?: bigint,
 ) => {
+  value =
+    value ||
+    4n * FEE * winnersCount + creationFee - 3n * FEE * winnersCount - FEE;
+
   return mockUTxO({
-    value: (FEE * winnersCount + creationFee),
+    value: value,
     ergoTree: contractsAddresses['activeRaffle'],
     creationHeight: 5,
+    assets: [
+      {
+        tokenId: TICKET_TOKEN_ID,
+        amount: 1_000_000_000n - 1n - winnersCount,
+      },
+    ],
     additionalRegisters: {
       R4: SColl(SLong, [
         60n, // CharityPercentage,
@@ -396,13 +403,16 @@ export const createActiveRaffleOutputBox = (
   inactiveRaffle1WinnerInputBox: ErgoUnsignedInput,
   serviceFeePercent: bigint = 10n,
   collectingToken?: TokenAmount<bigint>,
-  creationFee: bigint = 1_000_000_000n
+  creationFee: bigint = 1_000_000_000n,
+  value?: bigint,
 ) => {
+  value = value || FEE * winnersCount + creationFee - FEE;
+
   const tokens = [
     inactiveRaffle1WinnerInputBox.assets[0],
     {
       tokenId: TICKET_TOKEN_ID,
-      amount: 1n,
+      amount: 1_000_000_000n - 1n - winnersCount,
     },
   ];
   if (collectingToken != null) tokens.push(collectingToken);
@@ -411,10 +421,7 @@ export const createActiveRaffleOutputBox = (
   for (let i = 0; i < winnersCount; i++)
     winnersPercents.push(1000n / winnersCount);
 
-  return new OutputBuilder(
-    (FEE * winnersCount + creationFee),
-    contractsAddresses['activeRaffle'],
-  )
+  return new OutputBuilder(value, contractsAddresses['activeRaffle'])
     .addTokens(tokens)
     .setAdditionalRegisters({
       R4: SColl(SLong, [
@@ -456,9 +463,7 @@ export const createSuccessRaffleBox = (
 
   return mockUTxO({
     ergoTree: contractsAddresses['successRaffle'],
-    value:
-      winnersCount * (FEE + SAFE_MIN_BOX_VALUE) +
-      (2n * FEE + SAFE_MIN_BOX_VALUE + 1_000_000_000n),
+    value: winnersCount * FEE + (2n * FEE + 1_000_000_000n),
     creationHeight: 5,
     assets: tokens,
     additionalRegisters: {
