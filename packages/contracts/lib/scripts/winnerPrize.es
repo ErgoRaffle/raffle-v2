@@ -10,9 +10,9 @@
   //
   // Spent in 2 transactions:
   //   - Gift unwrap
-  //      [Ticket, WinnerPrize, Gift] --> [Ticket, WinnerPrize, UserBox]
+  //      [WinnerPrize, Gift] + [(DataInput)Ticket] --> [WinnerPrize, UserBox]
   //   - Winner Reward
-  //      [Ticket, WinnerPrize] --> [Ticket, UserBox]
+  //      [WinnerPrize] + [(DataInput)Ticket] --> [UserBox]
   //
   sigmaProp(true)
 }

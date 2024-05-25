@@ -7,14 +7,16 @@
   // Tokens:
   //   0: Ticket
   //
-  // Spent in 4 transactions:
-  //   - Gift unwrap
-  //      [Ticket, WinnerPrize, Gift] --> [Ticket, WinnerPrize, UserBox]
-  //   - Winner Reward
-  //      [Ticket, WinnerPrize] --> [Ticket, UserBox]
+  // Spent in 2 transactions:
   //   - Ticket redeem
   //      [TicketRedeem, Ticket] --> [TicketRedeem, UserBox]
   //   - Owner ticket collection with TicketCollectorNFT
+  //
+  // Involved in 2 transactions as data input:
+  //   - Gift unwrap
+  //      [WinnerPrize, Gift] + [(DataInput)Ticket] --> [WinnerPrize, UserBox]
+  //   - Winner Reward
+  //      [WinnerPrize] + [(DataInput)Ticket] --> [UserBox]
   //
   sigmaProp(true)
 }

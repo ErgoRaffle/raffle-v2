@@ -10,7 +10,7 @@
   //
   // Spent in 4 transactions:
   //   - Gift unwrap
-  //      [Ticket, WinnerPrize, Gift] --> [Ticket, WinnerPrize, UserBox]
+  //      [WinnerPrize, Gift] + [(DataInput)Ticket] --> [WinnerPrize, UserBox]
   //   - Gift redeem (for failed raffle) 
   //      [Winner, Gift] + [(DataInput)GiftRedeem] --> [Winner, UserBox]
   //
