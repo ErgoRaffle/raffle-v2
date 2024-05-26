@@ -1,7 +1,7 @@
 import { it, describe, expect } from 'vitest';
 import { MockChain, mockUTxO } from '@fleet-sdk/mock-chain';
 import { SColl, SInt, SLong, SByte } from '@fleet-sdk/serializer';
-import { TransactionBuilder } from '@fleet-sdk/core';
+import { TransactionBuilder, OutputBuilder } from '@fleet-sdk/core';
 
 import * as testUtils from '../testUtils';
 import { X_TOKEN_ID, CREATOR_DEFAULT_BALANCE, ROSEN_DEFAULT_BALANCE } from '../testUtils';
@@ -470,7 +470,7 @@ describe('inactiveRaffle', () => {
         { tokenId: X_TOKEN_ID, amount: 1n } // set collection token
       );
       const extraInputBox = mockUTxO({
-        ergoTree: '12345678'.repeat(8),
+        ergoTree: creator.ergoTree,
         value: 11_000_000n,
         creationHeight: 4,
         assets: [
@@ -917,7 +917,7 @@ describe('inactiveRaffle', () => {
      * @expected
      * - transaction result must be true
      */
-    inactiveRaffleBy1WinnerTest("Should fail create active raffle by wrong R7 value of gift-token box", ({
+    inactiveRaffleBy1WinnerTest("should fail to create active raffle by wrong giftToken placement", ({
       chain, rosen, creator, ticketRepoInputBox, inactiveRaffleInputBox
     }) => {
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
@@ -930,20 +930,33 @@ describe('inactiveRaffle', () => {
         1,
         1,
         testUtils.TICKET_TOKEN_ID,
-        false
+        true,
+        1n
       );
 
-      // locate giftToken to activeRaffle box wrongly
-      activeRaffleOutputBox.mintToken({
-        amount: 1n,
-        name: 'RaffleGiftToken',
-        decimals: 0,
+      // Create input and output box required for this test
+      const extraInput = mockUTxO({
+        ergoTree: creator.ergoTree,
+        value: 150_000n,
+        creationHeight: 10
       });
+      const changeBox = new OutputBuilder(
+        150_000n,
+        creator.address.toString()
+      )
+      .addTokens(
+          {
+            tokenId: inactiveRaffleInputBox.boxId,
+            amount: 1n
+          }
+      );
 
       const transaction = new TransactionBuilder(chain.height)
         .from([
           inactiveRaffleInputBox,
           ticketRepoInputBox,
+          // Add extra nano-erg as input
+          extraInput
         ])
         .to([
           activeRaffleOutputBox,
@@ -952,10 +965,10 @@ describe('inactiveRaffle', () => {
           ...testUtils.createWinnersOutputBox(
             1n,
             inactiveRaffleInputBox.boxId.toString()
-          )
+          ),
+          changeBox
         ])
         .payFee(testUtils.FEE)
-        .sendChangeTo(creator.address)
         .build();
 
       // Check execution result
