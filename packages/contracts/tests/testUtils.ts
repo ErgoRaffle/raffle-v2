@@ -577,6 +577,7 @@ export const createGiftTokenRepoOutputBox = (
   winnersCount: number,
   ticketId: string = TICKET_TOKEN_ID,
   mintingToken: boolean = true,
+  gitTokenCustomAmount?: bigint,
 ) => {
   const giftBox = new OutputBuilder(
     FEE * BigInt(winnersCount),
@@ -590,7 +591,8 @@ export const createGiftTokenRepoOutputBox = (
   });
   if (mintingToken)
     giftBox.mintToken({
-      amount: BigInt(giftTokenCount) * BigInt(winnersCount),
+      amount:
+        gitTokenCustomAmount || BigInt(giftTokenCount) * BigInt(winnersCount),
       name: 'RaffleGiftToken',
       decimals: 0,
     });
