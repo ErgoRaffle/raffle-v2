@@ -24,6 +24,7 @@ function createInactiveRaffleTest(winnersCount: number = 1) {
 
   const ticketRepoInputBox = testUtils.createTicketRepoBoxMock();
   const inactiveRaffleInputBox = testUtils.createInactiveRaffleBoxMock(
+    creator.address.toString(),
     rosen.address.toString(),
     creator.address.toString(),
     BigInt(winnersCount)
@@ -58,6 +59,7 @@ describe('inactiveRaffle', () => {
       chain, rosen, creator, ticketRepoInputBox, inactiveRaffleInputBox
     }) => {
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
+        creator.address.toString(),
         creator.address.toString(),
         rosen.address.toString(),
         1n
@@ -104,6 +106,7 @@ describe('inactiveRaffle', () => {
     }) => {
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
         creator.address.toString(),
+        creator.address.toString(),
         rosen.address.toString(),
         5n
       );
@@ -145,12 +148,14 @@ describe('inactiveRaffle', () => {
       chain, rosen, creator, ticketRepoInputBox
     }) => {
       const inactiveRaffleInputBox = testUtils.createInactiveRaffleBoxMock(
+        creator.address.toString(),
         rosen.address.toString(),
         creator.address.toString(),
         1n,
         { tokenId: X_TOKEN_ID, amount: 1n }
       );
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
+        creator.address.toString(),
         creator.address.toString(),
         rosen.address.toString(),
         1n,
@@ -200,6 +205,7 @@ describe('inactiveRaffle', () => {
       chain, rosen, creator, ticketRepoInputBox, inactiveRaffleInputBox
     }) => {
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
+        creator.address.toString(),
         creator.address.toString(),
         rosen.address.toString(),
         1n
@@ -252,6 +258,7 @@ describe('inactiveRaffle', () => {
       chain, rosen, creator, ticketRepoInputBox, inactiveRaffleInputBox
     }) => {
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
+        creator.address.toString(),
         creator.address.toString(),
         rosen.address.toString(),
         1n
@@ -307,6 +314,7 @@ describe('inactiveRaffle', () => {
     }) => {
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
         creator.address.toString(),
+        creator.address.toString(),
         rosen.address.toString(),
         1n
       );
@@ -359,6 +367,7 @@ describe('inactiveRaffle', () => {
       chain, rosen, creator, ticketRepoInputBox, inactiveRaffleInputBox
     }) => {
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
+        creator.address.toString(),
         creator.address.toString(),
         rosen.address.toString(),
         1n
@@ -418,6 +427,7 @@ describe('inactiveRaffle', () => {
     }) => {
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
         creator.address.toString(),
+        creator.address.toString(),
         rosen.address.toString(),
         1n
       );
@@ -463,6 +473,7 @@ describe('inactiveRaffle', () => {
     }) => {
       // Set collecting token as X-Token that not found on the Inactive-Raffle Box
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
+        creator.address.toString(),
         creator.address.toString(),
         rosen.address.toString(),
         1n,
@@ -515,6 +526,7 @@ describe('inactiveRaffle', () => {
       chain, rosen, creator, ticketRepoInputBox
     }) => {
       const inactiveRaffleInputBox = testUtils.createInactiveRaffleBoxMock(
+        testUtils.contractsAddresses['service'],
         rosen.address.toString(),
         creator.address.toString(),
         1n,
@@ -522,6 +534,7 @@ describe('inactiveRaffle', () => {
       );
 
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
+        creator.address.toString(),
         creator.address.toString(),
         rosen.address.toString(),
         1n
@@ -566,6 +579,7 @@ describe('inactiveRaffle', () => {
       chain, rosen, creator, ticketRepoInputBox, inactiveRaffleInputBox
     }) => {
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
+        creator.address.toString(),
         creator.address.toString(),
         rosen.address.toString(),
         1n
@@ -614,6 +628,7 @@ describe('inactiveRaffle', () => {
     }) => {
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
         creator.address.toString(),
+        creator.address.toString(),
         rosen.address.toString(),
         1n
       );
@@ -660,12 +675,14 @@ describe('inactiveRaffle', () => {
       chain, rosen, creator, ticketRepoInputBox
     }) => {
       const inactiveRaffleInputBox = testUtils.createInactiveRaffleBoxMock(
+        testUtils.contractsAddresses['service'],
         rosen.address.toString(),
         creator.address.toString(),
         1n,
         { tokenId: X_TOKEN_ID, amount: 1n }
       );
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
+        creator.address.toString(),
         creator.address.toString(),
         rosen.address.toString(),
         1n
@@ -723,6 +740,7 @@ describe('inactiveRaffle', () => {
     }) => {
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
         creator.address.toString(),
+        creator.address.toString(),
         rosen.address.toString(),
         1n
       );
@@ -772,6 +790,7 @@ describe('inactiveRaffle', () => {
       chain, rosen, creator, ticketRepoInputBox, inactiveRaffleInputBox
     }) => {
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
+        creator.address.toString(),
         creator.address.toString(),
         rosen.address.toString(),
         1n
@@ -823,6 +842,7 @@ describe('inactiveRaffle', () => {
     }) => {
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
         creator.address.toString(),
+        creator.address.toString(),
         rosen.address.toString(),
         1n
       );
@@ -870,6 +890,7 @@ describe('inactiveRaffle', () => {
       chain, rosen, creator, ticketRepoInputBox, inactiveRaffleInputBox
     }) => {
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
+        creator.address.toString(),
         creator.address.toString(),
         rosen.address.toString(),
         1n
@@ -921,6 +942,7 @@ describe('inactiveRaffle', () => {
       chain, rosen, creator, ticketRepoInputBox, inactiveRaffleInputBox
     }) => {
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
+        creator.address.toString(),
         creator.address.toString(),
         rosen.address.toString(),
         1n

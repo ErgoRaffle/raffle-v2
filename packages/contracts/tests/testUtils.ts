@@ -104,10 +104,7 @@ export const createServiceBoxMock = (
           creationFee,
           FEE,
         ]).toHex(),
-        R5: SColl(
-          SByte,
-          Array.from(Buffer.from(contractsAddresses['service'], 'hex')),
-        ).toHex(),
+        R5: SColl(SByte, Array.from(Buffer.from(ownerAddress, 'hex'))).toHex(),
       },
     }),
   );
@@ -144,10 +141,7 @@ export const createServiceOutputBox = (
         creationFee,
         FEE,
       ]).toHex(),
-      R5: SColl(
-        SByte,
-        Array.from(Buffer.from(contractsAddresses['service'], 'hex')),
-      ).toHex(),
+      R5: SColl(SByte, Array.from(Buffer.from(ownerAddress, 'hex'))).toHex(),
     });
 };
 
@@ -196,6 +190,7 @@ export const createTicketRepoOutputBox = () => {
  * @returns InactiveRaffleBox
  */
 export const createInactiveRaffleBoxMock = (
+  ownerAddress: string,
   implementerPartnerAddress: string,
   creatorPartnerAddress: string,
   winnersCount: bigint = 1n,
@@ -236,7 +231,7 @@ export const createInactiveRaffleBoxMock = (
           FEE, // TxFee
         ]).toHex(),
         R5: SColl(SColl(SByte), [
-          Array.from(blake2b256(contractsAddresses['service'])),
+          Array.from(blake2b256(Buffer.from(ownerAddress, 'hex'))),
           Array.from(blake2b256(Buffer.from(implementerPartnerAddress))),
           Array.from(blake2b256(Buffer.from(creatorPartnerAddress))),
         ]).toHex(),
@@ -263,6 +258,7 @@ export const createInactiveRaffleBoxMock = (
 
 /**
  * create output Inactive-Raffle-box
+ * @param ownerAddress
  * @param implementerPartnerAddress
  * @param creatorPartnerAddress
  * @param winnersCount
@@ -275,6 +271,7 @@ export const createInactiveRaffleBoxMock = (
  * @returns InactiveRaffleBox
  */
 export const createInactiveRaffleOutputBox = (
+  ownerAddress: string,
   implementerPartnerAddress: string,
   creatorPartnerAddress: string,
   winnersCount: bigint = 1n,
@@ -315,7 +312,7 @@ export const createInactiveRaffleOutputBox = (
         FEE, // TxFee
       ]),
       R5: SColl(SColl(SByte), [
-        Array.from(blake2b256(contractsAddresses['service'])),
+        Array.from(blake2b256(Buffer.from(ownerAddress, 'hex'))),
         Array.from(blake2b256(Buffer.from(implementerPartnerAddress))),
         Array.from(blake2b256(Buffer.from(creatorPartnerAddress))),
       ]),
@@ -398,6 +395,7 @@ export const createActiveRaffleBoxMock = (
 
 /**
  * Create output box of active-raffle
+ * @param ownerAddress
  * @param creatorPartnerAddress
  * @param implementerPartnerAddress
  * @param winnersCount
@@ -406,6 +404,7 @@ export const createActiveRaffleBoxMock = (
  * @returns
  */
 export const createActiveRaffleOutputBox = (
+  ownerAddress: string,
   creatorPartnerAddress: string,
   implementerPartnerAddress: string,
   winnersCount: bigint = 1n,
@@ -442,7 +441,7 @@ export const createActiveRaffleOutputBox = (
         FEE, // TxFee
       ]).toHex(),
       R5: SColl(SColl(SByte), [
-        Array.from(blake2b256(contractsAddresses['service'])),
+        Array.from(blake2b256(Buffer.from(ownerAddress, 'hex'))),
         Array.from(blake2b256(Buffer.from(implementerPartnerAddress))),
         Array.from(blake2b256(Buffer.from(creatorPartnerAddress))),
       ]),

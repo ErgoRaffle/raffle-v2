@@ -64,6 +64,7 @@ describe('Service', () => {
         const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString());
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
+          creator.address.toString(),
           rosen.address.toString(),
           creator.address.toString(),
           1n,
@@ -105,6 +106,7 @@ describe('Service', () => {
         const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString());
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
+          creator.address.toString(),
           rosen.address.toString(),
           creator.address.toString(),
           10n,
@@ -147,6 +149,7 @@ describe('Service', () => {
         const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString());
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
+          creator.address.toString(),
           rosen.address.toString(),
           creator.address.toString(),
           1n,
@@ -188,6 +191,7 @@ describe('Service', () => {
         const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString());
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
+          creator.address.toString(),
           rosen.address.toString(),
           creator.address.toString(),
           1n,
@@ -225,6 +229,7 @@ describe('Service', () => {
         const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString(), 1000000000n);
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
+          creator.address.toString(),
           rosen.address.toString(),
           creator.address.toString(),
           1n,
@@ -261,6 +266,7 @@ describe('Service', () => {
         const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString());
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
+          creator.address.toString(),
           rosen.address.toString(),
           creator.address.toString(),
           1n,
@@ -304,6 +310,7 @@ describe('Service', () => {
         );
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
+          creator.address.toString(),
           rosen.address.toString(),
           creator.address.toString(),
           1n,
@@ -343,6 +350,7 @@ describe('Service', () => {
         const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString());
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
+          creator.address.toString(),
           rosen.address.toString(),
           creator.address.toString(),
           2n,
@@ -380,6 +388,7 @@ describe('Service', () => {
         const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString());
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
+          creator.address.toString(),
           rosen.address.toString(),
           creator.address.toString(),
           1n,
@@ -424,6 +433,7 @@ describe('Service', () => {
         const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString());
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
+          creator.address.toString(),
           rosen.address.toString(),
           creator.address.toString(),
           2n,
@@ -461,6 +471,7 @@ describe('Service', () => {
         const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString());
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
+          creator.address.toString(),
           rosen.address.toString(),
           creator.address.toString(),
           2n,
@@ -501,6 +512,7 @@ describe('Service', () => {
         const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString());
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
+          creator.address.toString(),
           rosen.address.toString(),
           creator.address.toString(),
           2n,
@@ -542,6 +554,7 @@ describe('Service', () => {
         const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString());
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
+          creator.address.toString(),
           rosen.address.toString(),
           creator.address.toString(),
           2n,
