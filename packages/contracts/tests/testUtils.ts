@@ -104,7 +104,7 @@ export const createServiceBoxMock = (
           creationFee,
           FEE,
         ]).toHex(),
-        R5: SColl(SByte, Array.from(Buffer.from(ownerAddress, 'hex'))).toHex(),
+        R5: SColl(SByte, Array.from(Buffer.from(ownerAddress))).toHex(),
       },
     }),
   );
@@ -141,7 +141,7 @@ export const createServiceOutputBox = (
         creationFee,
         FEE,
       ]).toHex(),
-      R5: SColl(SByte, Array.from(Buffer.from(ownerAddress, 'hex'))).toHex(),
+      R5: SColl(SByte, Array.from(Buffer.from(ownerAddress))).toHex(),
     });
 };
 
@@ -231,7 +231,7 @@ export const createInactiveRaffleBoxMock = (
           FEE, // TxFee
         ]).toHex(),
         R5: SColl(SColl(SByte), [
-          Array.from(blake2b256(Buffer.from(ownerAddress, 'hex'))),
+          Array.from(blake2b256(Buffer.from(ownerAddress))),
           Array.from(blake2b256(Buffer.from(implementerPartnerAddress))),
           Array.from(blake2b256(Buffer.from(creatorPartnerAddress))),
         ]).toHex(),
@@ -312,7 +312,7 @@ export const createInactiveRaffleOutputBox = (
         FEE, // TxFee
       ]),
       R5: SColl(SColl(SByte), [
-        Array.from(blake2b256(Buffer.from(ownerAddress, 'hex'))),
+        Array.from(blake2b256(Buffer.from(ownerAddress))),
         Array.from(blake2b256(Buffer.from(implementerPartnerAddress))),
         Array.from(blake2b256(Buffer.from(creatorPartnerAddress))),
       ]),
@@ -441,7 +441,7 @@ export const createActiveRaffleOutputBox = (
         FEE, // TxFee
       ]).toHex(),
       R5: SColl(SColl(SByte), [
-        Array.from(blake2b256(Buffer.from(ownerAddress, 'hex'))),
+        Array.from(blake2b256(Buffer.from(ownerAddress))),
         Array.from(blake2b256(Buffer.from(implementerPartnerAddress))),
         Array.from(blake2b256(Buffer.from(creatorPartnerAddress))),
       ]),
