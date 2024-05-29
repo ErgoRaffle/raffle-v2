@@ -96,7 +96,7 @@ When creating a new raffle, the creator can specify the number of winners, and t
 The winner boxes are activated after they receive their gift tokens.
 
 <p align="center">
-<img src="images/Gift_Token_receipt.png" width="500">
+<img src="images/Gift_Token_Receipt.png" width="500">
 </p>
 
 ### Phase II: New Gifts
