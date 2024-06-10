@@ -46,7 +46,7 @@ function createInactiveRaffleTest(winnersCount: number = 1) {
   }
   
   
-describe('inactiveRaffle', () => {
+describe('ticketRepo', () => {
     const ticketRepoBy1WinnerTest = createInactiveRaffleTest();
   
     describe('Fail of creating ticket repo', () => {
