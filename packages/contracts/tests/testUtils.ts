@@ -64,6 +64,9 @@ export const initialContracts = (): { [key: string]: string } => {
     FEE: constants.DEFAULT_FEE,
     MIN_BOX_VALUE: SAFE_MIN_BOX_VALUE,
   };
+  scriptsVars['ticketRepo'] = {
+    RAFFLE_LICENSE_B64: Buffer.from(LICENSE_TOKEN_ID, 'hex').toString('base64')
+  }
   const finalContractsAddresses = compileAll(
     new Map(Object.entries(scriptsVars)) as unknown as ContextVarsType,
     true,
@@ -149,10 +152,10 @@ export const createServiceOutputBox = (
  * create TicketRepo UTxO
  * @returns ErgoUnsignedInput
  */
-export const createTicketRepoBoxMock = () => {
+export const createTicketRepoBoxMock = (ergoTree: string = contractsAddresses['ticketRepo']) => {
   return new ErgoUnsignedInput(
     mockUTxO({
-      ergoTree: contractsAddresses['ticketRepo'],
+      ergoTree: ergoTree,
       value: FEE,
       creationHeight: 5,
       assets: [
@@ -199,6 +202,8 @@ export const createInactiveRaffleBoxMock = (
   serviceFeePercent: bigint = 10n,
   invalidWinnerHash?: string,
   creationFee: bigint = 1_000_000_000n,
+  ergoTree: string = contractsAddresses['inactiveRaffle'],
+  ticketTokenId: string = TICKET_TOKEN_ID
 ) => {
   const tokens = [
     {
@@ -217,7 +222,7 @@ export const createInactiveRaffleBoxMock = (
   return new ErgoUnsignedInput(
     mockUTxO({
       value: 4n * FEE * winnersCount + creationFee,
-      ergoTree: contractsAddresses['inactiveRaffle'],
+      ergoTree: ergoTree,
       assets: tokens,
       additionalRegisters: {
         R4: SColl(SLong, [
@@ -242,7 +247,7 @@ export const createInactiveRaffleBoxMock = (
         R7:
           invalidWinnerHash ||
           SColl(SColl(SByte), [
-            Array.from(Buffer.from(TICKET_TOKEN_ID, 'hex')),
+            Array.from(Buffer.from(ticketTokenId, 'hex')),
             Array.from(
               blake2b256(
                 Buffer.concat(
@@ -363,7 +368,7 @@ export const createActiveRaffleBoxMock = (
     {
       tokenId: TICKET_TOKEN_ID,
       amount: 1_000_000_000n - 1n - winnersCount,
-    },
+    }
   ];
   if (collectingToken != null) tokens.push(collectingToken);
 
@@ -412,6 +417,7 @@ export const createActiveRaffleOutputBox = (
   collectingToken?: TokenAmount<bigint>,
   creationFee: bigint = 1_000_000_000n,
   value?: bigint,
+  ticketTokenAmount?: bigint
 ) => {
   value = value || FEE * winnersCount + creationFee - FEE;
 
@@ -422,7 +428,7 @@ export const createActiveRaffleOutputBox = (
     },
     {
       tokenId: TICKET_TOKEN_ID,
-      amount: 1_000_000_000n - 1n - winnersCount,
+      amount: ticketTokenAmount || (1_000_000_000n - 1n - winnersCount),
     },
   ];
   if (collectingToken != null) tokens.push(collectingToken);

@@ -24,7 +24,7 @@
     // Correct ActiveRaffle format
     activeRaffle.tokens(0)._1 == raffleLicense,
     activeRaffle.tokens(1)._1 == SELF.tokens(0)._1,
-    activeRaffle.tokens(1)._2 == SELF.tokens(0)._2 - winnerCount - 1, // Winner and RaffleDetail indentifiers
+    activeRaffle.tokens(1)._2 == SELF.tokens(0)._2 - winnerCount - 1, // Winner and RaffleDetail identifiers
 
     // Transaction constraints
     inactiveRaffle.R7[Coll[Coll[Byte]]].get(0) == SELF.tokens(0)._1

@@ -17,7 +17,8 @@
     "test:related": "NODE_OPTIONS=--loader=extensionless vitest related --run",
     "type-check": "tsc --noEmit",
     "compile-contracts": "npm run build --force && node --loader=extensionless ./dist/cli/index.js compile-contracts",
-    "make-input-template": "npm run build --force && node --loader=extensionless ./dist/cli/index.js make-input-template"
+    "make-input-template": "npm run build --force && node --loader=extensionless ./dist/cli/index.js make-input-template",
+    "postinstall": "npx patch-package --patch-dir ../../patches/"
   },
   "devDependencies": {
     "@fleet-sdk/mock-chain": "^0.3.4",
