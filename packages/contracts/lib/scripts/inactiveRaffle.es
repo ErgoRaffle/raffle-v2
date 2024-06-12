@@ -31,7 +31,7 @@
   val winnerBoxes = OUTPUTS.slice(3, winnersCount + 3)
 
   val winnersVerification = winnerBoxes.indices.forall({(i: Int) => {
-    val box = OUTPUTS(i + 3)
+    val box = winnerBoxes(i)
     allOf(Coll(
       // Correct Winner boxes format
       // R4: [WinnerIndex, RewardPercent, DeadlineTimestamp, TxFee]
@@ -83,7 +83,7 @@
     activeRaffle.R4[Coll[Long]].get == SELF.R4[Coll[Long]].get,
     activeRaffle.R5[Coll[Coll[Byte]]].get == SELF.R5[Coll[Coll[Byte]]].get,
     activeRaffle.R6[Coll[Long]].get(0) == 0L, // No sold ticket at beginning
-    activeRaffleExtraTokensVerification == true,
+    activeRaffleExtraTokensVerification,
 
     // Correct RaffleDetails format
     // R4: [Name, Description, Pictures(optional)]
@@ -93,7 +93,7 @@
     raffleDetails.value == txFee,
 
     // Correct Winners format
-    winnersVerification == true,
+    winnersVerification,
 
     // Correct GiftTokenRepo format
     // R4, R5, R6: GiftToken metadata
