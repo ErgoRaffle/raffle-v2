@@ -45,9 +45,9 @@ describe('inactiveRaffle', () => {
   const inactiveRaffleBy1WinnerTest = createInactiveRaffleTest();
   const inactiveRaffleBy5WinnersTest = createInactiveRaffleTest(5);
 
-  describe('Create active raffle successful', () => {
+  describe('Create active raffle', () => {
     /**
-     * @target inactive-raffle should  create active raffle by 1 winner
+     * @target inactive-raffle should  create active raffle by 1 winner successfully
      * @scenario
      * - create three output boxes by valid values and one winner box
      * - execute transaction
@@ -190,10 +190,8 @@ describe('inactiveRaffle', () => {
     });
   });
 
-  describe('Fail creating active raffle', () => {
-
     /**
-     * @target inactive-raffle should fail to create active raffle by missed license-token
+     * @target inactive-raffle Should creating of active raffle be fail when license-token missed
      * @scenario
      * - create three output boxes by valid values and one winner box(remove license-token from active box and added to gift box)
      * - execute transaction
@@ -201,7 +199,7 @@ describe('inactiveRaffle', () => {
      * @expected
      * - transaction result must be true
      */
-    inactiveRaffleBy1WinnerTest("Should fail create token by missed license-token", ({
+    inactiveRaffleBy1WinnerTest("Should creating of active raffle be fail when license-token missed", ({
       chain, rosen, creator, ticketRepoInputBox, inactiveRaffleInputBox
     }) => {
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
@@ -514,7 +512,7 @@ describe('inactiveRaffle', () => {
     });
 
     /**
-     * @target inactive-raffle should fail to create active raffle by wrong collection token on the inactive-box
+     * @target inactive-raffle Should fail create active raffle by wrong collection token on the active-box
      * @scenario
      * - create three output boxes by valid values and one winner box(set wrong collection token on the inactive-box)
      * - execute transaction
@@ -671,7 +669,7 @@ describe('inactiveRaffle', () => {
      * @expected
      * - transaction result must be true
      */
-    inactiveRaffleBy1WinnerTest("Should fail create active raffle by wrong winner box ticket-token", ({
+    inactiveRaffleBy1WinnerTest("should fail create active raffle by winner box without ticket token", ({
       chain, rosen, creator, ticketRepoInputBox
     }) => {
       const inactiveRaffleInputBox = testUtils.createInactiveRaffleBoxMock(
@@ -997,4 +995,3 @@ describe('inactiveRaffle', () => {
       expect(() => chain.execute(transaction, { signers: [creator] })).toThrowError();
     });
   });
-});
