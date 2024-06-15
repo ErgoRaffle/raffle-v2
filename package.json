@@ -16,7 +16,6 @@
     "test": "npm run test --workspaces",
     "test:related": "npm run test:related --workspaces",
     "type-check": "npm run type-check --workspaces",
-    "postinstall": "npx patch-package",
     "version": "npx changeset version && npm i"
   },
   "devDependencies": {
