@@ -5,14 +5,14 @@ index bcca28d..645b6ba 100644
 @@ -1,8 +1,13 @@
  import { ensureDefaults, assert, ergoTreeHeaderFlags, isEmpty, isHex } from '@fleet-sdk/common';
  import { SConstant } from '@fleet-sdk/serializer';
--import { SigmaCompilerObj, ValueObj, Value } from 'sigmastate-js/main';
-+// import { SigmaCompilerObj, ValueObj, Value } from 'sigmastate-js/main';
+-import { SigmaCompiler$, Value$, Value } from 'sigmastate-js/main';
++// import { SigmaCompiler$, Value$, Value } from 'sigmastate-js/main';
  import { ErgoTree } from '@fleet-sdk/core';
  import { hex } from '@fleet-sdk/crypto';
 +import * as sigmastateMain from 'sigmastate-js/main';
 +
-+var SigmaCompilerObj = sigmastateMain.default.SigmaCompilerObj;
-+var ValueObj = sigmastateMain.ValueObj;
++var SigmaCompiler$ = sigmastateMain.default.SigmaCompiler$;
++var Value$ = sigmastateMain.Value$;
 +var Value = sigmastateMain.Value;
  
  // src/compiler.ts
