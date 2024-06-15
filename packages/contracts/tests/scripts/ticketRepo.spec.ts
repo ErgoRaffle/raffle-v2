@@ -158,7 +158,6 @@ describe('ticketRepo', () => {
                     ...winnersOutputBoxes
                 ])
                 .payFee(testUtils.FEE)
-                // .sendChangeTo(creator.address)
                 .build();
 
             expect(() => chain.execute(transaction, { signers: [creator] })).toThrowError();

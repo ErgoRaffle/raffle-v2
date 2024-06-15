@@ -65,8 +65,8 @@ export const initialContracts = (): { [key: string]: string } => {
     MIN_BOX_VALUE: SAFE_MIN_BOX_VALUE,
   };
   scriptsVars['ticketRepo'] = {
-    RAFFLE_LICENSE_B64: Buffer.from(LICENSE_TOKEN_ID, 'hex').toString('base64')
-  }
+    RAFFLE_LICENSE_B64: Buffer.from(LICENSE_TOKEN_ID, 'hex').toString('base64'),
+  };
   const finalContractsAddresses = compileAll(
     new Map(Object.entries(scriptsVars)) as unknown as ContextVarsType,
     true,
@@ -152,7 +152,9 @@ export const createServiceOutputBox = (
  * create TicketRepo UTxO
  * @returns ErgoUnsignedInput
  */
-export const createTicketRepoBoxMock = (ergoTree: string = contractsAddresses['ticketRepo']) => {
+export const createTicketRepoBoxMock = (
+  ergoTree: string = contractsAddresses['ticketRepo'],
+) => {
   return new ErgoUnsignedInput(
     mockUTxO({
       ergoTree: ergoTree,
@@ -203,7 +205,7 @@ export const createInactiveRaffleBoxMock = (
   invalidWinnerHash?: string,
   creationFee: bigint = 1_000_000_000n,
   ergoTree: string = contractsAddresses['inactiveRaffle'],
-  ticketTokenId: string = TICKET_TOKEN_ID
+  ticketTokenId: string = TICKET_TOKEN_ID,
 ) => {
   const tokens = [
     {
@@ -368,7 +370,7 @@ export const createActiveRaffleBoxMock = (
     {
       tokenId: TICKET_TOKEN_ID,
       amount: 1_000_000_000n - 1n - winnersCount,
-    }
+    },
   ];
   if (collectingToken != null) tokens.push(collectingToken);
 
@@ -417,7 +419,7 @@ export const createActiveRaffleOutputBox = (
   collectingToken?: TokenAmount<bigint>,
   creationFee: bigint = 1_000_000_000n,
   value?: bigint,
-  ticketTokenAmount?: bigint
+  ticketTokenAmount?: bigint,
 ) => {
   value = value || FEE * winnersCount + creationFee - FEE;
 
@@ -428,7 +430,7 @@ export const createActiveRaffleOutputBox = (
     },
     {
       tokenId: TICKET_TOKEN_ID,
-      amount: ticketTokenAmount || (1_000_000_000n - 1n - winnersCount),
+      amount: ticketTokenAmount || 1_000_000_000n - 1n - winnersCount,
     },
   ];
   if (collectingToken != null) tokens.push(collectingToken);
@@ -474,7 +476,6 @@ export const createSuccessRaffleBox = (
 
   return mockUTxO({
     ergoTree: contractsAddresses['successRaffle'],
-    // To Do: Update value in later implementations
     value: winnersCount * FEE + (2n * FEE + 1_000_000_000n),
     creationHeight: 5,
     assets: tokens,
