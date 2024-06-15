@@ -49,9 +49,9 @@ function createInactiveRaffleTest(winnersCount: number = 1) {
 describe('ticketRepo', () => {
     const ticketRepoBy1WinnerTest = createInactiveRaffleTest();
   
-    describe('Fail of creating ticket repo', () => {
+    describe('Creating ticket repo', () => {
         /**
-         * @target Should fail creating of active raffle by 1 winner with invalid ticket token id
+         * @target Should creating of active raffle by 1 winner with invalid ticket token id be fail
          * @scenario
          * - create three output boxes(by invalid ticket-token in active box)
          * - execute transaction
@@ -59,7 +59,7 @@ describe('ticketRepo', () => {
          * @expected
          * - transaction result must throw error
          */
-        ticketRepoBy1WinnerTest("Should fail creating of active raffle by 1 winner with invalid ticket token id", ({
+        ticketRepoBy1WinnerTest("Should creating of active raffle by 1 winner with invalid ticket token id be fail", ({
             chain, rosen, creator, ticketRepoInputBox, inactiveRaffleInputBox
         }) => {
             const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
@@ -110,7 +110,7 @@ describe('ticketRepo', () => {
         });
 
         /**
-         * @target Should fail creating of active raffle by 1 winner with invalid number of ticket token
+         * @target Should creating of active raffle by 1 winner with invalid number of ticket token be fail
          * @scenario
          * - create three output boxes(by invalid number of ticket token in active box)
          * - execute transaction
@@ -118,7 +118,7 @@ describe('ticketRepo', () => {
          * @expected
          * - transaction result must throw error
          */
-        ticketRepoBy1WinnerTest("Should fail creating of active raffle by 1 winner with invalid number of ticket token", ({
+        ticketRepoBy1WinnerTest("Should creating of active raffle by 1 winner with invalid number of ticket token be fail", ({
             chain, rosen, creator, ticketRepoInputBox, inactiveRaffleInputBox
         }) => {
             const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
@@ -165,7 +165,7 @@ describe('ticketRepo', () => {
         });
 
         /**
-         * @target Should fail creating of active raffle by 1 winner with invalid ticket token id in R7 of inactive input box
+         * @target Should creating of active raffle by 1 winner with invalid ticket token id in R7 of inactive input box be fail
          * @scenario
          * - create three output boxes(by invalid ticket-token id in inactive input box)
          * - execute transaction
@@ -173,7 +173,7 @@ describe('ticketRepo', () => {
          * @expected
          * - transaction result must throw error
          */
-        ticketRepoBy1WinnerTest("Should fail creating of active raffle by 1 winner with invalid ticket token id in R7 of inactive input box", ({
+        ticketRepoBy1WinnerTest("Should creating of active raffle by 1 winner with invalid ticket token id in R7 of inactive input box be fail", ({
             chain, rosen, creator, ticketRepoInputBox
         }) => {
             // Replace Ticket-Token id with invalid id
