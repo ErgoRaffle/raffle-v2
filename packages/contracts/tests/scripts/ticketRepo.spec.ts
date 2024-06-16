@@ -230,4 +230,66 @@ describe('ticketRepo', () => {
             expect(() => chain.execute(transaction, { signers: [creator] })).toThrowError();
         });
     });
+
+    /**
+     * @target inactive-raffle should fail to create active raffle by wrong place of ticket token
+     * @scenario
+     * - create three output boxes by valid values and one winner box(move one ticket token from active box to gift box)
+     * - execute transaction
+     * - check execution done fail
+     * @expected
+     * - transaction result must be true
+     */
+    ticketRepoBy1WinnerTest(
+        'Should fail create active raffle by wrong place of ticket token',
+        ({
+          chain,
+          rosen,
+          creator,
+          ticketRepoInputBox,
+          inactiveRaffleInputBox,
+        }) => {
+          const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
+            creator.address.toString(),
+            creator.address.toString(),
+            rosen.address.toString(),
+            1n,
+          );
+  
+          const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
+          const giftTokenRepoOutputBox = testUtils.createGiftTokenRepoOutputBox(
+            1,
+            1,
+          );
+          const winnerBoxes = testUtils.createWinnersOutputBox(
+            1n,
+            inactiveRaffleInputBox.boxId.toString(),
+          );
+  
+          // Decrease one ticket token from Active-Raffle box
+          activeRaffleOutputBox.assets.at(1).amount =
+            activeRaffleOutputBox.assets.at(1).amount - 1n;
+  
+          const transaction = new TransactionBuilder(chain.height)
+            .from([inactiveRaffleInputBox, ticketRepoInputBox])
+            .to([
+              activeRaffleOutputBox,
+              raffleDetailsOutputBox,
+              giftTokenRepoOutputBox,
+              ...winnerBoxes,
+            ])
+            .payFee(testUtils.FEE)
+            .sendChangeTo(creator.address)
+            .burnTokens({
+                tokenId: activeRaffleOutputBox.assets.at(1).tokenId!.toString(),
+                amount: 1n
+            })
+            .build();
+  
+          // Check execution result
+          expect(() =>
+            chain.execute(transaction, { signers: [creator] }),
+          ).toThrowError();
+        },
+      );
 });
