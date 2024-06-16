@@ -549,8 +549,6 @@ describe('inactiveRaffle', () => {
           1,
           1,
         );
-        // added X-Token to the gift box to prevent burn token error raising
-        giftTokenRepoOutputBox.addTokens({ tokenId: X_TOKEN_ID, amount: 1n });
 
         const transaction = new TransactionBuilder(chain.height)
           .from([inactiveRaffleInputBox, ticketRepoInputBox])
@@ -565,6 +563,8 @@ describe('inactiveRaffle', () => {
           ])
           .payFee(testUtils.FEE)
           .sendChangeTo(creator.address)
+          // added X-Token to the gift box to prevent burn token error raising
+          .burnTokens({ tokenId: X_TOKEN_ID, amount: 1n })
           .build();
 
         // Check execution result
