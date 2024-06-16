@@ -9,7 +9,7 @@ import {
   mockUTxO,
   KeyedMockChainParty,
 } from '@fleet-sdk/mock-chain';
-import { SColl, SByte, SLong } from '@fleet-sdk/serializer';
+import { SColl, SByte, SLong, SInt } from '@fleet-sdk/serializer';
 import { blake2b256 } from '@fleet-sdk/crypto';
 
 import * as utils from '../lib/utils';
@@ -22,6 +22,7 @@ export const OWNER_NFT_ID = '1234'.repeat(16);
 export const RAFFLE_NFT_ID = '1'.repeat(64);
 export const LICENSE_TOKEN_ID = '2'.repeat(64);
 export const X_TOKEN_ID = '3'.repeat(64);
+export const TICKET_TOKEN_ID = '4'.repeat(64);
 export const raffleNFTToken = { amount: 1n, tokenId: RAFFLE_NFT_ID };
 export const licenseToken = {
   amount: 1_000_000_000n,
@@ -73,17 +74,23 @@ export const initialContracts = (): { [key: string]: string } => {
 
 /**
  * Create input Service-Box
- * @param serviceContractAddress
+ * @param ownerAddress
  * @param partnerAddress
+ * @param serviceFeePercent
+ * @param implementerFeePercent
+ * @param creationFee
  * @returns Service Box
  */
 export const createServiceBoxMock = (
-  serviceContractAddress: string,
+  ownerAddress: string,
   licenseTokenCount: bigint = LICENSE_TOKEN_COUNT,
+  serviceFeePercent: bigint = 10n,
+  implementerFeePercent: bigint = 10n,
+  creationFee: bigint = 1_000_000_000n,
 ) => {
   return new ErgoUnsignedInput(
     mockUTxO({
-      ergoTree: serviceContractAddress,
+      ergoTree: contractsAddresses['service'],
       value: 11_000_000n,
       creationHeight: 4,
       assets: [
@@ -91,10 +98,13 @@ export const createServiceBoxMock = (
         { tokenId: LICENSE_TOKEN_ID, amount: licenseTokenCount },
       ],
       additionalRegisters: {
-        R4: SColl(SLong, [10n, 10n, 1_000_000_000n]).toHex(),
-        R5: SColl(SColl(SByte), [
-          Array.from(Buffer.from(serviceContractAddress, 'hex')),
+        R4: SColl(SLong, [
+          serviceFeePercent,
+          implementerFeePercent,
+          creationFee,
+          FEE,
         ]).toHex(),
+        R5: SColl(SByte, Array.from(Buffer.from(ownerAddress))).toHex(),
       },
     }),
   );
@@ -102,6 +112,7 @@ export const createServiceBoxMock = (
 
 /**
  * create output Service-Box
+ * @param ownerAddress
  * @param licenseTokenCount
  * @param serviceFeePercent
  * @param implementerFeePercent
@@ -109,14 +120,12 @@ export const createServiceBoxMock = (
  * @returns ServiceBox
  */
 export const createServiceOutputBox = (
+  ownerAddress: string,
   licenseTokenCount: bigint = 999999999n,
-  serviceFeePercent?: bigint,
-  implementerFeePercent?: bigint,
-  creationFee?: bigint,
+  serviceFeePercent: bigint = 10n,
+  implementerFeePercent: bigint = 10n,
+  creationFee: bigint = 1_000_000_000n,
 ) => {
-  serviceFeePercent = serviceFeePercent || 10n;
-  implementerFeePercent = implementerFeePercent || 10n;
-  creationFee = creationFee || 1_000_000_000n;
   return new OutputBuilder(15_000_000n, contractsAddresses['service'])
     .addTokens([
       raffleNFTToken,
@@ -130,11 +139,30 @@ export const createServiceOutputBox = (
         serviceFeePercent,
         implementerFeePercent,
         creationFee,
+        FEE,
       ]).toHex(),
-      R5: SColl(SColl(SByte), [
-        Array.from(Buffer.from(contractsAddresses['service'], 'hex')),
-      ]).toHex(),
+      R5: SColl(SByte, Array.from(Buffer.from(ownerAddress))).toHex(),
     });
+};
+
+/**
+ * create TicketRepo UTxO
+ * @returns ErgoUnsignedInput
+ */
+export const createTicketRepoBoxMock = () => {
+  return new ErgoUnsignedInput(
+    mockUTxO({
+      ergoTree: contractsAddresses['ticketRepo'],
+      value: FEE,
+      creationHeight: 5,
+      assets: [
+        {
+          tokenId: TICKET_TOKEN_ID,
+          amount: 1_000_000_000n,
+        },
+      ],
+    }),
+  );
 };
 
 /**
@@ -142,10 +170,7 @@ export const createServiceOutputBox = (
  * @returns TicketBox
  */
 export const createTicketRepoOutputBox = () => {
-  return new OutputBuilder(
-    15_000_000n,
-    contractsAddresses['ticketRepo'],
-  ).mintToken({
+  return new OutputBuilder(FEE, contractsAddresses['ticketRepo']).mintToken({
     amount: 1_000_000_000n,
     name: 'TicketRepoToken',
     decimals: 0,
@@ -153,26 +178,109 @@ export const createTicketRepoOutputBox = () => {
 };
 
 /**
- * create output Inactive-Raffle-box
+ * create Inactive-Raffle UTxO
  * @param implementerPartnerAddress
  * @param creatorPartnerAddress
- * @param serviceBoxId
  * @param winnersCount
  * @param collectingToken if sets then raffle can only pay charity by this token instead of Erg
  * @param winnersPercents
  * @param serviceFeePercent
  * @param invalidWinnerHash
+ * @param creationFee
  * @returns InactiveRaffleBox
  */
-export const createInactiveRaffleOutputBox = (
+export const createInactiveRaffleBoxMock = (
+  ownerAddress: string,
   implementerPartnerAddress: string,
   creatorPartnerAddress: string,
-  serviceBoxId: string,
   winnersCount: bigint = 1n,
   collectingToken?: TokenAmount<bigint>,
   winnersPercents?: bigint[],
-  serviceFeePercent?: bigint,
+  serviceFeePercent: bigint = 10n,
   invalidWinnerHash?: string,
+  creationFee: bigint = 1_000_000_000n,
+) => {
+  const tokens = [
+    {
+      tokenId: LICENSE_TOKEN_ID,
+      amount: 1n,
+    },
+  ];
+  if (collectingToken != null) tokens.push(collectingToken);
+
+  winnersPercents = winnersPercents || [];
+  if (winnersPercents.length === 0)
+    for (let i = 0; i < winnersCount; i++) {
+      winnersPercents.push(1000n / winnersCount);
+    }
+
+  return new ErgoUnsignedInput(
+    mockUTxO({
+      value: 4n * FEE * winnersCount + creationFee,
+      ergoTree: contractsAddresses['inactiveRaffle'],
+      assets: tokens,
+      additionalRegisters: {
+        R4: SColl(SLong, [
+          60n, // CharityPercentage,
+          serviceFeePercent, // ServiceFeePercent,
+          10n, // ImplementerFeePercent,
+          10n, // TicketPrice,
+          1000n, // Goal,
+          0n, // DeadlineTimestamp,
+          winnersCount, // WinnersCount,
+          FEE, // TxFee
+        ]).toHex(),
+        R5: SColl(SColl(SByte), [
+          Array.from(blake2b256(Buffer.from(ownerAddress))),
+          Array.from(blake2b256(Buffer.from(implementerPartnerAddress))),
+          Array.from(blake2b256(Buffer.from(creatorPartnerAddress))),
+        ]).toHex(),
+        R6: SColl(SColl(SByte), [
+          Array.from(Buffer.from('Test')),
+          Array.from(Buffer.from('Some descriptions...')),
+        ]).toHex(),
+        R7:
+          invalidWinnerHash ||
+          SColl(SColl(SByte), [
+            Array.from(Buffer.from(TICKET_TOKEN_ID, 'hex')),
+            Array.from(
+              blake2b256(
+                Buffer.concat(
+                  winnersPercents.map((n) => utils.bigIntToUint8Array(n)),
+                ),
+              ),
+            ),
+          ]).toHex(),
+      },
+    }),
+  );
+};
+
+/**
+ * create output Inactive-Raffle-box
+ * @param ownerAddress
+ * @param implementerPartnerAddress
+ * @param creatorPartnerAddress
+ * @param winnersCount
+ * @param collectingToken if sets then raffle can only pay charity by this token instead of Erg
+ * @param winnersPercents
+ * @param serviceFeePercent
+ * @param invalidWinnerHash
+ * @param creationFee
+ * @param ticketToken
+ * @returns InactiveRaffleBox
+ */
+export const createInactiveRaffleOutputBox = (
+  ownerAddress: string,
+  implementerPartnerAddress: string,
+  creatorPartnerAddress: string,
+  winnersCount: bigint = 1n,
+  collectingToken?: TokenAmount<bigint>,
+  winnersPercents?: bigint[],
+  serviceFeePercent: bigint = 10n,
+  invalidWinnerHash?: string,
+  creationFee: bigint = 1_000_000_000n,
+  ticketToken: string = TICKET_TOKEN_ID,
 ) => {
   const tokens = [
     {
@@ -187,13 +295,8 @@ export const createInactiveRaffleOutputBox = (
     for (let i = 0; i < winnersCount; i++)
       winnersPercents.push(1000n / winnersCount);
 
-  serviceFeePercent = serviceFeePercent || 10n;
-
   return new OutputBuilder(
-    (
-      winnersCount * (FEE + SAFE_MIN_BOX_VALUE) +
-      (2n * FEE + SAFE_MIN_BOX_VALUE + 1_000_000_000n)
-    ).toString(),
+    4n * FEE * winnersCount + creationFee,
     contractsAddresses['inactiveRaffle'],
   )
     .addTokens(tokens)
@@ -205,14 +308,13 @@ export const createInactiveRaffleOutputBox = (
         10n, // TicketPrice,
         1000n, // Goal,
         0n, // DeadlineTimestamp,
-        0n, // TotalSoldTicket,
         winnersCount, // WinnersCount,
-        1_000_000_000n, // CreationFee
+        FEE, // TxFee
       ]),
       R5: SColl(SColl(SByte), [
-        Array.from(Buffer.from(contractsAddresses['service'], 'hex')),
-        Array.from(Buffer.from(implementerPartnerAddress)),
-        Array.from(Buffer.from(creatorPartnerAddress)),
+        Array.from(blake2b256(Buffer.from(ownerAddress))),
+        Array.from(blake2b256(Buffer.from(implementerPartnerAddress))),
+        Array.from(blake2b256(Buffer.from(creatorPartnerAddress))),
       ]),
       R6: SColl(SColl(SByte), [
         Array.from(Buffer.from('Test')),
@@ -221,7 +323,7 @@ export const createInactiveRaffleOutputBox = (
       R7:
         invalidWinnerHash ||
         SColl(SColl(SByte), [
-          Array.from(Buffer.from(serviceBoxId, 'hex')),
+          Array.from(Buffer.from(ticketToken, 'hex')),
           Array.from(
             blake2b256(
               Buffer.concat(
@@ -234,35 +336,140 @@ export const createInactiveRaffleOutputBox = (
 };
 
 /**
- * Create and return active-raffle box
- * @param partnerAddress
+ * Create output box of active-raffle
+ * @param creatorPartnerAddress
+ * @param implementerPartnerAddress
  * @param winnersCount
+ * @param serviceFeePercent
  * @param collectingToken
  * @returns
  */
-export const createActiveRaffleBox = (
-  partnerAddress: string,
+export const createActiveRaffleBoxMock = (
+  creatorPartnerAddress: string,
+  implementerPartnerAddress: string,
   winnersCount: bigint = 1n,
+  serviceFeePercent: bigint = 10n,
   collectingToken?: TokenAmount<bigint>,
+  creationFee: bigint = 1_000_000_000n,
+  value?: bigint,
 ) => {
-  const winnersPercents = [];
-  for (let i = 0; i < winnersCount; i++)
-    winnersPercents.push(1000n / winnersCount);
+  value = value || FEE * winnersCount + creationFee - FEE;
 
   const tokens = [
-    raffleNFTToken,
     {
       tokenId: LICENSE_TOKEN_ID,
       amount: 1n,
+    },
+    {
+      tokenId: TICKET_TOKEN_ID,
+      amount: 1_000_000_000n - 1n - winnersCount,
     },
   ];
   if (collectingToken != null) tokens.push(collectingToken);
 
   return mockUTxO({
+    value: value,
     ergoTree: contractsAddresses['activeRaffle'],
-    value:
-      winnersCount * (FEE + SAFE_MIN_BOX_VALUE) +
-      (2n * FEE + SAFE_MIN_BOX_VALUE + 1_000_000_000n),
+    creationHeight: 5,
+    assets: tokens,
+    additionalRegisters: {
+      R4: SColl(SLong, [
+        60n, // CharityPercentage,
+        serviceFeePercent, // ServiceFeePercent,
+        10n, // ImplementerFeePercent,
+        10n, // TicketPrice,
+        1000n, // Goal,
+        0n, // DeadlineTimestamp,
+        winnersCount, // WinnersCount,
+        FEE, // TxFee
+      ]).toHex(),
+      R5: SColl(SColl(SByte), [
+        Array.from(Buffer.from(creatorPartnerAddress, 'hex')),
+        Array.from(Buffer.from(implementerPartnerAddress)),
+        Array.from(Buffer.from(creatorPartnerAddress)),
+      ]).toHex(),
+      R6: SColl(SLong, [0n]).toHex(),
+    },
+  });
+};
+
+/**
+ * Create output box of active-raffle
+ * @param ownerAddress
+ * @param creatorPartnerAddress
+ * @param implementerPartnerAddress
+ * @param winnersCount
+ * @param serviceFeePercent
+ * @param collectingToken
+ * @returns
+ */
+export const createActiveRaffleOutputBox = (
+  ownerAddress: string,
+  creatorPartnerAddress: string,
+  implementerPartnerAddress: string,
+  winnersCount: bigint = 1n,
+  serviceFeePercent: bigint = 10n,
+  collectingToken?: TokenAmount<bigint>,
+  creationFee: bigint = 1_000_000_000n,
+  value?: bigint,
+) => {
+  value = value || FEE * winnersCount + creationFee - FEE;
+
+  const tokens = [
+    {
+      tokenId: LICENSE_TOKEN_ID,
+      amount: 1n,
+    },
+    {
+      tokenId: TICKET_TOKEN_ID,
+      amount: 1_000_000_000n - 1n - winnersCount,
+    },
+  ];
+  if (collectingToken != null) tokens.push(collectingToken);
+
+  return new OutputBuilder(value, contractsAddresses['activeRaffle'])
+    .addTokens(tokens)
+    .setAdditionalRegisters({
+      R4: SColl(SLong, [
+        60n, // CharityPercentage,
+        serviceFeePercent, // ServiceFeePercent,
+        10n, // ImplementerFeePercent,
+        10n, // TicketPrice,
+        1000n, // Goal,
+        0n, // DeadlineTimestamp,
+        winnersCount, // WinnersCount,
+        FEE, // TxFee
+      ]).toHex(),
+      R5: SColl(SColl(SByte), [
+        Array.from(blake2b256(Buffer.from(ownerAddress))),
+        Array.from(blake2b256(Buffer.from(implementerPartnerAddress))),
+        Array.from(blake2b256(Buffer.from(creatorPartnerAddress))),
+      ]),
+      R6: SColl(SLong, [0n]).toHex(),
+    });
+};
+
+/**
+ * Create and return success-raffle input box
+ * @param partnerAddress
+ * @param winnersCount
+ * @returns
+ */
+export const createSuccessRaffleBox = (
+  partnerAddress: string,
+  winnersCount: bigint = 1n,
+) => {
+  const tokens = [
+    {
+      tokenId: LICENSE_TOKEN_ID,
+      amount: 1n,
+    },
+  ];
+
+  return mockUTxO({
+    ergoTree: contractsAddresses['successRaffle'],
+    // To Do: Update value in later implementations
+    value: winnersCount * FEE + (2n * FEE + 1_000_000_000n),
     creationHeight: 5,
     assets: tokens,
     additionalRegisters: {
@@ -275,44 +482,169 @@ export const createActiveRaffleBox = (
 };
 
 /**
- * Create and return success-raffle box
- * @param partnerAddress
- * @param winnersCount
- * @param collectingToken
+ * Create and return Raffle-details input box
+ * @param ticket_token_id
  * @returns
  */
-export const createSuccessRaffleBox = (
-  partnerAddress: string,
-  winnersCount: bigint = 1n,
-  collectingToken?: TokenAmount<bigint>,
+export const createRaffleDetailsBoxMock = (
+  ticket_token_id: string = TICKET_TOKEN_ID,
 ) => {
-  const winnersPercents = [];
-  for (let i = 0; i < winnersCount; i++)
-    winnersPercents.push(1000n / winnersCount);
+  return new ErgoUnsignedInput(
+    mockUTxO({
+      ergoTree: contractsAddresses['raffleDetails'],
+      value: FEE,
+      creationHeight: 6,
+      additionalRegisters: {
+        R4: SColl(SColl(SByte), [
+          Array.from(Buffer.from('Test')),
+          Array.from(Buffer.from('Some descriptions...')),
+        ]).toHex(),
+      },
+      assets: [
+        {
+          amount: 1n,
+          tokenId: ticket_token_id,
+        },
+      ],
+    }),
+  );
+};
 
-  const tokens = [
-    raffleNFTToken,
-    {
-      tokenId: LICENSE_TOKEN_ID,
-      amount: 1n,
-    },
-  ];
-  if (collectingToken != null) tokens.push(collectingToken);
-
-  return mockUTxO({
-    ergoTree: contractsAddresses['successRaffle'],
-    value:
-      winnersCount * (FEE + SAFE_MIN_BOX_VALUE) +
-      (2n * FEE + SAFE_MIN_BOX_VALUE + 1_000_000_000n),
-    creationHeight: 5,
-    assets: tokens,
-    additionalRegisters: {
-      R4: SColl(SLong, [10n, 10n, 1_000_000_000n]).toHex(),
-      R5: SColl(SColl(SByte), [
-        Array.from(Buffer.from(partnerAddress)),
+/**
+ * Create raffle-details output box
+ * @param ticket_token_id
+ * @returns Output Box
+ */
+export const createRaffleDetailsOutputBox = (
+  ticket_token_id: string = TICKET_TOKEN_ID,
+) => {
+  const detailsBox = new OutputBuilder(FEE, contractsAddresses['raffleDetails'])
+    .setAdditionalRegisters({
+      R4: SColl(SColl(SByte), [
+        Array.from(Buffer.from('Test')),
+        Array.from(Buffer.from('Some descriptions...')),
       ]).toHex(),
-    },
+    })
+    .addTokens([
+      {
+        amount: 1n,
+        tokenId: ticket_token_id,
+      },
+    ]);
+
+  return detailsBox;
+};
+
+/**
+ * Create and return gift token repo input box
+ * @param winnersCount
+ * @param ticketId
+ * @param giftTokenCount
+ * @returns
+ */
+export const createGiftTokenRepoBoxMock = (
+  winnersCount: number,
+  ticketId: string = TICKET_TOKEN_ID,
+  giftTokenCount: number = 1_000,
+) => {
+  return new ErgoUnsignedInput(
+    mockUTxO({
+      ergoTree: contractsAddresses['giftTokenRepo'],
+      value: FEE * BigInt(winnersCount),
+      creationHeight: 7,
+      additionalRegisters: {
+        R4: SColl(SInt, [1]).toHex(),
+        R5: SColl(SInt, [2]).toHex(),
+        R6: SColl(SInt, [3]).toHex(),
+        R7: SColl(SInt, [giftTokenCount, winnersCount, Number(FEE)]).toHex(),
+        R8: SColl(SByte, Array.from(Buffer.from(ticketId, 'hex'))).toHex(),
+        R9: SInt(1).toHex(),
+      },
+    }),
+  );
+};
+
+/**
+ * Create and return gift token repo output box
+ * @param giftTokenCount
+ * @param winnersCount
+ * @param ticketId
+ * @param mintingToken
+ * @returns
+ */
+export const createGiftTokenRepoOutputBox = (
+  giftTokenCount: number,
+  winnersCount: number,
+  ticketId: string = TICKET_TOKEN_ID,
+  mintingToken: boolean = true,
+  gitTokenCustomAmount?: bigint,
+) => {
+  const giftBox = new OutputBuilder(
+    FEE * BigInt(winnersCount),
+    contractsAddresses['giftTokenRepo'],
+  ).setAdditionalRegisters({
+    R4: SColl(SInt, [1]).toHex(),
+    R5: SColl(SInt, [2]).toHex(),
+    R6: SColl(SInt, [3]).toHex(),
+    R7: SColl(SInt, [giftTokenCount, winnersCount, Number(FEE)]).toHex(),
+    R8: SColl(SByte, Array.from(Buffer.from(ticketId, 'hex'))),
+    R9: SInt(1).toHex(),
   });
+  if (mintingToken)
+    giftBox.mintToken({
+      amount:
+        gitTokenCustomAmount || BigInt(giftTokenCount) * BigInt(winnersCount),
+      name: 'RaffleGiftToken',
+      decimals: 0,
+    });
+
+  return giftBox;
+};
+
+/**
+ * create winners output boxes
+ * @param winnersCount
+ * @param inactiveRaffleBoxId
+ * @returns
+ */
+export const createWinnersOutputBox = (
+  winnersCount: bigint = 1n,
+  inactiveRaffleBoxId: string,
+) => {
+  const winnersBoxes = [];
+  for (let i = 0; i < winnersCount; i++)
+    winnersBoxes.push(
+      new OutputBuilder(2n * FEE, contractsAddresses['winner'])
+        .setAdditionalRegisters({
+          R4: SColl(SLong, [BigInt(i + 1), 1000n / winnersCount, 0n, FEE]),
+          R5: SLong(0n),
+          R6: SColl(SByte, Array.from(Buffer.from(inactiveRaffleBoxId, 'hex'))),
+        })
+        .addTokens([
+          {
+            tokenId: TICKET_TOKEN_ID,
+            amount: 1n,
+          },
+        ]),
+    );
+
+  return winnersBoxes;
+};
+
+/**
+ * Get content and print on the output pretty
+ * @param content
+ * @param prefix
+ */
+export const prettyPrintJson = (content: object, prefix: string = '') => {
+  console.log(
+    prefix,
+    JSON.stringify(
+      content,
+      (k, v) => (typeof v == 'bigint' ? String(v) : v),
+      4,
+    ),
+  );
 };
 
 export const contractsAddresses = initialContracts();

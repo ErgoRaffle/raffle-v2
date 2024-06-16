@@ -13,7 +13,7 @@
     "lint": "npm run lint --workspaces",
     "prepare": "husky install",
     "release": "npm run release --workspaces",
-    "test": "npm run release --workspaces",
+    "test": "npm run test --workspaces",
     "test:related": "npm run test:related --workspaces",
     "type-check": "npm run type-check --workspaces",
     "postinstall": "npx patch-package",

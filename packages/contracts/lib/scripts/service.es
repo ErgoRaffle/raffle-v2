@@ -2,13 +2,14 @@
   // ErgoRaffle V2 Service Contract
   //
   // Registers:
-  //   R4[Coll[Long]]: [ServiceFeePercent, ImplementerFeePercent, CreationFee]
-  //   R5[Coll[Coll[Byte]]]: [OwnerAddress]
+  //   R4[Coll[Long]]: [ServiceFeePercent, ImplementerFeePercent, CreationFee, TxFee]
+  //   R5[Coll[Byte]]: ServiceFeeAddress
   // Tokens:
   //   0: ServiceNft
   //   1: RaffleLicense
   // Context:
   //   C0: Coll[Long]: WinnersPercentList (in raffle creation tx)
+  //   C1: Coll[Coll[Byte]]: [ImplementerAddress, CreatorAddress]
   //
   // Spent in 3 transactions:
   //   - Owner config update with OwnerNft
@@ -21,8 +22,6 @@
   val ownerNft = fromBase64("OWNER_NFT_B64")
   val inactiveRaffleScriptHash = fromBase64("INACTIVE_RAFFLE_SCRIPT_HASH_B64")
   val ticketRepoScriptHash = fromBase64("TICKET_REPO_SCRIPT_HASH_B64")
-  val fee = FEE
-  val minBoxValue = MIN_BOX_VALUE
 
   if (OUTPUTS(0).tokens(0)._1 == ownerNft) {
     // Owner can spend and update the service box with the owner nft
@@ -33,20 +32,20 @@
     val raffleLicense = SELF.tokens(1)._1
     val selfReplication = allOf(Coll(
       outputService.R4[Coll[Long]].get == SELF.R4[Coll[Long]].get,
-      outputService.R5[Coll[Coll[Byte]]].get == SELF.R5[Coll[Coll[Byte]]].get,
+      outputService.R5[Coll[Byte]].get == SELF.R5[Coll[Byte]].get,
       outputService.propositionBytes == SELF.propositionBytes,
       outputService.tokens(0)._1 == serviceNft,
       outputService.tokens(1)._1 == raffleLicense,
       outputService.value >= SELF.value,
       outputService.tokens.size == SELF.tokens.size,
     ))
-    if(outputService.tokens(1)._2 == SELF.tokens(1)._2 + 1L){
+    if(outputService.tokens(1)._2 == SELF.tokens(1)._2 + 1L) {
       // RaffleLicense redeem from SuccessRaffle or TicketRedeem
       // [Service, (SuccessRaffle | TicketRedeem)] --> [Service]
       sigmaProp(selfReplication)
     } else if (outputService.tokens(1)._2 == SELF.tokens(1)._2 - 1L) {
       // New raffle creation
-      // [Service(Self), UserBox] --> [Service, TicketRepo, InactiveRaffle, Change]
+      // [Service, UserBox] --> [Service, TicketRepo, InactiveRaffle, Change]
       val winnersPercent = getVar[Coll[Long]](0).get
       val winnersPercentBytes = winnersPercent.fold(
         Coll[Byte](), 
@@ -64,7 +63,10 @@
       val serviceFeePercent = SELF.R4[Coll[Long]].get(0)
       val implementerFeePercent = SELF.R4[Coll[Long]].get(1)
       val creationFee = SELF.R4[Coll[Long]].get(2)
-      val serviceAddress = SELF.R5[Coll[Coll[Byte]]].get(0)
+      val txFee = SELF.R4[Coll[Long]].get(3)
+      val serviceAddress = SELF.R5[Coll[Byte]].get
+      val implementerAddress = getVar[Coll[Coll[Byte]]](1).get(0)
+      val creatorAddress = getVar[Coll[Coll[Byte]]](1).get(1)
 
       sigmaProp(allOf(Coll(
         // Correct Service format
@@ -74,29 +76,30 @@
         blake2b256(ticketRepo.propositionBytes) == ticketRepoScriptHash,
         ticketRepo.tokens(0)._1 == SELF.id,
         ticketRepo.tokens.size == 1, // Not to steal tickets
-        ticketRepo.value == fee,
+        ticketRepo.value == txFee,
 
         // Correct InactiveRaffle format
-        // R4: [CharityPercentage, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, DeadlineTimestamp, TotalSoldTicket, WinnersCount, CreationFee]
-        // R5: [ServiceAddress, ImplementerAddress, CharityAddress]
+        // R4: [CreatorPercentage, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, DeadlineTimestamp, WinnersCount, TxFee]
+        // R5: [ServiceAddressHash, ImplementerAddressHash, CreatorAddressHash]
         // R6: [Name, Description, Pictures(optional)]
         // R7: [TicketId, WinnersPercentListHash]
         blake2b256(inactiveRaffle.propositionBytes) == inactiveRaffleScriptHash,
         inactiveRaffle.tokens(0)._1 == raffleLicense,
-        inactiveRaffle.R4[Coll[Long]].get.size == 9,
+        inactiveRaffle.R4[Coll[Long]].get.size == 8,
         inactiveRaffle.R4[Coll[Long]].get(0) > 0L,
         inactiveRaffle.R4[Coll[Long]].get(1) == serviceFeePercent,
         inactiveRaffle.R4[Coll[Long]].get(2) == implementerFeePercent,
         inactiveRaffle.R4[Coll[Long]].get(0) + serviceFeePercent + implementerFeePercent <= 100L,
-        inactiveRaffle.R4[Coll[Long]].get(6) == 0L, // No sold ticket at beginning
-        inactiveRaffle.R4[Coll[Long]].get(7) == winnersCount,
-        inactiveRaffle.R4[Coll[Long]].get(8) == creationFee,
+        inactiveRaffle.R4[Coll[Long]].get(6) == winnersCount,
+        inactiveRaffle.R4[Coll[Long]].get(7) == txFee,
         inactiveRaffle.R5[Coll[Coll[Byte]]].get.size == 3,
-        inactiveRaffle.R5[Coll[Coll[Byte]]].get(0) == serviceAddress,
+        inactiveRaffle.R5[Coll[Coll[Byte]]].get(0) == blake2b256(serviceAddress),
+        inactiveRaffle.R5[Coll[Coll[Byte]]].get(1) == blake2b256(implementerAddress),
+        inactiveRaffle.R5[Coll[Coll[Byte]]].get(2) == blake2b256(creatorAddress),
         inactiveRaffle.R6[Coll[Coll[Byte]]].get.size >= 2,
         inactiveRaffle.R7[Coll[Coll[Byte]]].get(0) == SELF.id, // Storing TicketId to match with TicketRepo
         inactiveRaffle.R7[Coll[Coll[Byte]]].get(1) == blake2b256(winnersPercentBytes),
-        inactiveRaffle.value == (winnersCount * (fee + minBoxValue)) + ((2 * fee) + minBoxValue) + creationFee,
+        inactiveRaffle.value >= (4 * txFee * winnersCount) + creationFee,
 
         // Transaction constraints
         winnerPercentsSum == 1000L,
