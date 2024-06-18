@@ -1,1 +1,20 @@
 
+diff --git a/node_modules/@fleet-sdk/compiler/dist/index.mjs b/node_modules/@fleet-sdk/compiler/dist/index.mjs
+index bcca28d..645b6ba 100644
+--- a/node_modules/@fleet-sdk/compiler/dist/index.mjs
++++ b/node_modules/@fleet-sdk/compiler/dist/index.mjs
+@@ -1,8 +1,13 @@
+ import { ensureDefaults, assert, ergoTreeHeaderFlags, isEmpty, isHex } from '@fleet-sdk/common';
+ import { SConstant } from '@fleet-sdk/serializer';
+-import { SigmaCompiler$, Value$, Value } from 'sigmastate-js/main';
++// import { SigmaCompiler$, Value$, Value } from 'sigmastate-js/main';
+ import { ErgoTree } from '@fleet-sdk/core';
+ import { hex } from '@fleet-sdk/crypto';
++import * as sigmastateMain from 'sigmastate-js/main';
++
++var SigmaCompiler$ = sigmastateMain.default.SigmaCompiler$;
++var Value$ = sigmastateMain.Value$;
++var Value = sigmastateMain.Value;
+ 
+ // src/compiler.ts
+ var ContractTemplate = class {
