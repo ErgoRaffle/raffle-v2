@@ -32,7 +32,7 @@
     val raffleLicense = SELF.tokens(1)._1
     val selfReplication = allOf(Coll(
       outputService.R4[Coll[Long]].get == SELF.R4[Coll[Long]].get,
-      outputService.R5[Coll[Coll[Byte]]].get == SELF.R5[Coll[Coll[Byte]]].get,
+      outputService.R5[Coll[Byte]].get == SELF.R5[Coll[Byte]].get,
       outputService.propositionBytes == SELF.propositionBytes,
       outputService.tokens(0)._1 == serviceNft,
       outputService.tokens(1)._1 == raffleLicense,

@@ -25,14 +25,11 @@
   val step = SELF.R9[Int].get
   val giftTokenRepoValidation = if(winnersCount > 1) {
     allOf(Coll(
-      outGiftTokenRepo.R4[Coll[Byte]].get == SELF.R4[Coll[Byte]].get,
-      outGiftTokenRepo.R5[Coll[Byte]].get == SELF.R5[Coll[Byte]].get,
-      outGiftTokenRepo.R6[Coll[Byte]].get == SELF.R6[Coll[Byte]].get,
       outGiftTokenRepo.R7[Coll[Int]].get == SELF.R7[Coll[Int]].get,
       outGiftTokenRepo.R8[Coll[Byte]].get == SELF.R8[Coll[Byte]].get,
       outGiftTokenRepo.tokens(0)._1 == SELF.tokens(0)._1,
       outGiftTokenRepo.tokens(0)._2 == SELF.tokens(0)._2 - giftTokenCount,
-      outGiftTokenRepo.R8[Coll[Int]].get == step + 1,
+      outGiftTokenRepo.R9[Int].get == step + 1,
       outGiftTokenRepo.value >= SELF.value - txFee,
     ))
   } else {
