@@ -16,10 +16,12 @@
     "test": "npm run test --workspaces",
     "test:related": "npm run test:related --workspaces",
     "type-check": "npm run type-check --workspaces",
+    "postinstall": "npm run postinstall --workspaces",
     "version": "npx changeset version && npm i"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.1",
+    "@fleet-sdk/mock-chain": "^0.4.2",
     "@rosen-bridge/changeset-formatter": "^0.1.0",
     "@typescript-eslint/eslint-plugin": "^6.19.1",
     "@typescript-eslint/parser": "^6.19.1",
@@ -31,6 +33,7 @@
     "ts-node": "^10.9.2"
   },
   "dependencies": {
+    "@fleet-sdk/compiler": "^0.4.2",
     "patch-package": "^8.0.0"
   }
 }
