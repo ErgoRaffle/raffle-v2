@@ -10,7 +10,7 @@ const INACTIVE_RAFFLE_SAMPLE_ID = '0'.repeat(64);
  * create fixtures that contains below steps data:
  *   - mock chain and partners
  *   - compile contracts
- *   - create giftTokenRepo and Winners input boxes
+ *   - create Winners input boxes
  * @returns vitest customized "it" object
  */
 function createGiftTokenRepoTest(winnersCount: number = 1) {
@@ -38,11 +38,11 @@ describe('giftTokenRepo', () => {
   const giftTokenRepoBy1WinnerTest = createGiftTokenRepoTest();
   const giftTokenRepoBy5WinnerTest = createGiftTokenRepoTest(5);
 
-  describe('Should transaction of spend one giftTokenRepo box to one winner-box successful', () => {
+  describe('giftTokenRepo box Spending transaction', () => {
     /**
      * @target Should transaction of spend giftTokenRepo box move to one Winner box successful
      * @scenario
-     * - create one giftTokenRepo output box
+     * - create giftTokenRepo input and output boxes
      * - create one winner output box
      * - execution transaction
      * @expected
@@ -86,9 +86,8 @@ describe('giftTokenRepo', () => {
     /**
      * @target Should transaction of spend one giftTokenRepo box to latest box of five winner-boxes successful
      * @scenario
-     * - create one giftTokenRepo output box
+     * - create giftTokenRepo input and output boxes
      * - create five winner output boxes
-     * - create giftTokenRepo output box
      * - execution transaction
      * @expected
      * - transaction result must done successfully
@@ -132,9 +131,8 @@ describe('giftTokenRepo', () => {
     /**
      * @target Should result of transaction be false when more than 1 gift-token move to one box for steal
      * @scenario
-     * - create one giftTokenRepo output box
+     * - create giftTokenRepo input and output boxes
      * - create five winner output boxes
-     * - create giftTokenRepo output box
      * - create one extra box for stealing gift-token
      * - check execution must raise error
      * @expected
@@ -196,9 +194,9 @@ describe('giftTokenRepo', () => {
     /**
      * @target Should result of transaction be false when more than 1 gift-token move to one box of five winner-boxes
      * @scenario
-     * - create one giftTokenRepo output box
+     * - create giftTokenRepo input and output boxes
      * - create five winner output boxes
-     * - create an extra box output box with extra gift-token amount
+     * - Add two gift-token to the winner box instead of one
      * - check execution must raise error
      * @expected
      * - transaction result must throw error
@@ -249,9 +247,9 @@ describe('giftTokenRepo', () => {
     /**
      * @target Should result of transaction be false when more than 1 gift-token move to output giftTokenRepo box
      * @scenario
-     * - create one giftTokenRepo output box
+     * - create giftTokenRepo input and output boxes
      * - create five winner output boxes
-     * - create giftTokenRepo output box with extra gift-token amount
+     * - Add under estimated amount of gift-token to the winner box
      * - check execution must raise error
      * @expected
      * - transaction result must throw error
@@ -276,7 +274,6 @@ describe('giftTokenRepo', () => {
         );
         winnerOutputBoxes[0].addTokens({
           tokenId: giftTokenInputBox.assets[0].tokenId,
-          // Move 99 token to the this box instead of 100
           amount: 1n,
         });
         const giftTokenOutputBox = testUtils.createGiftTokenRepoOutputBox(
@@ -303,9 +300,9 @@ describe('giftTokenRepo', () => {
     /**
      * @target Should result of transaction be false when invalid register in output box
      * @scenario
-     * - create one giftTokenRepo output box
+     * - create giftTokenRepo input box
      * - create five winner output boxes
-     * - create giftTokenRepo output box with invalid register
+     * - create giftTokenRepo output box with invalid gift-token count in register
      * - check execution must raise error
      * @expected
      * - transaction result must throw error
@@ -317,6 +314,7 @@ describe('giftTokenRepo', () => {
           5n,
           INACTIVE_RAFFLE_SAMPLE_ID,
           testUtils.TICKET_TOKEN_ID,
+          1n,
         );
         const giftTokenInputBox = testUtils.createGiftTokenRepoBoxMock(
           1,
@@ -337,11 +335,11 @@ describe('giftTokenRepo', () => {
           5,
           testUtils.TICKET_TOKEN_ID,
           'add',
-          4n,
+          3n, // set invalid amount of giftTokenCount in register
           60_000_000n,
           4,
         );
-        const outBoxes = [winnerOutputBoxes[0], giftTokenOutputBox];
+        const outBoxes = [winnerOutputBoxes[4], giftTokenOutputBox];
 
         const transaction = new TransactionBuilder(chain.height)
           .from([giftTokenInputBox, (winnersInputBoxes as Box[])[4]])
@@ -356,7 +354,7 @@ describe('giftTokenRepo', () => {
     /**
      * @target Should result of transaction be false when invalid step number in output box
      * @scenario
-     * - create one giftTokenRepo output box
+     * - create giftTokenRepo input and output boxes
      * - create five winner output boxes
      * - create giftTokenRepo output box with invalid step number
      * - check execution must raise error
@@ -400,9 +398,9 @@ describe('giftTokenRepo', () => {
     /**
      * @target Should result of transaction be false when over paying fee value
      * @scenario
-     * - create one giftTokenRepo output box
+     * - create giftTokenRepo input box
      * - create five winner output boxes
-     * - create giftTokenRepo output box with invalid step number
+     * - create giftTokenRepo output box with invalid paying fee
      * - check execution must raise error
      * @expected
      * - transaction result must throw error
@@ -453,7 +451,7 @@ describe('giftTokenRepo', () => {
     /**
      * @target Should result of transaction be false when winner output box index is invalid
      * @scenario
-     * - create one giftTokenRepo output box
+     * - create giftTokenRepo input and output boxes
      * - create five winner output boxes
      * - check execution must raise error
      * @expected
@@ -498,7 +496,7 @@ describe('giftTokenRepo', () => {
     /**
      * @target Should result of transaction be false when winner ticket token is invalid
      * @scenario
-     * - create one giftTokenRepo output box
+     * - create giftTokenRepo input and output boxes
      * - create five winner output boxes
      * - check execution must raise error
      * @expected
@@ -510,7 +508,7 @@ describe('giftTokenRepo', () => {
         const winnerOutputBoxes = testUtils.createWinnersOutputBox(
           5n,
           INACTIVE_RAFFLE_SAMPLE_ID,
-          '1234'.repeat(16),
+          '1234'.repeat(16), // Use invalid Ticket-Token id
         );
         const extraInputBox = mockUTxO({
           ergoTree: rosen.ergoTree,
@@ -552,7 +550,7 @@ describe('giftTokenRepo', () => {
     /**
      * @target Should result of transaction be false when deficiency in gift token be evident
      * @scenario
-     * - create one giftTokenRepo output box
+     * - create giftTokenRepo input and output boxes
      * - create five winner output boxes
      * - check execution must raise error
      * @expected
