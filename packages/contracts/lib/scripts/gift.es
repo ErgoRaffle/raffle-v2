@@ -3,7 +3,7 @@
   //
   // Registers:
   //   R4[Coll[Byte]]: [DonatorAddress]
-  //   R5[Coll[Long]]: [WinnerIndex]
+  //   R5[Long]: WinnerIndex
   // Tokens:
   //   0: GiftToken
   //   1: Gift
