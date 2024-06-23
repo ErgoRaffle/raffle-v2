@@ -413,7 +413,7 @@ export const createActiveRaffleOutputBox = (
   creationFee: bigint = 1_000_000_000n,
   value?: bigint,
 ) => {
-  value = value || FEE * winnersCount + creationFee - FEE;
+  value = value || creationFee - FEE;
 
   const tokens = [
     {
@@ -609,16 +609,16 @@ export const createGiftTokenRepoOutputBox = (
  */
 export const createWinnersOutputBox = (
   winnersCount: bigint = 1n,
-  inactiveRaffleBoxId: string,
+  giftTokenId: string,
 ) => {
   const winnersBoxes = [];
   for (let i = 0; i < winnersCount; i++)
     winnersBoxes.push(
-      new OutputBuilder(2n * FEE, contractsAddresses['winner'])
+      new OutputBuilder(3n * FEE, contractsAddresses['winner'])
         .setAdditionalRegisters({
           R4: SColl(SLong, [BigInt(i + 1), 1000n / winnersCount, 0n, FEE]),
           R5: SLong(0n),
-          R6: SColl(SByte, Array.from(Buffer.from(inactiveRaffleBoxId, 'hex'))),
+          R6: SColl(SByte, Array.from(Buffer.from(giftTokenId, 'hex'))),
         })
         .addTokens([
           {
