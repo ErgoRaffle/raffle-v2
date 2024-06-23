@@ -89,8 +89,8 @@
         winnerPrize.tokens(0)._1 == SELF.tokens(0)._1,
         winnerPrize.tokens(1)._1 == SELF.tokens(1)._1,
         winnerPrize.tokens(1)._2 == SELF.tokens(1)._2,
-        winnerPrize.R4.Coll[Long].get(1) == winnerIndex,
-        winnerPrize.R4.Coll[Long].get(2) == giftCount,
+        winnerPrize.R4[Coll[Long]].get(1) == winnerIndex,
+        winnerPrize.R4[Coll[Long]].get(2) == giftCount,
         winnerPrize.R5[Long].get == 0,
 
         // Correct SuccessRaffle format
@@ -101,26 +101,26 @@
   else if (HEIGHT > deadline) {
     // Gift redeem (for failed raffle) 
     // [Winner, Gift] + [(DataInput)GiftRedeem] --> [Winner, UserBox]
-    val giftRedeem = dataInputs(0)
+    val giftRedeem = CONTEXT.dataInputs(0)
     val gift = INPUTS(1)
-    sigmaProp(
+    sigmaProp(allOf(Coll(
       // Correct GiftRedeem format
-      blake2b256(giftRedeem.propositionBytes) == giftRedeemScriptHash
+      blake2b256(giftRedeem.propositionBytes) == giftRedeemScriptHash,
       giftRedeem.tokens(0)._1 == raffleLicense,
 
       // Correct Winner format
       selfReplication,
       outWinner.tokens(1)._1 == SELF.tokens(1)._1,
-      outWinner.tokens(1)._2 == SELF.tokens(1)._1 + 1,
+      outWinner.tokens(1)._2 == SELF.tokens(1)._2 + 1,
       outWinner.R5[Long].get == giftCount - 1,
 
       // Correct Gift format
       gift.tokens(0)._1 == SELF.tokens(1)._1,
-      gift.R5[Long] == winnerIndex,
+      gift.R5[Long].get == winnerIndex,
 
       // Transaction constraints
       INPUTS.size == 2, // Prevent multiple gifts
-    )
+    )))
   } 
   else {
     // New gift creation
