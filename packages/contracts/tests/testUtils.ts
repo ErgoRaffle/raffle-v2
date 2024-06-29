@@ -478,7 +478,6 @@ export const createSuccessRaffleBox = (
 
   return mockUTxO({
     ergoTree: contractsAddresses['successRaffle'],
-    // To Do: Update value in later implementations
     value: winnersCount * FEE + (2n * FEE + 1_000_000_000n),
     creationHeight: 5,
     assets: tokens,

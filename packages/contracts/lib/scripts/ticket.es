@@ -11,6 +11,7 @@
   //   - Ticket redeem
   //      [TicketRedeem, Ticket] --> [TicketRedeem, UserBox]
   //   - Owner ticket collection with TicketCollectorNFT
+  //      [TicketCollector, Ticket] --> [TicketCollector]
   //
   // Involved in 2 transactions as data input:
   //   - Gift unwrap
