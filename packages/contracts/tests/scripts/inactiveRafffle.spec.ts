@@ -49,7 +49,7 @@ describe('inactiveRaffle', () => {
 
   describe('Create active raffle', () => {
     /**
-     * @target inactive-raffle should  create active raffle by 1 winner successfully
+     * @target inactive-raffle should create active raffle by 1 winner successfully
      * @scenario
      * - create three output boxes by valid values and one winner box
      * - execute transaction
@@ -152,7 +152,7 @@ describe('inactiveRaffle', () => {
     );
 
     /**
-     * @target inactive-raffle should  create active raffle by 1 winner and X token-goal
+     * @target inactive-raffle should create active raffle by 1 winner and X token-goal
      * @scenario
      * - create three output boxes by valid values and one winner box
      * - execute transaction
