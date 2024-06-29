@@ -46,8 +46,112 @@ function createInactiveRaffleTest(winnersCount: number = 1) {
 
 describe('ticketRepo', () => {
   const ticketRepoBy1WinnerTest = createInactiveRaffleTest();
+  const ticketRepoBy5WinnerTest = createInactiveRaffleTest(5);
 
   describe('Active raffle creation', () => {
+    /**
+     * @target Should create active raffle by 1 winner successfully
+     * @scenario
+     * - create three output boxes by valid values and one winner box
+     * - execute transaction
+     * - check execution done successfully
+     * @expected
+     * - transaction result must be true
+     */
+    ticketRepoBy1WinnerTest(
+      'Should create active raffle by 1 winner successfully',
+      ({
+        chain,
+        rosen,
+        creator,
+        ticketRepoInputBox,
+        inactiveRaffleInputBox,
+      }) => {
+        const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
+          creator.address.toString(),
+          creator.address.toString(),
+          rosen.address.toString(),
+          1n,
+        );
+        const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
+        const giftTokenRepoOutputBox = testUtils.createGiftTokenRepoOutputBox(
+          1,
+          1,
+        );
+
+        const winnersBoxes = testUtils.createWinnersOutputBox(
+          1n,
+          inactiveRaffleInputBox.boxId.toString(),
+        );
+
+        const transaction = new TransactionBuilder(chain.height)
+          .from([inactiveRaffleInputBox, ticketRepoInputBox])
+          .to([
+            activeRaffleOutputBox,
+            raffleDetailsOutputBox,
+            giftTokenRepoOutputBox,
+            ...winnersBoxes,
+          ])
+          .payFee(testUtils.FEE)
+          .sendChangeTo(creator.address)
+          .build();
+
+        const res = chain.execute(transaction, { signers: [creator] });
+        // Check execution result
+        expect(res).true;
+      },
+    );
+
+    /**
+     * @target Should create active raffle by 5 winner
+     * @scenario
+     * - create three output boxes by valid values and 5 winners boxes
+     * - execute transaction
+     * - check execution done successfully
+     * @expected
+     * - transaction result must be true
+     */
+    ticketRepoBy5WinnerTest(
+      'Should create active raffle by 5 winner',
+      ({
+        chain,
+        rosen,
+        creator,
+        ticketRepoInputBox,
+        inactiveRaffleInputBox,
+      }) => {
+        const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
+          creator.address.toString(),
+          creator.address.toString(),
+          rosen.address.toString(),
+          5n,
+        );
+        const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
+        const giftTokenRepoOutputBox = testUtils.createGiftTokenRepoOutputBox(
+          1,
+          5,
+        );
+        const transaction = new TransactionBuilder(chain.height)
+          .from([inactiveRaffleInputBox, ticketRepoInputBox])
+          .to([
+            activeRaffleOutputBox,
+            raffleDetailsOutputBox,
+            giftTokenRepoOutputBox,
+            ...testUtils.createWinnersOutputBox(
+              5n,
+              inactiveRaffleInputBox.boxId.toString(),
+            ),
+          ])
+          .payFee(testUtils.FEE)
+          .sendChangeTo(creator.address)
+          .build();
+
+        const res = chain.execute(transaction, { signers: [creator] });
+        // Check execution result
+        expect(res).true;
+      },
+    );
+
     /**
      * @target Should creating of active raffle by 1 winner with invalid ticket token id be fail
      * @scenario
