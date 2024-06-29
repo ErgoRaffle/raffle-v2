@@ -47,7 +47,7 @@ function createInactiveRaffleTest(winnersCount: number = 1) {
 describe('ticketRepo', () => {
   const ticketRepoBy1WinnerTest = createInactiveRaffleTest();
 
-  describe('Creating ticket repo', () => {
+  describe('Active raffle creation', () => {
     /**
      * @target Should creating of active raffle by 1 winner with invalid ticket token id be fail
      * @scenario
