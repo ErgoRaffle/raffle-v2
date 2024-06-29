@@ -16,7 +16,6 @@
     "test": "npm run test --workspaces",
     "test:related": "npm run test:related --workspaces",
     "type-check": "npm run type-check --workspaces",
-    "postinstall": "npx patch-package",
     "version": "npx changeset version && npm i"
   },
   "devDependencies": {
@@ -31,7 +30,5 @@
     "prettier": "^3.2.5",
     "ts-node": "^10.9.2"
   },
-  "dependencies": {
-    "patch-package": "^8.0.0"
-  }
+  "dependencies": {}
 }
