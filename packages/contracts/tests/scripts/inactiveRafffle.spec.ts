@@ -1,4 +1,5 @@
 import { it, describe, expect } from 'vitest';
+import { compile } from '@fleet-sdk/compiler';
 import { MockChain, mockUTxO } from '@fleet-sdk/mock-chain';
 import { SColl, SInt, SLong, SByte } from '@fleet-sdk/serializer';
 import { TransactionBuilder, OutputBuilder } from '@fleet-sdk/core';
@@ -24,8 +25,9 @@ function createInactiveRaffleTest(winnersCount: number = 1) {
     Creator: CREATOR_DEFAULT_BALANCE,
     Rosen: ROSEN_DEFAULT_BALANCE,
   });
-
-  const ticketRepoInputBox = testUtils.createTicketRepoBoxMock();
+  const ticketRepoInputBox = testUtils.createTicketRepoBoxMock(
+    compile('{sigmaProp(true);}').toHex().toString(),
+  );
   const inactiveRaffleInputBox = testUtils.createInactiveRaffleBoxMock(
     creator.address.toString(),
     rosen.address.toString(),
