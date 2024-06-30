@@ -1,4 +1,5 @@
 import { it, describe, expect } from 'vitest';
+import { compile } from '@fleet-sdk/compiler';
 import { MockChain, mockUTxO } from '@fleet-sdk/mock-chain';
 import { Box, TransactionBuilder, OutputBuilder } from '@fleet-sdk/core';
 
@@ -24,6 +25,8 @@ function createGiftTokenRepoTest(winnersCount: number = 1) {
     BigInt(winnersCount),
     INACTIVE_RAFFLE_SAMPLE_ID,
     testUtils.TICKET_TOKEN_ID,
+    1n,
+    compile('{sigmaProp(true);}').toHex().toString(),
   );
 
   return it.extend({

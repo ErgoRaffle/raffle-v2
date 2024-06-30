@@ -655,13 +655,14 @@ export const createWinnersBoxMock = (
   inactiveRaffleBoxId: string,
   ticketTokenId: string = TICKET_TOKEN_ID,
   ticketTokenAmount: bigint = 1n,
+  ergoTree?: string,
 ): Box[] => {
   const winnersBoxes = [];
   for (let i = 0; i < winnersCount; i++)
     winnersBoxes.push(
       mockUTxO({
         value: 2n * 15000000n,
-        ergoTree: contractsAddresses['winner'],
+        ergoTree: ergoTree || contractsAddresses['winner'],
         additionalRegisters: {
           R4: SColl(SLong, [
             BigInt(i + 1),
