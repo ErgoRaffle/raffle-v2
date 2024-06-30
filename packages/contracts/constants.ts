@@ -38,7 +38,12 @@ export const scriptsRequireAddresses: {
   },
   ticketRepo: {},
   activeRaffle: {},
-  winner: {},
+  winner: {
+    giftTokenRepo: 'GIFT_SCRIPT_HASH_B64',
+    winnerPrize: 'WINNER_PRIZE_SCRIPT_HASH_B64',
+    successRaffle: 'SUCCESS_RAFFLE_SCRIPT_HASH_B64',
+    giftRedeem: 'GIFT_REDEEM_SCRIPT_HASH_B64',
+  },
   ticket: {},
   successRaffle: {},
   winnerPrize: {},
