@@ -40,7 +40,7 @@ describe('giftTokenRepo', () => {
 
   describe('giftTokenRepo box Spending transaction', () => {
     /**
-     * @target Should transaction of spend giftTokenRepo box move to one Winner box successful
+     * @target Should the transaction of spending gift tokens from the repo box successfully move to one winner's box
      * @scenario
      * - create giftTokenRepo input and output boxes
      * - create one winner output box
@@ -49,7 +49,7 @@ describe('giftTokenRepo', () => {
      * - transaction result must done successfully
      */
     giftTokenRepoBy1WinnerTest(
-      'Should transaction of spend one giftTokenRepo box move to one winner-box successful',
+      "Should the transaction of spending gift tokens from the repo box successfully move to one winner's box",
       ({ chain, winnersInputBoxes }) => {
         const winnerOutputBoxes = testUtils.createWinnersOutputBox(
           1n,
@@ -84,7 +84,7 @@ describe('giftTokenRepo', () => {
     );
 
     /**
-     * @target Should transaction of spend one giftTokenRepo box to latest box of five winner-boxes successful
+     * @target Should the transaction of spending one gift token from the repo box to the latest box of five winner boxes be successful
      * @scenario
      * - create giftTokenRepo input and output boxes
      * - create five winner output boxes
@@ -93,7 +93,7 @@ describe('giftTokenRepo', () => {
      * - transaction result must done successfully
      */
     giftTokenRepoBy5WinnerTest(
-      'Should transaction of spend one giftTokenRepo box to latest box of five winner-boxes successful',
+      'Should the transaction of spending one gift token from the repo box to the latest box of five winner boxes be successful',
       ({ chain, winnersInputBoxes }) => {
         const winnerOutputBoxes = testUtils.createWinnersOutputBox(
           5n,
@@ -129,7 +129,7 @@ describe('giftTokenRepo', () => {
     );
 
     /**
-     * @target Should transaction of spend one giftTokenRepo box to second box of five winner-boxes successful
+     * @target Should the transaction of spending one gift token from the repo box to the second box of the five winner boxes be successful
      * @scenario
      * - create giftTokenRepo input and output boxes
      * - create five winner output boxes
@@ -138,7 +138,7 @@ describe('giftTokenRepo', () => {
      * - transaction result must done successfully
      */
     giftTokenRepoBy5WinnerTest(
-      'Should transaction of spend one giftTokenRepo box to second box of five winner-boxes successful',
+      'Should the transaction of spending one gift token from the repo box to the second box of the five winner boxes be successful',
       ({ chain, winnersInputBoxes }) => {
         const winnerOutputBoxes = testUtils.createWinnersOutputBox(
           5n,
@@ -182,7 +182,7 @@ describe('giftTokenRepo', () => {
     );
 
     /**
-     * @target Should result of transaction be false when more than 1 gift-token move from winnerOutputBoxes to unknown box for steal
+     * @target Should the result of the transaction be false when more than one gift token moves from the winner output boxes to an unknown box for stealing
      * @scenario
      * - create giftTokenRepo input and output boxes
      * - create five winner output boxes
@@ -192,7 +192,7 @@ describe('giftTokenRepo', () => {
      * - transaction result must throw error
      */
     giftTokenRepoBy5WinnerTest(
-      'Should result of transaction be false when more than 1 gift-token move from winnerOutputBoxes to unknown box for steal',
+      'Should the result of the transaction be false when more than one gift token moves from the winner output boxes to an unknown box for stealing',
       ({ chain, rosen, winnersInputBoxes }) => {
         const winnerOutputBoxes = testUtils.createWinnersOutputBox(
           5n,
@@ -245,7 +245,7 @@ describe('giftTokenRepo', () => {
     );
 
     /**
-     * @target Should result of transaction be false when more than 1 gift-token move to one box of five winner-boxes
+     * @target Should the result of the transaction be false when more than one gift token moves to one box of the five winner boxes
      * @scenario
      * - create giftTokenRepo input and output boxes
      * - create five winner output boxes
@@ -255,7 +255,7 @@ describe('giftTokenRepo', () => {
      * - transaction result must throw error
      */
     giftTokenRepoBy5WinnerTest(
-      'Should result of transaction be false when more than 1 gift-token move to one box of five winner-boxes',
+      'Should the result of the transaction be false when more than one gift token moves to one box of the five winner boxes',
       ({ chain, winnersInputBoxes }) => {
         const winnerOutputBoxes = testUtils.createWinnersOutputBox(
           5n,
@@ -298,7 +298,7 @@ describe('giftTokenRepo', () => {
     );
 
     /**
-     * @target Should result of transaction be false when more than 100 gift-token move to output giftTokenRepo box
+     * @target Should the result of the transaction be false when more than 100 gift tokens move to the output gift token repository box
      * @scenario
      * - create giftTokenRepo input and output boxes
      * - create five winner output boxes
@@ -308,7 +308,7 @@ describe('giftTokenRepo', () => {
      * - transaction result must throw error
      */
     giftTokenRepoBy5WinnerTest(
-      'Should result of transaction be false when more than 100 gift-token move to output giftTokenRepo box',
+      'Should the result of the transaction be false when more than 100 gift tokens move to the output gift token repository box',
       ({ chain, winnersInputBoxes }) => {
         const winnerOutputBoxes = testUtils.createWinnersOutputBox(
           5n,
@@ -350,7 +350,7 @@ describe('giftTokenRepo', () => {
     );
 
     /**
-     * @target Should result of transaction be false when invalid register in output box
+     * @target Should the result of the transaction be false when an invalid register is in the output box
      * @scenario
      * - create giftTokenRepo input box
      * - create five winner output boxes
@@ -360,7 +360,7 @@ describe('giftTokenRepo', () => {
      * - transaction result must throw error
      */
     giftTokenRepoBy5WinnerTest(
-      'Should result of transaction be false when invalid register in output box',
+      'Should the result of the transaction be false when an invalid register is in the output box',
       ({ chain, winnersInputBoxes }) => {
         const winnerOutputBoxes = testUtils.createWinnersOutputBox(
           5n,
@@ -403,7 +403,7 @@ describe('giftTokenRepo', () => {
     );
 
     /**
-     * @target Should result of transaction be false when invalid step number in output box
+     * @target Should the result of the transaction be false when there is an invalid step number in the output box
      * @scenario
      * - create giftTokenRepo input and output boxes
      * - create five winner output boxes
@@ -413,7 +413,7 @@ describe('giftTokenRepo', () => {
      * - transaction result must throw error
      */
     giftTokenRepoBy5WinnerTest(
-      'Should result of transaction be false when invalid step number in output box',
+      'Should the result of the transaction be false when there is an invalid step number in the output box',
       ({ chain, winnersInputBoxes }) => {
         const winnerOutputBoxes = testUtils.createWinnersOutputBox(
           5n,
@@ -447,7 +447,7 @@ describe('giftTokenRepo', () => {
     );
 
     /**
-     * @target Should result of transaction be false when over paying fee value
+     * @target Should the result of the transaction be false when over paying fee value
      * @scenario
      * - create giftTokenRepo input box
      * - create five winner output boxes
@@ -457,7 +457,7 @@ describe('giftTokenRepo', () => {
      * - transaction result must throw error
      */
     giftTokenRepoBy5WinnerTest(
-      'Should result of transaction be false when over paying fee value',
+      'Should the result of the transaction be false when over paying fee value',
       ({ chain, winnersInputBoxes }) => {
         const winnerOutputBoxes = testUtils.createWinnersOutputBox(
           5n,
@@ -500,7 +500,7 @@ describe('giftTokenRepo', () => {
     );
 
     /**
-     * @target Should result of transaction be false when winner output box index is invalid
+     * @target Should the result of the transaction be false when invalid index in output winner box
      * @scenario
      * - create giftTokenRepo input and output boxes
      * - create five winner output boxes
@@ -509,7 +509,7 @@ describe('giftTokenRepo', () => {
      * - transaction result must throw error
      */
     giftTokenRepoBy5WinnerTest(
-      'Should result of transaction be false when winner output box index is invalid',
+      'Should the result of the transaction be false when invalid index in output winner box',
       ({ chain, winnersInputBoxes }) => {
         const winnerOutputBoxes = testUtils.createWinnersOutputBox(
           5n,
@@ -545,7 +545,7 @@ describe('giftTokenRepo', () => {
     );
 
     /**
-     * @target Should result of transaction be false when winner ticket token is invalid
+     * @target Should the result of the transaction be false when invalid ticket token in winner box
      * @scenario
      * - create giftTokenRepo input and output boxes
      * - create five winner output boxes
@@ -554,7 +554,7 @@ describe('giftTokenRepo', () => {
      * - transaction result must throw error
      */
     giftTokenRepoBy5WinnerTest(
-      'Should result of transaction be false when winner ticket token is invalid',
+      'Should the result of the transaction be false when invalid ticket token in winner box',
       ({ chain, rosen, winnersInputBoxes }) => {
         const winnerOutputBoxes = testUtils.createWinnersOutputBox(
           5n,
@@ -599,7 +599,7 @@ describe('giftTokenRepo', () => {
     );
 
     /**
-     * @target Should result of transaction be false when deficiency in gift token be evident
+     * @target Should the result of the transaction be false when deficiency in gift token be evident
      * @scenario
      * - create giftTokenRepo input and output boxes
      * - create five winner output boxes
@@ -608,7 +608,7 @@ describe('giftTokenRepo', () => {
      * - transaction result must throw error
      */
     giftTokenRepoBy5WinnerTest(
-      'Should result of transaction be false when deficiency in gift token be evident',
+      'Should the result of the transaction be false when deficiency in gift token be evident',
       ({ chain, rosen, winnersInputBoxes }) => {
         const winnerOutputBoxes = testUtils.createWinnersOutputBox(
           5n,
