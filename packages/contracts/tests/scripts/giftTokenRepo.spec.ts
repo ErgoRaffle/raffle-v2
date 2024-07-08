@@ -1,5 +1,5 @@
 import { it, describe, expect } from 'vitest';
-import { MockChain } from '@fleet-sdk/mock-chain';
+import { MockChain, mockUTxO } from '@fleet-sdk/mock-chain';
 import { Box, TransactionBuilder, OutputBuilder } from '@fleet-sdk/core';
 
 import * as testUtils from '../testUtils';
@@ -199,12 +199,16 @@ describe('giftTokenRepo', () => {
           INACTIVE_RAFFLE_SAMPLE_ID,
           testUtils.TICKET_TOKEN_ID,
         );
+        const extraInput = mockUTxO({
+          value: 2n * testUtils.FEE,
+          ergoTree: rosen.ergoTree,
+        });
         const giftTokenInputBox = testUtils.createGiftTokenRepoBoxMock(
           5,
           testUtils.TICKET_TOKEN_ID,
           testUtils.GIFT_TOKEN_ID,
           5,
-          testUtils.FEE * 5n + 15_000_000n,
+          testUtils.FEE * 5n,
           1,
           25,
         );
@@ -225,7 +229,7 @@ describe('giftTokenRepo', () => {
           testUtils.TICKET_TOKEN_ID,
           'add',
           20n,
-          testUtils.FEE * 4n,
+          testUtils.FEE * 4n + testUtils.FEE,
           2,
         );
         const outBoxes = [
@@ -235,7 +239,11 @@ describe('giftTokenRepo', () => {
         ];
 
         const transaction = new TransactionBuilder(chain.height)
-          .from([giftTokenInputBox, (winnersInputBoxes as Box[])[0]])
+          .from([
+            giftTokenInputBox,
+            (winnersInputBoxes as Box[])[0],
+            extraInput,
+          ])
           .to(outBoxes)
           .payFee(testUtils.FEE)
           .build();
@@ -595,7 +603,7 @@ describe('giftTokenRepo', () => {
     );
 
     /**
-     * @target Should the result of the transaction be false when deficiency in gift token be evident
+     * @target Should the result of the transaction be false when decrease less than gift token count on the output winner box and stay on the output gift token repo
      * @scenario
      * - create giftTokenRepo input and output boxes
      * - create five winner output boxes
@@ -604,7 +612,7 @@ describe('giftTokenRepo', () => {
      * - transaction result must throw error
      */
     giftTokenRepoBy5WinnerTest(
-      'Should the result of the transaction be false when deficiency in gift token be evident',
+      'Should the result of the transaction be false when decrease less than gift token count on the output winner box and stay on the output gift token repo',
       ({ chain, rosen, winnersInputBoxes }) => {
         const winnerOutputBoxes = testUtils.createWinnersOutputBox(
           5n,
