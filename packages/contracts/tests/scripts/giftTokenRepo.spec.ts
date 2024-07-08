@@ -433,20 +433,29 @@ describe('giftTokenRepo', () => {
           5,
           testUtils.TICKET_TOKEN_ID,
           testUtils.GIFT_TOKEN_ID,
-          4,
-          testUtils.FEE * 1n,
-          3,
           2,
+          testUtils.FEE * 5n,
+          2,
+          10,
         );
-        winnerOutputBoxes[4].addTokens({
+        winnerOutputBoxes[1].addTokens({
           tokenId: giftTokenInputBox.assets[0].tokenId,
           amount: 2n,
         });
 
-        const outBoxes = [winnerOutputBoxes[4]];
+        const giftTokenOutputBox = testUtils.createGiftTokenRepoOutputBox(
+          2,
+          5,
+          testUtils.TICKET_TOKEN_ID,
+          'add',
+          8n,
+          testUtils.FEE * 4n,
+          5, // set invalid step
+        );
+        const outBoxes = [winnerOutputBoxes[1], giftTokenOutputBox];
 
         const transaction = new TransactionBuilder(chain.height)
-          .from([giftTokenInputBox, (winnersInputBoxes as Box[])[4]])
+          .from([giftTokenInputBox, (winnersInputBoxes as Box[])[0]])
           .to(outBoxes)
           .payFee(testUtils.FEE)
           .build();
