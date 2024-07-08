@@ -200,7 +200,7 @@ describe('giftTokenRepo', () => {
           testUtils.TICKET_TOKEN_ID,
         );
         const extraInput = mockUTxO({
-          value: 2n * testUtils.FEE,
+          value: testUtils.FEE,
           ergoTree: rosen.ergoTree,
         });
         const giftTokenInputBox = testUtils.createGiftTokenRepoBoxMock(
@@ -217,7 +217,7 @@ describe('giftTokenRepo', () => {
           amount: 4n,
         });
         const extraOutputBox = new OutputBuilder(
-          15_000_000n,
+          testUtils.FEE,
           rosen.ergoTree,
         ).addTokens({
           tokenId: giftTokenInputBox.assets[0].tokenId,
@@ -229,7 +229,7 @@ describe('giftTokenRepo', () => {
           testUtils.TICKET_TOKEN_ID,
           'add',
           20n,
-          testUtils.FEE * 4n + testUtils.FEE,
+          testUtils.FEE * 4n,
           2,
         );
         const outBoxes = [
@@ -290,7 +290,7 @@ describe('giftTokenRepo', () => {
           testUtils.TICKET_TOKEN_ID,
           'add',
           7n,
-          60_000_000n,
+          testUtils.FEE * 4n,
           2,
         );
         const outBoxes = [winnerOutputBoxes[0], giftTokenOutputBox];
@@ -390,12 +390,12 @@ describe('giftTokenRepo', () => {
         });
 
         const giftTokenOutputBox = testUtils.createGiftTokenRepoOutputBox(
-          5,
+          20, // set invalid amount of giftTokenCount in register
           5,
           testUtils.TICKET_TOKEN_ID,
           'add',
-          39n, // set invalid amount of giftTokenCount in register
-          60_000_000n,
+          40n,
+          testUtils.FEE * 4n,
           2,
         );
         const outBoxes = [winnerOutputBoxes[0], giftTokenOutputBox];
@@ -404,7 +404,6 @@ describe('giftTokenRepo', () => {
           .from([giftTokenInputBox, (winnersInputBoxes as Box[])[0]])
           .to(outBoxes)
           .payFee(testUtils.FEE)
-          .burnTokens({ tokenId: testUtils.GIFT_TOKEN_ID, amount: 1n })
           .build();
 
         expect(() => chain.execute(transaction)).toThrowError();
@@ -647,7 +646,7 @@ describe('giftTokenRepo', () => {
           testUtils.TICKET_TOKEN_ID,
           'add',
           9n,
-          15_000_000n,
+          testUtils.FEE,
           2,
         );
 
