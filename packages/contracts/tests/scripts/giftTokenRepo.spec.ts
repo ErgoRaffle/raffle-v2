@@ -390,8 +390,8 @@ describe('giftTokenRepo', () => {
         });
 
         const giftTokenOutputBox = testUtils.createGiftTokenRepoOutputBox(
-          20, // set invalid amount of giftTokenCount in register
-          5,
+          10,
+          20, // set invalid amount of winnersCount in register
           testUtils.TICKET_TOKEN_ID,
           'add',
           40n,
