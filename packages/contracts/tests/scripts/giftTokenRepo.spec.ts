@@ -411,7 +411,7 @@ describe('giftTokenRepo', () => {
     );
 
     /**
-     * @target Should the result of the transaction be false when there is an invalid step number in the winner output box
+     * @target Should the result of the transaction be false when there is an invalid step number in the giftTokenRepo output box
      * @scenario
      * - create giftTokenRepo input and output boxes
      * - create five winner output boxes
@@ -421,7 +421,7 @@ describe('giftTokenRepo', () => {
      * - transaction result must throw error
      */
     giftTokenRepoBy5WinnerTest(
-      'Should the result of the transaction be false when there is an invalid step number in the winner output box',
+      'Should the result of the transaction be false when there is an invalid step number in the giftTokenRepo output box',
       ({ chain, winnersInputBoxes }) => {
         const winnerOutputBoxes = testUtils.createWinnersOutputBox(
           5n,
