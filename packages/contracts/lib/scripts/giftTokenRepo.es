@@ -23,7 +23,7 @@
   val txFee = SELF.R7[Coll[Int]].get(2)
   val ticketId = SELF.R8[Coll[Byte]].get
   val step = SELF.R9[Int].get
-  val giftTokenRepoValidation = if(winnersCount > 1) {
+  val giftTokenRepoValidation = if(step < winnersCount) {
     allOf(Coll(
       outGiftTokenRepo.R7[Coll[Int]].get == SELF.R7[Coll[Int]].get,
       outGiftTokenRepo.R8[Coll[Byte]].get == SELF.R8[Coll[Byte]].get,
