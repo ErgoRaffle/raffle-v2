@@ -214,9 +214,7 @@ describe('inactiveRaffle', () => {
         expect(res).true;
       },
     );
-  });
 
-  describe('Fail creating active raffle', () => {
     /**
      * @target inactive-raffle should fail to create active raffle by missed license-token
      * @scenario
