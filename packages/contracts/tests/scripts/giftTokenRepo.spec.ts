@@ -101,7 +101,7 @@ describe('giftTokenRepo', () => {
           testUtils.TICKET_TOKEN_ID,
         );
         const giftTokenInputBox = testUtils.createGiftTokenRepoBoxMock(
-          1,
+          5,
           testUtils.TICKET_TOKEN_ID,
           testUtils.GIFT_TOKEN_ID,
           10,
@@ -146,7 +146,7 @@ describe('giftTokenRepo', () => {
           testUtils.TICKET_TOKEN_ID,
         );
         const giftTokenInputBox = testUtils.createGiftTokenRepoBoxMock(
-          1,
+          5,
           testUtils.TICKET_TOKEN_ID,
           testUtils.GIFT_TOKEN_ID,
           2,
@@ -160,8 +160,8 @@ describe('giftTokenRepo', () => {
         });
 
         const giftTokenOutputBox = testUtils.createGiftTokenRepoOutputBox(
+          2,
           5,
-          1,
           testUtils.TICKET_TOKEN_ID,
           'add',
           8n,

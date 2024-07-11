@@ -57,7 +57,7 @@ describe('inactiveRaffle', () => {
     createInactiveRaffleTest(1, true);
   const inactiveRaffleBy5WinnersTest = createInactiveRaffleTest(5);
 
-  describe('Create active raffle successful', () => {
+  describe('Active raffle creation', () => {
     /**
      * @target inactive-raffle should create active raffle by 1 winner successfully
      * @scenario
@@ -222,7 +222,7 @@ describe('inactiveRaffle', () => {
      * @scenario
      * - create three output boxes by valid values and one winner box(remove license-token from active box and added to gift box)
      * - execute transaction
-     * - check execution done fail
+     * - check execution result
      * @expected
      * - transaction result must be true
      */
@@ -282,7 +282,7 @@ describe('inactiveRaffle', () => {
      * @scenario
      * - create three output boxes by valid values and one winner box(move one ticket token from active box to gift box)
      * - execute transaction
-     * - check execution done fail
+     * - check execution result
      * @expected
      * - transaction result must be true
      */
@@ -344,7 +344,7 @@ describe('inactiveRaffle', () => {
      * @scenario
      * - create three output boxes by valid values and one winner box(set invalid value on the R4 of active box)
      * - execute transaction
-     * - check execution done fail
+     * - check execution result
      * @expected
      * - transaction result must be true
      */
@@ -413,7 +413,7 @@ describe('inactiveRaffle', () => {
      * @scenario
      * - create three output boxes by valid values and one winner box(set wrong R5 value on the active raffle box)
      * - execute transaction
-     * - check execution done fail
+     * - check execution result
      * @expected
      * - transaction result must be true
      */
@@ -481,7 +481,7 @@ describe('inactiveRaffle', () => {
      * @scenario
      * - create three output boxes by valid values and one winner box(set wrong value of active raffle box)
      * - execute transaction
-     * - check execution done fail
+     * - check execution result
      * @expected
      * - transaction result must be true
      */
@@ -532,16 +532,16 @@ describe('inactiveRaffle', () => {
     );
 
     /**
-     * @target inactive-raffle should fail to create active raffle by wrong collection token on the active-box
+     * @target inactive-raffle should fail to create active raffle by wrong collecting token on the active-box
      * @scenario
-     * - create three output boxes by valid values and one winner box(set wrong collection token on the active-box)
+     * - create three output boxes by valid values and one winner box(set wrong collecting token on the active-box)
      * - execute transaction
-     * - check execution done fail
+     * - check execution result
      * @expected
      * - transaction result must be true
      */
     inactiveRaffleBy1WinnerTest(
-      'Should fail create active raffle by wrong collection token on the inactive-box',
+      'Should fail create active raffle by wrong collecting token on the inactive-box',
       ({
         chain,
         rosen,
@@ -556,7 +556,7 @@ describe('inactiveRaffle', () => {
           rosen.address.toString(),
           1n,
           10n,
-          { tokenId: X_TOKEN_ID, amount: 1n }, // set collection token
+          { tokenId: X_TOKEN_ID, amount: 1n }, // set collecting token
         );
         const extraInputBox = mockUTxO({
           ergoTree: creator.ergoTree,
@@ -592,23 +592,23 @@ describe('inactiveRaffle', () => {
     );
 
     /**
-     * @target inactive-raffle should fail to create active raffle by wrong collection token on the inactive-box
+     * @target inactive-raffle should fail to create active raffle by wrong collecting token on the inactive-box
      * @scenario
-     * - create three output boxes by valid values and one winner box(set wrong collection token on the inactive-box)
+     * - create three output boxes by valid values and one winner box(set wrong collecting token on the inactive-box)
      * - execute transaction
-     * - check execution done fail
+     * - check execution result
      * @expected
      * - transaction result must be true
      */
     inactiveRaffleBy1WinnerTest(
-      'Should fail create active raffle by wrong collection token on the active-box',
+      'Should fail create active raffle by wrong collecting token on the active-box',
       ({ chain, rosen, creator, ticketRepoInputBox }) => {
         const inactiveRaffleInputBox = testUtils.createInactiveRaffleBoxMock(
           testUtils.contractsAddresses['service'],
           rosen.address.toString(),
           creator.address.toString(),
           1n,
-          { tokenId: X_TOKEN_ID, amount: 1n }, // Set collection token as X-Token that missed on the active box
+          { tokenId: X_TOKEN_ID, amount: 1n }, // Set collecting token as X-Token that missed on the active box
         );
 
         const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
@@ -652,7 +652,7 @@ describe('inactiveRaffle', () => {
      * @scenario
      * - create three output boxes by valid values and one winner box(set wrong winner box percentage)
      * - execute transaction
-     * - check execution done fail
+     * - check execution result
      * @expected
      * - transaction result must be true
      */
@@ -709,7 +709,7 @@ describe('inactiveRaffle', () => {
      * @scenario
      * - create three output boxes by valid values and one winner box(set wrong winner box index)
      * - execute transaction
-     * - check execution done fail
+     * - check execution result
      * @expected
      * - transaction result must be true
      */
@@ -766,7 +766,7 @@ describe('inactiveRaffle', () => {
      * @scenario
      * - create three output boxes by valid values and one winner box(set wrong winner box ticket-token)
      * - execute transaction
-     * - check execution done fail
+     * - check execution result
      * @expected
      * - transaction result must be true
      */
@@ -833,7 +833,7 @@ describe('inactiveRaffle', () => {
      * @scenario
      * - create three output boxes by valid values and one winner box(remove ticket token from raffle-details box)
      * - execute transaction
-     * - check execution done fail
+     * - check execution result
      * @expected
      * - transaction result must be true
      */
@@ -893,7 +893,7 @@ describe('inactiveRaffle', () => {
      * @scenario
      * - create three output boxes by valid values and one winner box(set wrong raffle-details box R4 value)
      * - execute transaction
-     * - check execution done fail
+     * - check execution result
      * @expected
      * - transaction result must be true
      */
@@ -953,7 +953,7 @@ describe('inactiveRaffle', () => {
      * @scenario
      * - create three output boxes by valid values and one winner box(set missed some tokens on the gift-token box)
      * - execute transaction
-     * - check execution done fail
+     * - check execution result
      * @expected
      * - transaction result must be true
      */
@@ -1008,7 +1008,7 @@ describe('inactiveRaffle', () => {
      * @scenario
      * - create three output boxes by valid values and one winner box(set wrong R7 value of gift-token box)
      * - execute transaction
-     * - check execution done fail
+     * - check execution result
      * @expected
      * - transaction result must be true
      */
@@ -1069,7 +1069,7 @@ describe('inactiveRaffle', () => {
      * @scenario
      * - create three output boxes by valid values and one winner box(locate giftToken to activeRaffle Box)
      * - execute transaction
-     * - check execution done fail
+     * - check execution result
      * @expected
      * - transaction result must be true
      */
