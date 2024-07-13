@@ -8,7 +8,7 @@ import * as testUtils from '../testUtils';
 import {
   X_TOKEN_ID,
   CREATOR_DEFAULT_BALANCE,
-  ROSEN_DEFAULT_BALANCE,
+  UNKNOWN_WALLET_DEFAULT_BALANCE,
 } from '../testUtils';
 
 /*
@@ -24,9 +24,9 @@ function createInactiveRaffleTest(
   bypassTicketRepoBoxErgoTree: boolean = false,
 ) {
   const chain = new MockChain({ height: 1000 });
-  const { creator, rosen } = testUtils.createPartners(chain, {
+  const { creator, someone } = testUtils.createPartners(chain, {
     Creator: CREATOR_DEFAULT_BALANCE,
-    Rosen: ROSEN_DEFAULT_BALANCE,
+    someone: UNKNOWN_WALLET_DEFAULT_BALANCE,
   });
 
   const ticketRepoInputBox = testUtils.createTicketRepoBoxMock(
@@ -36,14 +36,14 @@ function createInactiveRaffleTest(
   );
   const inactiveRaffleInputBox = testUtils.createInactiveRaffleBoxMock(
     creator.address.toString(),
-    rosen.address.toString(),
+    someone.address.toString(),
     creator.address.toString(),
     BigInt(winnersCount),
   );
 
   return it.extend({
     chain: chain,
-    rosen: rosen,
+    someoneWallet: someone,
     creator: creator,
     ticketRepoInputBox: ticketRepoInputBox,
     inactiveRaffleInputBox: inactiveRaffleInputBox,
@@ -71,7 +71,7 @@ describe('inactiveRaffle', () => {
       'Should create active raffle by 1 winner successfully',
       ({
         chain,
-        rosen,
+        someoneWallet,
         creator,
         ticketRepoInputBox,
         inactiveRaffleInputBox,
@@ -79,7 +79,7 @@ describe('inactiveRaffle', () => {
         const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
           creator.address.toString(),
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           1n,
         );
         const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
@@ -124,7 +124,7 @@ describe('inactiveRaffle', () => {
       'Should create active raffle by 5 winner',
       ({
         chain,
-        rosen,
+        someoneWallet,
         creator,
         ticketRepoInputBox,
         inactiveRaffleInputBox,
@@ -132,7 +132,7 @@ describe('inactiveRaffle', () => {
         const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
           creator.address.toString(),
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           5n,
         );
         const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
@@ -172,10 +172,10 @@ describe('inactiveRaffle', () => {
      */
     inactiveRaffleBy1WinnerTest(
       'Should create active raffle by 1 winner and X token-goal',
-      ({ chain, rosen, creator, ticketRepoInputBox }) => {
+      ({ chain, someoneWallet, creator, ticketRepoInputBox }) => {
         const inactiveRaffleInputBox = testUtils.createInactiveRaffleBoxMock(
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           creator.address.toString(),
           1n,
           { tokenId: X_TOKEN_ID, amount: 1n },
@@ -183,7 +183,7 @@ describe('inactiveRaffle', () => {
         const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
           creator.address.toString(),
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           1n,
           10n,
           { tokenId: X_TOKEN_ID, amount: 1n },
@@ -228,7 +228,7 @@ describe('inactiveRaffle', () => {
       'Should fail create token by missed license-token',
       ({
         chain,
-        rosen,
+        someoneWallet,
         creator,
         ticketRepoInputBox,
         inactiveRaffleInputBox,
@@ -236,7 +236,7 @@ describe('inactiveRaffle', () => {
         const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
           creator.address.toString(),
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           1n,
         );
 
@@ -288,7 +288,7 @@ describe('inactiveRaffle', () => {
       'Should fail create active raffle by wrong ticket token',
       ({
         chain,
-        rosen,
+        someoneWallet,
         creator,
         ticketRepoInputBox,
         inactiveRaffleInputBox,
@@ -296,7 +296,7 @@ describe('inactiveRaffle', () => {
         const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
           creator.address.toString(),
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           1n,
         );
 
@@ -350,7 +350,7 @@ describe('inactiveRaffle', () => {
       'Should fail create by wrong R4 of active raffle',
       ({
         chain,
-        rosen,
+        someoneWallet,
         creator,
         ticketRepoInputBox,
         inactiveRaffleInputBox,
@@ -359,7 +359,7 @@ describe('inactiveRaffle', () => {
         const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
           creator.address.toString(),
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           1n,
         );
         const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
@@ -378,7 +378,7 @@ describe('inactiveRaffle', () => {
                 'hex',
               ),
             ),
-            Array.from(Buffer.from(rosen.address.toString())),
+            Array.from(Buffer.from(someoneWallet.address.toString())),
             Array.from(Buffer.from(creator.address.toString())),
           ]),
           R6: SColl(SLong, [0n]).toHex(),
@@ -419,7 +419,7 @@ describe('inactiveRaffle', () => {
       'Should fail create by wrong R5 of active raffle',
       ({
         chain,
-        rosen,
+        someoneWallet,
         creator,
         ticketRepoInputBox,
         inactiveRaffleInputBox,
@@ -427,7 +427,7 @@ describe('inactiveRaffle', () => {
         const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
           creator.address.toString(),
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           1n,
         );
         const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
@@ -487,7 +487,7 @@ describe('inactiveRaffle', () => {
       'Should fail create by wrong value of active raffle',
       ({
         chain,
-        rosen,
+        someoneWallet,
         creator,
         ticketRepoInputBox,
         inactiveRaffleInputBox,
@@ -495,7 +495,7 @@ describe('inactiveRaffle', () => {
         const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
           creator.address.toString(),
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           1n,
         );
         const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
@@ -542,7 +542,7 @@ describe('inactiveRaffle', () => {
       'Should fail create active raffle by wrong collecting token on the inactive-box',
       ({
         chain,
-        rosen,
+        someoneWallet,
         creator,
         ticketRepoInputBox,
         inactiveRaffleInputBox,
@@ -551,7 +551,7 @@ describe('inactiveRaffle', () => {
         const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
           creator.address.toString(),
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           1n,
           10n,
           { tokenId: X_TOKEN_ID, amount: 1n }, // set collecting token
@@ -600,10 +600,10 @@ describe('inactiveRaffle', () => {
      */
     inactiveRaffleBy1WinnerTest(
       'Should fail create active raffle by wrong collecting token on the active-box',
-      ({ chain, rosen, creator, ticketRepoInputBox }) => {
+      ({ chain, someoneWallet, creator, ticketRepoInputBox }) => {
         const inactiveRaffleInputBox = testUtils.createInactiveRaffleBoxMock(
           testUtils.contractsAddresses['service'],
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           creator.address.toString(),
           1n,
           { tokenId: X_TOKEN_ID, amount: 1n }, // Set collecting token as X-Token that missed on the active box
@@ -612,7 +612,7 @@ describe('inactiveRaffle', () => {
         const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
           creator.address.toString(),
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           1n,
         );
         const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
@@ -658,7 +658,7 @@ describe('inactiveRaffle', () => {
       'Should fail create active raffle by wrong winner box percentage',
       ({
         chain,
-        rosen,
+        someoneWallet,
         creator,
         ticketRepoInputBox,
         inactiveRaffleInputBox,
@@ -666,7 +666,7 @@ describe('inactiveRaffle', () => {
         const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
           creator.address.toString(),
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           1n,
         );
         const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
@@ -715,7 +715,7 @@ describe('inactiveRaffle', () => {
       'Should fail create active raffle by wrong winner box index',
       ({
         chain,
-        rosen,
+        someoneWallet,
         creator,
         ticketRepoInputBox,
         inactiveRaffleInputBox,
@@ -723,7 +723,7 @@ describe('inactiveRaffle', () => {
         const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
           creator.address.toString(),
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           1n,
         );
         const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
@@ -770,10 +770,10 @@ describe('inactiveRaffle', () => {
      */
     inactiveRaffleBy1WinnerTest(
       'Should fail create active raffle by wrong winner box ticket-token',
-      ({ chain, rosen, creator, ticketRepoInputBox }) => {
+      ({ chain, someoneWallet, creator, ticketRepoInputBox }) => {
         const inactiveRaffleInputBox = testUtils.createInactiveRaffleBoxMock(
           testUtils.contractsAddresses['service'],
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           creator.address.toString(),
           1n,
           { tokenId: X_TOKEN_ID, amount: 1n },
@@ -781,7 +781,7 @@ describe('inactiveRaffle', () => {
         const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
           creator.address.toString(),
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           1n,
         );
         const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
@@ -839,7 +839,7 @@ describe('inactiveRaffle', () => {
       'Should fail create active raffle by wrong raffle-details box without ticket token',
       ({
         chain,
-        rosen,
+        someoneWallet,
         creator,
         ticketRepoInputBox,
         inactiveRaffleInputBox,
@@ -847,7 +847,7 @@ describe('inactiveRaffle', () => {
         const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
           creator.address.toString(),
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           1n,
         );
         const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
@@ -899,7 +899,7 @@ describe('inactiveRaffle', () => {
       'Should fail create active raffle by wrong raffle-details box R4 value',
       ({
         chain,
-        rosen,
+        someoneWallet,
         creator,
         ticketRepoInputBox,
         inactiveRaffleInputBox,
@@ -907,7 +907,7 @@ describe('inactiveRaffle', () => {
         const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
           creator.address.toString(),
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           1n,
         );
         const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
@@ -959,7 +959,7 @@ describe('inactiveRaffle', () => {
       'Should fail create active raffle by missed some tokens on the gift-token box',
       ({
         chain,
-        rosen,
+        someoneWallet,
         creator,
         ticketRepoInputBox,
         inactiveRaffleInputBox,
@@ -967,7 +967,7 @@ describe('inactiveRaffle', () => {
         const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
           creator.address.toString(),
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           1n,
         );
         const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
@@ -1014,7 +1014,7 @@ describe('inactiveRaffle', () => {
       'Should fail create active raffle by wrong R7 value of gift-token box',
       ({
         chain,
-        rosen,
+        someoneWallet,
         creator,
         ticketRepoInputBox,
         inactiveRaffleInputBox,
@@ -1022,7 +1022,7 @@ describe('inactiveRaffle', () => {
         const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
           creator.address.toString(),
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           1n,
         );
         const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
@@ -1075,7 +1075,7 @@ describe('inactiveRaffle', () => {
       'should fail to create active raffle by wrong giftToken placement',
       ({
         chain,
-        rosen,
+        someoneWallet,
         creator,
         ticketRepoInputBox,
         inactiveRaffleInputBox,
@@ -1083,7 +1083,7 @@ describe('inactiveRaffle', () => {
         const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
           creator.address.toString(),
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           1n,
         );
         const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
@@ -1149,7 +1149,7 @@ describe('inactiveRaffle', () => {
       'Should fail creating of active raffle by 1 winner with invalid ticket token id',
       ({
         chain,
-        rosen,
+        someoneWallet,
         creator,
         ticketRepoInputBox,
         inactiveRaffleInputBox,
@@ -1157,7 +1157,7 @@ describe('inactiveRaffle', () => {
         const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
           creator.address.toString(),
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           1n,
         );
         const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
@@ -1218,7 +1218,7 @@ describe('inactiveRaffle', () => {
       'Should fail creating of active raffle by 1 winner with invalid number of ticket token',
       ({
         chain,
-        rosen,
+        someoneWallet,
         creator,
         ticketRepoInputBox,
         inactiveRaffleInputBox,
@@ -1226,7 +1226,7 @@ describe('inactiveRaffle', () => {
         const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
           creator.address.toString(),
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           1n,
           undefined,
           undefined,
@@ -1280,11 +1280,11 @@ describe('inactiveRaffle', () => {
      */
     inactiveRaffleByTicketRepoWithErgoTreeAsTrueTest(
       'Should fail creating of active raffle by 1 winner with invalid ticket token id in R7 of inactive input box',
-      ({ chain, rosen, creator, ticketRepoInputBox }) => {
+      ({ chain, someoneWallet, creator, ticketRepoInputBox }) => {
         // Replace Ticket-Token id with invalid id
         const inactiveRaffleInputBox = testUtils.createInactiveRaffleBoxMock(
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           creator.address.toString(),
           1n,
           undefined,
@@ -1309,7 +1309,7 @@ describe('inactiveRaffle', () => {
         const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
           creator.address.toString(),
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           1n,
         );
         const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();

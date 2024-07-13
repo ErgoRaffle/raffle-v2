@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "Raffle v2 related contracts",
   "license": "GPL-3.0",
-  "author": "Rosen Team",
+  "author": "Ergo Raffle Team",
   "type": "module",
   "main": "dist/lib/index.js",
   "types": "dist/index.d.ts",
