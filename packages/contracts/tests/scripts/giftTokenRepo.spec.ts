@@ -15,9 +15,8 @@ const INACTIVE_RAFFLE_SAMPLE_ID = '0'.repeat(64);
  */
 function createGiftTokenRepoTest(winnersCount: number = 1) {
   const chain = new MockChain({ height: 1000 });
-  const { creator, rosen } = testUtils.createPartners(chain, {
+  const { creator } = testUtils.createPartners(chain, {
     Creator: testUtils.CREATOR_DEFAULT_BALANCE,
-    Rosen: testUtils.ROSEN_DEFAULT_BALANCE,
   });
 
   const winnersInputBoxes = testUtils.createWinnersBoxMock(
@@ -28,7 +27,6 @@ function createGiftTokenRepoTest(winnersCount: number = 1) {
 
   return it.extend({
     chain: chain,
-    rosen: rosen,
     creator: creator,
     winnersInputBoxes: winnersInputBoxes,
   });
@@ -72,7 +70,7 @@ describe('giftTokenRepo', () => {
 
         const outBoxes = [winnerOutputBoxes[0]];
         const transaction = new TransactionBuilder(chain.height)
-          .from([giftTokenInputBox, (winnersInputBoxes as Box[])[0]])
+          .from([(winnersInputBoxes as Box[])[0], giftTokenInputBox])
           .to(outBoxes)
           .payFee(testUtils.FEE)
           .build();
@@ -117,7 +115,7 @@ describe('giftTokenRepo', () => {
         const outBoxes = [winnerOutputBoxes[4]];
 
         const transaction = new TransactionBuilder(chain.height)
-          .from([giftTokenInputBox, (winnersInputBoxes as Box[])[4]])
+          .from([(winnersInputBoxes as Box[])[4], giftTokenInputBox])
           .to(outBoxes)
           .payFee(testUtils.FEE)
           .build();
@@ -171,7 +169,7 @@ describe('giftTokenRepo', () => {
         const outBoxes = [winnerOutputBoxes[1], giftTokenOutputBox];
 
         const transaction = new TransactionBuilder(chain.height)
-          .from([giftTokenInputBox, (winnersInputBoxes as Box[])[0]])
+          .from([(winnersInputBoxes as Box[])[0], giftTokenInputBox])
           .to(outBoxes)
           .payFee(testUtils.FEE)
           .build();
@@ -193,7 +191,7 @@ describe('giftTokenRepo', () => {
      */
     giftTokenRepoBy5WinnerTest(
       'Should the result of the transaction be false when more than one gift token moves from the winner output boxes to an unknown box for stealing',
-      ({ chain, rosen, winnersInputBoxes }) => {
+      ({ chain, creator, winnersInputBoxes }) => {
         const winnerOutputBoxes = testUtils.createWinnersOutputBox(
           5n,
           INACTIVE_RAFFLE_SAMPLE_ID,
@@ -201,7 +199,7 @@ describe('giftTokenRepo', () => {
         );
         const extraInput = mockUTxO({
           value: testUtils.FEE,
-          ergoTree: rosen.ergoTree,
+          ergoTree: creator.ergoTree,
         });
         const giftTokenInputBox = testUtils.createGiftTokenRepoBoxMock(
           5,
@@ -218,7 +216,7 @@ describe('giftTokenRepo', () => {
         });
         const extraOutputBox = new OutputBuilder(
           testUtils.FEE,
-          rosen.ergoTree,
+          creator.ergoTree,
         ).addTokens({
           tokenId: giftTokenInputBox.assets[0].tokenId,
           amount: 1n,
@@ -296,7 +294,7 @@ describe('giftTokenRepo', () => {
         const outBoxes = [winnerOutputBoxes[0], giftTokenOutputBox];
 
         const transaction = new TransactionBuilder(chain.height)
-          .from([giftTokenInputBox, (winnersInputBoxes as Box[])[0]])
+          .from([(winnersInputBoxes as Box[])[0], giftTokenInputBox])
           .to(outBoxes)
           .payFee(testUtils.FEE)
           .build();
@@ -348,7 +346,7 @@ describe('giftTokenRepo', () => {
         const outBoxes = [winnerOutputBoxes[0], giftTokenOutputBox];
 
         const transaction = new TransactionBuilder(chain.height)
-          .from([giftTokenInputBox, (winnersInputBoxes as Box[])[0]])
+          .from([(winnersInputBoxes as Box[])[0], giftTokenInputBox])
           .to(outBoxes)
           .payFee(testUtils.FEE)
           .build();
@@ -401,7 +399,7 @@ describe('giftTokenRepo', () => {
         const outBoxes = [winnerOutputBoxes[0], giftTokenOutputBox];
 
         const transaction = new TransactionBuilder(chain.height)
-          .from([giftTokenInputBox, (winnersInputBoxes as Box[])[0]])
+          .from([(winnersInputBoxes as Box[])[0], giftTokenInputBox])
           .to(outBoxes)
           .payFee(testUtils.FEE)
           .build();
@@ -454,7 +452,7 @@ describe('giftTokenRepo', () => {
         const outBoxes = [winnerOutputBoxes[1], giftTokenOutputBox];
 
         const transaction = new TransactionBuilder(chain.height)
-          .from([giftTokenInputBox, (winnersInputBoxes as Box[])[0]])
+          .from([(winnersInputBoxes as Box[])[0], giftTokenInputBox])
           .to(outBoxes)
           .payFee(testUtils.FEE)
           .build();
@@ -507,7 +505,7 @@ describe('giftTokenRepo', () => {
         const outBoxes = [winnerOutputBoxes[0], giftTokenOutputBox];
 
         const transaction = new TransactionBuilder(chain.height)
-          .from([giftTokenInputBox, (winnersInputBoxes as Box[])[0]])
+          .from([(winnersInputBoxes as Box[])[0], giftTokenInputBox])
           .to(outBoxes)
           .payFee(testUtils.FEE * 2n) // Over paying fee value
           .build();
@@ -552,7 +550,7 @@ describe('giftTokenRepo', () => {
         ];
 
         const transaction = new TransactionBuilder(chain.height)
-          .from([giftTokenInputBox, (winnersInputBoxes as Box[])[4]])
+          .from([(winnersInputBoxes as Box[])[4], giftTokenInputBox])
           .to(outBoxes)
           .payFee(testUtils.FEE)
           .build();
@@ -572,7 +570,7 @@ describe('giftTokenRepo', () => {
      */
     giftTokenRepoBy5WinnerTest(
       'Should the result of the transaction be false when invalid ticket token in winner box',
-      ({ chain, rosen }) => {
+      ({ chain, creator }) => {
         const anotherWinnersInputBoxes = testUtils.createWinnersBoxMock(
           5n,
           INACTIVE_RAFFLE_SAMPLE_ID,
@@ -603,7 +601,7 @@ describe('giftTokenRepo', () => {
           .from([giftTokenInputBox, (anotherWinnersInputBoxes as Box[])[4]])
           .to(outBoxes)
           .payFee(testUtils.FEE)
-          .sendChangeTo(rosen.ergoTree)
+          .sendChangeTo(creator.ergoTree)
           .build();
 
         expect(() => chain.execute(transaction)).toThrowError();
@@ -621,7 +619,7 @@ describe('giftTokenRepo', () => {
      */
     giftTokenRepoBy5WinnerTest(
       'Should the result of the transaction be false when decrease less than gift token count on the output winner box and stay on the output gift token repo',
-      ({ chain, rosen, winnersInputBoxes }) => {
+      ({ chain, creator, winnersInputBoxes }) => {
         const winnerOutputBoxes = testUtils.createWinnersOutputBox(
           5n,
           INACTIVE_RAFFLE_SAMPLE_ID,
@@ -653,10 +651,10 @@ describe('giftTokenRepo', () => {
         const outBoxes = [winnerOutputBoxes[3], giftTokenOutputBox];
 
         const transaction = new TransactionBuilder(chain.height)
-          .from([giftTokenInputBox, (winnersInputBoxes as Box[])[3]])
+          .from([(winnersInputBoxes as Box[])[3], giftTokenInputBox])
           .to(outBoxes)
           .payFee(testUtils.FEE)
-          .sendChangeTo(rosen.ergoTree)
+          .sendChangeTo(creator.ergoTree)
           .build();
 
         expect(() => chain.execute(transaction)).toThrowError();

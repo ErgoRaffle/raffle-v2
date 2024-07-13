@@ -33,7 +33,7 @@ export const licenseToken = {
 export const xToken = { amount: 1000n, tokenId: X_TOKEN_ID };
 export const LICENSE_TOKEN_COUNT = 1_000_000_000n;
 export const CREATOR_DEFAULT_BALANCE = 10_000_000_000n;
-export const ROSEN_DEFAULT_BALANCE = 10_000_000_000n;
+export const UNKNOWN_WALLET_DEFAULT_BALANCE = 10_000_000_000n;
 
 /**
  * get an object by partner-name as keys and partner-balance as values
