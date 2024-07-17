@@ -238,8 +238,8 @@ describe('giftTokenRepo', () => {
 
         const transaction = new TransactionBuilder(chain.height)
           .from([
-            giftTokenInputBox,
             (winnersInputBoxes as Box[])[0],
+            giftTokenInputBox,
             extraInput,
           ])
           .to(outBoxes)
@@ -598,7 +598,7 @@ describe('giftTokenRepo', () => {
         const outBoxes = [winnerOutputBoxes[4]];
 
         const transaction = new TransactionBuilder(chain.height)
-          .from([giftTokenInputBox, (anotherWinnersInputBoxes as Box[])[4]])
+          .from([(anotherWinnersInputBoxes as Box[])[4], giftTokenInputBox])
           .to(outBoxes)
           .payFee(testUtils.FEE)
           .sendChangeTo(creator.ergoTree)
