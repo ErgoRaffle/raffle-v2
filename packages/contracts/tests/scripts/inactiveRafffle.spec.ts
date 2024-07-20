@@ -19,10 +19,7 @@ import {
  *   - create ticketRepo input box
  * @returns vitest customized "it" object
  */
-function createInactiveRaffleTest(
-  winnersCount: number = 1,
-  bypassTicketRepoBoxErgoTree: boolean = true,
-) {
+function createInactiveRaffleTest(winnersCount: number = 1) {
   const chain = new MockChain({ height: 1000 });
   const { creator, rosen } = testUtils.createPartners(chain, {
     Creator: CREATOR_DEFAULT_BALANCE,
@@ -30,9 +27,7 @@ function createInactiveRaffleTest(
   });
 
   const ticketRepoInputBox = testUtils.createTicketRepoBoxMock(
-    bypassTicketRepoBoxErgoTree
-      ? compile('{sigmaProp(true);}').toHex().toString()
-      : undefined,
+    compile('{sigmaProp(true);}').toHex().toString(),
   );
   const inactiveRaffleInputBox = testUtils.createInactiveRaffleBoxMock(
     creator.address.toString(),
@@ -53,8 +48,6 @@ function createInactiveRaffleTest(
 
 describe('inactiveRaffle', () => {
   const inactiveRaffleBy1WinnerTest = createInactiveRaffleTest();
-  const inactiveRaffleByTicketRepoWithErgoTreeAsTrueTest =
-    createInactiveRaffleTest(1, true);
   const inactiveRaffleBy5WinnersTest = createInactiveRaffleTest(5);
 
   describe('Create active raffle successful', () => {
@@ -1147,7 +1140,7 @@ describe('inactiveRaffle', () => {
      * @expected
      * - transaction result must throw error
      */
-    inactiveRaffleByTicketRepoWithErgoTreeAsTrueTest(
+    inactiveRaffleBy1WinnerTest(
       'Should fail creating of active raffle by 1 winner with invalid ticket token id',
       ({
         chain,
@@ -1216,7 +1209,7 @@ describe('inactiveRaffle', () => {
      * @expected
      * - transaction result must throw error
      */
-    inactiveRaffleByTicketRepoWithErgoTreeAsTrueTest(
+    inactiveRaffleBy1WinnerTest(
       'Should fail creating of active raffle by 1 winner with invalid number of ticket token',
       ({
         chain,
@@ -1280,7 +1273,7 @@ describe('inactiveRaffle', () => {
      * @expected
      * - transaction result must throw error
      */
-    inactiveRaffleByTicketRepoWithErgoTreeAsTrueTest(
+    inactiveRaffleBy1WinnerTest(
       'Should fail creating of active raffle by 1 winner with invalid ticket token id in R7 of inactive input box',
       ({ chain, rosen, creator, ticketRepoInputBox }) => {
         // Replace Ticket-Token id with invalid id
