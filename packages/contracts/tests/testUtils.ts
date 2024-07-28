@@ -1,5 +1,6 @@
 import {
   Box,
+  Amount,
   ErgoUnsignedInput,
   OutputBuilder,
   TokenAmount,
@@ -7,11 +8,23 @@ import {
 } from '@fleet-sdk/core';
 import {
   MockChain,
+  MockChainParty,
+  BlockState,
+  AssetMetadataMap,
+  MockChainOptions,
+  TransactionExecutionOptions,
   mockUTxO,
   KeyedMockChainParty,
+  ExecutionParameters,
+  mockBlockchainStateContext,
+  BLOCKCHAIN_PARAMETERS,
 } from '@fleet-sdk/mock-chain';
-import { SColl, SByte, SLong, SInt } from '@fleet-sdk/serializer';
-import { blake2b256 } from '@fleet-sdk/crypto';
+import { first, ensureDefaults, Network } from '@fleet-sdk/common';
+import { SColl, SByte, SLong, SInt, decode } from '@fleet-sdk/serializer';
+import { blake2b256, bigintBE, hex, utf8 } from '@fleet-sdk/crypto';
+import type { ErgoUnsignedTransaction } from '@fleet-sdk/core';
+import type { ErgoHDKey } from '@fleet-sdk/wallet';
+import { ProverBuilder$ } from 'sigmastate-js/main';
 
 import * as utils from '../lib/utils';
 import { compileAll } from '../lib/utils';
@@ -32,8 +45,29 @@ export const licenseToken = {
 };
 export const xToken = { amount: 1000n, tokenId: X_TOKEN_ID };
 export const LICENSE_TOKEN_COUNT = 1_000_000_000n;
-export const CREATOR_DEFAULT_BALANCE = 10_000_000_000n;
+export const CREATOR_DEFAULT_BALANCE = 500_000_000_000n;
 export const UNKNOWN_WALLET_DEFAULT_BALANCE = 10_000_000_000n;
+
+const safeUtf8Encode = (v: unknown) =>
+  v instanceof Uint8Array ? utf8.encode(v) : undefined;
+
+type RaffleTransactionExecutionResult = {
+  success: boolean;
+  tx: {
+    dataInputs: object[];
+    id: string;
+    inputs: object[];
+    outputs: object[];
+  } | null;
+  reason?: string;
+};
+
+export type OutputBox = Box<Amount>;
+
+type executeAndReturnOutputsResult = {
+  success: boolean;
+  outputs: OutputBox[];
+};
 
 /**
  * get an object by partner-name as keys and partner-balance as values
@@ -57,9 +91,12 @@ export const createPartners = (
 
 /**
  * Compile all contracts and return
+ * @param extraVarsValues
  * @returns all of contracts
  */
-export const initialContracts = (): { [key: string]: string } => {
+export const initialContracts = (
+  extraVarsValues: { [k: string]: { [k2: string]: string } } = {},
+): { [key: string]: string } => {
   const scriptsVars = { ...constants.defaultScriptsVariables };
   scriptsVars['service'] = {
     OWNER_NFT_B64: Buffer.from(OWNER_NFT_ID, 'hex').toString('base64'),
@@ -69,6 +106,12 @@ export const initialContracts = (): { [key: string]: string } => {
   scriptsVars['ticketRepo'] = {
     RAFFLE_LICENSE_B64: Buffer.from(LICENSE_TOKEN_ID, 'hex').toString('base64'),
   };
+  for (const scriptKeyName of Object.keys(extraVarsValues)) {
+    for (const extraKey of Object.keys(extraVarsValues[scriptKeyName])) {
+      scriptsVars[scriptKeyName][extraKey] =
+        extraVarsValues[scriptKeyName][extraKey];
+    }
+  }
   const finalContractsAddresses = compileAll(
     new Map(Object.entries(scriptsVars)) as unknown as ContextVarsType,
     true,
@@ -92,10 +135,11 @@ export const createServiceBoxMock = (
   serviceFeePercent: bigint = 10n,
   implementerFeePercent: bigint = 10n,
   creationFee: bigint = 1_000_000_000n,
+  ergoTree: string = contractsAddresses['service'],
 ) => {
   return new ErgoUnsignedInput(
     mockUTxO({
-      ergoTree: contractsAddresses['service'],
+      ergoTree: ergoTree,
       value: 11_000_000n,
       creationHeight: 4,
       assets: [
@@ -130,8 +174,9 @@ export const createServiceOutputBox = (
   serviceFeePercent: bigint = 10n,
   implementerFeePercent: bigint = 10n,
   creationFee: bigint = 1_000_000_000n,
+  ergoTree: string = contractsAddresses['service'],
 ) => {
-  return new OutputBuilder(15_000_000n, contractsAddresses['service'])
+  return new OutputBuilder(15_000_000n, ergoTree)
     .addTokens([
       raffleNFTToken,
       {
@@ -176,8 +221,10 @@ export const createTicketRepoBoxMock = (
  * create output Ticket-Box
  * @returns TicketBox
  */
-export const createTicketRepoOutputBox = () => {
-  return new OutputBuilder(FEE, contractsAddresses['ticketRepo']).mintToken({
+export const createTicketRepoOutputBox = (
+  ergoTree: string = contractsAddresses['ticketRepo'],
+) => {
+  return new OutputBuilder(FEE, ergoTree).mintToken({
     amount: 1_000_000_000n,
     name: 'TicketRepoToken',
     decimals: 0,
@@ -290,6 +337,7 @@ export const createInactiveRaffleOutputBox = (
   invalidWinnerHash?: string,
   creationFee: bigint = 1_000_000_000n,
   ticketToken: string = TICKET_TOKEN_ID,
+  ergoTree: string = contractsAddresses['inactiveRaffle'],
 ) => {
   const tokens = [
     {
@@ -304,10 +352,7 @@ export const createInactiveRaffleOutputBox = (
     for (let i = 0; i < winnersCount; i++)
       winnersPercents.push(1000n / winnersCount);
 
-  return new OutputBuilder(
-    4n * FEE * winnersCount + creationFee,
-    contractsAddresses['inactiveRaffle'],
-  )
+  return new OutputBuilder(4n * FEE * winnersCount + creationFee, ergoTree)
     .addTokens(tokens)
     .setAdditionalRegisters({
       R4: SColl(SLong, [
@@ -422,6 +467,8 @@ export const createActiveRaffleOutputBox = (
   creationFee: bigint = 1_000_000_000n,
   value?: bigint,
   ticketTokenAmount?: bigint,
+  ticketTokenId: string = TICKET_TOKEN_ID,
+  ergoTree: string = contractsAddresses['activeRaffle'],
 ) => {
   value = value || FEE * winnersCount + creationFee - FEE;
 
@@ -431,13 +478,13 @@ export const createActiveRaffleOutputBox = (
       amount: 1n,
     },
     {
-      tokenId: TICKET_TOKEN_ID,
+      tokenId: ticketTokenId,
       amount: ticketTokenAmount || 1_000_000_000n - 1n - winnersCount,
     },
   ];
   if (collectingToken != null) tokens.push(collectingToken);
 
-  return new OutputBuilder(value, contractsAddresses['activeRaffle'])
+  return new OutputBuilder(value, ergoTree)
     .addTokens(tokens)
     .setAdditionalRegisters({
       R4: SColl(SLong, [
@@ -525,9 +572,10 @@ export const createRaffleDetailsBoxMock = (
  * @returns Output Box
  */
 export const createRaffleDetailsOutputBox = (
-  ticket_token_id: string = TICKET_TOKEN_ID,
+  ticketTokenId: string = TICKET_TOKEN_ID,
+  ergoTree: string = contractsAddresses['raffleDetails'],
 ) => {
-  const detailsBox = new OutputBuilder(FEE, contractsAddresses['raffleDetails'])
+  const detailsBox = new OutputBuilder(FEE, ergoTree)
     .setAdditionalRegisters({
       R4: SColl(SColl(SByte), [
         Array.from(Buffer.from('Test')),
@@ -537,7 +585,7 @@ export const createRaffleDetailsOutputBox = (
     .addTokens([
       {
         amount: 1n,
-        tokenId: ticket_token_id,
+        tokenId: ticketTokenId,
       },
     ]);
 
@@ -613,10 +661,12 @@ export const createGiftTokenRepoOutputBox = (
   giftAssetTokenCount?: bigint,
   value?: bigint,
   step: number = 1,
+  giftTokenId: string = GIFT_TOKEN_ID,
+  ergoTree: string = contractsAddresses['giftTokenRepo'],
 ) => {
   const giftBox = new OutputBuilder(
     value === undefined ? FEE * BigInt(winnersCount) : value,
-    contractsAddresses['giftTokenRepo'],
+    ergoTree,
   ).setAdditionalRegisters({
     R4: SColl(SInt, [1]).toHex(),
     R5: SColl(SInt, [2]).toHex(),
@@ -636,7 +686,7 @@ export const createGiftTokenRepoOutputBox = (
     giftBox.assets.add({
       amount:
         giftAssetTokenCount || BigInt(giftTokenCount) * BigInt(winnersCount),
-      tokenId: GIFT_TOKEN_ID,
+      tokenId: giftTokenId,
     });
 
   return giftBox;
@@ -700,12 +750,13 @@ export const createWinnersOutputBox = (
   inactiveRaffleBoxId: string,
   ticketTokenId: string = TICKET_TOKEN_ID,
   ticketTokenAmount: bigint = 1n,
+  ergoTree: string = contractsAddresses['winner'],
 ) => {
   const itemsCount = winnersCount || 1;
   const winnersBoxes = [];
   for (let i = 0; i < itemsCount; i++) {
     winnersBoxes.push(
-      new OutputBuilder(2n * FEE, contractsAddresses['winner'])
+      new OutputBuilder(2n * FEE, ergoTree)
         .setAdditionalRegisters({
           R4: SColl(SLong, [BigInt(i + 1), 1000n / winnersCount, 0n, FEE]),
           R5: SLong(0n),
@@ -736,5 +787,151 @@ export const prettyPrintJson = (content: object, prefix: string = '') => {
     ),
   );
 };
+
+export class RaffleMockChain extends MockChain {
+  readonly #parties: MockChainParty[];
+  readonly #tip: BlockState;
+  readonly #base: BlockState;
+  #metadataMap: AssetMetadataMap;
+  latestSuccessTx: object;
+
+  constructor();
+  constructor(height?: number);
+  constructor(options?: MockChainOptions);
+  constructor(heightOrOptions?: number | MockChainOptions) {
+    const options =
+      !heightOrOptions || typeof heightOrOptions === 'number'
+        ? { height: heightOrOptions ?? 0 }
+        : heightOrOptions;
+
+    const state = ensureDefaults(options, {
+      height: 0,
+      timestamp: new Date().getTime(),
+      parameters: ensureDefaults(options.parameters, BLOCKCHAIN_PARAMETERS),
+    });
+
+    super();
+
+    this.#tip = state;
+    this.#base = { ...state };
+    this.#parties = [];
+    this.#metadataMap = new Map();
+
+    this.latestSuccessTx = {};
+  }
+
+  #executeAndReturnTx = (
+    unsigned: ErgoUnsignedTransaction,
+    keys: ErgoHDKey[],
+    parameters?: ExecutionParameters,
+  ): RaffleTransactionExecutionResult => {
+    for (const key of keys) {
+      if (!key.hasPrivateKey()) {
+        throw new Error(
+          `ErgoHDKey '${hex.encode(key.publicKey)}' must have a private key.`,
+        );
+      }
+    }
+
+    const eip12Tx = unsigned.toEIP12Object();
+    const params = ensureDefaults(parameters, {
+      context: mockBlockchainStateContext(),
+      parameters: BLOCKCHAIN_PARAMETERS,
+      network: Network.Mainnet,
+      baseCost: 0,
+    });
+
+    try {
+      const builder = ProverBuilder$.create(params.parameters, params.network);
+      for (const key of keys) {
+        builder.withDLogSecret(bigintBE.encode(key.privateKey as Uint8Array));
+      }
+      const prover = builder.build();
+
+      const reducedTx = prover.reduce(
+        params.context,
+        eip12Tx,
+        eip12Tx.inputs,
+        eip12Tx.dataInputs,
+        unsigned.burning.tokens,
+        params.baseCost,
+      );
+
+      const tx = prover.signReduced(reducedTx, undefined);
+
+      return { success: true, tx: tx };
+    } catch (e) {
+      return { success: false, reason: (e as Error).message, tx: null };
+    }
+  };
+
+  executeAndReturnOutputs = (
+    unsignedTransaction: ErgoUnsignedTransaction,
+    options?: TransactionExecutionOptions,
+    baseCost?: number,
+  ): executeAndReturnOutputsResult => {
+    const keys = (options?.signers || this.#parties)
+      .filter((p): p is KeyedMockChainParty => p instanceof KeyedMockChainParty)
+      .map((p) => p.key);
+
+    const context = mockBlockchainStateContext({
+      headers: {
+        quantity: 10,
+        fromHeight: this.#tip.height,
+        fromTimestamp: this.#tip.timestamp,
+      },
+    });
+
+    const result = this.#executeAndReturnTx(unsignedTransaction, keys, {
+      context,
+      baseCost,
+      parameters: this.#tip.parameters,
+    });
+
+    if (!result.success) {
+      if (options?.throw !== false) throw new Error(result.reason);
+      return { success: false, outputs: [] };
+    }
+
+    const { inputs, outputs } = unsignedTransaction.toPlainObject();
+    for (const party of this.#parties) {
+      for (let i = inputs.length - 1; i >= 0; i--) {
+        if (party.utxos.exists(inputs[i].boxId)) {
+          party.utxos.remove(inputs[i].boxId);
+        }
+      }
+
+      for (let i = outputs.length - 1; i >= 0; i--) {
+        if (party.ergoTree === outputs[i].ergoTree) {
+          party.utxos.add(outputs[i]);
+          outputs.splice(i, 1);
+        }
+      }
+    }
+
+    this.#pushMetadata(unsignedTransaction);
+
+    this.newBlock();
+
+    return { success: true, outputs: result.tx!.outputs as OutputBox[] };
+  };
+
+  #pushMetadata(transaction: ErgoUnsignedTransaction) {
+    const firstInputId = first(transaction.inputs).boxId;
+    const box = transaction.outputs.find((output) =>
+      output.assets.some((asset) => asset.tokenId === firstInputId),
+    );
+    if (!box) return;
+
+    const name = decode(box.additionalRegisters.R4, safeUtf8Encode);
+    const decimals = decode(box.additionalRegisters.R6, safeUtf8Encode);
+    if (name) {
+      this.#metadataMap.set(firstInputId, {
+        name,
+        decimals: decimals ? Number.parseInt(decimals) : undefined,
+      });
+    }
+  }
+}
 
 export const contractsAddresses = initialContracts();
