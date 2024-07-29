@@ -1139,7 +1139,7 @@ describe('inactiveRaffle', () => {
      * - transaction result must throw error
      */
     inactiveRaffleBy1WinnerTest(
-      'Should fail creating of active raffle by 1 winner with invalid ticket token id',
+      'should fail creating of active raffle by 1 winner with invalid ticket token id',
       ({
         chain,
         someoneWallet,
@@ -1208,7 +1208,7 @@ describe('inactiveRaffle', () => {
      * - transaction result must throw error
      */
     inactiveRaffleBy1WinnerTest(
-      'Should fail creating of active raffle by 1 winner with invalid number of ticket token',
+      'should fail creating of active raffle by 1 winner with invalid number of ticket token',
       ({
         chain,
         someoneWallet,
@@ -1272,7 +1272,7 @@ describe('inactiveRaffle', () => {
      * - transaction result must throw error
      */
     inactiveRaffleBy1WinnerTest(
-      'Should fail creating of active raffle by 1 winner with invalid ticket token id in R7 of inactive input box',
+      'should fail creating of active raffle by 1 winner with invalid ticket token id in R7 of inactive input box',
       ({ chain, someoneWallet, creator, ticketRepoInputBox }) => {
         // Replace Ticket-Token id with invalid id
         const inactiveRaffleInputBox = testUtils.createInactiveRaffleBoxMock(
