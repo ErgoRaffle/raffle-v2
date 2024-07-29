@@ -4,8 +4,13 @@ import { SColl, SByte, SLong } from '@fleet-sdk/serializer';
 import { Box, TransactionBuilder, OutputBuilder } from '@fleet-sdk/core';
 
 import * as testUtils from '../testUtils';
-import { createPartners, createServiceBoxMock, X_TOKEN_ID, CREATOR_DEFAULT_BALANCE, ROSEN_DEFAULT_BALANCE } from '../testUtils';
-
+import {
+  createPartners,
+  createServiceBoxMock,
+  X_TOKEN_ID,
+  CREATOR_DEFAULT_BALANCE,
+  UNKNOWN_WALLET_DEFAULT_BALANCE,
+} from '../testUtils';
 
 /*
  * create fixtures that contains below steps data:
@@ -13,35 +18,34 @@ import { createPartners, createServiceBoxMock, X_TOKEN_ID, CREATOR_DEFAULT_BALAN
  *   - compile contracts
  *   - create service input box
  * @returns vitest customized "it" object
-*/
+ */
 const createRaffleServiceTest = (winnersCount: bigint = 1n) => {
   const chain_ = new MockChain({ height: 1000 });
-  const { creator, rosen } = createPartners(chain_, {
+  const { creator, someone } = createPartners(chain_, {
     Creator: CREATOR_DEFAULT_BALANCE,
-    Rosen: ROSEN_DEFAULT_BALANCE,
+    someone: UNKNOWN_WALLET_DEFAULT_BALANCE,
   });
   creator.addBalance({ tokens: [{ tokenId: X_TOKEN_ID, amount: 100n }] });
   // Created input service-box
   const serviceBox = createServiceBoxMock(creator.address.toString());
   const winnersPercent = [];
-  for(let i = 0; i < winnersCount; i++)
+  for (let i = 0; i < winnersCount; i++)
     winnersPercent.push(1000n / winnersCount);
-  serviceBox.setContextExtension({ 
+  serviceBox.setContextExtension({
     0: SColl(SLong, winnersPercent),
     1: SColl(SColl(SByte), [
-      Array.from(Buffer.from(rosen.address.toString())),
-      Array.from(Buffer.from(creator.address.toString()))
-    ])
-   });
+      Array.from(Buffer.from(someone.address.toString())),
+      Array.from(Buffer.from(creator.address.toString())),
+    ]),
+  });
 
   return it.extend({
     chain: chain_,
-    rosen: rosen,
+    someoneWallet: someone,
     creator: creator,
     inputBoxes: [serviceBox, ...creator.utxos.toArray()],
   });
-}
-
+};
 
 describe('Service', () => {
   const raffleServiceTest = createRaffleServiceTest();
@@ -59,13 +63,15 @@ describe('Service', () => {
      * - it should create three output box
      */
     raffleServiceTest(
-      'Should create raffle by 1 winner and by erg-goal successfully',
-      ({ chain, rosen, creator, inputBoxes }) => {
-        const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString());
+      'should create raffle by 1 winner and by erg-goal successfully',
+      ({ chain, someoneWallet, creator, inputBoxes }) => {
+        const serviceOutputBox = testUtils.createServiceOutputBox(
+          creator.address.toString(),
+        );
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           creator.address.toString(),
           1n,
           undefined,
@@ -73,7 +79,7 @@ describe('Service', () => {
           undefined,
           undefined,
           1_000_000_000n,
-          inputBoxes[0].boxId.toString()
+          inputBoxes[0].boxId.toString(),
         );
         // Execute transaction
         const transaction = new TransactionBuilder(chain.height)
@@ -86,7 +92,7 @@ describe('Service', () => {
         const res = chain.execute(transaction, { signers: [creator] });
         // Check execution result
         expect(res).true;
-      }
+      },
     );
 
     /**
@@ -100,14 +106,16 @@ describe('Service', () => {
      * - it should create three output box
      */
     raffleServiceBy10WinnersTest(
-      'Should create raffle by 10 winners and by erg-goal successfully',
-      ({ chain, rosen, creator, inputBoxes }) => {
+      'should create raffle by 10 winners and by erg-goal successfully',
+      ({ chain, someoneWallet, creator, inputBoxes }) => {
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString());
+        const serviceOutputBox = testUtils.createServiceOutputBox(
+          creator.address.toString(),
+        );
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           creator.address.toString(),
           10n,
           undefined,
@@ -115,7 +123,7 @@ describe('Service', () => {
           undefined,
           undefined,
           1_000_000_000n,
-          inputBoxes[0].boxId.toString()
+          inputBoxes[0].boxId.toString(),
         );
         // Execute transaction
         const transaction = new TransactionBuilder(chain.height)
@@ -143,14 +151,16 @@ describe('Service', () => {
      * - it should create three output box
      */
     raffleServiceTest(
-      'Should create raffle by 1 winner and X token-goal successfully',
-      ({ chain, rosen, creator, inputBoxes }) => {
+      'should create raffle by 1 winner and X token-goal successfully',
+      ({ chain, someoneWallet, creator, inputBoxes }) => {
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString());
+        const serviceOutputBox = testUtils.createServiceOutputBox(
+          creator.address.toString(),
+        );
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           creator.address.toString(),
           1n,
           { tokenId: testUtils.X_TOKEN_ID, amount: 1n },
@@ -158,7 +168,7 @@ describe('Service', () => {
           undefined,
           undefined,
           1_000_000_000n,
-          inputBoxes[0].boxId.toString()
+          inputBoxes[0].boxId.toString(),
         );
         // Execute transaction
         const transaction = new TransactionBuilder(chain.height)
@@ -186,13 +196,15 @@ describe('Service', () => {
      */
     raffleServiceTest(
       'should fail when try to create new raffle without LicenseToken on the inactiveRaffleOutputBox',
-      ({ chain, rosen, creator, inputBoxes }) => {
+      ({ chain, someoneWallet, creator, inputBoxes }) => {
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString());
+        const serviceOutputBox = testUtils.createServiceOutputBox(
+          creator.address.toString(),
+        );
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           creator.address.toString(),
           1n,
         );
@@ -208,7 +220,7 @@ describe('Service', () => {
         expect(() =>
           chain.execute(transaction, { signers: [creator] }),
         ).toThrowError();
-      }
+      },
     );
 
     /**
@@ -224,13 +236,16 @@ describe('Service', () => {
      */
     raffleServiceTest(
       'should fail when try to create new raffle without decreasing LicenseToken from serviceOutputBox',
-      ({ chain, rosen, creator, inputBoxes }) => {
+      ({ chain, someoneWallet, creator, inputBoxes }) => {
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString(), 1000000000n);
+        const serviceOutputBox = testUtils.createServiceOutputBox(
+          creator.address.toString(),
+          1000000000n,
+        );
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           creator.address.toString(),
           1n,
         );
@@ -261,13 +276,15 @@ describe('Service', () => {
      */
     raffleServiceTest(
       'should fail when try to create new raffle with incorrect service fee',
-      ({ chain, rosen, creator, inputBoxes }) => {
+      ({ chain, someoneWallet, creator, inputBoxes }) => {
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString());
+        const serviceOutputBox = testUtils.createServiceOutputBox(
+          creator.address.toString(),
+        );
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           creator.address.toString(),
           1n,
           undefined,
@@ -300,7 +317,7 @@ describe('Service', () => {
      */
     raffleServiceTest(
       'should fail when try to create new raffle with invalid license fee on the output service box',
-      ({ chain, rosen, creator, inputBoxes }) => {
+      ({ chain, someoneWallet, creator, inputBoxes }) => {
         // Create output boxes
         const serviceOutputBox = testUtils.createServiceOutputBox(
           creator.address.toString(),
@@ -311,7 +328,7 @@ describe('Service', () => {
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           creator.address.toString(),
           1n,
         );
@@ -341,17 +358,19 @@ describe('Service', () => {
      */
     raffleServiceTest(
       'should fail when try to create new raffle with incorrect sum of winners percents',
-      ({ chain, rosen, creator, inputBoxes }) => {
+      ({ chain, someoneWallet, creator, inputBoxes }) => {
         const serviceBox = inputBoxes[0];
         serviceBox.setContextExtension({
           0: SColl(SLong, [500n, 600n]),
         });
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString());
+        const serviceOutputBox = testUtils.createServiceOutputBox(
+          creator.address.toString(),
+        );
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           creator.address.toString(),
           2n,
           undefined,
@@ -383,13 +402,15 @@ describe('Service', () => {
      */
     raffleServiceTest(
       'should fail when try to create new raffle with invalid winners hash',
-      ({ chain, rosen, creator, inputBoxes }) => {
+      ({ chain, someoneWallet, creator, inputBoxes }) => {
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString());
+        const serviceOutputBox = testUtils.createServiceOutputBox(
+          creator.address.toString(),
+        );
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           creator.address.toString(),
           1n,
           undefined,
@@ -423,18 +444,20 @@ describe('Service', () => {
      */
     raffleServiceTest(
       'should fail of try to create new raffle with incorrect winners count',
-      ({ chain, rosen, creator, inputBoxes }) => {
+      ({ chain, someoneWallet, creator, inputBoxes }) => {
         // Mock Required Things
         const serviceBox = inputBoxes[0];
         serviceBox.setContextExtension({
           0: SColl(SLong, [500n, 500n]),
         });
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString());
+        const serviceOutputBox = testUtils.createServiceOutputBox(
+          creator.address.toString(),
+        );
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           creator.address.toString(),
           2n,
           undefined,
@@ -466,13 +489,15 @@ describe('Service', () => {
      */
     raffleServiceTest(
       'should fail when try to create new raffle with incorrect winners count in extension',
-      ({ chain, rosen, creator, inputBoxes }) => {
+      ({ chain, someoneWallet, creator, inputBoxes }) => {
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString());
+        const serviceOutputBox = testUtils.createServiceOutputBox(
+          creator.address.toString(),
+        );
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           creator.address.toString(),
           2n,
         );
@@ -502,18 +527,20 @@ describe('Service', () => {
      */
     raffleServiceTest(
       'should fail when try to create new raffle with incorrect sum of winners percents',
-      ({ chain, rosen, creator, inputBoxes }) => {
+      ({ chain, someoneWallet, creator, inputBoxes }) => {
         // Mock Required Things
         const serviceBox = inputBoxes[0];
         serviceBox.setContextExtension({
           0: SColl(SLong, [450n, 450n]),
         });
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString());
+        const serviceOutputBox = testUtils.createServiceOutputBox(
+          creator.address.toString(),
+        );
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           creator.address.toString(),
           2n,
           undefined,
@@ -545,17 +572,19 @@ describe('Service', () => {
      */
     raffleServiceTest(
       'should fail when try to create new raffle with incorrect ticket-id',
-      ({ chain, rosen, creator, inputBoxes }) => {
+      ({ chain, someoneWallet, creator, inputBoxes }) => {
         const serviceBox = inputBoxes[0];
         serviceBox.setContextExtension({
           0: SColl(SLong, [500n, 500n]),
         });
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox(creator.address.toString());
+        const serviceOutputBox = testUtils.createServiceOutputBox(
+          creator.address.toString(),
+        );
         const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           creator.address.toString(),
           2n,
           undefined,
@@ -563,7 +592,7 @@ describe('Service', () => {
           undefined,
           undefined,
           1_000_000_000n,
-          '0'.repeat(64)
+          '0'.repeat(64),
         );
         // Execute transaction
         const transaction = new TransactionBuilder(chain.height)
@@ -591,7 +620,7 @@ describe('Service', () => {
      * - transaction result must be true
      */
     raffleServiceTest(
-      'Should spend raffle ServiceBox by OwnerNFT',
+      'should spend raffle ServiceBox by OwnerNFT',
       ({ chain, creator, inputBoxes }) => {
         const serviceBox = inputBoxes[0];
         creator.addBalance({
@@ -636,17 +665,22 @@ describe('Service', () => {
      * - transaction result must be true
      */
     raffleServiceTest(
-      'Should close raffle or Redeem Raffle',
-      ({ chain, creator, rosen }) => {
+      'should close raffle or Redeem Raffle',
+      ({ chain, creator, someoneWallet }) => {
         // Mock Required Things
-        const serviceBox = testUtils.createServiceBoxMock(creator.address.toString(), 999_999_999n);
+        const serviceBox = testUtils.createServiceBoxMock(
+          creator.address.toString(),
+          999_999_999n,
+        );
         const successRaffleInputBox = testUtils.createSuccessRaffleBox(
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           1n,
         );
         // Create output boxes
-        const serviceOutputBox =
-          testUtils.createServiceOutputBox(creator.address.toString(), 1_000_000_000n);
+        const serviceOutputBox = testUtils.createServiceOutputBox(
+          creator.address.toString(),
+          1_000_000_000n,
+        );
         const inputBoxes: Box<bigint>[] = [
           serviceBox,
           successRaffleInputBox,
@@ -660,7 +694,7 @@ describe('Service', () => {
           .sendChangeTo(creator.address)
           .build();
 
-        const res = chain.execute(transaction, { signers: [rosen] });
+        const res = chain.execute(transaction, { signers: [someoneWallet] });
         // Check execution result
         expect(res).true;
       },
