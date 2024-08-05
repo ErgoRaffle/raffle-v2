@@ -98,13 +98,20 @@ export const initialContracts = (
   extraVarsValues: { [k: string]: { [k2: string]: string } } = {},
 ): { [key: string]: string } => {
   const scriptsVars = { ...constants.defaultScriptsVariables };
+  const defaultLicenseTokenId = Buffer.from(LICENSE_TOKEN_ID, 'hex').toString(
+    'base64',
+  );
+
   scriptsVars['service'] = {
     OWNER_NFT_B64: Buffer.from(OWNER_NFT_ID, 'hex').toString('base64'),
     FEE: constants.DEFAULT_FEE,
     MIN_BOX_VALUE: SAFE_MIN_BOX_VALUE,
   };
   scriptsVars['ticketRepo'] = {
-    RAFFLE_LICENSE_B64: Buffer.from(LICENSE_TOKEN_ID, 'hex').toString('base64'),
+    RAFFLE_LICENSE_B64: defaultLicenseTokenId,
+  };
+  scriptsVars['winner'] = {
+    RAFFLE_LICENSE_B64: defaultLicenseTokenId,
   };
   for (const scriptKeyName of Object.keys(extraVarsValues)) {
     for (const extraKey of Object.keys(extraVarsValues[scriptKeyName])) {
@@ -705,13 +712,14 @@ export const createWinnersBoxMock = (
   inactiveRaffleBoxId: string,
   ticketTokenId: string = TICKET_TOKEN_ID,
   ticketTokenAmount: bigint = 1n,
+  ergoTree: string = contractsAddresses['winner'],
 ): Box[] => {
   const winnersBoxes = [];
   for (let i = 0; i < winnersCount; i++)
     winnersBoxes.push(
       mockUTxO({
         value: 2n * 15000000n,
-        ergoTree: contractsAddresses['winner'],
+        ergoTree: ergoTree,
         additionalRegisters: {
           R4: SColl(SLong, [
             BigInt(i + 1),
@@ -777,12 +785,20 @@ export const createWinnersOutputBox = (
  * @param content
  * @param prefix
  */
-export const prettyPrintJson = (content: object, prefix: string = '') => {
+export const prettyPrintJson = (
+  content: object,
+  prefix: string = '',
+  briefErgoTree: boolean = true,
+) => {
   console.log(
     prefix,
     JSON.stringify(
       content,
-      (k, v) => (typeof v == 'bigint' ? String(v) : v),
+      (k, v) => {
+        if ((briefErgoTree && k == '_ergoTree') || k == 'ergoTree')
+          return '...';
+        return typeof v == 'bigint' ? String(v) : v;
+      },
       4,
     ),
   );

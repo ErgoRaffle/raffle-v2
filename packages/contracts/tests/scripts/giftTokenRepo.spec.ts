@@ -1,4 +1,5 @@
 import { it, describe, expect } from 'vitest';
+import { compile } from '@fleet-sdk/compiler';
 import { MockChain, mockUTxO } from '@fleet-sdk/mock-chain';
 import { Box, TransactionBuilder, OutputBuilder } from '@fleet-sdk/core';
 
@@ -23,6 +24,8 @@ function createGiftTokenRepoTest(winnersCount: number = 1) {
     BigInt(winnersCount),
     INACTIVE_RAFFLE_SAMPLE_ID,
     testUtils.TICKET_TOKEN_ID,
+    undefined,
+    compile('{sigmaProp(true);}').toHex().toString(),
   );
 
   return it.extend({
@@ -57,14 +60,14 @@ describe('giftTokenRepo', () => {
         const giftTokenInputBox = testUtils.createGiftTokenRepoBoxMock(
           1,
           testUtils.TICKET_TOKEN_ID,
-          testUtils.GIFT_TOKEN_ID,
+          INACTIVE_RAFFLE_SAMPLE_ID,
           2,
           testUtils.FEE * BigInt(1),
           1,
           2,
         );
         winnerOutputBoxes[0].addTokens({
-          tokenId: testUtils.GIFT_TOKEN_ID,
+          tokenId: INACTIVE_RAFFLE_SAMPLE_ID,
           amount: 2n,
         });
 
@@ -146,7 +149,7 @@ describe('giftTokenRepo', () => {
         const giftTokenInputBox = testUtils.createGiftTokenRepoBoxMock(
           5,
           testUtils.TICKET_TOKEN_ID,
-          testUtils.GIFT_TOKEN_ID,
+          INACTIVE_RAFFLE_SAMPLE_ID,
           2,
           testUtils.FEE * 5n,
           2,
@@ -165,8 +168,13 @@ describe('giftTokenRepo', () => {
           8n,
           testUtils.FEE * 4n,
           3,
+          INACTIVE_RAFFLE_SAMPLE_ID,
         );
         const outBoxes = [winnerOutputBoxes[1], giftTokenOutputBox];
+        testUtils.prettyPrintJson([
+          [(winnersInputBoxes as Box[])[0], giftTokenInputBox],
+          [outBoxes],
+        ]);
 
         const transaction = new TransactionBuilder(chain.height)
           .from([(winnersInputBoxes as Box[])[0], giftTokenInputBox])
