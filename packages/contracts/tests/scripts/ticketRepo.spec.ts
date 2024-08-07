@@ -31,6 +31,8 @@ function createInactiveRaffleTest(winnersCount: number = 1) {
     10n,
     undefined,
     1_000_000_000n,
+    undefined,
+    0n,
     compile('{sigmaProp(true);}').toHex().toString(),
   );
 
@@ -307,8 +309,9 @@ describe('ticketRepo', () => {
           10n,
           undefined,
           1_000_000_000n,
-          compile('{sigmaProp(true);}').toHex().toString(),
           '1234'.repeat(16),
+          0n,
+          compile('{sigmaProp(true);}').toHex().toString(),
         );
         const extraInputBox = mockUTxO({
           value: testUtils.FEE,

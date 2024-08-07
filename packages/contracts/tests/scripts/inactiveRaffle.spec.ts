@@ -1287,8 +1287,8 @@ describe('inactiveRaffle', () => {
           10n,
           undefined,
           1_000_000_000n,
-          undefined,
           '1234'.repeat(16),
+          0n,
         );
         const extraInputBox = mockUTxO({
           value: testUtils.FEE,

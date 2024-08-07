@@ -25,6 +25,8 @@ function createGiftTokenRepoTest(winnersCount: number = 1) {
     INACTIVE_RAFFLE_SAMPLE_ID,
     testUtils.TICKET_TOKEN_ID,
     undefined,
+    BigInt(chain.height + 1000),
+    0n,
     compile('{sigmaProp(true);}').toHex().toString(),
   );
 

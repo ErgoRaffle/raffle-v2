@@ -125,7 +125,7 @@
   else {
     // New gift creation
     // [Winner, UserBox] --> [Winner, Gift]
-    val gift = OUTPUTS(0)
+    val gift = OUTPUTS(1)
     sigmaProp(allOf(Coll(
       // Correct Winner format
       selfReplication,
