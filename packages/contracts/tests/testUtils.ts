@@ -69,6 +69,19 @@ type executeAndReturnOutputsResult = {
   outputs: OutputBox[];
 };
 
+type NonMandatoryRegisters<T = string> = {
+  R4?: T;
+  R5?: T;
+  R6?: T;
+  R7?: T;
+  R8?: T;
+  R9?: T;
+};
+
+type MockBoxOptions = Partial<Omit<Box<bigint>, "boxId">> & {
+  ergoTree: string;
+};
+
 /**
  * get an object by partner-name as keys and partner-balance as values
  * and return an object of partner-name as keys and partner-objects as values
@@ -86,7 +99,6 @@ export const createPartners = (
     partner.addBalance({ nanoergs: partners[partner_] });
     results[partner_.toLowerCase()] = partner;
   }
-  console.log('=============++>', Object.keys(results))
   return results;
 };
 
@@ -114,6 +126,7 @@ export const initialContracts = (
   scriptsVars['winner'] = {
     RAFFLE_LICENSE_B64: defaultLicenseTokenId,
   };
+  console.log(`===================================> ${defaultLicenseTokenId}`);
   for (const scriptKeyName of Object.keys(extraVarsValues)) {
     for (const extraKey of Object.keys(extraVarsValues[scriptKeyName])) {
       scriptsVars[scriptKeyName][extraKey] =
@@ -127,6 +140,35 @@ export const initialContracts = (
 
   return finalContractsAddresses;
 };
+
+export const createOutputBox = (
+  value: bigint,
+  tokens: TokenAmount<bigint>[],
+  registers: NonMandatoryRegisters<string>,
+  ergoTree: string
+) => {
+  return new OutputBuilder(value, ergoTree)
+    .addTokens(tokens)
+    .setAdditionalRegisters(registers);
+}
+
+export const rewrapInputBox = (box: Box<Amount>, overridingAttributes: {[key: string]: string | bigint | number | TokenAmount<string | number | bigint>[]} = {}) => {
+  const assets: TokenAmount<string | number | bigint>[] = [];
+  for(const asset of box.assets)
+    assets.push({tokenId: asset.tokenId, amount: BigInt(asset.amount)});
+  const content: {[key: string]: string | bigint | number | TokenAmount<string | number | bigint>[] | NonMandatoryRegisters<string>} = {
+    value: BigInt(box.value),
+    ergoTree: box.ergoTree,
+    creationHeight: box.creationHeight,
+    assets: assets,
+    additionalRegisters: box.additionalRegisters,
+  };
+
+  for(const key of Object.keys(overridingAttributes))
+    content[key] = overridingAttributes[key];
+
+  return mockUTxO(content as MockBoxOptions);
+}
 
 /**
  * Create input Service-Box
@@ -284,7 +326,7 @@ export const createInactiveRaffleBoxMock = (
 
   return new ErgoUnsignedInput(
     mockUTxO({
-      value: 4n * FEE * winnersCount + creationFee,
+      value: 5n * FEE + 4n * FEE * winnersCount + creationFee,
       ergoTree: ergoTree,
       assets: tokens,
       additionalRegisters: {
@@ -367,7 +409,7 @@ export const createInactiveRaffleOutputBox = (
     for (let i = 0; i < winnersCount; i++)
       winnersPercents.push(1000n / winnersCount);
 
-  return new OutputBuilder(4n * FEE * winnersCount + creationFee, ergoTree)
+  return new OutputBuilder(5n * FEE + 4n * FEE * winnersCount + creationFee, ergoTree)
     .addTokens(tokens)
     .setAdditionalRegisters({
       R4: SColl(SLong, [
@@ -430,7 +472,7 @@ export const createActiveRaffleBoxMock = (
   totalSoldTicket: bigint = 0n,
   ergoTree: string = contractsAddresses['activeRaffle']
 ) => {
-  value = value || FEE * winnersCount + creationFee - FEE;
+  value = value || 4n * FEE + creationFee;
 
   const tokens = [
     {
@@ -502,7 +544,7 @@ export const createActiveRaffleOutputBox = (
   deadline: bigint = 100n,
   ergoTree: string = contractsAddresses['activeRaffle'],
 ) => {
-  value = value || FEE * winnersCount + creationFee - FEE;
+  value = value || 4n * FEE + creationFee;
 
   const tokens = [
     {
@@ -748,7 +790,7 @@ export const createWinnersBoxMock = (
   for (let i = 0; i < winnersCount; i++)
     winnersBoxes.push(
       mockUTxO({
-        value: 2n * 15000000n,
+        value: 3n * FEE,
         ergoTree: ergoTree,
         additionalRegisters: {
           R4: SColl(SLong, [
@@ -799,7 +841,7 @@ export const createWinnersOutputBox = (
   const winnersBoxes = [];
   for (let i = 0; i < itemsCount; i++) {
     winnersBoxes.push(
-      new OutputBuilder(2n * FEE, ergoTree)
+      new OutputBuilder(3n * FEE, ergoTree)
         .setAdditionalRegisters({
           R4: SColl(SLong, [BigInt(i + 1), 1000n / winnersCount, deadline, FEE]),
           R5: SLong(giftCount),
@@ -817,18 +859,18 @@ export const createWinnersOutputBox = (
 
 
 export const createGiftForWinnerOutputBox = (
-	winnerIndex: number,
+	winnerIndex: bigint,
 	giftTokenId: string,
 	giftGiverWalletAddress: string,
 	giftValue: bigint = 0n,
 	giftToken?: TokenAmount<bigint>,
 	ergoTree: string = contractsAddresses['gift']
 ) => {
-	const giftBoxValue = FEE;
-	const giftForWinnerOutputBox =  new OutputBuilder(SAFE_MIN_BOX_VALUE + giftBoxValue + giftValue, ergoTree)
+	const giftBoxValue = FEE * 2n;
+	const giftForWinnerOutputBox =  new OutputBuilder(giftBoxValue + giftValue, ergoTree)
 		.setAdditionalRegisters({
 			R4: SColl(SByte, Array.from(Buffer.from(giftGiverWalletAddress, 'hex'))),
-			R5: SInt(winnerIndex),
+			R5: SLong(winnerIndex),
 		})
 		.addTokens({
 			tokenId: giftTokenId,
@@ -860,9 +902,13 @@ export const createGiftRedeemOutputBox = (
   step: bigint,
   ticketTokenId: string,
   ticketTokenCount: bigint,
+  value?: bigint,
   ergoTree: string = contractsAddresses['giftRedeem']
 ) => {
-  const giftRedeemOutputBox = new OutputBuilder(FEE * winnersCount + creationFee - FEE, ergoTree);
+  const giftRedeemOutputBox = new OutputBuilder(
+    value == undefined ? 4n * FEE + creationFee : value,
+    ergoTree
+  );
   giftRedeemOutputBox.setAdditionalRegisters({
     R4: SColl(SLong, Array.from([totalSoldTicket, ticketPrice, winnersCount, FEE])),
 		R5: SLong(step).toHex()
@@ -876,7 +922,7 @@ export const createGiftRedeemOutputBox = (
       tokenId: ticketTokenId,
       amount: ticketTokenCount
     }
-  ])
+  ]);
   return giftRedeemOutputBox;
 }
 
@@ -884,6 +930,7 @@ export const createGiftRedeemOutputBox = (
  * Get content and print on the output pretty
  * @param content
  * @param prefix
+ * @param briefErgoTree
  */
 export const prettyPrintJson = (
   content: object,
@@ -895,7 +942,7 @@ export const prettyPrintJson = (
     JSON.stringify(
       content,
       (k, v) => {
-        if ((briefErgoTree && k == '_ergoTree') || k == 'ergoTree')
+        if (briefErgoTree && (k == '_ergoTree' || k == 'ergoTree'))
           return '...';
         return typeof v == 'bigint' ? String(v) : v;
       },
@@ -983,11 +1030,12 @@ export class RaffleMockChain extends MockChain {
     options?: TransactionExecutionOptions,
     baseCost?: number,
   ): executeAndReturnOutputsResult => {
+    this.#tip.height = this.height;
+    this.#tip.timestamp = this.timestamp;
+
     const keys = (options?.signers || this.#parties)
       .filter((p): p is KeyedMockChainParty => p instanceof KeyedMockChainParty)
       .map((p) => p.key);
-
-    console.log('************)+>', this.height);
 
     const context = mockBlockchainStateContext({
       headers: {

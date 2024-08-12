@@ -16,7 +16,7 @@ const createRaffleTest = (
     winnersCount: bigint = 1n,
     giftTokenCount: bigint = 1n,
 ) => {
-    const chain = new testUtils.RaffleMockChain({ height: 1000 });
+    const chain = new testUtils.RaffleMockChain({ height: 0 });
     const { creator, someone, giftgiver1, giftgiver2, donator1, donator2 } = testUtils.createPartners(chain, {
         Creator: testUtils.CREATOR_DEFAULT_BALANCE,
         Someone: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
@@ -246,26 +246,15 @@ describe('Raffle', () => {
                 }
 
                 // Step 4: execute add gift-token contract
-                const giftOutputWinnersBoxes = [
-                    testUtils.createWinnersOutputBox(
-                        1n,
-                        inactiveRaffleBoxId,
-                        ticketTokenId,
-                        undefined,
-                        1n,
-                        deadline,
-                        (contractsAddresses as { [key: string]: string })['winner'],
-                    )[0],
-                    testUtils.createWinnersOutputBox(
-                        1n,
-                        inactiveRaffleBoxId,
-                        ticketTokenId,
-                        undefined,
-                        1n,
-                        deadline,
-                        (contractsAddresses as { [key: string]: string })['winner'],
-                    )[0]
-                ];
+                const giftOutputWinnersBoxes = testUtils.createWinnersOutputBox(
+                    2n,
+                    inactiveRaffleBoxId,
+                    ticketTokenId,
+                    undefined,
+                    1n,
+                    deadline,
+                    (contractsAddresses as { [key: string]: string })['winner'],
+                );
 
                 const totalGifts = 2;
                 const winnersUTxOs = [];
@@ -273,12 +262,12 @@ describe('Raffle', () => {
                 for (let giftCount = 0; giftCount < totalGifts; giftCount++) {
                     giftOutputWinnersBoxes[giftCount].addTokens({
                         tokenId: giftTokenId,
-                        amount: BigInt(2_000 - giftCount - 1),
+                        amount: BigInt(2_000 - 1),
                     });
                     const giftOutBoxes = [
                         giftOutputWinnersBoxes[giftCount],
                         testUtils.createGiftForWinnerOutputBox(
-                            1,
+                            BigInt(giftCount + 1),
                             giftTokenId,
                             (giftGiverWallets as KeyedMockChainParty[])[giftCount].address.toString(),
                             1_000_000_000n,
@@ -288,7 +277,7 @@ describe('Raffle', () => {
                         )
                     ];
 
-                    const giftAddTx = new TransactionBuilder(chain.height)
+                    const giftAddTx = new TransactionBuilder(7)
                         .from([
                             addGiftWinnersInputBoxes[giftCount],
                             ...(giftGiverWallets as KeyedMockChainParty[])[giftCount].utxos
@@ -297,14 +286,6 @@ describe('Raffle', () => {
                         .payFee(testUtils.FEE)
                         .sendChangeTo((giftGiverWallets as KeyedMockChainParty[])[giftCount].address.toString())
                         .build();
-                    testUtils.prettyPrintJson([
-                        [
-                            addGiftWinnersInputBoxes[giftCount],
-                            ...(giftGiverWallets as KeyedMockChainParty[])[giftCount].utxos
-                        ],
-                        giftOutBoxes,
-                        [BigInt(chain.height), deadline],
-                    ]);
                     const giftAddTxResult = chain.executeAndReturnOutputs(
                         giftAddTx,
                         {
@@ -362,6 +343,7 @@ describe('Raffle', () => {
                 =                          =
                 ============================
                 */
+                chain.jumpTo(2000);
                 // Step 6: Failure transaction
                 const giftRedeemOutputBox = testUtils.createGiftRedeemOutputBox(
                     1_000_000_000n,
@@ -371,6 +353,7 @@ describe('Raffle', () => {
                     2n,
                     ticketTokenId!,
                     1_000_000_000n - 2n,
+                    undefined,
                     (contractsAddresses as { [key: string]: string })['giftRedeem']
                 );
                 const failureTx = new TransactionBuilder(chain.height)
@@ -381,25 +364,82 @@ describe('Raffle', () => {
                 const failureTxResult = chain.executeAndReturnOutputs(failureTx);
                 expect(failureTxResult.success).true;
 
-                const giftRedeemUTxO = failureTxResult.outputs[0];
+                let giftRedeemUTxO = failureTxResult.outputs[0];
                 // Step 7: Return gifts transaction
                 const winnerRedeemOutputBoxes = testUtils.createWinnersOutputBox(
                     2n,
                     inactiveRaffleBoxId,
                     ticketTokenId,
                     undefined,
-                    1n,
+                    0n,
                     deadline,
                     (contractsAddresses as { [key: string]: string })['winner'],
                 );
-                for(let winnersIndex = 0; winnersIndex < 2; winnersIndex++) {
+                for(let winnerIndex = 0; winnerIndex < 2; winnerIndex++) {
+                    winnerRedeemOutputBoxes[winnerIndex].addTokens({
+                        tokenId: giftTokenId,
+                        amount: 2000n,
+                    });
+                    const giftRedeemOutputBox = testUtils.createOutputBox(
+                        1_000_000_000n + testUtils.FEE,
+                        [],
+                        {},
+                        (giftGiverWallets as KeyedMockChainParty[])[0].ergoTree
+                    );
+                    const giftReturnOutputBoxes = [
+                        winnerRedeemOutputBoxes[winnerIndex],
+                        giftRedeemOutputBox,
+                    ]
                     const giftReturnTx = new TransactionBuilder(chain.height)
-                        .from([...winnersUTxOs, ...giftForWinnersUTxOs])
-                        .to([winnerRedeemOutputBoxes[winnersIndex]])
+                        .from([winnersUTxOs[winnerIndex], giftForWinnersUTxOs[winnerIndex]])
+                        .to(giftReturnOutputBoxes)
                         .withDataFrom([giftRedeemUTxO])
+                        .payFee(testUtils.FEE)
                         .build();
                     const giftReturnResult = chain.executeAndReturnOutputs(giftReturnTx);
                     expect(giftReturnResult.success).true;
+
+                    winnersUTxOs[winnerIndex] = giftReturnResult.outputs[0];
+                }
+
+                // giftRedeemUTxO.creationHeight = 2001;
+                giftRedeemUTxO = testUtils.rewrapInputBox(giftRedeemUTxO, {creationHeight: 2001});
+
+                // Step 8: Winner removal transaction
+                for(let winnerIndex = 0; winnerIndex < 2; winnerIndex++) {
+                    const giftRedeemOutputBox = testUtils.createGiftRedeemOutputBox(
+                        1_000_000_000n,
+                        2n,
+                        1_000_000_000n,
+                        2n,
+                        2n,
+                        ticketTokenId!,
+                        1_000_000_000n - (1n - BigInt(winnerIndex)),
+                        BigInt(giftRedeemUTxO.value) + 2n * testUtils.FEE,
+                        (contractsAddresses as { [key: string]: string })['giftRedeem']
+                    );
+                    // winnersUTxOs[winnerIndex].creationHeight = 2000;
+                    winnersUTxOs[winnerIndex] = testUtils.rewrapInputBox(
+                        winnersUTxOs[winnerIndex], {creationHeight: 2001}
+                    );
+                    testUtils.prettyPrintJson([
+                        [giftRedeemUTxO, winnersUTxOs[winnerIndex]],
+                        [giftRedeemOutputBox]
+                    ], '', false);
+                    const giftReturnTx = new TransactionBuilder(chain.height)
+                        .from([giftRedeemUTxO, winnersUTxOs[winnerIndex]])
+                        .to([giftRedeemOutputBox])
+                        .burnTokens({
+                            tokenId: winnersUTxOs[winnerIndex].assets[1].tokenId,
+                            amount: winnersUTxOs[winnerIndex].assets[1].amount
+                        })
+                        .payFee(testUtils.FEE)
+                        .build();
+                    console.log(giftReturnTx.toPlainObject());
+                    const giftReturnResult = chain.executeAndReturnOutputs(giftReturnTx);
+                    expect(giftReturnResult.success).true;
+
+                    giftRedeemUTxO = giftReturnResult.outputs[0];
                 }
             }
         );
