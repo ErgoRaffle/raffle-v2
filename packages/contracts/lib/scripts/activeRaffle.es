@@ -107,7 +107,7 @@
       oracleBox.creationInfo._1 > deadline,
 
       // Correct SuccessRaffle format
-      // R4: [WinnersCount, txFee, TotalPrize]
+      // R4: [WinnersCount, TotalPrize]
       // R5: [Seed, SelectedWinnersListHash]
       // R6: Step
       blake2b256(successRaffle.propositionBytes) == successRaffleScriptHash,
@@ -117,8 +117,8 @@
       successRaffle.tokens.size == SELF.tokens.size,
       successRaffle.R4[Coll[Long]].get = Coll[Long](
         winnersCount, 
-        txFee, 
-        totalRaised * winnersPercent / 100
+        totalRaised * winnersPercent / 100,
+        totalSoldTickets
       ),
       successRaffle.R5[Coll[Coll[Byte]]].get(0) == oracleBox.id.slice(0, 15),
       successRaffle.R5[Coll[Coll[Byte]]].get(1) == blake2b256(Coll[Byte]()),
