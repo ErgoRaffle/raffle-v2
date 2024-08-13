@@ -113,7 +113,7 @@
       blake2b256(successRaffle.propositionBytes) == successRaffleScriptHash,
       successRaffle.tokens(0)._1 == SELF.tokens(0)._1,
       successRaffle.tokens(1)._1 == SELF.tokens(1)._1,
-      successRaffle.tokens(1)._2 == SELF.tokens(1)._2,
+      successRaffle.tokens(1)._2 == SELF.tokens(1)._2 + 1,
       successRaffle.tokens.size == SELF.tokens.size,
       successRaffle.R4[Coll[Long]].get = Coll[Long](
         winnersCount, 
@@ -143,7 +143,7 @@
       giftRedeem.value == SELF.value,
       giftRedeem.tokens(0)._1 == SELF.tokens(0)._1,
       giftRedeem.tokens(1)._1 == SELF.tokens(1)._1,
-      giftRedeem.tokens(1)._2 == SELF.tokens(1)._2,
+      giftRedeem.tokens(1)._2 == SELF.tokens(1)._2 + 1,
       collectingTokenCheck,
       giftRedeem.tokens.size == SELF.tokens.size,
       giftRedeem.R4[Coll[Long]].get = Coll[Long](
