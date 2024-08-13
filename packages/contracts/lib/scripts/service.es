@@ -42,7 +42,10 @@
     if(outputService.tokens(1)._2 == SELF.tokens(1)._2 + 1L) {
       // RaffleLicense redeem from SuccessRaffle or TicketRedeem
       // [Service, (SuccessRaffle | TicketRedeem)] --> [Service]
-      sigmaProp(selfReplication)
+      sigmaProp(
+        selfReplication && 
+        outputService.tokens(1)._2 == SELF.tokens(1)._2 + 1
+      )
     } else if (outputService.tokens(1)._2 == SELF.tokens(1)._2 - 1L) {
       // New raffle creation
       // [Service, UserBox] --> [Service, TicketRepo, InactiveRaffle, Change]
