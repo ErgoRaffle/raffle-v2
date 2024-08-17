@@ -91,6 +91,7 @@
         winnerPrize.tokens(1)._2 == SELF.tokens(1)._2,
         winnerPrize.R4[Coll[Long]].get(1) == winnerIndex,
         winnerPrize.R4[Coll[Long]].get(2) == giftCount,
+        winnerPrize.R4[Coll[Long]].get(3) == txFee,
         winnerPrize.R5[Long].get == 0,
 
         // Correct SuccessRaffle format
