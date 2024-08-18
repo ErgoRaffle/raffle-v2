@@ -8,7 +8,7 @@
   //
   // Spent in 2 transactions:
   //   - Successful end
-  //      [AvtiveRaffle, RaffleDetail] + [(DataInput)Oracle] --> [SuccessRaffle, ProjectFund, ServiceFee, ImplementerFee]
+  //      [ActiveRaffle, RaffleDetail] + [(DataInput)Oracle] --> [SuccessRaffle, ProjectFund, ServiceFee, ImplementerFee]
   //   - Failure end
   //      [ActiveRaffle, RaffleDetail] --> [GiftRedeem]
   // 

@@ -63,7 +63,7 @@ describe('Service', () => {
      * - it should create three output box
      */
     raffleServiceTest(
-      'Should create raffle by 1 winner and by erg-goal successfully',
+      'should create raffle by 1 winner and by erg-goal successfully',
       ({ chain, someoneWallet, creator, inputBoxes }) => {
         const serviceOutputBox = testUtils.createServiceOutputBox(
           creator.address.toString(),
@@ -106,7 +106,7 @@ describe('Service', () => {
      * - it should create three output box
      */
     raffleServiceBy10WinnersTest(
-      'Should create raffle by 10 winners and by erg-goal successfully',
+      'should create raffle by 10 winners and by erg-goal successfully',
       ({ chain, someoneWallet, creator, inputBoxes }) => {
         // Create output boxes
         const serviceOutputBox = testUtils.createServiceOutputBox(
@@ -151,7 +151,7 @@ describe('Service', () => {
      * - it should create three output box
      */
     raffleServiceTest(
-      'Should create raffle by 1 winner and X token-goal successfully',
+      'should create raffle by 1 winner and X token-goal successfully',
       ({ chain, someoneWallet, creator, inputBoxes }) => {
         // Create output boxes
         const serviceOutputBox = testUtils.createServiceOutputBox(
@@ -620,7 +620,7 @@ describe('Service', () => {
      * - transaction result must be true
      */
     raffleServiceTest(
-      'Should spend raffle ServiceBox by OwnerNFT',
+      'should spend raffle ServiceBox by OwnerNFT',
       ({ chain, creator, inputBoxes }) => {
         const serviceBox = inputBoxes[0];
         creator.addBalance({
@@ -665,7 +665,7 @@ describe('Service', () => {
      * - transaction result must be true
      */
     raffleServiceTest(
-      'Should close raffle or Redeem Raffle',
+      'should close raffle or Redeem Raffle',
       ({ chain, creator, someoneWallet }) => {
         // Mock Required Things
         const serviceBox = testUtils.createServiceBoxMock(
