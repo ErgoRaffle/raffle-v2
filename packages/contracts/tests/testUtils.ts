@@ -39,6 +39,7 @@ export const X_TOKEN_ID = '3'.repeat(64);
 export const TICKET_TOKEN_ID = '4'.repeat(64);
 export const GIFT_TOKEN_ID = '5'.repeat(64);
 export const GIFT_TOKEN_COUNT = 2_000;
+export const CREATION_FEE = 1_000_000_000n;
 export const raffleNFTToken = { amount: 1n, tokenId: RAFFLE_NFT_ID };
 export const licenseToken = {
   amount: 1_000_000_000n,
@@ -133,7 +134,7 @@ export const createServiceBoxMock = (
   licenseTokenCount: bigint = LICENSE_TOKEN_COUNT,
   serviceFeePercent: bigint = 10n,
   implementerFeePercent: bigint = 10n,
-  creationFee: bigint = 1_000_000_000n,
+  creationFee = CREATION_FEE,
 ) => {
   return new ErgoUnsignedInput(
     mockUTxO({
@@ -171,7 +172,7 @@ export const createServiceOutputBox = (
   licenseTokenCount: bigint = 999999999n,
   serviceFeePercent: bigint = 10n,
   implementerFeePercent: bigint = 10n,
-  creationFee: bigint = 1_000_000_000n,
+  creationFee = CREATION_FEE,
   ergoTree: string = contractsAddresses['service'],
 ) => {
   return new OutputBuilder(15_000_000n, ergoTree)
@@ -219,10 +220,8 @@ export const createTicketRepoBoxMock = (
  * create output Ticket-Box
  * @returns TicketBox
  */
-export const createTicketRepoOutputBox = (
-  ergoTree: string = contractsAddresses['ticketRepo'],
-) => {
-  return new OutputBuilder(FEE, ergoTree).mintToken({
+export const createTicketRepoOutputBox = () => {
+  return new OutputBuilder(FEE, contractsAddresses['ticketRepo']).mintToken({
     amount: 1_000_000_000n,
     name: 'TicketRepoToken',
     decimals: 0,
@@ -254,7 +253,7 @@ export const createInactiveRaffleBoxMock = (
   winnersPercents?: bigint[],
   serviceFeePercent: bigint = 10n,
   invalidWinnerHash?: string,
-  creationFee: bigint = 1_000_000_000n,
+  creationFee: bigint = CREATION_FEE,
   ticketTokenId: string = TICKET_TOKEN_ID,
   deadline: bigint = 100n,
   ergoTree: string = contractsAddresses['inactiveRaffle'],
@@ -340,10 +339,9 @@ export const createInactiveRaffleOutputBox = (
   winnersPercents?: bigint[],
   serviceFeePercent: bigint = 10n,
   invalidWinnerHash?: string,
-  creationFee: bigint = 1_000_000_000n,
+  creationFee = CREATION_FEE,
   ticketToken: string = TICKET_TOKEN_ID,
   deadline: bigint = 100n,
-  ergoTree: string = contractsAddresses['inactiveRaffle'],
 ) => {
   const tokens = [
     {
@@ -358,7 +356,10 @@ export const createInactiveRaffleOutputBox = (
     for (let i = 0; i < winnersCount; i++)
       winnersPercents.push(1000n / winnersCount);
 
-  return new OutputBuilder(4n * FEE * winnersCount + creationFee, ergoTree)
+  return new OutputBuilder(
+    4n * FEE * winnersCount + creationFee,
+    contractsAddresses['inactiveRaffle'],
+  )
     .addTokens(tokens)
     .setAdditionalRegisters({
       R4: SColl(SLong, [
@@ -415,7 +416,7 @@ export const createActiveRaffleBoxMock = (
   winnersCount: bigint = 1n,
   serviceFeePercent: bigint = 10n,
   collectingToken?: TokenAmount<bigint>,
-  creationFee: bigint = 1_000_000_000n,
+  creationFee: bigint = CREATION_FEE,
   value?: bigint,
   deadline: bigint = 100n,
   totalSoldTicket: bigint = 0n,
@@ -485,7 +486,7 @@ export const createActiveRaffleOutputBox = (
   winnersCount: bigint = 1n,
   serviceFeePercent: bigint = 10n,
   collectingToken?: TokenAmount<bigint>,
-  creationFee: bigint = 1_000_000_000n,
+  creationFee = CREATION_FEE,
   value?: bigint,
   ticketTokenAmount?: bigint,
   ticketTokenId: string = TICKET_TOKEN_ID,
@@ -822,7 +823,7 @@ export const createDonateTicketOutputBox = (
 };
 
 export const createGiftRedeemOutputBox = (
-  creationFee: bigint,
+  creationFee = CREATION_FEE,
   totalSoldTicket: bigint,
   ticketPrice: bigint,
   winnersCount: bigint,
