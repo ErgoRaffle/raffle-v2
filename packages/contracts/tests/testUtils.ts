@@ -479,6 +479,56 @@ export const createActiveRaffleBoxMock = (
  * @param ergoTree
  * @returns
  */
+export const createActiveRaffleWithConstantRegisters = (
+  r4: bigint[],
+  r5: Uint8Array[],
+  value: bigint,
+  ticketTokenAmount: bigint,
+  ticketTokenId: string = TICKET_TOKEN_ID,
+  totalSoldTicket: bigint = 0n,
+  collectingToken?: TokenAmount<bigint>,
+) => {
+  const tokens = [
+    {
+      tokenId: LICENSE_TOKEN_ID,
+      amount: 1n,
+    },
+    {
+      tokenId: ticketTokenId,
+      amount: ticketTokenAmount,
+    },
+  ];
+  if (collectingToken != null) tokens.push(collectingToken);
+
+  return new OutputBuilder(value, contractsAddresses['activeRaffle'])
+    .addTokens(tokens)
+    .setAdditionalRegisters({
+      R4: SColl(SLong, r4).toHex(),
+      R5: SColl(
+        SColl(SByte),
+        r5.map((value) => Array.from(value)),
+      ),
+      R6: SColl(SLong, [totalSoldTicket]).toHex(),
+    });
+};
+
+/**
+ * Create output box of active-raffle
+ * @param ownerAddress
+ * @param creatorPartnerAddress
+ * @param implementerPartnerAddress
+ * @param winnersCount
+ * @param serviceFeePercent
+ * @param collectingToken
+ * @param creationFee
+ * @param value
+ * @param ticketTokenAmount
+ * @param ticketTokenId
+ * @param totalSoldTicket
+ * @param deadline
+ * @param ergoTree
+ * @returns
+ */
 export const createActiveRaffleOutputBox = (
   ownerAddress: string,
   creatorPartnerAddress: string,

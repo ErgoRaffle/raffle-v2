@@ -72,3 +72,67 @@ export const CreateRaffleTx = (
     signers: [creator],
   });
 };
+
+/**
+ * Create a new merge transaction to merge inactive raffle and ticket repo
+ * and create the active raffle with winner boxes
+ * @param inactiveRaffle
+ * @param ticketRepo
+ * @param deadline
+ * @param chain: mocked chain
+ */
+export const MergeTx = (
+  inactiveRaffle: testUtils.OutputBox,
+  ticketRepo: testUtils.OutputBox,
+  winnersCount: bigint,
+  deadline: bigint,
+  chain: testUtils.RaffleMockChain,
+) => {
+  const r4 = SConstant.from(inactiveRaffle.additionalRegisters.R4!)
+    .data as bigint[];
+  const r5 = SConstant.from(inactiveRaffle.additionalRegisters.R5!)
+    .data as Uint8Array[];
+  const ticketTokenId = ticketRepo.assets[0].tokenId;
+  const activeRaffleOutputBox =
+    testUtils.createActiveRaffleWithConstantRegisters(
+      r4,
+      r5,
+      BigInt(inactiveRaffle.value.toString()) -
+        3n * winnersCount * testUtils.FEE -
+        testUtils.FEE,
+      BigInt(ticketRepo.assets[0].amount.toString()) - winnersCount - 1n,
+      ticketTokenId,
+      0n,
+    );
+  const raffleDetailsOutputBox =
+    testUtils.createRaffleDetailsOutputBox(ticketTokenId);
+  const giftTokenRepoOutputBox = testUtils.createGiftTokenRepoOutputBox(
+    2,
+    'mint',
+    undefined,
+    undefined,
+    undefined,
+    ticketTokenId,
+  );
+
+  const winnersBoxes = testUtils.createWinnersOutputBox(
+    2n,
+    inactiveRaffle.boxId.toString(),
+    ticketTokenId,
+    undefined,
+    deadline,
+  );
+
+  const inactiveRaffleTx = new TransactionBuilder(chain.height)
+    .from([inactiveRaffle, ticketRepo])
+    .to([
+      activeRaffleOutputBox,
+      raffleDetailsOutputBox,
+      giftTokenRepoOutputBox,
+      ...winnersBoxes,
+    ])
+    .payFee(testUtils.FEE)
+    .build();
+
+  return chain.executeAndReturnOutputs(inactiveRaffleTx);
+};
