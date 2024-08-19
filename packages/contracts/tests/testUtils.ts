@@ -908,11 +908,43 @@ export const createGiftRedeemOutputBox = (
 
 /**
  * create single winner output box
+ * @param r4
+ * @param ticketTokenId
+ * @param giftTokenId
+ * @param giftCount
+ * @param giftTokenCount
+ */
+export const createWinnerOutputBoxWithConstantRegisters = (
+  r4: bigint[],
+  ticketTokenId: string = TICKET_TOKEN_ID,
+  giftTokenId: string = GIFT_TOKEN_ID,
+  giftTokenCount = BigInt(GIFT_TOKEN_COUNT),
+  giftCount = 0n,
+) => {
+  const winnerBox = new OutputBuilder(2n * FEE, contractsAddresses['winner'])
+    .setAdditionalRegisters({
+      R4: SColl(SLong, r4),
+      R5: SLong(giftCount),
+      R6: SColl(SByte, Array.from(Buffer.from(giftTokenId, 'hex'))),
+    })
+    .addTokens({
+      tokenId: ticketTokenId,
+      amount: 1n,
+    });
+  if (giftTokenCount)
+    winnerBox.addTokens({ tokenId: giftTokenId, amount: giftTokenCount });
+  return winnerBox;
+};
+
+/**
+ * create single winner output box
  * @param winnersCount
  * @param step
  * @param giftTokenId
  * @param ticketTokenId
  * @param ticketTokenAmount
+ * @param deadline
+ * @param giftCount
  */
 export const createWinnerOutputBox = (
   winnersCount: bigint = 1n,
