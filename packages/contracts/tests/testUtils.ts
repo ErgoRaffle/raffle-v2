@@ -833,7 +833,7 @@ export const createWinnersOutputBox = (
   return winnersBoxes;
 };
 
-export const createGiftForWinnerOutputBox = (
+export const createGiftOutputBox = (
   winnerIndex: bigint,
   giftTokenId: string,
   giftGiverWalletAddress: string,
@@ -860,15 +860,22 @@ export const createGiftForWinnerOutputBox = (
   return giftForWinnerOutputBox;
 };
 
-export const createDonateTicketOutputBox = (
+export const createTicketOutputBox = (
   donatorWalletAddress: string,
-  ergoTree: string = contractsAddresses['ticket'],
+  ticketCount: bigint,
+  ticketTokenId: string,
+  r5: bigint[],
 ) => {
-  const donateTicketOutputBox = new OutputBuilder(FEE, ergoTree);
-  donateTicketOutputBox.setAdditionalRegisters({
-    R4: SColl(SByte, Array.from(Buffer.from(donatorWalletAddress, 'hex'))),
-    R5: SColl(SLong, [0n, 0n, 0n]).toHex(),
-  });
+  const donateTicketOutputBox = new OutputBuilder(
+    FEE,
+    contractsAddresses['ticket'],
+  );
+  donateTicketOutputBox
+    .setAdditionalRegisters({
+      R4: SColl(SByte, Array.from(Buffer.from(donatorWalletAddress, 'hex'))),
+      R5: SColl(SLong, r5).toHex(),
+    })
+    .addTokens({ tokenId: ticketTokenId, amount: ticketCount });
   return donateTicketOutputBox;
 };
 

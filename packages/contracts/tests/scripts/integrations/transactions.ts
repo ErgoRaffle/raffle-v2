@@ -211,7 +211,7 @@ export const AddGiftTx = (
     BigInt(winnerBox.assets[1].amount.toString()) - 1n,
     giftCount + 1n,
   );
-  const gift = testUtils.createGiftForWinnerOutputBox(
+  const gift = testUtils.createGiftOutputBox(
     winnerR4[0],
     giftTokenId,
     giftGiver.address.toString(),
@@ -226,4 +226,53 @@ export const AddGiftTx = (
     .build();
 
   return chain.executeAndReturnOutputs(addGiftTx, { signers: [giftGiver] });
+};
+
+/**
+ * Donate to raffle and receive ticket with the new range
+ * @param activeRaffle
+ * @param donator: donator wallet
+ * @param ticketCount
+ * @param chain: mocked chain
+ * @returns
+ */
+export const DonateTx = (
+  activeRaffle: testUtils.OutputBox,
+  donator: KeyedMockChainParty,
+  ticketCount: bigint,
+  chain: testUtils.RaffleMockChain,
+) => {
+  const r4 = SConstant.from(activeRaffle.additionalRegisters.R4!)
+    .data as bigint[];
+  const r5 = SConstant.from(activeRaffle.additionalRegisters.R5!)
+    .data as Uint8Array[];
+  const ticketTokenId = activeRaffle.assets[1].tokenId;
+  const totalSoldTickets = (
+    SConstant.from(activeRaffle.additionalRegisters.R6!).data as bigint[]
+  )[0];
+  const activeRaffleOutputBox =
+    testUtils.createActiveRaffleWithConstantRegisters(
+      r4,
+      r5,
+      BigInt(activeRaffle.value.toString()),
+      BigInt(activeRaffle.assets[1].amount.toString()) - ticketCount,
+      ticketTokenId,
+      totalSoldTickets + ticketCount,
+    );
+
+  const ticket = testUtils.createTicketOutputBox(
+    donator.address.toString(),
+    ticketCount,
+    ticketTokenId,
+    [totalSoldTickets, totalSoldTickets + ticketCount, r4[0]],
+  );
+
+  const donateTx = new TransactionBuilder(chain.height)
+    .from([activeRaffle, ...donator.utxos.toArray()])
+    .to([activeRaffleOutputBox, ticket])
+    .payFee(testUtils.FEE)
+    .sendChangeTo(donator.address)
+    .build();
+
+  return chain.executeAndReturnOutputs(donateTx, { signers: [donator] });
 };
