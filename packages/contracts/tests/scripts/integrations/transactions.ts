@@ -264,7 +264,7 @@ export const DonateTx = (
     donator.address.toString(),
     ticketCount,
     ticketTokenId,
-    [totalSoldTickets, totalSoldTickets + ticketCount, r4[0]],
+    [totalSoldTickets, totalSoldTickets + ticketCount, r4[3]],
   );
 
   const donateTx = new TransactionBuilder(chain.height)
@@ -275,4 +275,39 @@ export const DonateTx = (
     .build();
 
   return chain.executeAndReturnOutputs(donateTx, { signers: [donator] });
+};
+
+/**
+ * Change raffle status from active to failed after deadline
+ * @param activeRaffle
+ * @param chain: mocked chain
+ * @returns
+ */
+export const FailureTx = (
+  activeRaffle: testUtils.OutputBox,
+  chain: testUtils.RaffleMockChain,
+) => {
+  const r4 = SConstant.from(activeRaffle.additionalRegisters.R4!)
+    .data as bigint[];
+  const ticketTokenId = activeRaffle.assets[1].tokenId;
+  const totalSoldTickets = (
+    SConstant.from(activeRaffle.additionalRegisters.R6!).data as bigint[]
+  )[0];
+  const giftRedeemOutputBox = testUtils.createGiftRedeemOutputBox(
+    BigInt(activeRaffle.value.toString()) - testUtils.FEE,
+    totalSoldTickets,
+    r4[3],
+    r4[4],
+    1n,
+    ticketTokenId,
+    BigInt(activeRaffle.assets[1].amount.toString()),
+  );
+  const failureTx = new TransactionBuilder(chain.height)
+    .from([activeRaffle])
+    .to([giftRedeemOutputBox])
+    .payFee(testUtils.FEE)
+    .build();
+  console.log(JSON.stringify(failureTx.toEIP12Object()));
+
+  return chain.executeAndReturnOutputs(failureTx);
 };

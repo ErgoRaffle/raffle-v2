@@ -880,18 +880,17 @@ export const createTicketOutputBox = (
 };
 
 export const createGiftRedeemOutputBox = (
-  creationFee = CREATION_FEE,
+  value: bigint,
   totalSoldTicket: bigint,
   ticketPrice: bigint,
   winnersCount: bigint,
   step: bigint,
   ticketTokenId: string,
   ticketTokenCount: bigint,
-  ergoTree: string = contractsAddresses['giftRedeem'],
 ) => {
   const giftRedeemOutputBox = new OutputBuilder(
-    FEE * winnersCount + creationFee - FEE,
-    ergoTree,
+    value,
+    contractsAddresses['giftRedeem'],
   );
   giftRedeemOutputBox.setAdditionalRegisters({
     R4: SColl(
