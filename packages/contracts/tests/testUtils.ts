@@ -5,6 +5,7 @@ import {
   OutputBuilder,
   SAFE_MIN_BOX_VALUE,
   TokenAmount,
+  ErgoAddress,
 } from '@fleet-sdk/core';
 import {
   KeyedMockChainParty,
@@ -847,7 +848,7 @@ export const createGiftOutputBox = (
     ergoTree,
   )
     .setAdditionalRegisters({
-      R4: SColl(SByte, Array.from(Buffer.from(giftGiverWalletAddress, 'hex'))),
+      R4: SColl(SByte, Array.from(Buffer.from(giftGiverWalletAddress))),
       R5: SLong(winnerIndex),
     })
     .addTokens({
@@ -973,6 +974,16 @@ export const createWinnerOutputBox = (
     });
 };
 
+export const createUserOutputBox = (
+  value: bigint,
+  tokens: TokenAmount<Amount>[],
+  address: string,
+) => {
+  return new OutputBuilder(value, ErgoAddress.fromBase58(address)).addTokens(
+    tokens,
+  );
+};
+
 /**
  * Get content and print on the output pretty
  * @param content
@@ -999,7 +1010,7 @@ export const prettyPrintJson = (
 
 export class RaffleMockChain extends MockChain {
   readonly #parties: MockChainParty[];
-  readonly #tip: BlockState;
+  #tip: BlockState;
   readonly #base: BlockState;
   #metadataMap: AssetMetadataMap;
 
@@ -1025,6 +1036,16 @@ export class RaffleMockChain extends MockChain {
     this.#parties = [];
     this.#metadataMap = new Map();
   }
+
+  setTip = (height: number) => {
+    const state = ensureDefaults(undefined, {
+      height: height,
+      timestamp: new Date().getTime(),
+      parameters: ensureDefaults(undefined, BLOCKCHAIN_PARAMETERS),
+    });
+    this.#tip = state;
+    this.jumpTo(height);
+  };
 
   #executeAndReturnTx = (
     unsigned: ErgoUnsignedTransaction,

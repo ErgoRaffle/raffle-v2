@@ -141,29 +141,29 @@ export const MergeTx = (
 /**
  * Move gift tokens from giftTokenRepo to empty winner boxes
  * This transaction activates the winners gifts
- * @param winnerBox
+ * @param winner
  * @param giftTokenRepo
  * @param step
  * @param winnersCount
  * @param chain: mocked chain
  */
 export const GiftTokenReceiptTx = (
-  winnerBox: testUtils.OutputBox,
+  winner: testUtils.OutputBox,
   giftTokenRepo: testUtils.OutputBox,
   step: number,
   winnersCount: bigint,
   chain: testUtils.RaffleMockChain,
 ) => {
   const giftTokenId = giftTokenRepo.assets[0].tokenId;
-  const ticketTokenId = winnerBox.assets[0].tokenId;
-  const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
+  const ticketTokenId = winner.assets[0].tokenId;
+  const winnerR4 = SConstant.from(winner.additionalRegisters.R4!)
     .data as bigint[];
-  const outWinnerBox = testUtils.createWinnerOutputBoxWithConstantRegisters(
+  const outWinner = testUtils.createWinnerOutputBoxWithConstantRegisters(
     winnerR4,
     ticketTokenId,
     giftTokenId,
   );
-  const outputs = [outWinnerBox];
+  const outputs = [outWinner];
   if (step < winnersCount)
     outputs.push(
       testUtils.createGiftTokenRepoOutputBox(
@@ -178,7 +178,7 @@ export const GiftTokenReceiptTx = (
     );
 
   const giftTokenReceiptTx = new TransactionBuilder(chain.height)
-    .from([winnerBox, giftTokenRepo])
+    .from([winner, giftTokenRepo])
     .to(outputs)
     .payFee(testUtils.FEE)
     .build();
@@ -188,27 +188,26 @@ export const GiftTokenReceiptTx = (
 
 /**
  * Add gift to a selected winner
- * @param winnerBox
+ * @param winner
  * @param giftGiver: gift giver wallet
  * @param chain: mocked chain
- * @returns
  */
 export const AddGiftTx = (
-  winnerBox: testUtils.OutputBox,
+  winner: testUtils.OutputBox,
   giftGiver: KeyedMockChainParty,
   chain: testUtils.RaffleMockChain,
 ) => {
-  const ticketTokenId = winnerBox.assets[0].tokenId;
-  const giftTokenId = winnerBox.assets[1].tokenId;
-  const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
+  const ticketTokenId = winner.assets[0].tokenId;
+  const giftTokenId = winner.assets[1].tokenId;
+  const winnerR4 = SConstant.from(winner.additionalRegisters.R4!)
     .data as bigint[];
-  const giftCount = SConstant.from(winnerBox.additionalRegisters.R5!)
+  const giftCount = SConstant.from(winner.additionalRegisters.R5!)
     .data as bigint;
-  const outWinnerBox = testUtils.createWinnerOutputBoxWithConstantRegisters(
+  const outWinner = testUtils.createWinnerOutputBoxWithConstantRegisters(
     winnerR4,
     ticketTokenId,
     giftTokenId,
-    BigInt(winnerBox.assets[1].amount.toString()) - 1n,
+    BigInt(winner.assets[1].amount.toString()) - 1n,
     giftCount + 1n,
   );
   const gift = testUtils.createGiftOutputBox(
@@ -219,8 +218,8 @@ export const AddGiftTx = (
   );
 
   const addGiftTx = new TransactionBuilder(chain.height)
-    .from([winnerBox, ...giftGiver.utxos.toArray()])
-    .to([outWinnerBox, gift])
+    .from([winner, ...giftGiver.utxos.toArray()])
+    .to([outWinner, gift])
     .payFee(testUtils.FEE)
     .sendChangeTo(giftGiver.address)
     .build();
@@ -234,7 +233,6 @@ export const AddGiftTx = (
  * @param donator: donator wallet
  * @param ticketCount
  * @param chain: mocked chain
- * @returns
  */
 export const DonateTx = (
   activeRaffle: testUtils.OutputBox,
@@ -281,7 +279,6 @@ export const DonateTx = (
  * Change raffle status from active to failed after deadline
  * @param activeRaffle
  * @param chain: mocked chain
- * @returns
  */
 export const FailureTx = (
   activeRaffle: testUtils.OutputBox,
@@ -307,7 +304,52 @@ export const FailureTx = (
     .to([giftRedeemOutputBox])
     .payFee(testUtils.FEE)
     .build();
-  console.log(JSON.stringify(failureTx.toEIP12Object()));
 
   return chain.executeAndReturnOutputs(failureTx);
+};
+
+/**
+ * Return the gift to the gift giver
+ * @param giftRedeem
+ * @param winner
+ * @param gift
+ * @param chain: mocked chain
+ */
+export const GiftReturnTx = (
+  giftRedeem: testUtils.OutputBox,
+  winner: testUtils.OutputBox,
+  gift: testUtils.OutputBox,
+  chain: testUtils.RaffleMockChain,
+) => {
+  const ticketTokenId = winner.assets[0].tokenId;
+  const giftTokenId = winner.assets[1].tokenId;
+  const winnerR4 = SConstant.from(winner.additionalRegisters.R4!)
+    .data as bigint[];
+  const giftCount = SConstant.from(winner.additionalRegisters.R5!)
+    .data as bigint;
+  const outWinner = testUtils.createWinnerOutputBoxWithConstantRegisters(
+    winnerR4,
+    ticketTokenId,
+    giftTokenId,
+    BigInt(winner.assets[1].amount.toString()) + 1n,
+    giftCount - 1n,
+  );
+
+  const giftGiverAddress = Buffer.from(
+    SConstant.from(gift.additionalRegisters.R4!).data as Uint8Array,
+  ).toString();
+  const redeemedGift = testUtils.createUserOutputBox(
+    BigInt(gift.value.toString()) - testUtils.FEE,
+    gift.assets.slice(1),
+    giftGiverAddress,
+  );
+
+  const giftReturnTx = new TransactionBuilder(chain.height)
+    .from([winner, gift])
+    .to([outWinner, redeemedGift])
+    .withDataFrom([giftRedeem])
+    .payFee(testUtils.FEE)
+    .build();
+
+  return chain.executeAndReturnOutputs(giftReturnTx, undefined, 22000);
 };
