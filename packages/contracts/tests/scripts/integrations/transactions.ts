@@ -74,7 +74,7 @@ export const CreateRaffleTx = (
 };
 
 /**
- * Create a new merge transaction to merge inactive raffle and ticket repo
+ * Create a merge transaction to merge inactive raffle and ticket repo
  * and create the active raffle with winner boxes
  * @param inactiveRaffle
  * @param ticketRepo
@@ -184,4 +184,46 @@ export const GiftTokenReceiptTx = (
     .build();
 
   return chain.executeAndReturnOutputs(giftTokenReceiptTx);
+};
+
+/**
+ * Add gift to a selected winner
+ * @param winnerBox
+ * @param giftGiver: gift giver wallet
+ * @param chain: mocked chain
+ * @returns
+ */
+export const AddGiftTx = (
+  winnerBox: testUtils.OutputBox,
+  giftGiver: KeyedMockChainParty,
+  chain: testUtils.RaffleMockChain,
+) => {
+  const ticketTokenId = winnerBox.assets[0].tokenId;
+  const giftTokenId = winnerBox.assets[1].tokenId;
+  const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
+    .data as bigint[];
+  const giftCount = SConstant.from(winnerBox.additionalRegisters.R5!)
+    .data as bigint;
+  const outWinnerBox = testUtils.createWinnerOutputBoxWithConstantRegisters(
+    winnerR4,
+    ticketTokenId,
+    giftTokenId,
+    BigInt(winnerBox.assets[1].amount.toString()) - 1n,
+    giftCount + 1n,
+  );
+  const gift = testUtils.createGiftForWinnerOutputBox(
+    winnerR4[0],
+    giftTokenId,
+    giftGiver.address.toString(),
+    testUtils.FEE * 10n,
+  );
+
+  const addGiftTx = new TransactionBuilder(chain.height)
+    .from([winnerBox, ...giftGiver.utxos.toArray()])
+    .to([outWinnerBox, gift])
+    .payFee(testUtils.FEE)
+    .sendChangeTo(giftGiver.address)
+    .build();
+
+  return chain.executeAndReturnOutputs(addGiftTx, { signers: [giftGiver] });
 };

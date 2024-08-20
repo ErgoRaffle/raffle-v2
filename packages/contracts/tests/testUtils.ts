@@ -834,7 +834,7 @@ export const createWinnersOutputBox = (
 };
 
 export const createGiftForWinnerOutputBox = (
-  winnerIndex: number,
+  winnerIndex: bigint,
   giftTokenId: string,
   giftGiverWalletAddress: string,
   giftValue: bigint = 0n,
@@ -848,7 +848,7 @@ export const createGiftForWinnerOutputBox = (
   )
     .setAdditionalRegisters({
       R4: SColl(SByte, Array.from(Buffer.from(giftGiverWalletAddress, 'hex'))),
-      R5: SInt(winnerIndex),
+      R5: SLong(winnerIndex),
     })
     .addTokens({
       tokenId: giftTokenId,
@@ -1074,7 +1074,7 @@ export class RaffleMockChain extends MockChain {
       .filter((p): p is KeyedMockChainParty => p instanceof KeyedMockChainParty)
       .map((p) => p.key);
 
-    console.log('************)+>', this.height);
+    console.log('************)+>', this.#tip.height);
 
     const context = mockBlockchainStateContext({
       headers: {
