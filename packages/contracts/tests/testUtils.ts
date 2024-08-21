@@ -89,7 +89,6 @@ export const createPartners = (
     partner.addBalance({ nanoergs: partners[partner_] });
     results[partner_.toLowerCase()] = partner;
   }
-  console.log('=============++>', Object.keys(results));
   return results;
 };
 
@@ -110,6 +109,9 @@ export const initialContracts = (): { [key: string]: string } => {
     MIN_BOX_VALUE: SAFE_MIN_BOX_VALUE,
   };
   scriptsVars['ticketRepo'] = {
+    RAFFLE_LICENSE_B64: defaultLicenseTokenId,
+  };
+  scriptsVars['winner'] = {
     RAFFLE_LICENSE_B64: defaultLicenseTokenId,
   };
   scriptsVars['inactiveRaffle'] = {
@@ -1100,8 +1102,6 @@ export class RaffleMockChain extends MockChain {
     const keys = (options?.signers || this.#parties)
       .filter((p): p is KeyedMockChainParty => p instanceof KeyedMockChainParty)
       .map((p) => p.key);
-
-    console.log('************)+>', this.#tip.height);
 
     const context = mockBlockchainStateContext({
       headers: {

@@ -1,8 +1,7 @@
-import { TransactionBuilder, ErgoUnsignedInput } from '@fleet-sdk/core';
+import { TransactionBuilder, ErgoUnsignedInput, Box } from '@fleet-sdk/core';
 import * as testUtils from '../../testUtils';
 import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
 import { SColl, SByte, SLong, SConstant } from '@fleet-sdk/serializer';
-import { Box } from '@fleet-sdk/common';
 
 /**
  * Create a new raffle using the specified parameters
@@ -64,10 +63,12 @@ export const CreateRaffleTx = (
   const creationTx = new TransactionBuilder(chain.height)
     .from([serviceBox, ...feeBoxes])
     .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
+    .configureSelector((selector) => {
+      selector.defineStrategy((inputs) => inputs);
+    })
     .payFee(testUtils.FEE)
     .sendChangeTo(creator.address)
     .build();
-
   return chain.executeAndReturnOutputs(creationTx, {
     signers: [creator],
   });
@@ -132,6 +133,9 @@ export const MergeTx = (
       giftTokenRepoOutputBox,
       ...winnersBoxes,
     ])
+    .configureSelector((selector) => {
+      selector.defineStrategy((inputs) => inputs);
+    })
     .payFee(testUtils.FEE)
     .build();
 
@@ -180,6 +184,9 @@ export const GiftTokenReceiptTx = (
   const giftTokenReceiptTx = new TransactionBuilder(chain.height)
     .from([winner, giftTokenRepo])
     .to(outputs)
+    .configureSelector((selector) => {
+      selector.defineStrategy((inputs) => inputs);
+    })
     .payFee(testUtils.FEE)
     .build();
 
@@ -220,6 +227,9 @@ export const AddGiftTx = (
   const addGiftTx = new TransactionBuilder(chain.height)
     .from([winner, ...giftGiver.utxos.toArray()])
     .to([outWinner, gift])
+    .configureSelector((selector) => {
+      selector.defineStrategy((inputs) => inputs);
+    })
     .payFee(testUtils.FEE)
     .sendChangeTo(giftGiver.address)
     .build();
@@ -268,6 +278,9 @@ export const DonateTx = (
   const donateTx = new TransactionBuilder(chain.height)
     .from([activeRaffle, ...donator.utxos.toArray()])
     .to([activeRaffleOutputBox, ticket])
+    .configureSelector((selector) => {
+      selector.defineStrategy((inputs) => inputs);
+    })
     .payFee(testUtils.FEE)
     .sendChangeTo(donator.address)
     .build();
@@ -343,11 +356,13 @@ export const GiftReturnTx = (
     gift.assets.slice(1),
     giftGiverAddress,
   );
-
   const giftReturnTx = new TransactionBuilder(chain.height)
     .from([winner, gift])
     .to([outWinner, redeemedGift])
     .withDataFrom([giftRedeem])
+    .configureSelector((selector) => {
+      selector.defineStrategy((inputs) => inputs);
+    })
     .payFee(testUtils.FEE)
     .build();
 
@@ -371,18 +386,22 @@ export const WinnerRemovalTx = (
     .data as bigint;
   const ticketTokenId = giftRedeem.assets[1].tokenId;
   const giftRedeemOutputBox = testUtils.createGiftRedeemOutputBox(
-    BigInt(giftRedeem.value.toString()) + 2n * testUtils.FEE,
+    BigInt(giftRedeem.value.toString()) + testUtils.FEE,
     r4[0],
     r4[1],
     r4[2],
     step + 1n,
     ticketTokenId,
-    BigInt(giftRedeem.assets[1].amount.toString()),
+    BigInt(giftRedeem.assets[1].amount.toString()) + 1n,
   );
 
   const winnerRemovalTx = new TransactionBuilder(chain.height)
     .from([giftRedeem, winner])
     .to([giftRedeemOutputBox])
+    .burnTokens(winner.assets[1])
+    .configureSelector((selector) => {
+      selector.defineStrategy((inputs) => inputs);
+    })
     .payFee(testUtils.FEE)
     .build();
 
