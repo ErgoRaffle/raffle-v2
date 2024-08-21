@@ -9,6 +9,7 @@ import {
   GiftTokenReceiptTx,
   MergeTx,
   GiftReturnTx,
+  WinnerRemovalTx,
 } from './transactions';
 import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
 
@@ -164,13 +165,15 @@ describe('Raffle', () => {
           ============================
           */
 
+        // Pass the raffle deadline
+        chain.setTip(2001);
+
         // Step 6: Failure transaction
-        chain.setTip(2200);
         const failureTx = FailureTx(activeRaffle, chain);
         expect(failureTx.success).true;
 
         // Step 7: Return gifts transaction
-        const giftRedeem = failureTx.outputs[0];
+        let giftRedeem = failureTx.outputs[0];
         for (let i = 0; i < 2; i++) {
           const giftRedeemTx = GiftReturnTx(
             giftRedeem,
@@ -180,6 +183,13 @@ describe('Raffle', () => {
           );
           expect(giftRedeemTx.success).true;
           winner1 = giftRedeemTx.outputs[0];
+        }
+
+        // Step8: Winner removal transaction
+        for (const winnerBox of [winner1, winnerBoxes[1]]) {
+          const winnerRemovalTx = WinnerRemovalTx(giftRedeem, winnerBox, chain);
+          expect(winnerRemovalTx.success).true;
+          giftRedeem = winnerRemovalTx.outputs[0];
         }
       },
     );

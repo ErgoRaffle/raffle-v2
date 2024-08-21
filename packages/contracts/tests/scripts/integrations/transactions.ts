@@ -351,5 +351,40 @@ export const GiftReturnTx = (
     .payFee(testUtils.FEE)
     .build();
 
-  return chain.executeAndReturnOutputs(giftReturnTx, undefined, 22000);
+  return chain.executeAndReturnOutputs(giftReturnTx);
+};
+
+/**
+ * Remove the winner box after returning all related gifts
+ * @param giftRedeem
+ * @param winner
+ * @param chain: mocked chain
+ */
+export const WinnerRemovalTx = (
+  giftRedeem: testUtils.OutputBox,
+  winner: testUtils.OutputBox,
+  chain: testUtils.RaffleMockChain,
+) => {
+  const r4 = SConstant.from(giftRedeem.additionalRegisters.R4!)
+    .data as bigint[];
+  const step = SConstant.from(giftRedeem.additionalRegisters.R5!)
+    .data as bigint;
+  const ticketTokenId = giftRedeem.assets[1].tokenId;
+  const giftRedeemOutputBox = testUtils.createGiftRedeemOutputBox(
+    BigInt(giftRedeem.value.toString()) + 2n * testUtils.FEE,
+    r4[0],
+    r4[1],
+    r4[2],
+    step + 1n,
+    ticketTokenId,
+    BigInt(giftRedeem.assets[1].amount.toString()),
+  );
+
+  const winnerRemovalTx = new TransactionBuilder(chain.height)
+    .from([giftRedeem, winner])
+    .to([giftRedeemOutputBox])
+    .payFee(testUtils.FEE)
+    .build();
+
+  return chain.executeAndReturnOutputs(winnerRemovalTx);
 };
