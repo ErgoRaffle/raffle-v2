@@ -9,7 +9,7 @@ import {
   GiftTokenReceiptTx,
   MergeTx,
   GiftReturnTx,
-  // WinnerRemovalTx,
+  WinnerRemovalTx,
 } from './transactions';
 import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
 
@@ -78,8 +78,8 @@ describe('Raffle', () => {
         giftGiverWallets,
         donatorWallets,
       }) => {
+        chain.setTip(100);
         const winnersCount = 2n;
-        console.log(chain.height);
         const deadline = 2000n;
         const winnersPercent: bigint[] = [];
         for (let i = 0; i < winnersCount; i++)
@@ -173,7 +173,7 @@ describe('Raffle', () => {
         expect(failureTx.success).true;
 
         // Step 7: Return gifts transaction
-        const giftRedeem = failureTx.outputs[0];
+        let giftRedeem = failureTx.outputs[0];
         for (let i = 0; i < 2; i++) {
           const giftRedeemTx = GiftReturnTx(
             giftRedeem,
@@ -186,11 +186,11 @@ describe('Raffle', () => {
         }
 
         // Step8: Winner removal transaction
-        // for (const winnerBox of [winner1, winnerBoxes[1]]) {
-        //   const winnerRemovalTx = WinnerRemovalTx(giftRedeem, winnerBox, chain);
-        //   expect(winnerRemovalTx.success).true;
-        //   giftRedeem = winnerRemovalTx.outputs[0];
-        // }
+        for (const winnerBox of [winner1, winnerBoxes[1]]) {
+          const winnerRemovalTx = WinnerRemovalTx(giftRedeem, winnerBox, chain);
+          expect(winnerRemovalTx.success).true;
+          giftRedeem = winnerRemovalTx.outputs[0];
+        }
       },
     );
   });
