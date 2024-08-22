@@ -875,7 +875,7 @@ export const createTicketOutputBox = (
   );
   donateTicketOutputBox
     .setAdditionalRegisters({
-      R4: SColl(SByte, Array.from(Buffer.from(donatorWalletAddress, 'hex'))),
+      R4: SColl(SByte, Array.from(Buffer.from(donatorWalletAddress))),
       R5: SColl(SLong, r5).toHex(),
     })
     .addTokens({ tokenId: ticketTokenId, amount: ticketCount });

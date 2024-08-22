@@ -440,3 +440,50 @@ export const ForwardToTicketRedeemTx = (
 
   return chain.executeAndReturnOutputs(forwardToTicketRedeemTx);
 };
+
+/**
+ * Return ticket tokens and redeem donation to the donator
+ * @param ticketRedeem
+ * @param ticket
+ * @param chain: mocked chain
+ */
+export const TicketRedeemTx = (
+  ticketRedeem: testUtils.OutputBox,
+  ticket: testUtils.OutputBox,
+  chain: testUtils.RaffleMockChain,
+) => {
+  const r4 = SConstant.from(ticketRedeem.additionalRegisters.R4!)
+    .data as bigint[];
+  const redeemedTickets = SConstant.from(ticketRedeem.additionalRegisters.R5!)
+    .data as bigint;
+  const ticketPrice = r4[1];
+  const ticketCount = BigInt(ticket.assets[0].amount.toString());
+  const ticketRedeemOutputBox = testUtils.createTicketRedeemOutputBox(
+    BigInt(ticketRedeem.value.toString()) - ticketPrice * ticketCount,
+    r4[0],
+    r4[1],
+    redeemedTickets + ticketCount,
+    ticketRedeem.assets[1].tokenId,
+    BigInt(ticketRedeem.assets[1].amount.toString()) + ticketCount,
+  );
+
+  const donatorAddress = Buffer.from(
+    SConstant.from(ticket.additionalRegisters.R4!).data as Uint8Array,
+  ).toString();
+  const redeemedDonation = testUtils.createUserOutputBox(
+    BigInt(ticket.value.toString()) - testUtils.FEE + ticketPrice * ticketCount,
+    [],
+    donatorAddress,
+  );
+
+  const ticketRedeemTx = new TransactionBuilder(chain.height)
+    .from([ticketRedeem, ticket])
+    .to([ticketRedeemOutputBox, redeemedDonation])
+    .configureSelector((selector) => {
+      selector.defineStrategy((inputs) => inputs);
+    })
+    .payFee(testUtils.FEE)
+    .build();
+
+  return chain.executeAndReturnOutputs(ticketRedeemTx);
+};
