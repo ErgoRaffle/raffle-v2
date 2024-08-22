@@ -407,3 +407,36 @@ export const WinnerRemovalTx = (
 
   return chain.executeAndReturnOutputs(winnerRemovalTx);
 };
+
+/**
+ * Forward to next step to redeem the tickets
+ * @param giftRedeem
+ * @param chain: mocked chain
+ * @returns
+ */
+export const ForwardToTicketRedeemTx = (
+  giftRedeem: testUtils.OutputBox,
+  chain: testUtils.RaffleMockChain,
+) => {
+  const r4 = SConstant.from(giftRedeem.additionalRegisters.R4!)
+    .data as bigint[];
+  const ticketRedeemOutputBox = testUtils.createTicketRedeemOutputBox(
+    BigInt(giftRedeem.value.toString()) - testUtils.FEE,
+    r4[0],
+    r4[1],
+    0n,
+    giftRedeem.assets[1].tokenId,
+    BigInt(giftRedeem.assets[1].amount.toString()),
+  );
+
+  const forwardToTicketRedeemTx = new TransactionBuilder(chain.height)
+    .from([giftRedeem])
+    .to([ticketRedeemOutputBox])
+    .configureSelector((selector) => {
+      selector.defineStrategy((inputs) => inputs);
+    })
+    .payFee(testUtils.FEE)
+    .build();
+
+  return chain.executeAndReturnOutputs(forwardToTicketRedeemTx);
+};

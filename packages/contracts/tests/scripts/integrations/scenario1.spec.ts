@@ -10,6 +10,7 @@ import {
   MergeTx,
   GiftReturnTx,
   WinnerRemovalTx,
+  ForwardToTicketRedeemTx,
 } from './transactions';
 import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
 
@@ -191,6 +192,13 @@ describe('Raffle', () => {
           expect(winnerRemovalTx.success).true;
           giftRedeem = winnerRemovalTx.outputs[0];
         }
+
+        // Step 9: Forward to ticket redeem transaction
+        const forwardToTicketRedeemTx = ForwardToTicketRedeemTx(
+          giftRedeem,
+          chain,
+        );
+        expect(forwardToTicketRedeemTx.success).true;
       },
     );
   });
