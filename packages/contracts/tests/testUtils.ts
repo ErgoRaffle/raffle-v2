@@ -176,9 +176,8 @@ export const createServiceOutputBox = (
   serviceFeePercent: bigint = 10n,
   implementerFeePercent: bigint = 10n,
   creationFee = CREATION_FEE,
-  ergoTree: string = contractsAddresses['service'],
 ) => {
-  return new OutputBuilder(15_000_000n, ergoTree)
+  return new OutputBuilder(15_000_000n, contractsAddresses['service'])
     .addTokens([
       raffleNFTToken,
       {
