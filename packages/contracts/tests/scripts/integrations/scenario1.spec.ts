@@ -12,6 +12,7 @@ import {
   WinnerRemovalTx,
   ForwardToTicketRedeemTx,
   TicketRedeemTx,
+  ReturnRaffleLicenseTx,
 } from './transactions';
 import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
 
@@ -63,12 +64,22 @@ describe('Raffle', () => {
   const raffleTest = createRaffleTest();
 
   describe('Create raffle', () => {
-    /*
-    - Erg-goal raffle with 2 winners
-    - Receiving 2 gifts for the first winner
-    - Raised fund by 2 donation
-    - Failed after the deadline (Not raising enough fund to cover raffle goal)
-    - All gifts and donations returned successfully
+    /**
+     * @target Failed Erg-goal raffle with 2 winners
+     * @scenario
+     * 1. Raffle creation phase 1 (create inactive raffle and ticketRepo)
+     * 2. Raffle creation phase 2 (merge inactive and ticket repo and create active raffle and winners)
+     * 3. Gift token receipt transaction (move gift tokens to winner boxes)
+     * 4. Add two gifts to one of the winners
+     * 5. Donate twice by two different donators
+     * 6. Failure transaction after passing the deadline
+     * 7. Returning two gifts of the first winner
+     * 8. Winner removal transaction
+     * 9. Forward to ticket redeem phase
+     * 10. Redeem two tickets to donators
+     * 11. Return raffle license to service
+     * @expected
+     * - To sign all transactions successfully and complete the scenario
      */
     raffleTest(
       'Failed Erg-goal raffle with 2 winners',
@@ -99,7 +110,7 @@ describe('Raffle', () => {
         );
         expect(createRaffleTx.success).true;
 
-        // Step 2: Raffle creation phase 2 (merge inactive and ticket repo and create active raffle)
+        // Step 2: Raffle creation phase 2 (merge inactive and ticket repo and create active raffle and winners)
         const inactiveRaffle = createRaffleTx.outputs[2];
         const ticketRepo = createRaffleTx.outputs[1];
 
@@ -112,7 +123,7 @@ describe('Raffle', () => {
         );
         expect(mergeTx.success).true;
 
-        // Step 3: Gift token receipt transaction
+        // Step 3: Gift token receipt transaction (move gift tokens to winner boxes)
         let giftTokenRepo = mergeTx.outputs[2];
         const emptyWinnerBoxes = mergeTx.outputs.slice(3, 5);
         let step = 1;
@@ -144,7 +155,7 @@ describe('Raffle', () => {
           winner1Gifts.push(addGiftTx.outputs[1]);
         }
 
-        // Step 5: Donate twice by two different donator wallets
+        // Step 5: Donate twice by two different donators
         let activeRaffle = mergeTx.outputs[0];
         const tickets = [];
         for (let donateCount = 0; donateCount < 2; donateCount++) {
@@ -174,7 +185,7 @@ describe('Raffle', () => {
         const failureTx = FailureTx(activeRaffle, chain);
         expect(failureTx.success).true;
 
-        // Step 7: Return gifts transaction
+        // Step 7: Returning two gifts of the first winner
         let giftRedeem = failureTx.outputs[0];
         for (let i = 0; i < 2; i++) {
           const giftRedeemTx = GiftReturnTx(
@@ -194,20 +205,29 @@ describe('Raffle', () => {
           giftRedeem = winnerRemovalTx.outputs[0];
         }
 
-        // Step 9: Forward to ticket redeem transaction
+        // Step 9: Forward to ticket redeem phase
         const forwardToTicketRedeemTx = ForwardToTicketRedeemTx(
           giftRedeem,
           chain,
         );
         expect(forwardToTicketRedeemTx.success).true;
 
-        // Step 10: Redeem tickets transaction
+        // Step 10: Redeem two tickets to donators
         let ticketRedeem = forwardToTicketRedeemTx.outputs[0];
         for (const ticket of tickets) {
           const ticketRedeemTx = TicketRedeemTx(ticketRedeem, ticket, chain);
           ticketRedeem = ticketRedeemTx.outputs[0];
           expect(ticketRedeemTx.success).true;
         }
+
+        // Step 11: Return raffle license to service
+        const service = createRaffleTx.outputs[0];
+        const returnLicenseTx = ReturnRaffleLicenseTx(
+          ticketRedeem,
+          service,
+          chain,
+        );
+        expect(returnLicenseTx.success).true;
       },
     );
   });

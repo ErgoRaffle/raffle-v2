@@ -487,3 +487,46 @@ export const TicketRedeemTx = (
 
   return chain.executeAndReturnOutputs(ticketRedeemTx);
 };
+
+/**
+ * Return raffle license to the service box after raffle completion
+ * @param endedRaffle
+ * @param service
+ * @param chain: mocked chain
+ */
+export const ReturnRaffleLicenseTx = (
+  endedRaffle: testUtils.OutputBox,
+  service: testUtils.OutputBox,
+  chain: testUtils.RaffleMockChain,
+) => {
+  const serviceAddress = Buffer.from(
+    SConstant.from(service.additionalRegisters.R5!).data as Uint8Array,
+  ).toString();
+  const serviceR4 = SConstant.from(service.additionalRegisters.R4!)
+    .data as bigint[];
+  const serviceFeePercent = serviceR4[0];
+  const implementerFeePercent = serviceR4[0];
+  const serviceOutputBox = testUtils.createServiceOutputBox(
+    serviceAddress,
+    BigInt(service.assets[1].amount.toString()) + 1n,
+    serviceFeePercent,
+    implementerFeePercent,
+    testUtils.CREATION_FEE,
+  );
+  const serviceFee = testUtils.createUserOutputBox(
+    BigInt(endedRaffle.value.toString()) - testUtils.FEE,
+    [],
+    serviceAddress,
+  );
+  const ticketRedeemTx = new TransactionBuilder(chain.height)
+    .from([service, endedRaffle])
+    .to([serviceOutputBox, serviceFee])
+    .burnTokens(endedRaffle.assets[1])
+    .configureSelector((selector) => {
+      selector.defineStrategy((inputs) => inputs);
+    })
+    .payFee(testUtils.FEE)
+    .build();
+
+  return chain.executeAndReturnOutputs(ticketRedeemTx);
+};
