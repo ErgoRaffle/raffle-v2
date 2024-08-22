@@ -100,7 +100,7 @@ export const MergeTx = (
       r4,
       r5,
       BigInt(inactiveRaffle.value.toString()) -
-        3n * winnersCount * testUtils.FEE -
+        4n * winnersCount * testUtils.FEE -
         testUtils.FEE,
       BigInt(ticketRepo.assets[0].amount.toString()) - winnersCount - 1n,
       ticketTokenId,
@@ -386,7 +386,7 @@ export const WinnerRemovalTx = (
     .data as bigint;
   const ticketTokenId = giftRedeem.assets[1].tokenId;
   const giftRedeemOutputBox = testUtils.createGiftRedeemOutputBox(
-    BigInt(giftRedeem.value.toString()) + testUtils.FEE,
+    BigInt(giftRedeem.value.toString()) + 2n * testUtils.FEE,
     r4[0],
     r4[1],
     r4[2],

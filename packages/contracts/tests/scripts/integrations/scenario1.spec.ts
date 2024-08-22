@@ -185,7 +185,7 @@ describe('Raffle', () => {
           winner1 = giftRedeemTx.outputs[0];
         }
 
-        // Step8: Winner removal transaction
+        // Step 8: Winner removal transaction
         for (const winnerBox of [winner1, winnerBoxes[1]]) {
           const winnerRemovalTx = WinnerRemovalTx(giftRedeem, winnerBox, chain);
           expect(winnerRemovalTx.success).true;

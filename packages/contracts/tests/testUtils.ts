@@ -546,7 +546,7 @@ export const createActiveRaffleOutputBox = (
   totalSoldTicket: bigint = 0n,
   deadline: bigint = 100n,
 ) => {
-  value = value || FEE * winnersCount + creationFee - FEE;
+  value = value || creationFee - FEE;
 
   const tokens = [
     {
@@ -779,7 +779,7 @@ export const createWinnersBoxMock = (
   for (let i = 0; i < winnersCount; i++)
     winnersBoxes.push(
       mockUTxO({
-        value: 2n * 15000000n,
+        value: 3n * FEE,
         ergoTree: ergoTree,
         additionalRegisters: {
           R4: SColl(SLong, [
@@ -915,6 +915,35 @@ export const createGiftRedeemOutputBox = (
   return giftRedeemOutputBox;
 };
 
+export const createTicketRedeemOutputBox = (
+  value: bigint,
+  totalSoldTicket: bigint,
+  ticketPrice: bigint,
+  redeemedTickets: bigint,
+  ticketTokenId: string,
+  ticketTokenCount: bigint,
+) => {
+  const ticketRedeemOutputBox = new OutputBuilder(
+    value,
+    contractsAddresses['ticketRedeem'],
+  );
+  ticketRedeemOutputBox.setAdditionalRegisters({
+    R4: SColl(SLong, Array.from([totalSoldTicket, ticketPrice, FEE])),
+    R5: SLong(redeemedTickets).toHex(),
+  });
+  ticketRedeemOutputBox.addTokens([
+    {
+      tokenId: LICENSE_TOKEN_ID,
+      amount: 1n,
+    },
+    {
+      tokenId: ticketTokenId,
+      amount: ticketTokenCount,
+    },
+  ]);
+  return ticketRedeemOutputBox;
+};
+
 /**
  * create single winner output box
  * @param r4
@@ -930,7 +959,7 @@ export const createWinnerOutputBoxWithConstantRegisters = (
   giftTokenCount = BigInt(GIFT_TOKEN_COUNT),
   giftCount = 0n,
 ) => {
-  const winnerBox = new OutputBuilder(2n * FEE, contractsAddresses['winner'])
+  const winnerBox = new OutputBuilder(3n * FEE, contractsAddresses['winner'])
     .setAdditionalRegisters({
       R4: SColl(SLong, r4),
       R5: SLong(giftCount),
@@ -964,7 +993,7 @@ export const createWinnerOutputBox = (
   deadline = 100n,
   giftCount = 0n,
 ) => {
-  return new OutputBuilder(2n * FEE, contractsAddresses['winner'])
+  return new OutputBuilder(3n * FEE, contractsAddresses['winner'])
     .setAdditionalRegisters({
       R4: SColl(SLong, [BigInt(step), 1000n / winnersCount, deadline, FEE]),
       R5: SLong(giftCount),
