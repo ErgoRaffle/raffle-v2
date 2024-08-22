@@ -330,7 +330,6 @@ export const createInactiveRaffleBoxMock = (
  * @param creationFee
  * @param ticketToken
  * @param deadline
- * @param ergoTree
  * @returns InactiveRaffleBox
  */
 export const createInactiveRaffleOutputBox = (
@@ -466,20 +465,14 @@ export const createActiveRaffleBoxMock = (
 };
 
 /**
- * Create output box of active-raffle
- * @param ownerAddress
- * @param creatorPartnerAddress
- * @param implementerPartnerAddress
- * @param winnersCount
- * @param serviceFeePercent
- * @param collectingToken
- * @param creationFee
+ * Create active raffle box with registers
+ * @param r4
+ * @param r5
  * @param value
  * @param ticketTokenAmount
  * @param ticketTokenId
  * @param totalSoldTicket
- * @param deadline
- * @param ergoTree
+ * @param collectingToken
  * @returns
  */
 export const createActiveRaffleWithConstantRegisters = (
@@ -529,7 +522,6 @@ export const createActiveRaffleWithConstantRegisters = (
  * @param ticketTokenId
  * @param totalSoldTicket
  * @param deadline
- * @param ergoTree
  * @returns
  */
 export const createActiveRaffleOutputBox = (
@@ -615,11 +607,11 @@ export const createSuccessRaffleBox = (
 
 /**
  * Create and return Raffle-details input box
- * @param ticket_token_id
+ * @param ticketTokenId
  * @returns
  */
 export const createRaffleDetailsBoxMock = (
-  ticket_token_id: string = TICKET_TOKEN_ID,
+  ticketTokenId: string = TICKET_TOKEN_ID,
 ) => {
   return new ErgoUnsignedInput(
     mockUTxO({
@@ -635,7 +627,7 @@ export const createRaffleDetailsBoxMock = (
       assets: [
         {
           amount: 1n,
-          tokenId: ticket_token_id,
+          tokenId: ticketTokenId,
         },
       ],
     }),
@@ -644,7 +636,7 @@ export const createRaffleDetailsBoxMock = (
 
 /**
  * Create raffle-details output box
- * @param ticket_token_id
+ * @param ticketTokenId
  * @returns Output Box
  */
 export const createRaffleDetailsOutputBox = (
@@ -668,11 +660,11 @@ export const createRaffleDetailsOutputBox = (
 /**
  * Create and return gift token repo input box
  * @param winnersCount
+ * @param step
+ * @param value
+ * @param giftAssetTokenCount
  * @param ticketId
  * @param giftTokenId
- * @param value
- * @param step
- * @param giftAssetTokenCount
  * @returns
  */
 export const createGiftTokenRepoBoxMock = (
@@ -712,11 +704,13 @@ export const createGiftTokenRepoBoxMock = (
 /**
  * Create and return gift token repo output box
  * @param winnersCount
- * @param ticketId
  * @param tokenInsertionType
- * @param giftAssetTokenCount
- * @param value
  * @param step
+ * @param value
+ * @param giftAssetTokenCount
+ * @param ticketId
+ * @param giftTokenId
+ * @param giftTokenCount
  * @returns
  */
 export const createGiftTokenRepoOutputBox = (
@@ -809,6 +803,7 @@ export const createWinnersBoxMock = (
  * @param giftTokenId
  * @param ticketTokenId
  * @param ticketTokenAmount
+ * @param deadline
  * @returns
  */
 export const createWinnersOutputBox = (
@@ -836,18 +831,25 @@ export const createWinnersOutputBox = (
   return winnersBoxes;
 };
 
+/**
+ * Create gift output box
+ * @param winnerIndex
+ * @param giftTokenId
+ * @param giftGiverWalletAddress
+ * @param value
+ * @param giftToken
+ * @returns
+ */
 export const createGiftOutputBox = (
   winnerIndex: bigint,
   giftTokenId: string,
   giftGiverWalletAddress: string,
-  giftValue: bigint = 0n,
+  value: bigint = 0n,
   giftToken?: TokenAmount<bigint>,
-  ergoTree: string = contractsAddresses['gift'],
 ) => {
-  const giftBoxValue = FEE;
   const giftForWinnerOutputBox = new OutputBuilder(
-    SAFE_MIN_BOX_VALUE + giftBoxValue + giftValue,
-    ergoTree,
+    value,
+    contractsAddresses['gift'],
   )
     .setAdditionalRegisters({
       R4: SColl(SByte, Array.from(Buffer.from(giftGiverWalletAddress))),
@@ -863,6 +865,14 @@ export const createGiftOutputBox = (
   return giftForWinnerOutputBox;
 };
 
+/**
+ * Create ticket box
+ * @param donatorWalletAddress
+ * @param ticketCount
+ * @param ticketTokenId
+ * @param r5
+ * @returns
+ */
 export const createTicketOutputBox = (
   donatorWalletAddress: string,
   ticketCount: bigint,
@@ -882,6 +892,17 @@ export const createTicketOutputBox = (
   return donateTicketOutputBox;
 };
 
+/**
+ * Create gift redeem box
+ * @param value
+ * @param totalSoldTicket
+ * @param ticketPrice
+ * @param winnersCount
+ * @param step
+ * @param ticketTokenId
+ * @param ticketTokenCount
+ * @returns
+ */
 export const createGiftRedeemOutputBox = (
   value: bigint,
   totalSoldTicket: bigint,
@@ -915,6 +936,16 @@ export const createGiftRedeemOutputBox = (
   return giftRedeemOutputBox;
 };
 
+/**
+ * Create ticket redeem box
+ * @param value
+ * @param totalSoldTicket
+ * @param ticketPrice
+ * @param redeemedTickets
+ * @param ticketTokenId
+ * @param ticketTokenCount
+ * @returns
+ */
 export const createTicketRedeemOutputBox = (
   value: bigint,
   totalSoldTicket: bigint,
@@ -949,8 +980,8 @@ export const createTicketRedeemOutputBox = (
  * @param r4
  * @param ticketTokenId
  * @param giftTokenId
- * @param giftCount
  * @param giftTokenCount
+ * @param giftCount
  */
 export const createWinnerOutputBoxWithConstantRegisters = (
   r4: bigint[],
@@ -1068,6 +1099,10 @@ export class RaffleMockChain extends MockChain {
     this.#metadataMap = new Map();
   }
 
+  /**
+   * Set mocked chain tip height to the specified height
+   * @param height
+   */
   setTip = (height: number) => {
     const state = ensureDefaults(undefined, {
       height: height,
@@ -1123,6 +1158,13 @@ export class RaffleMockChain extends MockChain {
     }
   };
 
+  /**
+   * Sign the transaction and return the signing result and the transaction outputs
+   * @param unsignedTransaction
+   * @param options
+   * @param baseCost
+   * @returns
+   */
   executeAndReturnOutputs = (
     unsignedTransaction: ErgoUnsignedTransaction,
     options?: TransactionExecutionOptions,
@@ -1168,8 +1210,6 @@ export class RaffleMockChain extends MockChain {
     }
 
     this.#pushMetadata(unsignedTransaction);
-
-    this.newBlock();
 
     return { success: true, outputs: result.tx!.outputs as OutputBox[] };
   };
