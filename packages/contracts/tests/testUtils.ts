@@ -266,7 +266,7 @@ export const createInactiveRaffleBoxMock = (
       amount: 1n,
     },
   ];
-  if (collectingToken != null) tokens.push(collectingToken);
+  if (collectingToken !== undefined) tokens.push(collectingToken);
 
   winnersPercents = winnersPercents || [];
   if (winnersPercents.length === 0)
@@ -900,6 +900,7 @@ export const createTicketOutputBox = (
  * @param step
  * @param ticketTokenId
  * @param ticketTokenCount
+ * @param collectingToken
  * @returns
  */
 export const createGiftRedeemOutputBox = (
@@ -910,6 +911,7 @@ export const createGiftRedeemOutputBox = (
   step: bigint,
   ticketTokenId: string,
   ticketTokenCount: bigint,
+  collectingToken?: TokenAmount<bigint>,
 ) => {
   const giftRedeemOutputBox = new OutputBuilder(
     value,
@@ -932,6 +934,10 @@ export const createGiftRedeemOutputBox = (
       amount: ticketTokenCount,
     },
   ]);
+
+  if(collectingToken !== undefined)
+    giftRedeemOutputBox.addTokens([collectingToken])
+
   return giftRedeemOutputBox;
 };
 
