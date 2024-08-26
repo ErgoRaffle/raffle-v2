@@ -63,7 +63,7 @@ describe('Raffle', () => {
 
   describe('Create raffle', () => {
     /**
-     * @target Failed Erg-goal raffle with 2 winners
+     * @target Failed token-goal raffle with 2 winners
      * @scenario
      * 1. Raffle creation phase 1 (create inactive raffle and ticketRepo with special collecting token)
      * 2. Raffle creation phase 2 (merge inactive and ticket repo and create active raffle and winners)
@@ -100,10 +100,7 @@ describe('Raffle', () => {
           deadline,
           winnersPercent,
           chain,
-          {
-            tokenId: testUtils.X_TOKEN_ID,
-            amount: 1n
-          }
+          testUtils.X_TOKEN_ID,
         );
         expect(createRaffleTx.success).true;
 
@@ -120,6 +117,8 @@ describe('Raffle', () => {
         );
         expect(mergeTx.success).true;
 
+        const raffleDetails = mergeTx.outputs[1];
+
         // Step 3: Donate twice by two different donators
         let activeRaffle = mergeTx.outputs[0];
         const tickets = [];
@@ -129,10 +128,6 @@ describe('Raffle', () => {
             (donatorWallets as KeyedMockChainParty[])[donateCount],
             10n,
             chain,
-            {
-              tokenId: testUtils.X_TOKEN_ID,
-              amount: 10n * 10n // price * count
-            }
           );
           expect(donateTx.success).true;
           activeRaffle = donateTx.outputs[0];
@@ -151,7 +146,7 @@ describe('Raffle', () => {
         chain.setTip(2001);
 
         // Step 4: Failure transaction
-        const failureTx = executeFailureTx(activeRaffle, chain);
+        const failureTx = executeFailureTx(activeRaffle, raffleDetails, chain);
         expect(failureTx.success).true;
 
         // Step 5: Forward to ticket redeem phase

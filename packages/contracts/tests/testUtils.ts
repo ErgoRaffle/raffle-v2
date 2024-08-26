@@ -713,11 +713,11 @@ export const createGiftTokenRepoBoxMock = (
  * @returns
  */
 export const createGiftTokenRepoOutputBox = (
-  winnersCount: number,
+  winnersCount: bigint,
   tokenInsertionType: null | 'mint' | 'add' = 'mint',
   step: number = 1,
   value = FEE * BigInt(winnersCount),
-  giftAssetTokenCount = BigInt(GIFT_TOKEN_COUNT * winnersCount),
+  giftAssetTokenCount = BigInt(GIFT_TOKEN_COUNT) * BigInt(winnersCount),
   ticketId: string = TICKET_TOKEN_ID,
   giftTokenId: string = GIFT_TOKEN_ID,
   giftTokenCount = GIFT_TOKEN_COUNT,
@@ -729,13 +729,13 @@ export const createGiftTokenRepoOutputBox = (
     R4: SColl(SInt, [1]).toHex(),
     R5: SColl(SInt, [2]).toHex(),
     R6: SColl(SInt, [3]).toHex(),
-    R7: SColl(SInt, [giftTokenCount, winnersCount, Number(FEE)]).toHex(),
+    R7: SColl(SInt, [giftTokenCount, Number(winnersCount), Number(FEE)]).toHex(),
     R8: SColl(SByte, Array.from(Buffer.from(ticketId, 'hex'))).toHex(),
     R9: SInt(step).toHex(),
   });
   if (tokenInsertionType === 'mint')
     giftBox.mintToken({
-      amount: BigInt(GIFT_TOKEN_COUNT * winnersCount),
+      amount: BigInt(GIFT_TOKEN_COUNT) * BigInt(winnersCount),
       name: 'RaffleGiftToken',
       decimals: 0,
     });
@@ -949,6 +949,7 @@ export const createGiftRedeemOutputBox = (
  * @param redeemedTickets
  * @param ticketTokenId
  * @param ticketTokenCount
+ * @param collectingToken
  * @returns
  */
 export const createTicketRedeemOutputBox = (
@@ -958,6 +959,7 @@ export const createTicketRedeemOutputBox = (
   redeemedTickets: bigint,
   ticketTokenId: string,
   ticketTokenCount: bigint,
+  collectingToken?: TokenAmount<bigint>,
 ) => {
   const ticketRedeemOutputBox = new OutputBuilder(
     value,
@@ -977,6 +979,10 @@ export const createTicketRedeemOutputBox = (
       amount: ticketTokenCount,
     },
   ]);
+
+  if(collectingToken !== undefined)
+    ticketRedeemOutputBox.assets.add(collectingToken);
+
   return ticketRedeemOutputBox;
 };
 
@@ -1046,9 +1052,12 @@ export const createUserOutputBox = (
   tokens: TokenAmount<Amount>[],
   address: string,
 ) => {
-  return new OutputBuilder(value, ErgoAddress.fromBase58(address)).addTokens(
-    tokens,
-  );
+  const userOutputBox = new OutputBuilder(value, ErgoAddress.fromBase58(address));
+  if(tokens.length > 0)
+    userOutputBox.addTokens(
+      tokens,
+    );
+  return userOutputBox;
 };
 
 /**

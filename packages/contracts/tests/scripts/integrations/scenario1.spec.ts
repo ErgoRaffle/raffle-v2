@@ -120,6 +120,8 @@ describe('Raffle', () => {
         );
         expect(mergeTx.success).true;
 
+        const raffleDetails = mergeTx.outputs[1];
+
         // Step 3: Gift token receipt transaction (move gift tokens to winner boxes)
         let giftTokenRepo = mergeTx.outputs[2];
         const emptyWinnerBoxes = mergeTx.outputs.slice(3, 5);
@@ -179,7 +181,7 @@ describe('Raffle', () => {
         chain.setTip(2001);
 
         // Step 6: Failure transaction
-        const failureTx = executeFailureTx(activeRaffle, chain);
+        const failureTx = executeFailureTx(activeRaffle, raffleDetails, chain);
         expect(failureTx.success).true;
 
         // Step 7: Returning two gifts of the first winner
