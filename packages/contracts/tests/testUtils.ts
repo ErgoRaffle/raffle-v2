@@ -713,11 +713,11 @@ export const createGiftTokenRepoBoxMock = (
  * @returns
  */
 export const createGiftTokenRepoOutputBox = (
-  winnersCount: number,
+  winnersCount: bigint,
   tokenInsertionType: null | 'mint' | 'add' = 'mint',
   step: number = 1,
   value = FEE * BigInt(winnersCount),
-  giftAssetTokenCount = BigInt(GIFT_TOKEN_COUNT * winnersCount),
+  giftAssetTokenCount = BigInt(GIFT_TOKEN_COUNT) * winnersCount,
   ticketId: string = TICKET_TOKEN_ID,
   giftTokenId: string = GIFT_TOKEN_ID,
   giftTokenCount = GIFT_TOKEN_COUNT,
@@ -729,13 +729,17 @@ export const createGiftTokenRepoOutputBox = (
     R4: SColl(SInt, [1]).toHex(),
     R5: SColl(SInt, [2]).toHex(),
     R6: SColl(SInt, [3]).toHex(),
-    R7: SColl(SInt, [giftTokenCount, winnersCount, Number(FEE)]).toHex(),
+    R7: SColl(SInt, [
+      giftTokenCount,
+      Number(winnersCount),
+      Number(FEE),
+    ]).toHex(),
     R8: SColl(SByte, Array.from(Buffer.from(ticketId, 'hex'))).toHex(),
     R9: SInt(step).toHex(),
   });
   if (tokenInsertionType === 'mint')
     giftBox.mintToken({
-      amount: BigInt(GIFT_TOKEN_COUNT * winnersCount),
+      amount: BigInt(GIFT_TOKEN_COUNT * Number(winnersCount)),
       name: 'RaffleGiftToken',
       decimals: 0,
     });

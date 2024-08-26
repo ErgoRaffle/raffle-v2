@@ -135,7 +135,7 @@ describe('giftTokenRepo', () => {
         });
 
         const giftTokenOutputBox = testUtils.createGiftTokenRepoOutputBox(
-          5,
+          5n,
           'add',
           3,
           testUtils.FEE * 3n,
@@ -185,7 +185,7 @@ describe('giftTokenRepo', () => {
           amount: 1n,
         });
         const giftTokenOutputBox = testUtils.createGiftTokenRepoOutputBox(
-          5,
+          5n,
           'add',
           2,
           testUtils.FEE * 4n,
@@ -228,7 +228,7 @@ describe('giftTokenRepo', () => {
           amount: BigInt(testUtils.GIFT_TOKEN_COUNT + 1),
         });
         const giftTokenOutputBox = testUtils.createGiftTokenRepoOutputBox(
-          5,
+          5n,
           'add',
           2,
           testUtils.FEE * 4n,
@@ -266,7 +266,7 @@ describe('giftTokenRepo', () => {
           amount: BigInt(testUtils.GIFT_TOKEN_COUNT),
         });
         const giftTokenOutputBox = testUtils.createGiftTokenRepoOutputBox(
-          5,
+          5n,
           'add',
           2,
           testUtils.FEE * 4n,
@@ -308,7 +308,7 @@ describe('giftTokenRepo', () => {
         });
 
         const giftTokenOutputBox = testUtils.createGiftTokenRepoOutputBox(
-          6, // invalid winner count
+          6n, // invalid winner count
           'add',
           2,
           testUtils.FEE * 4n,
@@ -347,7 +347,7 @@ describe('giftTokenRepo', () => {
         });
 
         const giftTokenOutputBox = testUtils.createGiftTokenRepoOutputBox(
-          5,
+          5n,
           'add',
           1, // invalid step number
           testUtils.FEE * 4n,
@@ -386,7 +386,7 @@ describe('giftTokenRepo', () => {
         });
 
         const giftTokenOutputBox = testUtils.createGiftTokenRepoOutputBox(
-          5,
+          5n,
           'add',
           2,
           testUtils.FEE * 3n,
@@ -518,7 +518,7 @@ describe('giftTokenRepo', () => {
           amount: BigInt(testUtils.GIFT_TOKEN_COUNT - 1),
         });
         const giftTokenOutputBox = testUtils.createGiftTokenRepoOutputBox(
-          5,
+          5n,
           'add',
           5,
           testUtils.FEE,

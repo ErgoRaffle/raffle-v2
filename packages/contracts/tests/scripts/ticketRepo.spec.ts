@@ -77,7 +77,7 @@ describe('ticketRepo', () => {
         );
         const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
         const giftTokenRepoOutputBox =
-          testUtils.createGiftTokenRepoOutputBox(1);
+          testUtils.createGiftTokenRepoOutputBox(1n);
 
         const winnersBoxes = testUtils.createWinnersOutputBox(
           1n,
@@ -128,7 +128,7 @@ describe('ticketRepo', () => {
         );
         const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
         const giftTokenRepoOutputBox =
-          testUtils.createGiftTokenRepoOutputBox(5);
+          testUtils.createGiftTokenRepoOutputBox(5n);
         const transaction = new TransactionBuilder(chain.height)
           .from([inactiveRaffleInputBox, ticketRepoInputBox])
           .to([
@@ -180,7 +180,7 @@ describe('ticketRepo', () => {
           inactiveRaffleInputBox.boxId.toString(),
         );
         const giftTokenRepoOutputBox =
-          testUtils.createGiftTokenRepoOutputBox(1);
+          testUtils.createGiftTokenRepoOutputBox(1n);
 
         // Replace Ticket-Token with another token
         const extraInputBox = mockUTxO({
@@ -253,7 +253,7 @@ describe('ticketRepo', () => {
           inactiveRaffleInputBox.boxId.toString(),
         );
         const giftTokenRepoOutputBox =
-          testUtils.createGiftTokenRepoOutputBox(1);
+          testUtils.createGiftTokenRepoOutputBox(1n);
 
         // Move one extra Ticket-Token to the giftTokenRepoOutputBox
         giftTokenRepoOutputBox.assets.add({
@@ -328,7 +328,7 @@ describe('ticketRepo', () => {
           inactiveRaffleInputBox.boxId.toString(),
         );
         const giftTokenRepoOutputBox =
-          testUtils.createGiftTokenRepoOutputBox(1);
+          testUtils.createGiftTokenRepoOutputBox(1n);
 
         const transaction = new TransactionBuilder(1000)
           .from([inactiveRaffleInputBox, ticketRepoInputBox, extraInputBox])
@@ -375,7 +375,7 @@ describe('ticketRepo', () => {
       );
 
       const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
-      const giftTokenRepoOutputBox = testUtils.createGiftTokenRepoOutputBox(1);
+      const giftTokenRepoOutputBox = testUtils.createGiftTokenRepoOutputBox(1n);
       const winnerBoxes = testUtils.createWinnersOutputBox(
         1n,
         inactiveRaffleInputBox.boxId.toString(),

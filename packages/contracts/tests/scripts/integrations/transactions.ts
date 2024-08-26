@@ -109,7 +109,7 @@ export const MergeTx = (
   const raffleDetailsOutputBox =
     testUtils.createRaffleDetailsOutputBox(ticketTokenId);
   const giftTokenRepoOutputBox = testUtils.createGiftTokenRepoOutputBox(
-    2,
+    winnersCount,
     'mint',
     undefined,
     undefined,
@@ -118,7 +118,7 @@ export const MergeTx = (
   );
 
   const winnersBoxes = testUtils.createWinnersOutputBox(
-    2n,
+    winnersCount,
     inactiveRaffle.boxId.toString(),
     ticketTokenId,
     undefined,
@@ -171,7 +171,7 @@ export const GiftTokenReceiptTx = (
   if (step < winnersCount)
     outputs.push(
       testUtils.createGiftTokenRepoOutputBox(
-        2,
+        winnersCount,
         'add',
         step + 1,
         testUtils.FEE * (winnersCount - BigInt(step)),
@@ -258,11 +258,12 @@ export const DonateTx = (
   const totalSoldTickets = (
     SConstant.from(activeRaffle.additionalRegisters.R6!).data as bigint[]
   )[0];
+  const ticketPrice = r4[1];
   const activeRaffleOutputBox =
     testUtils.createActiveRaffleWithConstantRegisters(
       r4,
       r5,
-      BigInt(activeRaffle.value.toString()),
+      BigInt(activeRaffle.value.toString()) + ticketPrice * ticketCount,
       BigInt(activeRaffle.assets[1].amount.toString()) - ticketCount,
       ticketTokenId,
       totalSoldTickets + ticketCount,
@@ -295,6 +296,7 @@ export const DonateTx = (
  */
 export const FailureTx = (
   activeRaffle: testUtils.OutputBox,
+  raffleDetails: testUtils.OutputBox,
   chain: testUtils.RaffleMockChain,
 ) => {
   const r4 = SConstant.from(activeRaffle.additionalRegisters.R4!)
@@ -304,16 +306,16 @@ export const FailureTx = (
     SConstant.from(activeRaffle.additionalRegisters.R6!).data as bigint[]
   )[0];
   const giftRedeemOutputBox = testUtils.createGiftRedeemOutputBox(
-    BigInt(activeRaffle.value.toString()) - testUtils.FEE,
+    BigInt(activeRaffle.value.toString()),
     totalSoldTickets,
     r4[3],
     r4[4],
     1n,
     ticketTokenId,
-    BigInt(activeRaffle.assets[1].amount.toString()),
+    BigInt(activeRaffle.assets[1].amount.toString()) + 1n,
   );
   const failureTx = new TransactionBuilder(chain.height)
-    .from([activeRaffle])
+    .from([activeRaffle, raffleDetails])
     .to([giftRedeemOutputBox])
     .payFee(testUtils.FEE)
     .build();

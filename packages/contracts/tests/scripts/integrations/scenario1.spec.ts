@@ -182,7 +182,8 @@ describe('Raffle', () => {
         chain.setTip(2001);
 
         // Step 6: Failure transaction
-        const failureTx = FailureTx(activeRaffle, chain);
+        const raffleDetails = mergeTx.outputs[1];
+        const failureTx = FailureTx(activeRaffle, raffleDetails, chain);
         expect(failureTx.success).true;
 
         // Step 7: Returning two gifts of the first winner
