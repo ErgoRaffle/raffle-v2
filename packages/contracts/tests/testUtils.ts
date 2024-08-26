@@ -118,14 +118,6 @@ export const initialContracts = (): { [key: string]: string } => {
     GIFT_TOKEN_COUNT: GIFT_TOKEN_COUNT,
   };
   return compileAll(
-
-  for (const scriptKeyName of Object.keys(extraVarsValues)) {
-    for (const extraKey of Object.keys(extraVarsValues[scriptKeyName])) {
-      scriptsVars[scriptKeyName][extraKey] =
-        extraVarsValues[scriptKeyName][extraKey];
-    }
-  }
-  const finalContractsAddresses = compileAll(
     new Map(Object.entries(scriptsVars)) as unknown as ContextVarsType,
     true,
   );
@@ -274,7 +266,7 @@ export const createInactiveRaffleBoxMock = (
       amount: 1n,
     },
   ];
-  if (collectingToken != null) tokens.push(collectingToken);
+  if (collectingToken !== undefined) tokens.push(collectingToken);
 
   winnersPercents = winnersPercents || [];
   if (winnersPercents.length === 0)
@@ -908,6 +900,7 @@ export const createTicketOutputBox = (
  * @param step
  * @param ticketTokenId
  * @param ticketTokenCount
+ * @param collectingToken
  * @returns
  */
 export const createGiftRedeemOutputBox = (
@@ -918,6 +911,7 @@ export const createGiftRedeemOutputBox = (
   step: bigint,
   ticketTokenId: string,
   ticketTokenCount: bigint,
+  collectingToken?: TokenAmount<bigint>,
 ) => {
   const giftRedeemOutputBox = new OutputBuilder(
     value,
@@ -940,6 +934,10 @@ export const createGiftRedeemOutputBox = (
       amount: ticketTokenCount,
     },
   ]);
+
+  if(collectingToken !== undefined)
+    giftRedeemOutputBox.addTokens([collectingToken])
+
   return giftRedeemOutputBox;
 };
 
