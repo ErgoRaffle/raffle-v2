@@ -44,7 +44,7 @@ export const CreateRaffleTx = (
     serviceBox.assets[1].amount - 1n,
     serviceFeePercent,
     implementerFeePercent,
-    testUtils.CREATION_FEE,
+    serviceR4[2],
   );
   const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
   const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
@@ -56,7 +56,7 @@ export const CreateRaffleTx = (
     winnersPercent,
     undefined,
     undefined,
-    testUtils.CREATION_FEE,
+    serviceR4[2],
     serviceBox.boxId,
     deadline,
   );
@@ -513,7 +513,7 @@ export const ReturnRaffleLicenseTx = (
     BigInt(service.assets[1].amount.toString()) + 1n,
     serviceFeePercent,
     implementerFeePercent,
-    testUtils.CREATION_FEE,
+    serviceR4[2],
   );
   const serviceFee = testUtils.createUserOutputBox(
     BigInt(endedRaffle.value.toString()) - testUtils.FEE,

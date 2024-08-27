@@ -12,7 +12,6 @@ import {
   MockChain,
   MockChainParty,
   BlockState,
-  AssetMetadataMap,
   MockChainOptions,
   TransactionExecutionOptions,
   mockUTxO,
@@ -20,9 +19,9 @@ import {
   mockBlockchainStateContext,
   BLOCKCHAIN_PARAMETERS,
 } from '@fleet-sdk/mock-chain';
-import { first, ensureDefaults, Network } from '@fleet-sdk/common';
-import { SColl, SByte, SLong, SInt, decode } from '@fleet-sdk/serializer';
-import { blake2b256, bigintBE, hex, utf8 } from '@fleet-sdk/crypto';
+import { ensureDefaults, Network } from '@fleet-sdk/common';
+import { SColl, SByte, SLong, SInt } from '@fleet-sdk/serializer';
+import { blake2b256, bigintBE, hex } from '@fleet-sdk/crypto';
 import type { ErgoUnsignedTransaction } from '@fleet-sdk/core';
 import type { ErgoHDKey } from '@fleet-sdk/wallet';
 import { ProverBuilder$ } from 'sigmastate-js/main';
@@ -50,9 +49,6 @@ export const xToken = { amount: 1000n, tokenId: X_TOKEN_ID };
 export const LICENSE_TOKEN_COUNT = 1_000_000_000n;
 export const CREATOR_DEFAULT_BALANCE = 500_000_000_000n;
 export const UNKNOWN_WALLET_DEFAULT_BALANCE = 10_000_000_000n;
-
-const safeUtf8Encode = (v: unknown) =>
-  v instanceof Uint8Array ? utf8.encode(v) : undefined;
 
 type RaffleTransactionExecutionResult = {
   success: boolean;
@@ -1076,8 +1072,6 @@ export const prettyPrintJson = (
 export class RaffleMockChain extends MockChain {
   readonly #parties: MockChainParty[];
   #tip: BlockState;
-  readonly #base: BlockState;
-  #metadataMap: AssetMetadataMap;
 
   constructor();
   constructor(height?: number);
@@ -1097,9 +1091,7 @@ export class RaffleMockChain extends MockChain {
     super();
 
     this.#tip = state;
-    this.#base = { ...state };
     this.#parties = [];
-    this.#metadataMap = new Map();
   }
 
   /**
@@ -1212,27 +1204,8 @@ export class RaffleMockChain extends MockChain {
       }
     }
 
-    this.#pushMetadata(unsignedTransaction);
-
     return { success: true, outputs: result.tx!.outputs as OutputBox[] };
   };
-
-  #pushMetadata(transaction: ErgoUnsignedTransaction) {
-    const firstInputId = first(transaction.inputs).boxId;
-    const box = transaction.outputs.find((output) =>
-      output.assets.some((asset) => asset.tokenId === firstInputId),
-    );
-    if (!box) return;
-
-    const name = decode(box.additionalRegisters.R4, safeUtf8Encode);
-    const decimals = decode(box.additionalRegisters.R6, safeUtf8Encode);
-    if (name) {
-      this.#metadataMap.set(firstInputId, {
-        name,
-        decimals: decimals ? Number.parseInt(decimals) : undefined,
-      });
-    }
-  }
 }
 
 export const contractsAddresses = initialContracts();
