@@ -32,15 +32,15 @@ export const CreateRaffleTx = (
       Array.from(Buffer.from(creator.address.toString())),
     ]),
   });
-  const serviceAddress = Buffer.from(
+  const serviceFeeAddress = Buffer.from(
     SConstant.from(serviceBox.additionalRegisters.R5!).data as Uint8Array,
   ).toString();
   const serviceR4 = SConstant.from(serviceBox.additionalRegisters.R4!)
     .data as bigint[];
   const serviceFeePercent = serviceR4[0];
-  const implementerFeePercent = serviceR4[0];
+  const implementerFeePercent = serviceR4[1];
   const serviceOutputBox = testUtils.createServiceOutputBox(
-    serviceAddress,
+    serviceFeeAddress,
     serviceBox.assets[1].amount - 1n,
     serviceFeePercent,
     implementerFeePercent,
@@ -48,7 +48,7 @@ export const CreateRaffleTx = (
   );
   const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
   const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
-    serviceAddress,
+    serviceFeeAddress,
     implementerAddress,
     creator.address.toString(),
     winnersCount,
@@ -501,7 +501,7 @@ export const ReturnRaffleLicenseTx = (
   service: testUtils.OutputBox,
   chain: testUtils.RaffleMockChain,
 ) => {
-  const serviceAddress = Buffer.from(
+  const serviceFeeAddress = Buffer.from(
     SConstant.from(service.additionalRegisters.R5!).data as Uint8Array,
   ).toString();
   const serviceR4 = SConstant.from(service.additionalRegisters.R4!)
@@ -509,7 +509,7 @@ export const ReturnRaffleLicenseTx = (
   const serviceFeePercent = serviceR4[0];
   const implementerFeePercent = serviceR4[0];
   const serviceOutputBox = testUtils.createServiceOutputBox(
-    serviceAddress,
+    serviceFeeAddress,
     BigInt(service.assets[1].amount.toString()) + 1n,
     serviceFeePercent,
     implementerFeePercent,
@@ -518,7 +518,7 @@ export const ReturnRaffleLicenseTx = (
   const serviceFee = testUtils.createUserOutputBox(
     BigInt(endedRaffle.value.toString()) - testUtils.FEE,
     [],
-    serviceAddress,
+    serviceFeeAddress,
   );
   const ticketRedeemTx = new TransactionBuilder(chain.height)
     .from([service, endedRaffle])
