@@ -31,6 +31,8 @@ function createInactiveRaffleTest(winnersCount: number = 1) {
     10n,
     undefined,
     1_000_000_000n,
+    undefined,
+    0n,
     compile('{sigmaProp(true);}').toHex().toString(),
   );
 
@@ -74,10 +76,8 @@ describe('ticketRepo', () => {
           1n,
         );
         const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
-        const giftTokenRepoOutputBox = testUtils.createGiftTokenRepoOutputBox(
-          1,
-          1,
-        );
+        const giftTokenRepoOutputBox =
+          testUtils.createGiftTokenRepoOutputBox(1n);
 
         const winnersBoxes = testUtils.createWinnersOutputBox(
           1n,
@@ -127,10 +127,8 @@ describe('ticketRepo', () => {
           5n,
         );
         const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
-        const giftTokenRepoOutputBox = testUtils.createGiftTokenRepoOutputBox(
-          1,
-          5,
-        );
+        const giftTokenRepoOutputBox =
+          testUtils.createGiftTokenRepoOutputBox(5n);
         const transaction = new TransactionBuilder(chain.height)
           .from([inactiveRaffleInputBox, ticketRepoInputBox])
           .to([
@@ -181,10 +179,8 @@ describe('ticketRepo', () => {
           1n,
           inactiveRaffleInputBox.boxId.toString(),
         );
-        const giftTokenRepoOutputBox = testUtils.createGiftTokenRepoOutputBox(
-          1,
-          1,
-        );
+        const giftTokenRepoOutputBox =
+          testUtils.createGiftTokenRepoOutputBox(1n);
 
         // Replace Ticket-Token with another token
         const extraInputBox = mockUTxO({
@@ -256,10 +252,8 @@ describe('ticketRepo', () => {
           1n,
           inactiveRaffleInputBox.boxId.toString(),
         );
-        const giftTokenRepoOutputBox = testUtils.createGiftTokenRepoOutputBox(
-          1,
-          1,
-        );
+        const giftTokenRepoOutputBox =
+          testUtils.createGiftTokenRepoOutputBox(1n);
 
         // Move one extra Ticket-Token to the giftTokenRepoOutputBox
         giftTokenRepoOutputBox.assets.add({
@@ -307,8 +301,9 @@ describe('ticketRepo', () => {
           10n,
           undefined,
           1_000_000_000n,
-          compile('{sigmaProp(true);}').toHex().toString(),
           '1234'.repeat(16),
+          0n,
+          compile('{sigmaProp(true);}').toHex().toString(),
         );
         const extraInputBox = mockUTxO({
           value: testUtils.FEE,
@@ -332,10 +327,8 @@ describe('ticketRepo', () => {
           1n,
           inactiveRaffleInputBox.boxId.toString(),
         );
-        const giftTokenRepoOutputBox = testUtils.createGiftTokenRepoOutputBox(
-          1,
-          1,
-        );
+        const giftTokenRepoOutputBox =
+          testUtils.createGiftTokenRepoOutputBox(1n);
 
         const transaction = new TransactionBuilder(1000)
           .from([inactiveRaffleInputBox, ticketRepoInputBox, extraInputBox])
@@ -382,10 +375,7 @@ describe('ticketRepo', () => {
       );
 
       const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
-      const giftTokenRepoOutputBox = testUtils.createGiftTokenRepoOutputBox(
-        1,
-        1,
-      );
+      const giftTokenRepoOutputBox = testUtils.createGiftTokenRepoOutputBox(1n);
       const winnerBoxes = testUtils.createWinnersOutputBox(
         1n,
         inactiveRaffleInputBox.boxId.toString(),

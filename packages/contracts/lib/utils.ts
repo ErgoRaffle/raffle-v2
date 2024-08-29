@@ -1,6 +1,7 @@
 import { compile } from '@fleet-sdk/compiler';
 import { blake2b256 } from '@fleet-sdk/crypto';
-import { SType } from '@fleet-sdk/serializer';
+import { SConstant } from '@fleet-sdk/serializer';
+import { Value } from 'sigmastate-js/main';
 import * as fs from 'fs';
 import * as path from 'node:path';
 
@@ -9,6 +10,10 @@ import { logger } from './logger';
 import { ContextVarsType, ScriptNamesType } from './types';
 
 const NotSet = '';
+
+type NamedConstantsMap = {
+  [key: string]: string | Value | SConstant;
+};
 
 /**
  * Merge compiling context vars by shared keys default values
@@ -108,7 +113,7 @@ export function compileAll(
       for (const nameAndValue of Object.entries(scriptVars))
         script = script.replace(nameAndValue[0], nameAndValue[1]);
 
-      const vars: { [key: string | number]: string | SType } = {};
+      const vars: NamedConstantsMap = {};
       let contract;
       try {
         contract = compile(script, { map: vars });

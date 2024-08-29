@@ -5,8 +5,6 @@ import { Box, TransactionBuilder, OutputBuilder } from '@fleet-sdk/core';
 
 import * as testUtils from '../testUtils';
 
-const INACTIVE_RAFFLE_SAMPLE_ID = '0'.repeat(64);
-
 /*
  * create fixtures that contains below steps data:
  *   - mock chain and partners
@@ -22,9 +20,11 @@ const createGiftTokenRepoTest = (winnersCount: number = 1) => {
 
   const winnersInputBoxes = testUtils.createWinnersBoxMock(
     BigInt(winnersCount),
-    INACTIVE_RAFFLE_SAMPLE_ID,
+    testUtils.GIFT_TOKEN_ID,
     testUtils.TICKET_TOKEN_ID,
-    1n,
+    undefined,
+    BigInt(chain.height + 1000),
+    0n,
     compile('{sigmaProp(true);}').toHex().toString(),
   );
 
@@ -52,24 +52,11 @@ describe('giftTokenRepo', () => {
     giftTokenRepoBy1WinnerTest(
       "should the transaction of spending gift tokens from the repo box successfully move to one winner's box",
       ({ chain, winnersInputBoxes }) => {
-        const winnerOutputBox = testUtils.createWinnerOutputBox(
-          1n,
-          1,
-          INACTIVE_RAFFLE_SAMPLE_ID,
-          testUtils.TICKET_TOKEN_ID,
-        );
-        const giftTokenInputBox = testUtils.createGiftTokenRepoBoxMock(
-          1,
-          testUtils.TICKET_TOKEN_ID,
-          testUtils.GIFT_TOKEN_ID,
-          2,
-          testUtils.FEE * BigInt(1),
-          1,
-          2,
-        );
+        const winnerOutputBox = testUtils.createWinnerOutputBox(1n, 1);
+        const giftTokenInputBox = testUtils.createGiftTokenRepoBoxMock(1);
         winnerOutputBox.addTokens({
           tokenId: testUtils.GIFT_TOKEN_ID,
-          amount: 2n,
+          amount: BigInt(testUtils.GIFT_TOKEN_COUNT),
         });
 
         const outBoxes = [winnerOutputBox];
@@ -97,24 +84,16 @@ describe('giftTokenRepo', () => {
     giftTokenRepoBy5WinnerTest(
       'should the transaction of spending one gift token from the repo box to the latest box of five winner boxes be successful',
       ({ chain, winnersInputBoxes }) => {
-        const winnerOutputBox = testUtils.createWinnerOutputBox(
-          5n,
-          5,
-          INACTIVE_RAFFLE_SAMPLE_ID,
-          testUtils.TICKET_TOKEN_ID,
-        );
+        const winnerOutputBox = testUtils.createWinnerOutputBox(5n, 5);
         const giftTokenInputBox = testUtils.createGiftTokenRepoBoxMock(
           5,
-          testUtils.TICKET_TOKEN_ID,
-          testUtils.GIFT_TOKEN_ID,
-          10,
-          testUtils.FEE * 1n,
           5,
-          10,
+          testUtils.FEE * 1n,
+          BigInt(testUtils.GIFT_TOKEN_COUNT),
         );
         winnerOutputBox.addTokens({
           tokenId: giftTokenInputBox.assets[0].tokenId,
-          amount: 10n,
+          amount: BigInt(testUtils.GIFT_TOKEN_COUNT),
         });
 
         const outBoxes = [winnerOutputBox];
@@ -143,34 +122,24 @@ describe('giftTokenRepo', () => {
     giftTokenRepoBy5WinnerTest(
       'should the transaction of spending one gift token from the repo box to the second box of the five winner boxes be successful',
       ({ chain, winnersInputBoxes }) => {
-        const winnerOutputBox = testUtils.createWinnerOutputBox(
-          5n,
-          2,
-          INACTIVE_RAFFLE_SAMPLE_ID,
-          testUtils.TICKET_TOKEN_ID,
-        );
+        const winnerOutputBox = testUtils.createWinnerOutputBox(5n, 2);
         const giftTokenInputBox = testUtils.createGiftTokenRepoBoxMock(
           5,
-          testUtils.TICKET_TOKEN_ID,
-          testUtils.GIFT_TOKEN_ID,
           2,
-          testUtils.FEE * 5n,
-          2,
-          10,
+          testUtils.FEE * 4n,
+          BigInt(testUtils.GIFT_TOKEN_COUNT * 4),
         );
         winnerOutputBox.addTokens({
           tokenId: giftTokenInputBox.assets[0].tokenId,
-          amount: 2n,
+          amount: BigInt(testUtils.GIFT_TOKEN_COUNT),
         });
 
         const giftTokenOutputBox = testUtils.createGiftTokenRepoOutputBox(
-          2,
-          5,
-          testUtils.TICKET_TOKEN_ID,
+          5n,
           'add',
-          8n,
-          testUtils.FEE * 4n,
           3,
+          testUtils.FEE * 3n,
+          BigInt(testUtils.GIFT_TOKEN_COUNT * 3),
         );
         const outBoxes = [winnerOutputBox, giftTokenOutputBox];
 
@@ -186,7 +155,7 @@ describe('giftTokenRepo', () => {
     );
 
     /**
-     * @target should the result of the transaction be false when more than one gift token moves from the winner output boxes to an unknown box for stealing
+     * @target should fail when winner receives one less gift token (one token stole to an unknown box)
      * @scenario
      * - create giftTokenRepo input and output boxes
      * - create five winner output boxes
@@ -196,30 +165,17 @@ describe('giftTokenRepo', () => {
      * - transaction result must throw error
      */
     giftTokenRepoBy5WinnerTest(
-      'should the result of the transaction be false when more than one gift token moves from the winner output boxes to an unknown box for stealing',
+      'should fail when winner receives one less gift token (one token stole to an unknown box)',
       ({ chain, creator, winnersInputBoxes }) => {
-        const winnerOutputBox = testUtils.createWinnerOutputBox(
-          5n,
-          1,
-          INACTIVE_RAFFLE_SAMPLE_ID,
-          testUtils.TICKET_TOKEN_ID,
-        );
+        const winnerOutputBox = testUtils.createWinnerOutputBox(5n);
         const extraInput = mockUTxO({
           value: testUtils.FEE,
           ergoTree: creator.ergoTree,
         });
-        const giftTokenInputBox = testUtils.createGiftTokenRepoBoxMock(
-          5,
-          testUtils.TICKET_TOKEN_ID,
-          testUtils.GIFT_TOKEN_ID,
-          5,
-          testUtils.FEE * 5n,
-          1,
-          25,
-        );
+        const giftTokenInputBox = testUtils.createGiftTokenRepoBoxMock(5);
         winnerOutputBox.addTokens({
           tokenId: giftTokenInputBox.assets[0].tokenId,
-          amount: 4n,
+          amount: BigInt(testUtils.GIFT_TOKEN_COUNT - 1),
         });
         const extraOutputBox = new OutputBuilder(
           testUtils.FEE,
@@ -229,13 +185,11 @@ describe('giftTokenRepo', () => {
           amount: 1n,
         });
         const giftTokenOutputBox = testUtils.createGiftTokenRepoOutputBox(
-          5,
-          5,
-          testUtils.TICKET_TOKEN_ID,
+          5n,
           'add',
-          20n,
-          testUtils.FEE * 4n,
           2,
+          testUtils.FEE * 4n,
+          BigInt(testUtils.GIFT_TOKEN_COUNT * 4),
         );
         const outBoxes = [winnerOutputBox, giftTokenOutputBox, extraOutputBox];
 
@@ -254,7 +208,7 @@ describe('giftTokenRepo', () => {
     );
 
     /**
-     * @target should the result of the transaction be false when more than one gift token moves to one box of the five winner boxes
+     * @target should fail when winner box receives one more gift token (steal one extra token from giftTokenRepo)
      * @scenario
      * - create giftTokenRepo input and output boxes
      * - create five winner output boxes
@@ -264,36 +218,21 @@ describe('giftTokenRepo', () => {
      * - transaction result must throw error
      */
     giftTokenRepoBy5WinnerTest(
-      'should the result of the transaction be false when more than one gift token moves to one box of the five winner boxes',
+      'should fail when winner box receives one more gift token (steal one extra token from giftTokenRepo)',
       ({ chain, winnersInputBoxes }) => {
-        const winnerOutputBox = testUtils.createWinnerOutputBox(
-          5n,
-          1,
-          INACTIVE_RAFFLE_SAMPLE_ID,
-          testUtils.TICKET_TOKEN_ID,
-        );
-        const giftTokenInputBox = testUtils.createGiftTokenRepoBoxMock(
-          5,
-          testUtils.TICKET_TOKEN_ID,
-          testUtils.GIFT_TOKEN_ID,
-          2,
-          testUtils.FEE * 5n,
-          1,
-          10,
-        );
+        const winnerOutputBox = testUtils.createWinnerOutputBox(5n);
+        const giftTokenInputBox = testUtils.createGiftTokenRepoBoxMock(5);
         winnerOutputBox.addTokens({
           tokenId: giftTokenInputBox.assets[0].tokenId,
-          // Move 3 token to this box instead of 2
-          amount: 3n,
+          // Move 1 more token to winner box
+          amount: BigInt(testUtils.GIFT_TOKEN_COUNT + 1),
         });
         const giftTokenOutputBox = testUtils.createGiftTokenRepoOutputBox(
-          10,
-          5,
-          testUtils.TICKET_TOKEN_ID,
+          5n,
           'add',
-          7n,
-          testUtils.FEE * 4n,
           2,
+          testUtils.FEE * 4n,
+          BigInt(testUtils.GIFT_TOKEN_COUNT * 4 - 1),
         );
         const outBoxes = [winnerOutputBox, giftTokenOutputBox];
 
@@ -308,7 +247,7 @@ describe('giftTokenRepo', () => {
     );
 
     /**
-     * @target should the result of the transaction be false when invalid amount of gift tokens set to register of the output gift token repository box
+     * @target should fail when gift token count (register value) changes in giftTokenRepo output box
      * @scenario
      * - create giftTokenRepo input and output boxes
      * - create five winner output boxes
@@ -318,35 +257,23 @@ describe('giftTokenRepo', () => {
      * - transaction result must throw error
      */
     giftTokenRepoBy5WinnerTest(
-      'should the result of the transaction be false when invalid amount of gift tokens set to register of the output gift token repository box',
+      'should fail when gift token count (register value) changes in giftTokenRepo output box',
       ({ chain, winnersInputBoxes }) => {
-        const winnerOutputBox = testUtils.createWinnerOutputBox(
-          5n,
-          1,
-          INACTIVE_RAFFLE_SAMPLE_ID,
-          testUtils.TICKET_TOKEN_ID,
-        );
-        const giftTokenInputBox = testUtils.createGiftTokenRepoBoxMock(
-          5,
-          testUtils.TICKET_TOKEN_ID,
-          testUtils.GIFT_TOKEN_ID,
-          100,
-          testUtils.FEE * 5n,
-          1,
-          500,
-        );
+        const winnerOutputBox = testUtils.createWinnerOutputBox(5n);
+        const giftTokenInputBox = testUtils.createGiftTokenRepoBoxMock(5);
         winnerOutputBox.addTokens({
           tokenId: giftTokenInputBox.assets[0].tokenId,
-          amount: 100n,
+          amount: BigInt(testUtils.GIFT_TOKEN_COUNT),
         });
         const giftTokenOutputBox = testUtils.createGiftTokenRepoOutputBox(
-          200, // Invalid amount of gift-token amount sets
-          5,
-          testUtils.TICKET_TOKEN_ID,
+          5n,
           'add',
-          400n,
-          testUtils.FEE * 4n,
           2,
+          testUtils.FEE * 4n,
+          BigInt(testUtils.GIFT_TOKEN_COUNT * 4),
+          undefined,
+          undefined,
+          1000,
         );
         const outBoxes = [winnerOutputBox, giftTokenOutputBox];
 
@@ -361,7 +288,7 @@ describe('giftTokenRepo', () => {
     );
 
     /**
-     * @target should the result of the transaction be false when an invalid register is in the output box
+     * @target should fail when winner count (register value) changes in giftTokenRepo output box
      * @scenario
      * - create giftTokenRepo input box
      * - create five winner output boxes
@@ -371,36 +298,21 @@ describe('giftTokenRepo', () => {
      * - transaction result must throw error
      */
     giftTokenRepoBy5WinnerTest(
-      'should the result of the transaction be false when an invalid register is in the output box',
+      'should fail when winner count (register value) changes in giftTokenRepo output box',
       ({ chain, winnersInputBoxes }) => {
-        const winnerOutputBox = testUtils.createWinnerOutputBox(
-          5n,
-          1,
-          INACTIVE_RAFFLE_SAMPLE_ID,
-          testUtils.TICKET_TOKEN_ID,
-        );
-        const giftTokenInputBox = testUtils.createGiftTokenRepoBoxMock(
-          5,
-          testUtils.TICKET_TOKEN_ID,
-          testUtils.GIFT_TOKEN_ID,
-          10,
-          testUtils.FEE * 5n,
-          1,
-          50,
-        );
+        const winnerOutputBox = testUtils.createWinnerOutputBox(5n);
+        const giftTokenInputBox = testUtils.createGiftTokenRepoBoxMock(5);
         winnerOutputBox.addTokens({
           tokenId: giftTokenInputBox.assets[0].tokenId,
-          amount: 10n,
+          amount: BigInt(testUtils.GIFT_TOKEN_COUNT),
         });
 
         const giftTokenOutputBox = testUtils.createGiftTokenRepoOutputBox(
-          10,
-          20, // set invalid amount of winnersCount in register
-          testUtils.TICKET_TOKEN_ID,
+          6n, // invalid winner count
           'add',
-          40n,
-          testUtils.FEE * 4n,
           2,
+          testUtils.FEE * 4n,
+          BigInt(testUtils.GIFT_TOKEN_COUNT * 4),
         );
         const outBoxes = [winnerOutputBox, giftTokenOutputBox];
 
@@ -415,7 +327,7 @@ describe('giftTokenRepo', () => {
     );
 
     /**
-     * @target should the result of the transaction be false when there is an invalid step number in the giftTokenRepo output box
+     * @target should fail with invalid step number in giftTokenRepo output box
      * @scenario
      * - create giftTokenRepo input and output boxes
      * - create five winner output boxes
@@ -425,36 +337,21 @@ describe('giftTokenRepo', () => {
      * - transaction result must throw error
      */
     giftTokenRepoBy5WinnerTest(
-      'should the result of the transaction be false when there is an invalid step number in the giftTokenRepo output box',
+      'should fail with invalid step number in giftTokenRepo output box',
       ({ chain, winnersInputBoxes }) => {
-        const winnerOutputBox = testUtils.createWinnerOutputBox(
-          5n,
-          2,
-          INACTIVE_RAFFLE_SAMPLE_ID,
-          testUtils.TICKET_TOKEN_ID,
-        );
-        const giftTokenInputBox = testUtils.createGiftTokenRepoBoxMock(
-          5,
-          testUtils.TICKET_TOKEN_ID,
-          testUtils.GIFT_TOKEN_ID,
-          2,
-          testUtils.FEE * 5n,
-          2,
-          10,
-        );
+        const winnerOutputBox = testUtils.createWinnerOutputBox(5n, 2);
+        const giftTokenInputBox = testUtils.createGiftTokenRepoBoxMock(5);
         winnerOutputBox.addTokens({
           tokenId: giftTokenInputBox.assets[0].tokenId,
-          amount: 2n,
+          amount: BigInt(testUtils.GIFT_TOKEN_COUNT),
         });
 
         const giftTokenOutputBox = testUtils.createGiftTokenRepoOutputBox(
-          2,
-          5,
-          testUtils.TICKET_TOKEN_ID,
+          5n,
           'add',
-          8n,
+          1, // invalid step number
           testUtils.FEE * 4n,
-          5, // set invalid step
+          BigInt(testUtils.GIFT_TOKEN_COUNT * 4),
         );
         const outBoxes = [winnerOutputBox, giftTokenOutputBox];
 
@@ -481,34 +378,19 @@ describe('giftTokenRepo', () => {
     giftTokenRepoBy5WinnerTest(
       'should the result of the transaction be false when over paying fee value',
       ({ chain, winnersInputBoxes }) => {
-        const winnerOutputBox = testUtils.createWinnerOutputBox(
-          5n,
-          1,
-          INACTIVE_RAFFLE_SAMPLE_ID,
-          testUtils.TICKET_TOKEN_ID,
-        );
-        const giftTokenInputBox = testUtils.createGiftTokenRepoBoxMock(
-          5,
-          testUtils.TICKET_TOKEN_ID,
-          testUtils.GIFT_TOKEN_ID,
-          10,
-          undefined,
-          1,
-          50,
-        );
+        const winnerOutputBox = testUtils.createWinnerOutputBox(5n);
+        const giftTokenInputBox = testUtils.createGiftTokenRepoBoxMock(5);
         winnerOutputBox.addTokens({
           tokenId: giftTokenInputBox.assets[0].tokenId,
-          amount: 10n,
+          amount: BigInt(testUtils.GIFT_TOKEN_COUNT),
         });
 
         const giftTokenOutputBox = testUtils.createGiftTokenRepoOutputBox(
-          1,
-          5,
-          testUtils.TICKET_TOKEN_ID,
+          5n,
           'add',
-          40n,
-          testUtils.FEE * 3n,
           2,
+          testUtils.FEE * 3n,
+          BigInt(testUtils.GIFT_TOKEN_COUNT * 4),
         );
         const outBoxes = [winnerOutputBox, giftTokenOutputBox];
 
@@ -536,27 +418,20 @@ describe('giftTokenRepo', () => {
       ({ chain, winnersInputBoxes }) => {
         const winnerOutputBox = testUtils.createWinnerOutputBox(
           5n,
-          4,
-          INACTIVE_RAFFLE_SAMPLE_ID,
-          testUtils.TICKET_TOKEN_ID,
+          4, // invalid winner index
         );
         const giftTokenInputBox = testUtils.createGiftTokenRepoBoxMock(
-          2,
-          testUtils.TICKET_TOKEN_ID,
-          testUtils.GIFT_TOKEN_ID,
-          10,
-          testUtils.FEE * 1n,
           5,
-          10,
+          4,
+          testUtils.FEE,
+          BigInt(testUtils.GIFT_TOKEN_COUNT),
         );
         winnerOutputBox.addTokens({
           tokenId: giftTokenInputBox.assets[0].tokenId,
-          amount: 10n,
+          amount: BigInt(testUtils.GIFT_TOKEN_COUNT),
         });
 
-        const outBoxes = [
-          winnerOutputBox, // use winner box by invalid index
-        ];
+        const outBoxes = [winnerOutputBox];
 
         const transaction = new TransactionBuilder(chain.height)
           .from([(winnersInputBoxes as Box[])[4], giftTokenInputBox])
@@ -569,7 +444,7 @@ describe('giftTokenRepo', () => {
     );
 
     /**
-     * @target should the result of the transaction be false when invalid ticket token in winner box
+     * @target should fail when gift token is sent to another valid raffle winner box
      * @scenario
      * - create giftTokenRepo input and output boxes
      * - create five winner output boxes
@@ -578,31 +453,32 @@ describe('giftTokenRepo', () => {
      * - transaction result must throw error
      */
     giftTokenRepoBy5WinnerTest(
-      'should the result of the transaction be false when invalid ticket token in winner box',
+      'should fail when gift token is sent to another valid raffle winner box',
       ({ chain, creator }) => {
         const anotherWinnersInputBoxes = testUtils.createWinnersBoxMock(
           5n,
-          INACTIVE_RAFFLE_SAMPLE_ID,
-          '1234'.repeat(16),
+          undefined,
+          '1234'.repeat(16), // set different ticket token id
+          undefined,
+          undefined,
+          undefined,
+          compile('{sigmaProp(true);}').toHex().toString(),
         );
         const winnerOutputBox = testUtils.createWinnerOutputBox(
           5n,
           5,
-          INACTIVE_RAFFLE_SAMPLE_ID,
+          testUtils.GIFT_TOKEN_ID,
           '1234'.repeat(16),
         );
         const giftTokenInputBox = testUtils.createGiftTokenRepoBoxMock(
-          1,
-          testUtils.TICKET_TOKEN_ID,
-          testUtils.GIFT_TOKEN_ID,
-          10,
-          testUtils.FEE * 1n,
           5,
-          10,
+          5,
+          testUtils.FEE,
+          BigInt(testUtils.GIFT_TOKEN_COUNT),
         );
         winnerOutputBox.addTokens({
           tokenId: giftTokenInputBox.assets[0].tokenId,
-          amount: 10n,
+          amount: BigInt(testUtils.GIFT_TOKEN_COUNT),
         });
 
         const outBoxes = [winnerOutputBox];
@@ -619,7 +495,7 @@ describe('giftTokenRepo', () => {
     );
 
     /**
-     * @target should the result of the transaction be false when decrease less than gift token count on the output winner box and stay on the output gift token repo
+     * @target should fail when less than gift token count moves from giftTokenRepo to the winner box (excess token remains in giftTokenRepo)
      * @scenario
      * - create giftTokenRepo input and output boxes
      * - create five winner output boxes
@@ -628,35 +504,25 @@ describe('giftTokenRepo', () => {
      * - transaction result must throw error
      */
     giftTokenRepoBy5WinnerTest(
-      'should the result of the transaction be false when decrease less than gift token count on the output winner box and stay on the output gift token repo',
+      'should fail when less than gift token count moves from giftTokenRepo to the winner box (excess token remains in giftTokenRepo)',
       ({ chain, creator, winnersInputBoxes }) => {
-        const winnerOutputBox = testUtils.createWinnerOutputBox(
-          5n,
-          4,
-          INACTIVE_RAFFLE_SAMPLE_ID,
-          testUtils.TICKET_TOKEN_ID,
-        );
+        const winnerOutputBox = testUtils.createWinnerOutputBox(5n, 4);
         const giftTokenInputBox = testUtils.createGiftTokenRepoBoxMock(
           5,
-          testUtils.TICKET_TOKEN_ID,
-          testUtils.GIFT_TOKEN_ID,
-          2,
-          testUtils.FEE * 2n,
           4,
-          10,
+          testUtils.FEE * 2n,
+          BigInt(testUtils.GIFT_TOKEN_COUNT * 2),
         );
         winnerOutputBox.addTokens({
           tokenId: giftTokenInputBox.assets[0].tokenId,
-          amount: 1n,
+          amount: BigInt(testUtils.GIFT_TOKEN_COUNT - 1),
         });
         const giftTokenOutputBox = testUtils.createGiftTokenRepoOutputBox(
-          5,
-          5,
-          testUtils.TICKET_TOKEN_ID,
+          5n,
           'add',
-          9n,
+          5,
           testUtils.FEE,
-          2,
+          BigInt(testUtils.GIFT_TOKEN_COUNT + 1),
         );
 
         const outBoxes = [winnerOutputBox, giftTokenOutputBox];
