@@ -1035,6 +1035,13 @@ export const createWinnerOutputBox = (
     });
 };
 
+/**
+ * Create a simple p2pk box
+ * @param value
+ * @param tokens
+ * @param address
+ * @returns
+ */
 export const createUserOutputBox = (
   value: bigint,
   tokens: TokenAmount<Amount>[],
@@ -1108,6 +1115,12 @@ export class RaffleMockChain extends MockChain {
     this.jumpTo(height);
   };
 
+  /**
+   * Sign the transaction with provided keys and return the signing result and the signed tx
+   * @param unsigned
+   * @param keys
+   * @param parameters
+   */
   #executeAndReturnTx = (
     unsigned: ErgoUnsignedTransaction,
     keys: ErgoHDKey[],

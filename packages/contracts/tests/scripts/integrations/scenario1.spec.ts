@@ -136,6 +136,7 @@ describe('Raffle', () => {
             winnersCount,
             chain,
           );
+          expect(giftTokenReceiptTx.success).true;
           step++;
           winnerBoxes.push(giftTokenReceiptTx.outputs[0]);
           giftTokenRepo = giftTokenReceiptTx.outputs[1];
