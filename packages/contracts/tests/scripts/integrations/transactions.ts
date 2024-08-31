@@ -270,7 +270,6 @@ export const executeDonateTx = (
   )[0];
 
   const ticketPrice = r4[3];
-  const winnersCount = r4[6];
 
   let collectingToken: TokenAmount<bigint> | undefined = undefined;
   let activeRaffleOutputBoxValue = BigInt(activeRaffle.value.toString()) + (
@@ -279,7 +278,7 @@ export const executeDonateTx = (
   if(activeRaffle.assets.length > 2) {
     collectingToken = {
       tokenId: testUtils.X_TOKEN_ID,
-      amount: ticketPrice * winnersCount + BigInt(activeRaffle.assets[2].amount)
+      amount: (ticketPrice * ticketCount) + BigInt(activeRaffle.assets[2].amount)
     };
     activeRaffleOutputBoxValue = BigInt(activeRaffle.value.toString());
   }
@@ -430,6 +429,11 @@ export const executeWinnerRemovalTx = (
     BigInt(giftRedeem.assets[1].amount.toString()) + 1n,
   );
 
+  testUtils.prettyPrintJson([
+    [giftRedeem, winner],
+    [giftRedeemOutputBox]
+  ]);
+
   const winnerRemovalTx = new TransactionBuilder(chain.height)
     .from([giftRedeem, winner])
     .to([giftRedeemOutputBox])
@@ -437,8 +441,8 @@ export const executeWinnerRemovalTx = (
       selector.defineStrategy((inputs) => inputs);
     })
     .payFee(testUtils.FEE)
-  if(winner.assets.length > 1)
-    winnerRemovalTx.burnTokens(winner.assets[1]!);
+
+  winnerRemovalTx.burnTokens(winner.assets[1]!);
 
   return chain.executeAndReturnOutputs(winnerRemovalTx.build());
 };
@@ -501,13 +505,13 @@ export const executeTicketRedeemTx = (
   ).toString();
 
   let redeemedDonationValue = BigInt(ticket.value.toString()) - testUtils.FEE + ticketPrice * ticketCount;
-  const tokens = [];
+  const redeemedDonationTokens = [];
   let collectingToken: TokenAmount<bigint> | undefined = undefined;
   let ticketRedeemOutputBoxValue = BigInt(ticketRedeem.value.toString()) - ticketPrice * ticketCount;
   if(ticketRedeem.assets.length > 2) {
     redeemedDonationValue = BigInt(ticket.value.toString()) - testUtils.FEE;
     
-    tokens.push({
+    redeemedDonationTokens.push({
       tokenId: ticketRedeem.assets[2].tokenId,
       amount: ticketCount
     });
@@ -530,7 +534,7 @@ export const executeTicketRedeemTx = (
 
   const redeemedDonation = testUtils.createUserOutputBox(
     redeemedDonationValue,
-    tokens,
+    redeemedDonationTokens,
     donatorAddress,
   );
 
@@ -557,7 +561,7 @@ export const executeReturnRaffleLicenseTx = (
   service: testUtils.OutputBox,
   chain: testUtils.RaffleMockChain,
 ) => {
-  const serviceAddress = Buffer.from(
+  const serviceFeeAddress = Buffer.from(
     SConstant.from(service.additionalRegisters.R5!).data as Uint8Array,
   ).toString();
   const serviceR4 = SConstant.from(service.additionalRegisters.R4!)
@@ -565,16 +569,16 @@ export const executeReturnRaffleLicenseTx = (
   const serviceFeePercent = serviceR4[0];
   const implementerFeePercent = serviceR4[0];
   const serviceOutputBox = testUtils.createServiceOutputBox(
-    serviceAddress,
+    serviceFeeAddress,
     BigInt(service.assets[1].amount.toString()) + 1n,
     serviceFeePercent,
     implementerFeePercent,
-    testUtils.CREATION_FEE,
+    serviceR4[2],
   );
   const serviceFee = testUtils.createUserOutputBox(
     BigInt(endedRaffle.value.toString()) - testUtils.FEE,
     [],
-    serviceAddress,
+    serviceFeeAddress,
   );
 
   if(endedRaffle.assets.length > 2)
