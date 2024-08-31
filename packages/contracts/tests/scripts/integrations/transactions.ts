@@ -440,9 +440,8 @@ export const executeWinnerRemovalTx = (
     .configureSelector((selector) => {
       selector.defineStrategy((inputs) => inputs);
     })
+    .burnTokens(winner.assets[1]!)
     .payFee(testUtils.FEE)
-
-  winnerRemovalTx.burnTokens(winner.assets[1]!);
 
   return chain.executeAndReturnOutputs(winnerRemovalTx.build());
 };
