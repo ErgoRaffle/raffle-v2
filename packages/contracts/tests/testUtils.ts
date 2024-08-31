@@ -12,6 +12,7 @@ import {
   MockChain,
   MockChainParty,
   BlockState,
+  AssetMetadataMap,
   MockChainOptions,
   TransactionExecutionOptions,
   mockUTxO,
@@ -19,9 +20,9 @@ import {
   mockBlockchainStateContext,
   BLOCKCHAIN_PARAMETERS,
 } from '@fleet-sdk/mock-chain';
-import { ensureDefaults, Network } from '@fleet-sdk/common';
-import { SColl, SByte, SLong, SInt } from '@fleet-sdk/serializer';
-import { blake2b256, bigintBE, hex } from '@fleet-sdk/crypto';
+import { first, ensureDefaults, Network } from '@fleet-sdk/common';
+import { SColl, SByte, SLong, SInt, decode } from '@fleet-sdk/serializer';
+import { blake2b256, bigintBE, hex, utf8 } from '@fleet-sdk/crypto';
 import type { ErgoUnsignedTransaction } from '@fleet-sdk/core';
 import type { ErgoHDKey } from '@fleet-sdk/wallet';
 import { ProverBuilder$ } from 'sigmastate-js/main';
@@ -49,6 +50,9 @@ export const xToken = { amount: 1000n, tokenId: X_TOKEN_ID };
 export const LICENSE_TOKEN_COUNT = 1_000_000_000n;
 export const CREATOR_DEFAULT_BALANCE = 500_000_000_000n;
 export const UNKNOWN_WALLET_DEFAULT_BALANCE = 10_000_000_000n;
+
+const safeUtf8Encode = (v: unknown) =>
+  v instanceof Uint8Array ? utf8.encode(v) : undefined;
 
 type RaffleTransactionExecutionResult = {
   success: boolean;
@@ -262,7 +266,7 @@ export const createInactiveRaffleBoxMock = (
       amount: 1n,
     },
   ];
-  if (collectingToken != null) tokens.push(collectingToken);
+  if (collectingToken !== undefined) tokens.push(collectingToken);
 
   winnersPercents = winnersPercents || [];
   if (winnersPercents.length === 0)
@@ -713,7 +717,7 @@ export const createGiftTokenRepoOutputBox = (
   tokenInsertionType: null | 'mint' | 'add' = 'mint',
   step: number = 1,
   value = FEE * BigInt(winnersCount),
-  giftAssetTokenCount = BigInt(GIFT_TOKEN_COUNT) * winnersCount,
+  giftAssetTokenCount = BigInt(GIFT_TOKEN_COUNT) * BigInt(winnersCount),
   ticketId: string = TICKET_TOKEN_ID,
   giftTokenId: string = GIFT_TOKEN_ID,
   giftTokenCount = GIFT_TOKEN_COUNT,
@@ -725,17 +729,13 @@ export const createGiftTokenRepoOutputBox = (
     R4: SColl(SInt, [1]).toHex(),
     R5: SColl(SInt, [2]).toHex(),
     R6: SColl(SInt, [3]).toHex(),
-    R7: SColl(SInt, [
-      giftTokenCount,
-      Number(winnersCount),
-      Number(FEE),
-    ]).toHex(),
+    R7: SColl(SInt, [giftTokenCount, Number(winnersCount), Number(FEE)]).toHex(),
     R8: SColl(SByte, Array.from(Buffer.from(ticketId, 'hex'))).toHex(),
     R9: SInt(step).toHex(),
   });
   if (tokenInsertionType === 'mint')
     giftBox.mintToken({
-      amount: BigInt(GIFT_TOKEN_COUNT * Number(winnersCount)),
+      amount: BigInt(GIFT_TOKEN_COUNT) * BigInt(winnersCount),
       name: 'RaffleGiftToken',
       decimals: 0,
     });
@@ -879,7 +879,7 @@ export const createTicketOutputBox = (
   r5: bigint[],
 ) => {
   const donateTicketOutputBox = new OutputBuilder(
-    FEE,
+    FEE * 2n,
     contractsAddresses['ticket'],
   );
   donateTicketOutputBox
@@ -900,6 +900,7 @@ export const createTicketOutputBox = (
  * @param step
  * @param ticketTokenId
  * @param ticketTokenCount
+ * @param collectingToken
  * @returns
  */
 export const createGiftRedeemOutputBox = (
@@ -910,6 +911,7 @@ export const createGiftRedeemOutputBox = (
   step: bigint,
   ticketTokenId: string,
   ticketTokenCount: bigint,
+  collectingToken?: TokenAmount<bigint>,
 ) => {
   const giftRedeemOutputBox = new OutputBuilder(
     value,
@@ -932,6 +934,10 @@ export const createGiftRedeemOutputBox = (
       amount: ticketTokenCount,
     },
   ]);
+
+  if(collectingToken !== undefined)
+    giftRedeemOutputBox.addTokens([collectingToken])
+
   return giftRedeemOutputBox;
 };
 
@@ -943,6 +949,7 @@ export const createGiftRedeemOutputBox = (
  * @param redeemedTickets
  * @param ticketTokenId
  * @param ticketTokenCount
+ * @param collectingToken
  * @returns
  */
 export const createTicketRedeemOutputBox = (
@@ -952,6 +959,7 @@ export const createTicketRedeemOutputBox = (
   redeemedTickets: bigint,
   ticketTokenId: string,
   ticketTokenCount: bigint,
+  collectingToken?: TokenAmount<bigint>,
 ) => {
   const ticketRedeemOutputBox = new OutputBuilder(
     value,
@@ -971,6 +979,10 @@ export const createTicketRedeemOutputBox = (
       amount: ticketTokenCount,
     },
   ]);
+
+  if(collectingToken !== undefined)
+    ticketRedeemOutputBox.assets.add(collectingToken);
+
   return ticketRedeemOutputBox;
 };
 
@@ -1035,21 +1047,17 @@ export const createWinnerOutputBox = (
     });
 };
 
-/**
- * Create a simple p2pk box
- * @param value
- * @param tokens
- * @param address
- * @returns
- */
 export const createUserOutputBox = (
   value: bigint,
   tokens: TokenAmount<Amount>[],
   address: string,
 ) => {
-  return new OutputBuilder(value, ErgoAddress.fromBase58(address)).addTokens(
-    tokens,
-  );
+  const userOutputBox = new OutputBuilder(value, ErgoAddress.fromBase58(address));
+  if(tokens.length > 0)
+    userOutputBox.addTokens(
+      tokens,
+    );
+  return userOutputBox;
 };
 
 /**
@@ -1079,6 +1087,8 @@ export const prettyPrintJson = (
 export class RaffleMockChain extends MockChain {
   readonly #parties: MockChainParty[];
   #tip: BlockState;
+  readonly #base: BlockState;
+  #metadataMap: AssetMetadataMap;
 
   constructor();
   constructor(height?: number);
@@ -1098,7 +1108,9 @@ export class RaffleMockChain extends MockChain {
     super();
 
     this.#tip = state;
+    this.#base = { ...state };
     this.#parties = [];
+    this.#metadataMap = new Map();
   }
 
   /**
@@ -1115,12 +1127,6 @@ export class RaffleMockChain extends MockChain {
     this.jumpTo(height);
   };
 
-  /**
-   * Sign the transaction with provided keys and return the signing result and the signed tx
-   * @param unsigned
-   * @param keys
-   * @param parameters
-   */
   #executeAndReturnTx = (
     unsigned: ErgoUnsignedTransaction,
     keys: ErgoHDKey[],
@@ -1217,8 +1223,27 @@ export class RaffleMockChain extends MockChain {
       }
     }
 
+    this.#pushMetadata(unsignedTransaction);
+
     return { success: true, outputs: result.tx!.outputs as OutputBox[] };
   };
+
+  #pushMetadata(transaction: ErgoUnsignedTransaction) {
+    const firstInputId = first(transaction.inputs).boxId;
+    const box = transaction.outputs.find((output) =>
+      output.assets.some((asset) => asset.tokenId === firstInputId),
+    );
+    if (!box) return;
+
+    const name = decode(box.additionalRegisters.R4, safeUtf8Encode);
+    const decimals = decode(box.additionalRegisters.R6, safeUtf8Encode);
+    if (name) {
+      this.#metadataMap.set(firstInputId, {
+        name,
+        decimals: decimals ? Number.parseInt(decimals) : undefined,
+      });
+    }
+  }
 }
 
 export const contractsAddresses = initialContracts();
