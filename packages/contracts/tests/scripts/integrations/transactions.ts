@@ -269,14 +269,18 @@ export const executeDonateTx = (
     SConstant.from(activeRaffle.additionalRegisters.R6!).data as bigint[]
   )[0];
 
+  const ticketPrice = r4[3];
+  const winnersCount = r4[6];
+
   let collectingToken: TokenAmount<bigint> | undefined = undefined;
-  let activeRaffleOutputBoxValue = BigInt(activeRaffle.value.toString()) + ticketCount;
+  let activeRaffleOutputBoxValue = BigInt(activeRaffle.value.toString()) + (
+    ticketCount * ticketPrice
+  );
   if(activeRaffle.assets.length > 2) {
     collectingToken = {
       tokenId: testUtils.X_TOKEN_ID,
-      amount: r4[3] * r4[6] // price * count
+      amount: ticketPrice * winnersCount + BigInt(activeRaffle.assets[2].amount)
     };
-    collectingToken['amount'] += BigInt(activeRaffle.assets[2].amount);
     activeRaffleOutputBoxValue = BigInt(activeRaffle.value.toString());
   }
 
@@ -496,18 +500,18 @@ export const executeTicketRedeemTx = (
     SConstant.from(ticket.additionalRegisters.R4!).data as Uint8Array,
   ).toString();
 
-  let value = BigInt(ticket.value.toString()) - testUtils.FEE + ticketPrice * ticketCount;
+  let redeemedDonationValue = BigInt(ticket.value.toString()) - testUtils.FEE + ticketPrice * ticketCount;
   const tokens = [];
   let collectingToken: TokenAmount<bigint> | undefined = undefined;
   let ticketRedeemOutputBoxValue = BigInt(ticketRedeem.value.toString()) - ticketPrice * ticketCount;
   if(ticketRedeem.assets.length > 2) {
-    value = BigInt(ticket.value.toString());
+    redeemedDonationValue = BigInt(ticket.value.toString()) - testUtils.FEE;
     
     tokens.push({
       tokenId: ticketRedeem.assets[2].tokenId,
       amount: ticketCount
     });
-    ticketRedeemOutputBoxValue = BigInt(ticketRedeem.value.toString()) - testUtils.FEE;
+    ticketRedeemOutputBoxValue = BigInt(ticketRedeem.value.toString());
     collectingToken = {
       tokenId: ticketRedeem.assets[2].tokenId,
       amount: BigInt(ticketRedeem.assets[2].amount) - ticketCount
@@ -525,7 +529,7 @@ export const executeTicketRedeemTx = (
   );
 
   const redeemedDonation = testUtils.createUserOutputBox(
-    value,
+    redeemedDonationValue,
     tokens,
     donatorAddress,
   );

@@ -879,7 +879,7 @@ export const createTicketOutputBox = (
   r5: bigint[],
 ) => {
   const donateTicketOutputBox = new OutputBuilder(
-    FEE,
+    FEE * 2n,
     contractsAddresses['ticket'],
   );
   donateTicketOutputBox
