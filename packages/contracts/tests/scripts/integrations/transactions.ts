@@ -1,6 +1,11 @@
 import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
 import { SColl, SByte, SLong, SConstant } from '@fleet-sdk/serializer';
-import { TransactionBuilder, ErgoUnsignedInput, TokenAmount, Box } from '@fleet-sdk/core';
+import {
+  TransactionBuilder,
+  ErgoUnsignedInput,
+  TokenAmount,
+  Box,
+} from '@fleet-sdk/core';
 
 import * as testUtils from '../../testUtils';
 
@@ -25,7 +30,7 @@ export const executeCreateRaffleTx = (
   deadline: bigint,
   winnersPercent: Array<bigint>,
   chain: testUtils.RaffleMockChain,
-  collectingTokenId?: string
+  collectingTokenId?: string,
 ) => {
   serviceBox.setContextExtension({
     0: SColl(SLong, winnersPercent),
@@ -54,10 +59,12 @@ export const executeCreateRaffleTx = (
     implementerAddress,
     creator.address.toString(),
     winnersCount,
-    collectingTokenId !== undefined ? {
-      tokenId: collectingTokenId,
-      amount: 1n
-    } : undefined,
+    collectingTokenId !== undefined
+      ? {
+          tokenId: collectingTokenId,
+          amount: 1n,
+        }
+      : undefined,
     winnersPercent,
     undefined,
     undefined,
@@ -110,11 +117,12 @@ export const executeMergeTx = (
       BigInt(ticketRepo.assets[0].amount.toString()) - winnersCount - 1n,
       ticketTokenId,
       0n,
-      inactiveRaffle.assets.length > 1 ? 
-      {
-        tokenId: inactiveRaffle.assets[1].tokenId,
-        amount: BigInt(inactiveRaffle.assets[1].amount)
-      } : undefined
+      inactiveRaffle.assets.length > 1
+        ? {
+            tokenId: inactiveRaffle.assets[1].tokenId,
+            amount: BigInt(inactiveRaffle.assets[1].amount),
+          }
+        : undefined,
     );
   const raffleDetailsOutputBox =
     testUtils.createRaffleDetailsOutputBox(ticketTokenId);
@@ -265,20 +273,18 @@ export const executeDonateTx = (
   const r5 = SConstant.from(activeRaffle.additionalRegisters.R5!)
     .data as Uint8Array[];
   const ticketTokenId = activeRaffle.assets[1].tokenId;
-  const totalSoldTickets = (
-    SConstant.from(activeRaffle.additionalRegisters.R6!).data as bigint[]
-  )[0];
+  const totalSoldTickets = SConstant.from(activeRaffle.additionalRegisters.R6!)
+    .data as bigint;
 
   const ticketPrice = r4[3];
 
   let collectingToken: TokenAmount<bigint> | undefined = undefined;
-  let activeRaffleOutputBoxValue = BigInt(activeRaffle.value.toString()) + (
-    ticketCount * ticketPrice
-  );
-  if(activeRaffle.assets.length > 2) {
+  let activeRaffleOutputBoxValue =
+    BigInt(activeRaffle.value.toString()) + ticketCount * ticketPrice;
+  if (activeRaffle.assets.length > 2) {
     collectingToken = {
       tokenId: testUtils.X_TOKEN_ID,
-      amount: (ticketPrice * ticketCount) + BigInt(activeRaffle.assets[2].amount)
+      amount: ticketPrice * ticketCount + BigInt(activeRaffle.assets[2].amount),
     };
     activeRaffleOutputBoxValue = BigInt(activeRaffle.value.toString());
   }
@@ -291,7 +297,7 @@ export const executeDonateTx = (
       BigInt(activeRaffle.assets[1].amount.toString()) - ticketCount,
       ticketTokenId,
       totalSoldTickets + ticketCount,
-      collectingToken
+      collectingToken,
     );
 
   const ticket = testUtils.createTicketOutputBox(
@@ -327,23 +333,25 @@ export const executeFailureTx = (
   const r4 = SConstant.from(activeRaffle.additionalRegisters.R4!)
     .data as bigint[];
   const ticketTokenId = activeRaffle.assets[1].tokenId;
-  const totalSoldTickets = (
-    SConstant.from(activeRaffle.additionalRegisters.R6!).data as bigint[]
-  )[0];
-  const collectingToken = activeRaffle.assets.length > 2 ? {
-    tokenId: activeRaffle.assets[2].tokenId,
-    amount: BigInt(activeRaffle.assets[2].amount)
-  } : undefined;
+  const totalSoldTickets = SConstant.from(activeRaffle.additionalRegisters.R6!)
+    .data as bigint;
+  const collectingToken =
+    activeRaffle.assets.length > 2
+      ? {
+          tokenId: activeRaffle.assets[2].tokenId,
+          amount: BigInt(activeRaffle.assets[2].amount),
+        }
+      : undefined;
   const giftRedeemOutputBox = testUtils.createGiftRedeemOutputBox(
     BigInt(activeRaffle.value) + BigInt(raffleDetails.value) - testUtils.FEE,
     totalSoldTickets,
     r4[3],
-    r4[4],
+    r4[6],
     1n,
     ticketTokenId,
     // added by one token on the raffle-details box
-    BigInt(activeRaffle.assets[1].amount.toString()) + 1n, 
-    collectingToken
+    BigInt(activeRaffle.assets[1].amount.toString()) + 1n,
+    collectingToken,
   );
 
   const failureTx = new TransactionBuilder(chain.height)
@@ -429,10 +437,7 @@ export const executeWinnerRemovalTx = (
     BigInt(giftRedeem.assets[1].amount.toString()) + 1n,
   );
 
-  testUtils.prettyPrintJson([
-    [giftRedeem, winner],
-    [giftRedeemOutputBox]
-  ]);
+  testUtils.prettyPrintJson([[giftRedeem, winner], [giftRedeemOutputBox]]);
 
   const winnerRemovalTx = new TransactionBuilder(chain.height)
     .from([giftRedeem, winner])
@@ -440,7 +445,7 @@ export const executeWinnerRemovalTx = (
     .configureSelector((selector) => {
       selector.defineStrategy((inputs) => inputs);
     })
-    .payFee(testUtils.FEE)
+    .payFee(testUtils.FEE);
 
   winnerRemovalTx.burnTokens(winner.assets[1]!);
 
@@ -468,8 +473,8 @@ export const executeForwardToTicketRedeemTx = (
     BigInt(giftRedeem.assets[1].amount.toString()),
   );
 
-  if(giftRedeem.assets.length > 2)
-    ticketRedeemOutputBox.assets.add(giftRedeem.assets[2])
+  if (giftRedeem.assets.length > 2)
+    ticketRedeemOutputBox.assets.add(giftRedeem.assets[2]);
 
   const forwardToTicketRedeemTx = new TransactionBuilder(chain.height)
     .from([giftRedeem])
@@ -504,21 +509,23 @@ export const executeTicketRedeemTx = (
     SConstant.from(ticket.additionalRegisters.R4!).data as Uint8Array,
   ).toString();
 
-  let redeemedDonationValue = BigInt(ticket.value.toString()) - testUtils.FEE + ticketPrice * ticketCount;
+  let redeemedDonationValue =
+    BigInt(ticket.value.toString()) - testUtils.FEE + ticketPrice * ticketCount;
   const redeemedDonationTokens = [];
   let collectingToken: TokenAmount<bigint> | undefined = undefined;
-  let ticketRedeemOutputBoxValue = BigInt(ticketRedeem.value.toString()) - ticketPrice * ticketCount;
-  if(ticketRedeem.assets.length > 2) {
+  let ticketRedeemOutputBoxValue =
+    BigInt(ticketRedeem.value.toString()) - ticketPrice * ticketCount;
+  if (ticketRedeem.assets.length > 2) {
     redeemedDonationValue = BigInt(ticket.value.toString()) - testUtils.FEE;
-    
+
     redeemedDonationTokens.push({
       tokenId: ticketRedeem.assets[2].tokenId,
-      amount: ticketCount
+      amount: ticketCount,
     });
     ticketRedeemOutputBoxValue = BigInt(ticketRedeem.value.toString());
     collectingToken = {
       tokenId: ticketRedeem.assets[2].tokenId,
-      amount: BigInt(ticketRedeem.assets[2].amount) - ticketCount
+      amount: BigInt(ticketRedeem.assets[2].amount) - ticketCount,
     };
   }
 
@@ -529,7 +536,7 @@ export const executeTicketRedeemTx = (
     redeemedTickets + ticketCount,
     ticketRedeem.assets[1].tokenId,
     BigInt(ticketRedeem.assets[1].amount.toString()) + ticketCount,
-    collectingToken
+    collectingToken,
   );
 
   const redeemedDonation = testUtils.createUserOutputBox(
@@ -581,7 +588,7 @@ export const executeReturnRaffleLicenseTx = (
     serviceFeeAddress,
   );
 
-  if(endedRaffle.assets.length > 2)
+  if (endedRaffle.assets.length > 2)
     serviceFee.addTokens([endedRaffle.assets[2]]);
 
   const ticketRedeemTx = new TransactionBuilder(chain.height)
