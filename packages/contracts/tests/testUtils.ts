@@ -3,9 +3,9 @@ import {
   Amount,
   ErgoUnsignedInput,
   OutputBuilder,
-  SAFE_MIN_BOX_VALUE,
   TokenAmount,
-  ErgoAddress,
+  AdditionalRegistersInput,
+  SAFE_MIN_BOX_VALUE,
 } from '@fleet-sdk/core';
 import {
   KeyedMockChainParty,
@@ -1047,18 +1047,46 @@ export const createWinnerOutputBox = (
     });
 };
 
-export const createUserOutputBox = (
+/**
+ * Create user output-box
+ * @param value
+ * @param tokens
+ * @param address
+ * @returns
+ */
+export const createCustomOutputBox = (
   value: bigint,
   tokens: TokenAmount<Amount>[],
   address: string,
+  additionalRegisters?: AdditionalRegistersInput
 ) => {
-  const userOutputBox = new OutputBuilder(value, ErgoAddress.fromBase58(address));
+  const outputBox = new OutputBuilder(value, address);
+  outputBox.setAdditionalRegisters(additionalRegisters!);
   if(tokens.length > 0)
-    userOutputBox.addTokens(
+    outputBox.addTokens(
       tokens,
     );
-  return userOutputBox;
+  return outputBox;
 };
+
+/**
+ * Create mocked oracle-box
+ * @param value
+ * @param tokens
+ * @returns
+ */
+export const createMockedOracleUTxO = (
+  value: bigint,
+  tokens: TokenAmount<bigint>[],
+) => {
+  const oracleUTxO = mockUTxO({
+    value: value,
+    ergoTree: constants.TRUE_SCRIPT_HEX,
+    creationHeight: 5,
+    assets: tokens,
+  });
+  return oracleUTxO;
+}
 
 /**
  * Get content and print on the output pretty
@@ -1245,5 +1273,11 @@ export class RaffleMockChain extends MockChain {
     }
   }
 }
+
+export const generateBlake2b256 = (content: string) => {
+  return SColl(SColl(SByte), [
+    Array.from(blake2b256(Buffer.from(content)))
+  ]).toHex();
+};
 
 export const contractsAddresses = initialContracts();

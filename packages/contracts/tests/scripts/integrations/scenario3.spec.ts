@@ -1,0 +1,250 @@
+import { it, describe, expect } from 'vitest';
+
+import * as testUtils from '../../testUtils';
+import {
+  executeCreateRaffleTx,
+  executeGiftTokenReceiptTx,
+  executePrizeCreationTx,
+  executeMergeTx,
+  executeAddGiftTx,
+  executeDonateTx,
+  executeRewardTx,
+  executeGiftUnwrapTx,
+} from './transactions';
+import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
+
+/*
+ * create fixtures that contains below steps data:
+ *   - mock chain and partners
+ *   - compile contracts
+ *   - create service input box
+ * @returns vitest customized "it" object
+ */
+const createRaffleTest = () => {
+  const chain = new testUtils.RaffleMockChain({ height: 1000 });
+  const {
+    creator, implementer, giftgiver1, giftgiver2,
+    donator1, donator2, donator3, donator4, donator5
+  } = testUtils.createPartners(chain, {
+      Creator: testUtils.CREATOR_DEFAULT_BALANCE,
+      implementer: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
+      giftGiver1: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
+      giftGiver2: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
+      donator1: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
+      donator2: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
+      donator3: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
+      donator4: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
+      donator5: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
+  });
+  creator.addBalance({
+    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000_000n }],
+  });
+  donator1.addBalance({
+    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000n }],
+  });
+  donator2.addBalance({
+    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000n }],
+  });
+  donator3.addBalance({
+    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000n }],
+  });
+  donator4.addBalance({
+    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000n }],
+  });
+  donator5.addBalance({
+    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000n }],
+  });
+
+  // Created input service-box
+  const serviceBox = testUtils.createServiceBoxMock(
+    creator.address.toString(),
+    testUtils.LICENSE_TOKEN_COUNT,
+    10n,
+    10n,
+    testUtils.FEE * 6n,
+  );
+
+  const giftGiverWallets: KeyedMockChainParty[] = [giftgiver1, giftgiver2];
+  const donatorWallets: KeyedMockChainParty[] = [
+    donator1, donator2, donator3, donator4, donator5
+  ];
+
+  return it.extend({
+    chain: chain,
+    creator: creator,
+    serviceBox: serviceBox,
+    implementerAddress: implementer.address.toString(),
+    giftGiverWallets: giftGiverWallets as KeyedMockChainParty[],
+    donatorWallets: donatorWallets as KeyedMockChainParty[],
+  });
+};
+
+describe('Raffle', () => {
+  const raffleTest = createRaffleTest();
+
+  describe('Create raffle', () => {
+    /**
+     * @target Failed token-goal raffle with 2 winners
+     * @scenario
+     * 1. Raffle creation phase 1 (create inactive raffle and ticketRepo with special collecting token)
+     * 2. Raffle creation phase 2 (merge inactive and ticket repo and create active raffle and winners)
+     * 3. Gift token receipt transaction
+     * 4. Add two gifts to one of the winners
+     * 5. Donate twice by two different donators
+     * 6. Reward transaction
+     * @expected
+     * - To sign all transactions successfully and complete the scenario
+     */
+    raffleTest(
+      'success token-goal raffle with 2 winners',
+      ({
+        chain,
+        creator,
+        serviceBox,
+        implementerAddress,
+        giftGiverWallets,
+        donatorWallets,
+      }) => {
+        chain.setTip(100);
+
+        const winnersCount = 2n;
+        const deadline = 2000n;
+        const winnersPercent: bigint[] = [];
+        for (let i = 0; i < winnersCount; i++)
+          winnersPercent.push(1000n / winnersCount);
+        // Step 1: Raffle creation phase 1 (create inactive raffle and ticketRepo)
+        const createRaffleTx = executeCreateRaffleTx(
+          creator,
+          serviceBox,
+          creator.utxos.toArray(),
+          implementerAddress,
+          winnersCount,
+          deadline,
+          winnersPercent,
+          chain,
+          testUtils.X_TOKEN_ID,
+          testUtils.FEE * 6n
+        );
+        expect(createRaffleTx.success).true;
+
+        // Step 2: Raffle creation phase 2 (merge inactive and ticket repo and create active raffle and winners)
+        const inactiveRaffle = createRaffleTx.outputs[2];
+        const ticketRepo = createRaffleTx.outputs[1];
+
+        const mergeTx = executeMergeTx(
+          inactiveRaffle,
+          ticketRepo,
+          winnersCount,
+          deadline,
+          chain,
+        );
+        expect(mergeTx.success).true;
+
+        // const raffleDetails = mergeTx.outputs[1];
+
+        // Step 3: Gift token receipt transaction (move gift tokens to winner boxes)
+        let giftTokenRepo = mergeTx.outputs[2];
+        const emptyWinnerBoxes = mergeTx.outputs.slice(3, 5);
+        let step = 1;
+        const winnerBoxes = [];
+        for (const winnerBox of emptyWinnerBoxes) {
+          const giftTokenReceiptTx = executeGiftTokenReceiptTx(
+            winnerBox,
+            giftTokenRepo,
+            step,
+            winnersCount,
+            chain,
+          );
+          step++;
+          winnerBoxes.push(giftTokenReceiptTx.outputs[0]);
+          giftTokenRepo = giftTokenReceiptTx.outputs[1];
+        }
+
+        // Step 4: Add two gifts to one of the winners
+        let winner1 = winnerBoxes[0];
+        const winner1Gifts = [];
+        for (let i = 0; i < 2; i++) {
+          const addGiftTx = executeAddGiftTx(
+            winner1,
+            (giftGiverWallets as KeyedMockChainParty[])[i],
+            chain,
+          );
+          expect(addGiftTx.success).true;
+          winner1 = addGiftTx.outputs[0];
+          winner1Gifts.push(addGiftTx.outputs[1]);
+        }
+
+        // Step 5: Donate twice by two different donators
+        let activeRaffle = mergeTx.outputs[0];
+        const raffleDetails = mergeTx.outputs[1];
+
+        const tickets = [];
+        for (let donateCount = 0; donateCount < 5; donateCount++) {
+          const donateTx = executeDonateTx(
+            activeRaffle,
+            (donatorWallets as KeyedMockChainParty[])[donateCount],
+            10n,
+            chain,
+          );
+          expect(donateTx.success).true;
+          activeRaffle = donateTx.outputs[0];
+          tickets.push(donateTx.outputs[1]);
+        }
+
+        /*
+          ============================
+          =                          =
+          =     Success scenario     =
+          =                          =
+          ============================
+        */
+
+        // Step 6: Reward transaction
+        const rewardTx = executeRewardTx(
+          activeRaffle,
+          raffleDetails,
+          creator.address.toString(),
+          creator.address.toString(),
+          implementerAddress,
+          chain
+        );
+        expect(rewardTx.success).true;
+
+        // Step 7: Create prize-boxes for winners
+        let winnersListHash = '';
+        for(const box of winnerBoxes) {
+          winnersListHash += testUtils.generateBlake2b256(box.boxId);
+        }
+        let successRaffleBox = rewardTx.outputs[0];
+
+        const prizeBoxes = [];
+        for(let i = 0; i < 2; i++) {
+          const prizeCreationTx = executePrizeCreationTx(
+            successRaffleBox,
+            winner1,
+            winnerBoxes.length,
+            2,
+            i,
+            2,
+            'test seed',
+            winnersListHash,
+            i,
+            15n,
+            chain
+          );
+          successRaffleBox = prizeCreationTx.outputs[0];
+          prizeBoxes.push(prizeCreationTx.outputs[1]);
+        }
+
+        for(let i = 0; i < winner1Gifts.length; i++) {
+          const giftUnwrapedTx = executeGiftUnwrapTx(
+            prizeBoxes[0],
+            winner1Gifts[i],
+            tickets[i],
+            chain
+          );
+        }
+      }
+    );
+  });
+});

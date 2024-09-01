@@ -1,11 +1,11 @@
 import * as path from 'node:path';
 
+import { compile } from '@fleet-sdk/compiler';
 import { SAFE_MIN_BOX_VALUE } from '@fleet-sdk/core';
 
 import * as constants from './constants';
 
-const __dirname = path.resolve('');
-
+export const TRUE_SCRIPT_HEX = compile('{sigmaProp(true);}').toHex().toString()
 export const DEFAULT_FEE = 15_000_000n;
 export const SCRIPT_DIR = path.join(__dirname, `lib/scripts/`);
 export const scriptList = [

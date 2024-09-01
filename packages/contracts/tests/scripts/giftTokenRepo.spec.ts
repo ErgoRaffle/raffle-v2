@@ -1,8 +1,8 @@
 import { it, describe, expect } from 'vitest';
-import { compile } from '@fleet-sdk/compiler';
 import { MockChain, mockUTxO } from '@fleet-sdk/mock-chain';
 import { Box, TransactionBuilder, OutputBuilder } from '@fleet-sdk/core';
 
+import * as constants from '../../constants';
 import * as testUtils from '../testUtils';
 
 /*
@@ -25,7 +25,7 @@ const createGiftTokenRepoTest = (winnersCount: number = 1) => {
     undefined,
     BigInt(chain.height + 1000),
     0n,
-    compile('{sigmaProp(true);}').toHex().toString(),
+    constants.TRUE_SCRIPT_HEX,
   );
 
   return it.extend({
@@ -462,7 +462,7 @@ describe('giftTokenRepo', () => {
           undefined,
           undefined,
           undefined,
-          compile('{sigmaProp(true);}').toHex().toString(),
+          constants.TRUE_SCRIPT_HEX,
         );
         const winnerOutputBox = testUtils.createWinnerOutputBox(
           5n,
