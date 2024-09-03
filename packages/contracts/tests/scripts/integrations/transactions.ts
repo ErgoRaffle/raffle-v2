@@ -35,23 +35,23 @@ export const executeCreateRaffleTx = (
       Array.from(Buffer.from(creator.address.toString())),
     ]),
   });
-  const serviceAddress = Buffer.from(
+  const serviceFeeAddress = Buffer.from(
     SConstant.from(serviceBox.additionalRegisters.R5!).data as Uint8Array,
   ).toString();
   const serviceR4 = SConstant.from(serviceBox.additionalRegisters.R4!)
     .data as bigint[];
   const serviceFeePercent = serviceR4[0];
-  const implementerFeePercent = serviceR4[0];
+  const implementerFeePercent = serviceR4[1];
   const serviceOutputBox = testUtils.createServiceOutputBox(
-    serviceAddress,
+    serviceFeeAddress,
     serviceBox.assets[1].amount - 1n,
     serviceFeePercent,
     implementerFeePercent,
-    creationFee,
+    serviceR4[2]
   );
   const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
   const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
-    serviceAddress,
+    serviceFeeAddress,
     implementerAddress,
     creator.address.toString(),
     winnersCount,
@@ -62,7 +62,7 @@ export const executeCreateRaffleTx = (
     winnersPercent,
     undefined,
     undefined,
-    creationFee,
+    serviceR4[2],
     serviceBox.boxId,
     deadline,
   );
@@ -272,7 +272,7 @@ export const executeDonateTx = (
 
   const ticketPrice = r4[3];
 
-  let collectingToken: TokenAmount<bigint> | undefined = undefined;
+  let collectingToken;
   let activeRaffleOutputBoxValue = BigInt(activeRaffle.value.toString()) + (
     ticketCount * ticketPrice
   );
@@ -436,9 +436,8 @@ export const executeWinnerRemovalTx = (
     .configureSelector((selector) => {
       selector.defineStrategy((inputs) => inputs);
     })
+    .burnTokens(winner.assets[1]!)
     .payFee(testUtils.FEE)
-
-  winnerRemovalTx.burnTokens(winner.assets[1]!);
 
   return chain.executeAndReturnOutputs(winnerRemovalTx.build());
 };

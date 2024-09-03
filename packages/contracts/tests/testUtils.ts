@@ -1256,6 +1256,10 @@ export class RaffleMockChain extends MockChain {
     return { success: true, outputs: result.tx!.outputs as OutputBox[] };
   };
 
+  /**
+   * set metadata of transaction
+   * @param transaction
+   */
   #pushMetadata(transaction: ErgoUnsignedTransaction) {
     const firstInputId = first(transaction.inputs).boxId;
     const box = transaction.outputs.find((output) =>
