@@ -94,6 +94,10 @@ describe('Raffle', () => {
      * 4. Add two gifts to one of the winners
      * 5. Donate twice by two different donators
      * 6. Reward transaction
+     * 7. Create prize-boxes for winners
+     * 8. Spending gifts
+     * 9. Spending prizes
+     * 10. Return raffle license to service
      * @expected
      * - To sign all transactions successfully and complete the scenario
      */
@@ -242,7 +246,7 @@ describe('Raffle', () => {
           prizeBoxes.push(prizeCreationTx.outputs[1]);
         }
 
-        // Step 8:
+        // Step 8: spending gifts
         for(let i = 0; i < winner1Gifts.length; i++) {
           const giftUnwrappedTx = executeGiftUnwrapTx(
             prizeBoxes[i],
@@ -255,20 +259,21 @@ describe('Raffle', () => {
           prizeBoxes[i] = giftUnwrappedTx.outputs[0];
         }
 
-        // Step 9:
+        // Step 9: spending prizes
         for(let i = 0; i < prizeBoxes.length; i++) {
-          executeFinalPrizeTx(
+          const finalPrizeTx = executeFinalPrizeTx(
             prizeBoxes[i],
             tickets[i],
             chain
-          )
+          );
+          expect(finalPrizeTx.success).true;
         }
 
         // Step 10: Return raffle license to service
-        const service = createRaffleTx.outputs[0];
+        const finalServiceBox = createRaffleTx.outputs[0];
         const returnLicenseTx = executeReturnRaffleLicenseTx(
           successRaffleBox,
-          service,
+          finalServiceBox,
           chain,
         );
         expect(returnLicenseTx.success).true;
