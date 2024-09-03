@@ -26,7 +26,6 @@ export const executeCreateRaffleTx = (
   winnersPercent: Array<bigint>,
   chain: testUtils.RaffleMockChain,
   collectingTokenId?: string,
-  creationFee: bigint = testUtils.CREATION_FEE,
 ) => {
   serviceBox.setContextExtension({
     0: SColl(SLong, winnersPercent),
