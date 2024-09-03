@@ -61,7 +61,7 @@ export const executeCreateRaffleTx = (
     winnersPercent,
     undefined,
     undefined,
-    testUtils.CREATION_FEE,
+    serviceR4[2],
     serviceBox.boxId,
     deadline,
   );
