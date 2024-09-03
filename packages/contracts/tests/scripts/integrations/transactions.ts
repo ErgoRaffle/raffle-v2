@@ -878,7 +878,6 @@ export const executeGiftUnwrapTx = (
 export const executeFinalPrizeTx = (
   winnerPrizeBox: testUtils.OutputBox,
   ticketBox: testUtils.OutputBox,
-  prizeNumber: bigint,
   chain: testUtils.RaffleMockChain,
 ) => {
   const finalPrizeBox = testUtils.createCustomOutputBox(
