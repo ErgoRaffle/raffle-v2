@@ -10,6 +10,8 @@ import {
   executeDonateTx,
   executeRewardTx,
   executeGiftUnwrapTx,
+  executeFinalPrizeTx,
+  executeReturnRaffleLicenseTx
 } from './transactions';
 import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
 
@@ -198,52 +200,80 @@ describe('Raffle', () => {
           =                          =
           ============================
         */
-
+       
         // Step 6: Reward transaction
+
+        let winnersListHash = '';
+        for(const box of winnerBoxes) {
+          winnersListHash += testUtils.generateBlake2b256(box.boxId);
+        }
+
         const rewardTx = executeRewardTx(
           activeRaffle,
           raffleDetails,
           creator.address.toString(),
           creator.address.toString(),
           implementerAddress,
+          2,
+          2,
+          "test seed",
+          winnersListHash,
           chain
         );
         expect(rewardTx.success).true;
 
         // Step 7: Create prize-boxes for winners
-        let winnersListHash = '';
-        for(const box of winnerBoxes) {
-          winnersListHash += testUtils.generateBlake2b256(box.boxId);
-        }
         let successRaffleBox = rewardTx.outputs[0];
-
         const prizeBoxes = [];
         for(let i = 0; i < 2; i++) {
           const prizeCreationTx = executePrizeCreationTx(
             successRaffleBox,
             winner1,
             winnerBoxes.length,
-            2,
+            30,
             i,
             2,
             'test seed',
             winnersListHash,
             i,
-            15n,
             chain
           );
+          expect(prizeCreationTx.success).true;
           successRaffleBox = prizeCreationTx.outputs[0];
           prizeBoxes.push(prizeCreationTx.outputs[1]);
         }
 
+        // Step 8:
         for(let i = 0; i < winner1Gifts.length; i++) {
-          const giftUnwrapedTx = executeGiftUnwrapTx(
-            prizeBoxes[0],
+          const giftUnwrappedTx = executeGiftUnwrapTx(
+            prizeBoxes[i],
             winner1Gifts[i],
             tickets[i],
+            BigInt(i + 1),
             chain
           );
+          expect(giftUnwrappedTx.success).true;
+          prizeBoxes[i] = giftUnwrappedTx.outputs[0];
         }
+
+        // Step 9:
+        for(let i = 0; i < prizeBoxes.length; i++) {
+          executeFinalPrizeTx(
+            prizeBoxes[i],
+            tickets[i],
+            BigInt(i + 1),
+            chain
+          )
+        }
+
+        // Step 10: Return raffle license to service
+        const service = createRaffleTx.outputs[0];
+        const returnLicenseTx = executeReturnRaffleLicenseTx(
+          successRaffleBox,
+          service,
+          chain,
+        );
+        expect(returnLicenseTx.success).true;
       }
     );
   });
