@@ -125,7 +125,6 @@ describe('Raffle', () => {
           winnersPercent,
           chain,
           testUtils.X_TOKEN_ID,
-          testUtils.FEE * 6n
         );
         expect(createRaffleTx.success).true;
 
@@ -261,7 +260,6 @@ describe('Raffle', () => {
           executeFinalPrizeTx(
             prizeBoxes[i],
             tickets[i],
-            BigInt(i + 1),
             chain
           )
         }
