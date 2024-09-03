@@ -14,6 +14,7 @@ import * as testUtils from '../../testUtils';
  * @param deadline
  * @param winnersPercent
  * @param chain: mocked chain
+ * @param collectingTokenId
  * @returns the create raffle signed transaction and success status
  */
 export const executeCreateRaffleTx = (
@@ -317,6 +318,7 @@ export const executeDonateTx = (
 /**
  * Change raffle status from active to failed after deadline
  * @param activeRaffle
+ * @param raffleDetails
  * @param chain: mocked chain
  */
 export const executeFailureTx = (
@@ -591,6 +593,21 @@ export const executeReturnRaffleLicenseTx = (
   return chain.executeAndReturnOutputs(ticketRedeemTx);
 };
 
+/**
+ * Execute reward transaction
+ * @param activeRaffleBox
+ * @param raffleDetailsBox
+ * @param creatorAddress
+ * @param serviceAddress
+ * @param implementerAddress
+ * @param winnersCount
+ * @param totalPrize
+ * @param seed
+ * @param selectedWinnersListHash
+ * @param chain
+ * @param successRaffleAddress
+ * @returns 
+ */
 export const executeRewardTx = (
   activeRaffleBox: testUtils.OutputBox,
   raffleDetailsBox: testUtils.OutputBox,
@@ -710,6 +727,21 @@ export const executeRewardTx = (
   return chain.executeAndReturnOutputs(rewardTx);
 }
 
+/**
+ * Execute prize creation transaction
+ * @param successRaffleBox
+ * @param winnerBox
+ * @param winnersCount
+ * @param totalPrize
+ * @param ticketIndex
+ * @param giftCount
+ * @param seed
+ * @param selectedWinnersListHash
+ * @param step
+ * @param chain
+ * @param prizeErgoTree
+ * @returns
+ */
 export const executePrizeCreationTx = (
   successRaffleBox: testUtils.OutputBox,
   winnerBox: testUtils.OutputBox,
@@ -779,6 +811,15 @@ export const executePrizeCreationTx = (
   return chain.executeAndReturnOutputs(prizeTx);
 }
 
+/**
+ * Execute gift unwrap transaction
+ * @param winnerPrizeBox
+ * @param giftForWinnerBox
+ * @param ticketBox
+ * @param prizeNumber
+ * @param chain
+ * @returns
+ */
 export const executeGiftUnwrapTx = (
   winnerPrizeBox: testUtils.OutputBox,
   giftForWinnerBox: testUtils.OutputBox,
@@ -826,6 +867,14 @@ export const executeGiftUnwrapTx = (
   return chain.executeAndReturnOutputs(giftUnwrapTx);
 }
 
+/**
+ * Execute final prize transaction
+ * @param winnerPrizeBox
+ * @param ticketBox
+ * @param prizeNumber
+ * @param chain
+ * @returns
+ */
 export const executeFinalPrizeTx = (
   winnerPrizeBox: testUtils.OutputBox,
   ticketBox: testUtils.OutputBox,
