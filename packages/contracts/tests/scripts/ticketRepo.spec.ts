@@ -15,15 +15,15 @@ import * as testUtils from '../testUtils';
  */
 function createInactiveRaffleTest(winnersCount: number = 1) {
   const chain = new MockChain({ height: 1000 });
-  const { creator, rosen } = testUtils.createPartners(chain, {
+  const { creator, someone } = testUtils.createPartners(chain, {
     Creator: testUtils.CREATOR_DEFAULT_BALANCE,
-    Rosen: testUtils.ROSEN_DEFAULT_BALANCE,
+    Someone: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
   });
 
   const ticketRepoInputBox = testUtils.createTicketRepoBoxMock();
   const inactiveRaffleInputBox = testUtils.createInactiveRaffleBoxMock(
     creator.address.toString(),
-    rosen.address.toString(),
+    someone.address.toString(),
     creator.address.toString(),
     BigInt(winnersCount),
     undefined,
@@ -31,12 +31,14 @@ function createInactiveRaffleTest(winnersCount: number = 1) {
     10n,
     undefined,
     1_000_000_000n,
+    undefined,
+    0n,
     compile('{sigmaProp(true);}').toHex().toString(),
   );
 
   return it.extend({
     chain: chain,
-    rosen: rosen,
+    someoneWallet: someone,
     creator: creator,
     ticketRepoInputBox: ticketRepoInputBox,
     inactiveRaffleInputBox: inactiveRaffleInputBox,
@@ -50,7 +52,7 @@ describe('ticketRepo', () => {
 
   describe('Active raffle creation', () => {
     /**
-     * @target Should create active raffle by 1 winner successfully
+     * @target should create active raffle by 1 winner successfully
      * @scenario
      * - create three output boxes by valid values and one winner box
      * - execute transaction
@@ -59,10 +61,10 @@ describe('ticketRepo', () => {
      * - transaction result must be true
      */
     ticketRepoBy1WinnerTest(
-      'Should create active raffle by 1 winner successfully',
+      'should create active raffle by 1 winner successfully',
       ({
         chain,
-        rosen,
+        someoneWallet,
         creator,
         ticketRepoInputBox,
         inactiveRaffleInputBox,
@@ -70,14 +72,12 @@ describe('ticketRepo', () => {
         const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
           creator.address.toString(),
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           1n,
         );
         const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
-        const giftTokenRepoOutputBox = testUtils.createGiftTokenRepoOutputBox(
-          1,
-          1,
-        );
+        const giftTokenRepoOutputBox =
+          testUtils.createGiftTokenRepoOutputBox(1n);
 
         const winnersBoxes = testUtils.createWinnersOutputBox(
           1n,
@@ -103,7 +103,7 @@ describe('ticketRepo', () => {
     );
 
     /**
-     * @target Should create active raffle by 5 winner
+     * @target should create active raffle by 5 winner
      * @scenario
      * - create three output boxes by valid values and 5 winners boxes
      * - execute transaction
@@ -112,10 +112,10 @@ describe('ticketRepo', () => {
      * - transaction result must be true
      */
     ticketRepoBy5WinnerTest(
-      'Should create active raffle by 5 winner',
+      'should create active raffle by 5 winner',
       ({
         chain,
-        rosen,
+        someoneWallet,
         creator,
         ticketRepoInputBox,
         inactiveRaffleInputBox,
@@ -123,14 +123,12 @@ describe('ticketRepo', () => {
         const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
           creator.address.toString(),
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           5n,
         );
         const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
-        const giftTokenRepoOutputBox = testUtils.createGiftTokenRepoOutputBox(
-          1,
-          5,
-        );
+        const giftTokenRepoOutputBox =
+          testUtils.createGiftTokenRepoOutputBox(5n);
         const transaction = new TransactionBuilder(chain.height)
           .from([inactiveRaffleInputBox, ticketRepoInputBox])
           .to([
@@ -153,7 +151,7 @@ describe('ticketRepo', () => {
     );
 
     /**
-     * @target Should creating of active raffle by 1 winner with invalid ticket token id be fail
+     * @target should creating of active raffle by 1 winner with invalid ticket token id be fail
      * @scenario
      * - create three output boxes(by invalid ticket-token in active box)
      * - execute transaction
@@ -162,10 +160,10 @@ describe('ticketRepo', () => {
      * - transaction result must throw error
      */
     ticketRepoBy1WinnerTest(
-      'Should creating of active raffle by 1 winner with invalid ticket token id be fail',
+      'should creating of active raffle by 1 winner with invalid ticket token id be fail',
       ({
         chain,
-        rosen,
+        someoneWallet,
         creator,
         ticketRepoInputBox,
         inactiveRaffleInputBox,
@@ -173,7 +171,7 @@ describe('ticketRepo', () => {
         const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
           creator.address.toString(),
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           1n,
         );
         const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
@@ -181,10 +179,8 @@ describe('ticketRepo', () => {
           1n,
           inactiveRaffleInputBox.boxId.toString(),
         );
-        const giftTokenRepoOutputBox = testUtils.createGiftTokenRepoOutputBox(
-          1,
-          1,
-        );
+        const giftTokenRepoOutputBox =
+          testUtils.createGiftTokenRepoOutputBox(1n);
 
         // Replace Ticket-Token with another token
         const extraInputBox = mockUTxO({
@@ -222,7 +218,7 @@ describe('ticketRepo', () => {
     );
 
     /**
-     * @target Should creating of active raffle by 1 winner with invalid number of ticket token be fail
+     * @target should creating of active raffle by 1 winner with invalid number of ticket token be fail
      * @scenario
      * - create three output boxes(by invalid number of ticket token in active box)
      * - execute transaction
@@ -231,10 +227,10 @@ describe('ticketRepo', () => {
      * - transaction result must throw error
      */
     ticketRepoBy1WinnerTest(
-      'Should creating of active raffle by 1 winner with invalid number of ticket token be fail',
+      'should creating of active raffle by 1 winner with invalid number of ticket token be fail',
       ({
         chain,
-        rosen,
+        someoneWallet,
         creator,
         ticketRepoInputBox,
         inactiveRaffleInputBox,
@@ -242,7 +238,7 @@ describe('ticketRepo', () => {
         const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
           creator.address.toString(),
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           1n,
           undefined,
           undefined,
@@ -256,10 +252,8 @@ describe('ticketRepo', () => {
           1n,
           inactiveRaffleInputBox.boxId.toString(),
         );
-        const giftTokenRepoOutputBox = testUtils.createGiftTokenRepoOutputBox(
-          1,
-          1,
-        );
+        const giftTokenRepoOutputBox =
+          testUtils.createGiftTokenRepoOutputBox(1n);
 
         // Move one extra Ticket-Token to the giftTokenRepoOutputBox
         giftTokenRepoOutputBox.assets.add({
@@ -285,7 +279,7 @@ describe('ticketRepo', () => {
     );
 
     /**
-     * @target Should creating of active raffle by 1 winner with invalid ticket token id in R7 of inactive input box be fail
+     * @target should creating of active raffle by 1 winner with invalid ticket token id in R7 of inactive input box be fail
      * @scenario
      * - create three output boxes(by invalid ticket-token id in inactive input box)
      * - execute transaction
@@ -294,12 +288,12 @@ describe('ticketRepo', () => {
      * - transaction result must throw error
      */
     ticketRepoBy1WinnerTest(
-      'Should creating of active raffle by 1 winner with invalid ticket token id in R7 of inactive input box be fail',
-      ({ chain, rosen, creator, ticketRepoInputBox }) => {
+      'should creating of active raffle by 1 winner with invalid ticket token id in R7 of inactive input box be fail',
+      ({ chain, someoneWallet, creator, ticketRepoInputBox }) => {
         // Replace Ticket-Token id with invalid id
         const inactiveRaffleInputBox = testUtils.createInactiveRaffleBoxMock(
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           creator.address.toString(),
           1n,
           undefined,
@@ -307,8 +301,9 @@ describe('ticketRepo', () => {
           10n,
           undefined,
           1_000_000_000n,
-          compile('{sigmaProp(true);}').toHex().toString(),
           '1234'.repeat(16),
+          0n,
+          compile('{sigmaProp(true);}').toHex().toString(),
         );
         const extraInputBox = mockUTxO({
           value: testUtils.FEE,
@@ -324,7 +319,7 @@ describe('ticketRepo', () => {
         const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
           creator.address.toString(),
           creator.address.toString(),
-          rosen.address.toString(),
+          someoneWallet.address.toString(),
           1n,
         );
         const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
@@ -332,10 +327,8 @@ describe('ticketRepo', () => {
           1n,
           inactiveRaffleInputBox.boxId.toString(),
         );
-        const giftTokenRepoOutputBox = testUtils.createGiftTokenRepoOutputBox(
-          1,
-          1,
-        );
+        const giftTokenRepoOutputBox =
+          testUtils.createGiftTokenRepoOutputBox(1n);
 
         const transaction = new TransactionBuilder(1000)
           .from([inactiveRaffleInputBox, ticketRepoInputBox, extraInputBox])
@@ -357,7 +350,7 @@ describe('ticketRepo', () => {
   });
 
   /**
-   * @target Should fail creating active raffle by wrong place of ticket token
+   * @target should fail creating active raffle by wrong place of ticket token
    * @scenario
    * - create three output boxes by valid values and one winner box(move one ticket token from active box to gift box)
    * - execute transaction
@@ -366,20 +359,23 @@ describe('ticketRepo', () => {
    * - transaction result must be true
    */
   ticketRepoBy1WinnerTest(
-    'Should fail creating active raffle by wrong place of ticket token',
-    ({ chain, rosen, creator, ticketRepoInputBox, inactiveRaffleInputBox }) => {
+    'should fail creating active raffle by wrong place of ticket token',
+    ({
+      chain,
+      someoneWallet,
+      creator,
+      ticketRepoInputBox,
+      inactiveRaffleInputBox,
+    }) => {
       const activeRaffleOutputBox = testUtils.createActiveRaffleOutputBox(
         creator.address.toString(),
         creator.address.toString(),
-        rosen.address.toString(),
+        someoneWallet.address.toString(),
         1n,
       );
 
       const raffleDetailsOutputBox = testUtils.createRaffleDetailsOutputBox();
-      const giftTokenRepoOutputBox = testUtils.createGiftTokenRepoOutputBox(
-        1,
-        1,
-      );
+      const giftTokenRepoOutputBox = testUtils.createGiftTokenRepoOutputBox(1n);
       const winnerBoxes = testUtils.createWinnersOutputBox(
         1n,
         inactiveRaffleInputBox.boxId.toString(),

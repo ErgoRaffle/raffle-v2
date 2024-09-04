@@ -39,7 +39,7 @@ export const scriptsRequireAddresses: {
   ticketRepo: {},
   activeRaffle: {},
   winner: {
-    giftTokenRepo: 'GIFT_SCRIPT_HASH_B64',
+    gift: 'GIFT_SCRIPT_HASH_B64',
     winnerPrize: 'WINNER_PRIZE_SCRIPT_HASH_B64',
     successRaffle: 'SUCCESS_RAFFLE_SCRIPT_HASH_B64',
     giftRedeem: 'GIFT_REDEEM_SCRIPT_HASH_B64',
@@ -55,7 +55,7 @@ export const scriptsRequireAddresses: {
 };
 
 export const defaultScriptsVariables: {
-  [key1: string]: { [key2: string]: string | bigint | undefined };
+  [key1: string]: { [key2: string]: string | bigint | number | undefined };
 } = {
   defaults: {},
   service: {
@@ -64,13 +64,15 @@ export const defaultScriptsVariables: {
     MIN_BOX_VALUE: SAFE_MIN_BOX_VALUE,
   },
   inactiveRaffle: {
-    GIFT_TOKEN_COUNT: 1n,
+    GIFT_TOKEN_COUNT: 1000,
     FEE: constants.DEFAULT_FEE,
     MIN_BOX_VALUE: SAFE_MIN_BOX_VALUE,
   },
   ticketRepo: {},
   activeRaffle: {},
-  winner: {},
+  winner: {
+    RAFFLE_LICENSE_B64: '',
+  },
   ticket: {},
   successRaffle: {},
   winnerPrize: {},

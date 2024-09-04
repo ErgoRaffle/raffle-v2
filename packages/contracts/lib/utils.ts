@@ -1,15 +1,19 @@
+import { compile } from '@fleet-sdk/compiler';
+import { blake2b256 } from '@fleet-sdk/crypto';
+import { SConstant } from '@fleet-sdk/serializer';
+import { Value } from 'sigmastate-js/main';
 import * as fs from 'fs';
 import * as path from 'node:path';
 
-import { compile } from '@fleet-sdk/compiler';
-import { SType } from '@fleet-sdk/serializer';
-import { blake2b256 } from '@fleet-sdk/crypto';
-
 import * as constants from '../constants';
 import { logger } from './logger';
-import { ScriptNamesType, ContextVarsType } from './types';
+import { ContextVarsType, ScriptNamesType } from './types';
 
 const NotSet = '';
+
+type NamedConstantsMap = {
+  [key: string]: string | Value | SConstant;
+};
 
 /**
  * Merge compiling context vars by shared keys default values
@@ -60,7 +64,7 @@ function mergeContextVarsAndRequiredAddress(contextVars?: ContextVarsType) {
  * This method is part of the {@link raffle-v2#contracts | contracts subsystem}.
  *
  * @param contextVars - variables of raffle-v2 scripts
- * @param logger - logger object
+ * @param outputsAsHex
  * @returns object that contains compiled contracts
  */
 export function compileAll(
@@ -109,7 +113,7 @@ export function compileAll(
       for (const nameAndValue of Object.entries(scriptVars))
         script = script.replace(nameAndValue[0], nameAndValue[1]);
 
-      const vars: { [key: string | number]: string | SType } = {};
+      const vars: NamedConstantsMap = {};
       let contract;
       try {
         contract = compile(script, { map: vars });
@@ -129,10 +133,9 @@ export function compileAll(
         const updateScriptKey =
           constants.scriptsRequireAddresses[script_][scriptName];
         if (updateScriptKey !== undefined) {
-          const contractString = Buffer.from(
+          compiledDependenciesStatus[script_][updateScriptKey] = Buffer.from(
             blake2b256(contract?.toHex()),
           ).toString('base64');
-          compiledDependenciesStatus[script_][updateScriptKey] = contractString;
         }
       }
     }

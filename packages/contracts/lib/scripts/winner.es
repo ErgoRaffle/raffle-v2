@@ -107,6 +107,7 @@
       // Correct GiftRedeem format
       blake2b256(giftRedeem.propositionBytes) == giftRedeemScriptHash,
       giftRedeem.tokens(0)._1 == raffleLicense,
+      giftRedeem.tokens(1)._1 == SELF.tokens(0)._1,
 
       // Correct Winner format
       selfReplication,
@@ -125,12 +126,13 @@
   else {
     // New gift creation
     // [Winner, UserBox] --> [Winner, Gift]
-    val gift = OUTPUTS(0)
+    val gift = OUTPUTS(1)
     sigmaProp(allOf(Coll(
       // Correct Winner format
       selfReplication,
       outWinner.tokens(1)._1 == SELF.tokens(1)._1,
       outWinner.tokens(1)._2 == SELF.tokens(1)._2 - 1,
+      outWinner.R5[Long].get == giftCount + 1,
 
       // Correct Gift format
       // R4[Coll[Byte]]: [DonatorAddress]
