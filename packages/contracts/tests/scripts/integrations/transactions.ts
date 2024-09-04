@@ -27,6 +27,7 @@ export const executeCreateRaffleTx = (
   winnersPercent: Array<bigint>,
   chain: testUtils.RaffleMockChain,
   collectingTokenId?: string,
+  ticketPrice: bigint = 10n,
 ) => {
   serviceBox.setContextExtension({
     0: SColl(SLong, winnersPercent),
@@ -65,6 +66,7 @@ export const executeCreateRaffleTx = (
     serviceR4[2],
     serviceBox.boxId,
     deadline,
+    ticketPrice
   );
   const creationTx = new TransactionBuilder(chain.height)
     .from([serviceBox, ...feeBoxes])
@@ -271,9 +273,9 @@ export const executeDonateTx = (
   )[0];
 
   const ticketPrice = r4[3];
-
+  
   let collectingToken;
-  let activeRaffleOutputBoxValue = BigInt(activeRaffle.value.toString()) + (
+  let activeRaffleOutputBoxValue = BigInt(activeRaffle.value) + (
     ticketCount * ticketPrice
   );
   if(activeRaffle.assets.length > 2) {
@@ -572,7 +574,7 @@ export const executeReturnRaffleLicenseTx = (
     serviceR4[2],
   );
   const serviceFee = testUtils.createCustomOutputBox(
-    BigInt(endedRaffle.value.toString()) - testUtils.FEE,
+    BigInt(endedRaffle.value) - testUtils.FEE,
     [],
     serviceFeeAddress,
   );
@@ -634,7 +636,7 @@ export const executeRewardTx = (
   const oracleBox = testUtils.createMockedOracleUTxO(testUtils.FEE, []);
 
   let successRaffleOutputBox = testUtils.createCustomOutputBox(
-    (BigInt(activeRaffleBox.value)) * charityFeePercent / 1000n,
+    (BigInt(activeRaffleBox.value) - testUtils.FEE) * charityFeePercent / 1000n + testUtils.FEE,
     [
       activeRaffleBox.assets[0],
       {
@@ -651,17 +653,17 @@ export const executeRewardTx = (
     }
   );
   let creatorFundBox = testUtils.createCustomOutputBox(
-    (BigInt(activeRaffleBox.value)) * creatorFeePercent / 1000n,
+    (BigInt(activeRaffleBox.value) - testUtils.FEE) * creatorFeePercent / 1000n,
     [],
     creatorAddress
   );
   let serviceFeeBox = testUtils.createCustomOutputBox(
-    (BigInt(activeRaffleBox.value)) * serviceFeePercent / 1000n,
+    (BigInt(activeRaffleBox.value) - testUtils.FEE) * serviceFeePercent / 1000n,
     [],
     serviceAddress
   );
   let implementerFeeBox = testUtils.createCustomOutputBox(
-    (BigInt(activeRaffleBox.value)) * implementerFeePercent / 1000n,
+    (BigInt(activeRaffleBox.value) - testUtils.FEE) * implementerFeePercent / 1000n,
     [],
     implementerAddress
   );
@@ -768,7 +770,11 @@ export const executePrizeCreationTx = (
     winnerBox.assets[0],
     winnerBox.assets[1],
   ];
+  let prizeBoxValue = testUtils.FEE * 2n + BigInt(prizeAmount);
+  let successRaffleBoxValue = BigInt(successRaffleBox.value) - BigInt(prizeAmount);
   if(successRaffleBox.assets.length > 2) {
+    successRaffleBoxValue = BigInt(successRaffleBox.value);
+    prizeBoxValue = testUtils.FEE * 2n;
     prizeBoxTokens.push({
       tokenId: successRaffleBox.assets[2].tokenId,
       amount:  prizeAmount
@@ -780,7 +786,7 @@ export const executePrizeCreationTx = (
       });
   }
   const prizeBox = testUtils.createCustomOutputBox(
-    testUtils.FEE * 2n,
+    prizeBoxValue,
     prizeBoxTokens,
     prizeErgoTree,
     {
@@ -790,7 +796,7 @@ export const executePrizeCreationTx = (
   );
 
   const successRaffleOutputBox = testUtils.createCustomOutputBox(
-    BigInt(successRaffleBox.value),
+    successRaffleBoxValue,
     successRaffleOutputBoxTokens,
     successRaffleBox.ergoTree,
     {
@@ -828,7 +834,7 @@ export const executeGiftUnwrapTx = (
   chain: testUtils.RaffleMockChain,
 ) => {
   const prizeOutputBox = testUtils.createCustomOutputBox(
-    testUtils.FEE * 2n,
+    BigInt(winnerPrizeBox.value),
     winnerPrizeBox.assets,
     winnerPrizeBox.ergoTree,
     {
@@ -882,7 +888,7 @@ export const executeFinalPrizeTx = (
 ) => {
   const finalPrizeBox = testUtils.createCustomOutputBox(
     BigInt(winnerPrizeBox.value) - testUtils.FEE,
-    [winnerPrizeBox.assets[2]!],
+    winnerPrizeBox.assets.length > 2 ? [winnerPrizeBox.assets[2]] : [],
     new TextDecoder().decode(SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array),
   );
 

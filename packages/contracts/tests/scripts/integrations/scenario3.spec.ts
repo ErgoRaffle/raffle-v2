@@ -218,7 +218,7 @@ describe('Raffle', () => {
           creator.address.toString(),
           implementerAddress,
           2,
-          2,
+          30,
           "test seed",
           winnersListHash,
           chain

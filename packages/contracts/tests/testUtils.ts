@@ -343,6 +343,7 @@ export const createInactiveRaffleOutputBox = (
   creationFee = CREATION_FEE,
   ticketToken: string = TICKET_TOKEN_ID,
   deadline: bigint = 100n,
+  ticketPrice: bigint = 10n,
 ) => {
   const tokens = [
     {
@@ -367,7 +368,7 @@ export const createInactiveRaffleOutputBox = (
         60n, // CharityPercentage,
         serviceFeePercent, // ServiceFeePercent,
         10n, // ImplementerFeePercent,
-        10n, // TicketPrice,
+        ticketPrice, // TicketPrice,
         1000n, // Goal,
         deadline, // DeadlineTimestamp,
         winnersCount, // WinnersCount,
@@ -536,6 +537,7 @@ export const createActiveRaffleOutputBox = (
   ticketTokenId: string = TICKET_TOKEN_ID,
   totalSoldTicket: bigint = 0n,
   deadline: bigint = 100n,
+  ticketPrice: bigint = 10n,
 ) => {
   value = value || creationFee - FEE;
 
@@ -558,7 +560,7 @@ export const createActiveRaffleOutputBox = (
         60n, // CharityPercentage,
         serviceFeePercent, // ServiceFeePercent,
         10n, // ImplementerFeePercent,
-        10n, // TicketPrice,
+        ticketPrice, // TicketPrice,
         1000n, // Goal,
         deadline, // DeadlineTimestamp,
         winnersCount, // WinnersCount,
