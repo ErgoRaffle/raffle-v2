@@ -1,10 +1,9 @@
 import { it, describe, expect } from 'vitest';
-import { compile } from '@fleet-sdk/compiler';
 import { MockChain, mockUTxO } from '@fleet-sdk/mock-chain';
 import { Box, TransactionBuilder, OutputBuilder } from '@fleet-sdk/core';
-import { compile } from '@fleet-sdk/compiler';
 
 import * as testUtils from '../testUtils';
+import * as constants from '../../constants';
 
 /*
  * create fixtures that contains below steps data:
@@ -21,12 +20,13 @@ const createGiftTokenRepoTest = (winnersCount: number = 1) => {
 
   const winnersInputBoxes = testUtils.createWinnersBoxMock(
     BigInt(winnersCount),
-    testUtils.GIFT_TOKEN_ID,
     testUtils.TICKET_TOKEN_ID,
     undefined,
     BigInt(chain.height + 1000),
     0n,
-    compile('{sigmaProp(true);}').toHex().toString(),
+    undefined,
+    undefined,
+    constants.TRUE_SCRIPT_HEX,
   );
 
   return it.extend({
@@ -458,12 +458,13 @@ describe('giftTokenRepo', () => {
       ({ chain, creator }) => {
         const anotherWinnersInputBoxes = testUtils.createWinnersBoxMock(
           5n,
-          undefined,
           '1234'.repeat(16), // set different ticket token id
           undefined,
           undefined,
           undefined,
-          compile('{sigmaProp(true);}').toHex().toString(),
+          undefined,
+          undefined,
+          constants.TRUE_SCRIPT_HEX,
         );
         const winnerOutputBox = testUtils.createWinnerOutputBox(
           5n,

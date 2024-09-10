@@ -229,9 +229,9 @@ export const executeAddGiftTx = (
   );
   const gift = testUtils.createGiftOutputBox(
     winnerR4[0],
-    giftTokenId,
     giftGiver.address.toString(),
     testUtils.FEE * 10n,
+    winner.assets[1].tokenId,
   );
 
   const addGiftTx = new TransactionBuilder(chain.height)
@@ -385,7 +385,7 @@ export const executeGiftReturnTx = (
   const giftGiverAddress = Buffer.from(
     SConstant.from(gift.additionalRegisters.R4!).data as Uint8Array,
   ).toString();
-  const redeemedGift = testUtils.createUserOutputBox(
+  const redeemedGift = testUtils.createCustomOutputBox(
     BigInt(gift.value.toString()) - testUtils.FEE,
     gift.assets.slice(1),
     giftGiverAddress,
@@ -526,7 +526,7 @@ export const executeTicketRedeemTx = (
     collectingToken
   );
 
-  const redeemedDonation = testUtils.createUserOutputBox(
+  const redeemedDonation = testUtils.createCustomOutputBox(
     redeemedDonationValue,
     redeemedDonationTokens,
     donatorAddress,
@@ -569,7 +569,7 @@ export const executeReturnRaffleLicenseTx = (
     implementerFeePercent,
     serviceR4[2],
   );
-  const serviceFee = testUtils.createUserOutputBox(
+  const serviceFee = testUtils.createCustomOutputBox(
     BigInt(endedRaffle.value.toString()) - testUtils.FEE,
     [],
     serviceFeeAddress,
