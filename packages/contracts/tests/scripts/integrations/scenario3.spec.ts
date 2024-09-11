@@ -92,7 +92,7 @@ describe('Raffle', () => {
      * 2. Raffle creation phase 2 (merge inactive and ticket repo and create active raffle and winners)
      * 3. Gift token receipt transaction
      * 4. Add two gifts to one of the winners
-     * 5. Donate twice by two different donators
+     * 5. Donate five times by 5 different donators
      * 6. Reward transaction
      * 7. Create prize-boxes for winners
      * 8. Spending gifts
