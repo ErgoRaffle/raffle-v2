@@ -20,11 +20,12 @@ const createGiftTokenRepoTest = (winnersCount: number = 1) => {
 
   const winnersInputBoxes = testUtils.createWinnersBoxMock(
     BigInt(winnersCount),
-    testUtils.GIFT_TOKEN_ID,
     testUtils.TICKET_TOKEN_ID,
     undefined,
     BigInt(chain.height + 1000),
     0n,
+    testUtils.GIFT_TOKEN_ID,
+    undefined,
     constants.TRUE_SCRIPT_HEX,
   );
 
@@ -457,8 +458,9 @@ describe('giftTokenRepo', () => {
       ({ chain, creator }) => {
         const anotherWinnersInputBoxes = testUtils.createWinnersBoxMock(
           5n,
-          undefined,
           '1234'.repeat(16), // set different ticket token id
+          undefined,
+          undefined,
           undefined,
           undefined,
           undefined,

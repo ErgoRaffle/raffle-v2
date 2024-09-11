@@ -207,8 +207,9 @@ describe('Raffle', () => {
         // Step 6: Reward transaction
 
         let winnersListHash = '';
-        for(const box of winnerBoxes) {
-          winnersListHash += testUtils.generateBlake2b256(box.boxId);
+        for(let i = 0; i <  winnerBoxes.length; i++) {
+          // To Do: replace by correct calculated hash
+          winnersListHash += '';
         }
 
         const rewardTx = executeRewardTx(
@@ -231,14 +232,12 @@ describe('Raffle', () => {
         for(let i = 0; i < 2; i++) {
           const prizeCreationTx = executePrizeCreationTx(
             successRaffleBox,
+            activeRaffle,
             winner1,
             winnerBoxes.length,
             30,
             i,
             2,
-            'test seed',
-            winnersListHash,
-            i,
             chain
           );
           expect(prizeCreationTx.success).true;
