@@ -6,7 +6,8 @@
   //   R5[Long]: UnwrappedGiftCount
   // Tokens:
   //   0: Ticket
-  //   1: CollectingToken (if token-goal raffle)
+  //   1: GiftToken
+  //   2: CollectingToken (if token-goal raffle)
   //
   // Spent in 2 transactions:
   //   - Gift unwrap

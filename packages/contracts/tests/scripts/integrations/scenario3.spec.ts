@@ -1,4 +1,5 @@
 import { it, describe, expect } from 'vitest';
+import { SColl, SLong } from '@fleet-sdk/core'
 
 import * as testUtils from '../../testUtils';
 import {
@@ -86,23 +87,23 @@ describe('Raffle', () => {
 
   describe('Create raffle', () => {
     /**
-     * @target Failed token-goal raffle with 2 winners
+     * @target token-goal raffle with 2 winners done successful
      * @scenario
      * 1. Raffle creation phase 1 (create inactive raffle and ticketRepo with special collecting token)
      * 2. Raffle creation phase 2 (merge inactive and ticket repo and create active raffle and winners)
      * 3. Gift token receipt transaction
      * 4. Add two gifts to one of the winners
      * 5. Donate twice by two different donators
-     * 6. Reward transaction
+     * 6. Success transaction after passing the deadline
      * 7. Create prize-boxes for winners
-     * 8. Spending gifts
-     * 9. Spending prizes
+     * 8. Unwrap two gifts of the first winner
+     * 9. Deposit winners final prize
      * 10. Return raffle license to service
      * @expected
      * - To sign all transactions successfully and complete the scenario
      */
     raffleTest(
-      'success token-goal raffle with 2 winners',
+      'should token-goal raffle with 2 winners done successful',
       ({
         chain,
         creator,
@@ -203,15 +204,8 @@ describe('Raffle', () => {
           =                          =
           ============================
         */
-       
-        // Step 6: Reward transaction
 
-        let winnersListHash = '';
-        for(let i = 0; i <  winnerBoxes.length; i++) {
-          // To Do: replace by correct calculated hash
-          winnersListHash += '';
-        }
-
+        // Step 6: Success transaction after passing the deadline
         const rewardTx = executeRewardTx(
           activeRaffle,
           raffleDetails,
@@ -220,24 +214,25 @@ describe('Raffle', () => {
           implementerAddress,
           2,
           30,
-          "test seed",
-          winnersListHash,
           chain
         );
         expect(rewardTx.success).true;
 
         // Step 7: Create prize-boxes for winners
         let successRaffleBox = rewardTx.outputs[0];
+        successRaffleBox.setContextExtension({
+          0: SColl(SLong, rewardTx.winnerIndexList),
+          1: SLong(BigInt(rewardTx.winnerIndexList[rewardTx.winnerIndexList.length - 1])),
+        });
+
+        const winnerIndexList = rewardTx.winnerIndexList
         const prizeBoxes = [];
         for(let i = 0; i < 2; i++) {
           const prizeCreationTx = executePrizeCreationTx(
             successRaffleBox,
             activeRaffle,
             winner1,
-            winnerBoxes.length,
-            30,
-            i,
-            2,
+            winnerIndexList,
             chain
           );
           expect(prizeCreationTx.success).true;
@@ -245,7 +240,7 @@ describe('Raffle', () => {
           prizeBoxes.push(prizeCreationTx.outputs[1]);
         }
 
-        // Step 8: spending gifts
+        // Step 8: Unwrap two gifts of the first winner
         for(let i = 0; i < winner1Gifts.length; i++) {
           const giftUnwrappedTx = executeGiftUnwrapTx(
             prizeBoxes[i],
@@ -258,7 +253,7 @@ describe('Raffle', () => {
           prizeBoxes[i] = giftUnwrappedTx.outputs[0];
         }
 
-        // Step 9: spending prizes
+        // Step 9: Deposit winners final prize
         for(let i = 0; i < prizeBoxes.length; i++) {
           const finalPrizeTx = executeFinalPrizeTx(
             prizeBoxes[i],

@@ -689,10 +689,11 @@ describe('Service', () => {
         const successRaffleInputBox = testUtils.createSuccessRaffleBoxMock(
           activeRaffleBox,
           60n,
-          1n,
+          '0123456789012345',
+          '',
           undefined,
           undefined,
-          undefined,
+          0n,
           constants.TRUE_SCRIPT_HEX
         );
         // const successRaffleInputBox = testUtils.createSuccessRaffleBox(

@@ -576,23 +576,25 @@ export const createActiveRaffleOutputBox = (
 };
 
 /**
- * Create and return success-raffle intput box
+ * Create and return success-raffle input box
  * @param activeRaffleBox
  * @param charityFeePercent
- * @param winnersCount
- * @param totalPrize
  * @param seed
  * @param selectedWinnersListHash
+ * @param winnersCount
+ * @param totalPrize
+ * @param step
  * @param ergoTree
  * @returns
  */
 export const createSuccessRaffleBoxMock = (
   activeRaffleBox: OutputBox,
   charityFeePercent: bigint,
+  seed: string,
+  selectedWinnersListHash: string,
   winnersCount: bigint = 1n,
   totalPrize: bigint = 1n,
-  seed: string = 'test seed',
-  selectedWinnersListHash: string = '',
+  step: bigint,
   ergoTree: string = contractsAddresses['successRaffle'],
 ) => {
   return mockUTxO({
@@ -616,53 +618,65 @@ export const createSuccessRaffleBoxMock = (
     ],
     additionalRegisters: {
       R4: SColl(SLong, [BigInt(winnersCount), FEE, BigInt(totalPrize)]).toHex(),
-      R5: SColl(SColl(SByte), [Array.from(Buffer.from(seed)), Array.from(Buffer.from(selectedWinnersListHash))]).toHex(),
-      R6: SLong(0n).toHex()
+      R5: SColl(SColl(SByte), [
+        Array.from(Buffer.from(seed)),
+        Array.from(Buffer.from(selectedWinnersListHash))
+      ]).toHex(),
+      R6: SLong(step).toHex()
     }
   });
 };
 
 /**
- * Create and return success-raffle output box
- * @param activeRaffleBox
+ * Create and return success-raffle input box
+ * @param boxValue
+ * @param licenseTokenId
+ * @param oldTicketTokenAmount
+ * @param collectingTokenId
  * @param charityFeePercent
- * @param winnersCount
- * @param totalPrize
  * @param seed
  * @param selectedWinnersListHash
+ * @param winnersCount
+ * @param totalPrize
+ * @param step
  * @param ergoTree
  * @returns
  */
 export const createSuccessRaffleBox = (
-  activeRaffleBox: OutputBox,
-  charityFeePercent: bigint,
+  boxValue: bigint,
+  licenseTokenId: string,
+  oldTicketTokenAmount: TokenAmount<bigint> | TokenAmount<Amount>,
+  collectingTokenId: string,
+  seed: string,
+  selectedWinnersListHash: string,
   winnersCount: bigint = 1n,
   totalPrize: bigint = 1n,
-  seed: string = 'test seed',
-  selectedWinnersListHash: string = '',
   spentPrizeValue: bigint = 0n,
+  step: bigint = 0n,
   ergoTree: string = contractsAddresses['successRaffle'],
 ) => {
   return createCustomOutputBox(
-    BigInt(activeRaffleBox.value) - (FEE * 3n),
+    BigInt(boxValue),
     [
-      activeRaffleBox.assets[0],
+      {tokenId: licenseTokenId, amount: 1n},
       {
-        tokenId: activeRaffleBox.assets[1].tokenId,
-        // plus one token that exists on the Raffle-Details box
-        amount: BigInt(activeRaffleBox.assets[1].amount) + 1n
+        tokenId: oldTicketTokenAmount.tokenId,
+        amount: BigInt(oldTicketTokenAmount.amount)
       },
       {
-        tokenId: activeRaffleBox.assets[2].tokenId,
+        tokenId: collectingTokenId,
         // One extra collecting token added to this box
-        amount: ((BigInt(activeRaffleBox.assets[2].amount)) * charityFeePercent / 1000n) + 1n - spentPrizeValue
+        amount: totalPrize + 1n - spentPrizeValue
       }
     ],
     ErgoAddress.fromErgoTree(ergoTree).toString(),
     {
       R4: SColl(SLong, [BigInt(winnersCount), FEE, BigInt(totalPrize)]).toHex(),
-      R5: SColl(SColl(SByte), [Array.from(Buffer.from(seed)), Array.from(Buffer.from(selectedWinnersListHash))]),
-      R6: SLong(0n)
+      R5: SColl(SColl(SByte), [
+        Array.from(Buffer.from(seed)),
+        Array.from(Buffer.from(selectedWinnersListHash))
+      ]).toHex(),
+      R6: SLong(step)
     }
   );
 };
@@ -1280,6 +1294,43 @@ export const prettyPrintJson = (
     ),
   );
 };
+
+/**
+ * 
+ * @param winnerIndexList
+ * @param step
+ * @param seedString
+ * @param winnersCount
+ * @returns
+ */
+export const generateNextWinnerIndex = (
+  winnerIndexList: bigint[],
+  step: number,
+  seedString: string,
+  winnersCount: number
+) => {
+  if(seedString.length < 16)
+    throw Error('Seed length is too short');
+
+  let winnerIndex = -1n;
+  // seed: bigint;
+
+  seedString = seedString.slice(0, 16);
+  const seed = BigInt('0x' + seedString)
+  winnerIndex = seed % BigInt(winnersCount - step);
+  winnerIndex += BigInt(winnerIndexList.filter((value, index) => {return index < step}).length) - 1n;
+  // check selected winnerIndex is not duplicated
+  while(winnerIndex < 0 || winnerIndexList.indexOf(winnerIndex) >= 0) winnerIndex += 1n;
+
+  // prepare next loop seedString
+  return {
+    winnerIndex: winnerIndex,
+    hash: SColl(
+      SByte,
+      Array.from(blake2b256(Buffer.from(seedString + seed.toString(), 'hex')))
+    ).toHex()
+  };
+}
 
 export class RaffleMockChain extends MockChain {
   readonly #parties: MockChainParty[];
