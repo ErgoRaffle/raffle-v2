@@ -1,4 +1,5 @@
 import { it, describe, expect } from 'vitest';
+import { SColl, SLong } from '@fleet-sdk/core'
 
 import * as testUtils from '../../testUtils';
 import {
@@ -198,13 +199,7 @@ describe('Raffle', () => {
           =                          =
           ============================
         */
-       
         // Step 6: Reward transaction
-        let winnersListHash = '';
-        for(const box of winnerBoxes) {
-          winnersListHash += testUtils.generateBlake2b256(box.boxId);
-        }
-
         const rewardTx = executeRewardTx(
           activeRaffle,
           raffleDetails,
@@ -213,25 +208,22 @@ describe('Raffle', () => {
           implementerAddress,
           1,
           1_000_000,
-          "test seed",
-          winnersListHash,
           chain
         );
         expect(rewardTx.success).true;
 
         // Step 7: Create prize-boxes for winners
         let successRaffleBox = rewardTx.outputs[0];
+        successRaffleBox.setContextExtension({
+          0: SColl(SLong, rewardTx.winnerIndexList),
+          1: SLong(BigInt(rewardTx.winnerIndexList[rewardTx.winnerIndexList.length - 1])),
+        });
         const prizeBoxes = [];
         const prizeCreationTx = executePrizeCreationTx(
           successRaffleBox,
+          activeRaffle,
           winner1,
-          winnerBoxes.length,
-          1_000_000,
-          0,
-          1,
-          'test seed',
-          winnersListHash,
-          0,
+          rewardTx.winnerIndexList,
           chain
         );
         expect(prizeCreationTx.success).true;

@@ -643,31 +643,31 @@ export const createSuccessRaffleBoxMock = (
  * @returns
  */
 export const createSuccessRaffleBox = (
-  boxValue: bigint,
+  ergValue: bigint,
   licenseTokenId: string,
   oldTicketTokenAmount: TokenAmount<bigint> | TokenAmount<Amount>,
-  collectingTokenId: string,
   seed: string,
   selectedWinnersListHash: string,
   winnersCount: bigint = 1n,
   totalPrize: bigint = 1n,
   spentPrizeValue: bigint = 0n,
   step: bigint = 0n,
+  collectingTokenId?: string,
   ergoTree: string = contractsAddresses['successRaffle'],
 ) => {
   return createCustomOutputBox(
-    BigInt(boxValue),
+    ergValue,
     [
       {tokenId: licenseTokenId, amount: 1n},
       {
         tokenId: oldTicketTokenAmount.tokenId,
         amount: BigInt(oldTicketTokenAmount.amount)
       },
-      {
+      ...(collectingTokenId !== undefined ? [{
         tokenId: collectingTokenId,
         // One extra collecting token added to this box
         amount: totalPrize + 1n - spentPrizeValue
-      }
+      }] : [])
     ],
     ErgoAddress.fromErgoTree(ergoTree).toString(),
     {
