@@ -201,16 +201,6 @@ describe('Raffle', () => {
           ============================
         */
         // Step 6: Reward transaction
-        // const rewardTx = executeRewardTx(
-        //   activeRaffle,
-        //   raffleDetails,
-        //   creator.address.toString(),
-        //   creator.address.toString(),
-        //   implementerAddress,
-        //   1,
-        //   1_000_000,
-        //   chain
-        // );
         const rewardTx = executeRewardTx(
           activeRaffle,
           raffleDetails,
@@ -245,13 +235,6 @@ describe('Raffle', () => {
           hash,
           chain
         );
-        // const prizeCreationTx = executePrizeCreationTx(
-        //   successRaffleBox,
-        //   activeRaffle,
-        //   winner1,
-        //   rewardTx.winnerIndexList,
-        //   chain
-        // );
         expect(prizeCreationTx.success).true;
         successRaffleBox = prizeCreationTx.outputs[0];
         prizeBoxes.push(prizeCreationTx.outputs[1]);
