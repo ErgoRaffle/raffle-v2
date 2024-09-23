@@ -629,21 +629,6 @@ export const executeRewardTx = (
   const implementerFeePercent = r4[2];
   const creatorFeePercent = 1000n - charityFeePercent - serviceFeePercent - implementerFeePercent;
 
-  const successRaffleOutputBox = testUtils.createSuccessRaffleBox(
-    BigInt(activeRaffleBox.value) - (3n * testUtils.FEE),
-    activeRaffleBox.assets[0].tokenId,
-    seed,
-    hash,
-    BigInt(winnersCount),
-    BigInt(totalPrize),
-    BigInt(totalPrize) + 1n,
-    0n,
-    activeRaffleBox.assets[1].tokenId,
-    // plus one token that exists on the Raffle-Details box
-    BigInt(activeRaffleBox.assets[1].amount) + 1n,
-    activeRaffleBox.assets.length > 2 ? activeRaffleBox.assets[2].tokenId : undefined,
-  );
-
   let creatorFundBox = testUtils.createCustomOutputBox(
     (BigInt(activeRaffleBox.value) - testUtils.FEE) * creatorFeePercent / 1000n,
     [],
@@ -659,7 +644,13 @@ export const executeRewardTx = (
     [],
     implementerAddress
   );
+
+  let successRaffleOutputValue = BigInt(activeRaffleBox.value)
+    - creatorFundBox.value
+    - serviceFeeBox.value
+    - implementerFeeBox.value;
   if(activeRaffleBox.assets.length > 2) {
+    successRaffleOutputValue = BigInt(activeRaffleBox.value) - (3n * testUtils.FEE);
     creatorFundBox = testUtils.createCustomOutputBox(
       testUtils.FEE,
       [{
@@ -686,10 +677,20 @@ export const executeRewardTx = (
     );
   }
 
-  testUtils.prettyPrintJson([
-    [activeRaffleBox, raffleDetailsBox],
-    [successRaffleOutputBox, creatorFundBox, serviceFeeBox, implementerFeeBox]
-  ]);
+  const successRaffleOutputBox = testUtils.createSuccessRaffleBox(
+    successRaffleOutputValue,
+    activeRaffleBox.assets[0].tokenId,
+    seed,
+    hash,
+    BigInt(winnersCount),
+    BigInt(totalPrize),
+    BigInt(totalPrize) + 1n,
+    0n,
+    activeRaffleBox.assets[1].tokenId,
+    // plus one token that exists on the Raffle-Details box
+    BigInt(activeRaffleBox.assets[1].amount) + 1n,
+    activeRaffleBox.assets.length > 2 ? activeRaffleBox.assets[2].tokenId : undefined,
+  );
 
   const rewardTx = new TransactionBuilder(chain.height)
     .from([activeRaffleBox, raffleDetailsBox])
@@ -742,14 +743,16 @@ export const executePrizeCreationTx = (
 
   const giftCount = SConstant.from(winnerBox.additionalRegisters.R5!).data as bigint;
 
-  const prizeAmount = BigInt(totalPrize) * BigInt(winnerR4[1]) / 1000n;
+  const prizeAmount = BigInt(totalPrize) * winnerR4[1] / 1000n;
   const prizeBoxTokens: TokenAmount<Amount>[] = [
     winnerBox.assets[0],
     winnerBox.assets[1],
   ];
-  let prizeBoxValue = testUtils.FEE * 2n + BigInt(prizeAmount);
+  let prizeBoxValue = testUtils.FEE * 2n + (totalPrize * (winnerR4[1] / 1000n));
+  let successRaffleOutputValue = BigInt(successRaffleBox.value) - (totalPrize * (winnerR4[1] / 1000n));
   if(successRaffleBox.assets.length > 2) {
     prizeBoxValue = testUtils.FEE * 2n;
+    successRaffleOutputValue = BigInt(successRaffleBox.value);
     prizeBoxTokens.push({
       tokenId: successRaffleBox.assets[2].tokenId,
       amount:  prizeAmount
@@ -766,7 +769,7 @@ export const executePrizeCreationTx = (
 
   winnerIndexList.push(outputWinnerIndex);
   const successRaffleOutputBox = testUtils.createSuccessRaffleBox(
-    BigInt(successRaffleBox.value),
+    successRaffleOutputValue,
     successRaffleBox.assets[0].tokenId,
     outputSeed,
     testUtils.makeHashFromString(winnerIndexList.toString()),
@@ -776,8 +779,13 @@ export const executePrizeCreationTx = (
     BigInt(winnerIndexList.length),
     successRaffleBox.assets[1].tokenId,
     BigInt(successRaffleBox.assets[1].amount),
-    successRaffleBox.assets[2].tokenId,
+    successRaffleBox.assets.length > 2 ? successRaffleBox.assets[2].tokenId : undefined,
   );
+
+  testUtils.prettyPrintJson([
+    [successRaffleBox, winnerBox],
+    [successRaffleOutputBox, prizeBox]
+  ])
 
   const prizeTx = new TransactionBuilder(chain.height)
     .from([successRaffleBox, winnerBox])

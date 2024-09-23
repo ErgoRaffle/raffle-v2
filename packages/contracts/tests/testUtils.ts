@@ -651,7 +651,7 @@ export const createSuccessRaffleBoxMock = (
  * @returns
  */
 export const createSuccessRaffleBox = (
-  ergValue: bigint,
+  boxValue: bigint,
   licenseTokenId: string,
   seed: string,
   selectedWinnersListHash: string,
@@ -663,9 +663,8 @@ export const createSuccessRaffleBox = (
   ticketTokenAmount: bigint = 1n,
   collectingTokenId?: string,
 ) => {
-  return createCustomOutputBox(
-    ergValue,
-    [
+  return new OutputBuilder(boxValue, contractsAddresses['successRaffle'])
+    .addTokens([
       {tokenId: licenseTokenId, amount: 1n},
       {
         tokenId: ticketTokenId,
@@ -676,17 +675,15 @@ export const createSuccessRaffleBox = (
         // One extra collecting token added to this box
         amount: prizeValue
       }] : [])
-    ],
-    contractsAddresses['successRaffle'],
-    {
+    ])
+    .setAdditionalRegisters({
       R4: SColl(SLong, [BigInt(winnersCount), FEE, BigInt(totalPrize)]).toHex(),
       R5: SColl(SColl(SByte), [
         Array.from(Buffer.from(seed)),
         Array.from(Buffer.from(selectedWinnersListHash))
       ]).toHex(),
       R6: SLong(step)
-    }
-  );
+    });
 };
 
 /**
