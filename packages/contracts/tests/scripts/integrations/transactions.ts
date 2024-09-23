@@ -389,7 +389,7 @@ export const executeGiftReturnTx = (
   const giftGiverAddress = Buffer.from(
     SConstant.from(gift.additionalRegisters.R4!).data as Uint8Array,
   ).toString();
-  const redeemedGift = testUtils.createRedeemedGiftOutputBox(
+  const redeemedGift = testUtils.createCustomOutputBox(
     BigInt(gift.value.toString()) - testUtils.FEE,
     gift.assets.slice(1),
     giftGiverAddress,
@@ -530,7 +530,7 @@ export const executeTicketRedeemTx = (
     collectingToken
   );
 
-  const redeemedDonation = testUtils.createRedeemedDonateOutputBox(
+  const redeemedDonation = testUtils.createCustomOutputBox(
     redeemedDonationValue,
     redeemedDonationTokens,
     donatorAddress,
@@ -602,10 +602,8 @@ export const executeReturnRaffleLicenseTx = (
  * @param creatorAddress
  * @param serviceAddress
  * @param implementerAddress
- * @param winnersCount
  * @param totalPrize
  * @param chain
- * @param successRaffleErgoTree
  * @returns 
  */
 export const executeRewardTx = (
@@ -614,27 +612,38 @@ export const executeRewardTx = (
   creatorAddress: string,
   serviceAddress: string,
   implementerAddress: string,
-  winnersCount: number,
   totalPrize: number,
   chain: testUtils.RaffleMockChain,
-  successRaffleErgoTree: string = testUtils.contractsAddresses["successRaffle"],
 ) => {
-  const oracleBox = testUtils.createMockedOracleUTxO(testUtils.FEE, []);
+  const oracleBox = testUtils.createMockedOracleUTxO(testUtils.FEE);
   const r4 = SConstant.from(activeRaffleBox.additionalRegisters.R4!)
     .data as bigint[];
+  const winnersCount = Number(r4[6]);
 
-  const seed = oracleBox.boxId.toString().slice(0, 16)
+  const seed = oracleBox.boxId.toString()
   const winnerIndexList: bigint[] = [];
-  const {winnerIndex, hash} = testUtils.generateNextWinnerIndex(
-    winnerIndexList, 0, seed, winnersCount
-  );
-  winnerIndexList.push(winnerIndex)
+  const hash = testUtils.makeHashFromString(winnerIndexList.toString());
 
   const charityFeePercent = r4[0];
   const serviceFeePercent = r4[1];
   const implementerFeePercent = r4[2];
   const creatorFeePercent = 1000n - charityFeePercent - serviceFeePercent - implementerFeePercent;
-  
+
+  const successRaffleOutputBox = testUtils.createSuccessRaffleBox(
+    BigInt(activeRaffleBox.value) - (3n * testUtils.FEE),
+    activeRaffleBox.assets[0].tokenId,
+    seed,
+    hash,
+    BigInt(winnersCount),
+    BigInt(totalPrize),
+    BigInt(totalPrize) + 1n,
+    0n,
+    activeRaffleBox.assets[1].tokenId,
+    // plus one token that exists on the Raffle-Details box
+    BigInt(activeRaffleBox.assets[1].amount) + 1n,
+    activeRaffleBox.assets[2].tokenId,
+  );
+
   let creatorFundBox = testUtils.createCustomOutputBox(
     (BigInt(activeRaffleBox.value) - testUtils.FEE) * creatorFeePercent / 1000n,
     [],
@@ -725,32 +734,24 @@ export const executeRewardTx = (
 /**
  * Execute prize creation transaction
  * @param successRaffleBox
- * @param activeRaffleBox
  * @param winnerBox
  * @param winnerIndexList
+ * @param outputWinnerIndex
+ * @param outputSeed
  * @param chain
- * @param prizeErgoTree
- * @param successRaffleErgoTree
  * @returns
  */
 export const executePrizeCreationTx = (
-  successRaffleBox: testUtils.OutputBox,
-  activeRaffleBox: testUtils.OutputBox,
+  successRaffleBox: ErgoUnsignedInput,
   winnerBox: testUtils.OutputBox,
+  winnerTicketIndex: number,
   winnerIndexList: bigint[],
+  outputWinnerIndex: bigint,
+  outputSeed: string,
   chain: testUtils.RaffleMockChain,
-  prizeErgoTree: string = testUtils.contractsAddresses['winnerPrize'],
-  successRaffleErgoTree: string = testUtils.contractsAddresses["successRaffle"],
 ) => {
-  const successRaffleOutputBoxTokens = [
-    successRaffleBox.assets[0],
-    successRaffleBox.assets[1],
-  ];
-
   const successRaffleR4 = SConstant.from(successRaffleBox.additionalRegisters.R4!)
     .data as bigint[];
-  const successRaffleR5 = SConstant.from(successRaffleBox.additionalRegisters.R5!)
-    .data as Uint8Array[];
   const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
     .data as bigint[];
 
@@ -771,44 +772,30 @@ export const executePrizeCreationTx = (
       tokenId: successRaffleBox.assets[2].tokenId,
       amount:  prizeAmount
     });
-    if(BigInt(successRaffleBox.assets[2]!.amount) - BigInt(prizeAmount) > 0)
-      successRaffleOutputBoxTokens.push({
-        tokenId: successRaffleBox.assets[2]!.tokenId,
-        amount: BigInt(successRaffleBox.assets[2]!.amount) - BigInt(prizeAmount)
-      });
   }
   const prizeBox = testUtils.createWinnerPrizeOutputBox(
     prizeBoxValue,
-    BigInt(winnerBox.additionalRegisters.R4![0] || 1n),
-    BigInt(winnerR4[0]),
+    winnerR4[0],
+    BigInt(winnerTicketIndex),
     BigInt(giftCount),
     0n,
     prizeBoxTokens,
-    prizeErgoTree,
   );
-  
-  const seed = new TextDecoder().decode(successRaffleR5[0]);
-  const {winnerIndex, hash} = testUtils.generateNextWinnerIndex(
-    winnerIndexList,
-    0,
-    seed,
-    Number(winnersCount)
-  );
-  const collectingTokenId = successRaffleBox.assets.length > 2 ? successRaffleBox.assets[2].tokenId : undefined;
+
+  winnerIndexList.push(outputWinnerIndex);
   const successRaffleOutputBox = testUtils.createSuccessRaffleBox(
-    BigInt(successRaffleBox.value) - (successRaffleBox.assets.length > 2 ? 0n : BigInt(prizeAmount)),
+    BigInt(successRaffleBox.value),
     successRaffleBox.assets[0].tokenId,
-    successRaffleBox.assets[1],
-    seed,
-    hash,
+    outputSeed,
+    testUtils.makeHashFromString(winnerIndexList.toString()),
     BigInt(winnersCount),
     totalPrize,
-    (prizeAmount * BigInt(winnerIndexList.length)),
+    totalPrize + 1n - (prizeAmount * BigInt(winnerIndexList.length)),
     BigInt(winnerIndexList.length),
-    collectingTokenId,
-    successRaffleErgoTree
+    successRaffleBox.assets[1].tokenId,
+    BigInt(successRaffleBox.assets[1].amount),
+    successRaffleBox.assets[2].tokenId,
   );
-  winnerIndexList.push(winnerIndex);
 
   const prizeTx = new TransactionBuilder(chain.height)
     .from([successRaffleBox, winnerBox])
@@ -846,36 +833,29 @@ export const executeGiftUnwrapTx = (
   prizeNumber: bigint,
   chain: testUtils.RaffleMockChain,
 ) => {
+  const winnerPrizeR4 = SConstant.from(winnerPrizeBox.additionalRegisters.R4!).data as bigint[];
+
   const prizeOutputBox = testUtils.createWinnerPrizeOutputBox(
     BigInt(winnerPrizeBox.value),
-    BigInt(winnerPrizeBox.additionalRegisters.R4![1] || 1n),
-    BigInt(winnerPrizeBox.additionalRegisters.R4![0] || 1n),
-    BigInt(winnerPrizeBox.additionalRegisters.R4![2] || 1n),
+    winnerPrizeR4[1],
+    winnerPrizeR4[0],
+    winnerPrizeR4[2],
     prizeNumber,
     winnerPrizeBox.assets,
     winnerPrizeBox.ergoTree,
   );
 
-  const giftOutputBoxTokens = [];
-  let giftOutputBoxValue = testUtils.FEE;
-  if(giftForWinnerBox.assets.length > 1) {
-    giftOutputBoxTokens.push(giftForWinnerBox.assets[1]);
-  } else {
-    giftOutputBoxValue = BigInt(giftForWinnerBox.value) - testUtils.FEE;
-  }
-  const giftSpendingBox = testUtils.createCustomOutputBox(
-    giftOutputBoxValue,
+  const giftOutputBoxTokens = giftForWinnerBox.assets.slice(1, giftForWinnerBox.assets.length);
+
+  const unwrappedGiftBox = testUtils.createCustomOutputBox(
+    BigInt(giftForWinnerBox.value) - testUtils.FEE,
     giftOutputBoxTokens,
-    new TextDecoder().decode(SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array),
-    {
-      R4: winnerPrizeBox.additionalRegisters.R4,
-      R5: SLong(prizeNumber),
-    }
+    Buffer.from(SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array).toString(),
   );
 
   const giftUnwrapTx = new TransactionBuilder(chain.height)
     .from([winnerPrizeBox, giftForWinnerBox])
-    .to([prizeOutputBox, giftSpendingBox])
+    .to([prizeOutputBox, unwrappedGiftBox])
     .burnTokens([giftForWinnerBox.assets[0]])
     .configureSelector((selector) => {
       selector.defineStrategy((inputs) => inputs);
@@ -902,7 +882,7 @@ export const executeFinalPrizeTx = (
   const finalPrizeSpendingBox = testUtils.createCustomOutputBox(
     BigInt(winnerPrizeBox.value) - testUtils.FEE,
     winnerPrizeBox.assets.length > 2 ? [winnerPrizeBox.assets[2]] : [],
-    new TextDecoder().decode(SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array),
+    Buffer.from(SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array).toString(),
   );
 
   const finalPrizeTx = new TransactionBuilder(chain.height)

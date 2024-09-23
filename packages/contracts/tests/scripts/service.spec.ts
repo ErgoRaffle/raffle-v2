@@ -685,21 +685,22 @@ describe('Service', () => {
           undefined,
           constants.TRUE_SCRIPT_HEX,
         );
-      
+
         const successRaffleInputBox = testUtils.createSuccessRaffleBoxMock(
-          activeRaffleBox,
-          60n,
+          BigInt(activeRaffleBox.value),
+          activeRaffleBox.assets[0].tokenId,
           '0123456789012345',
           '',
-          undefined,
-          undefined,
+          60n,
           0n,
-          constants.TRUE_SCRIPT_HEX
+          0n,
+          61n,
+          activeRaffleBox.assets[1].tokenId.toString(),
+          BigInt(activeRaffleBox.assets[1].amount),
+          undefined,
+          constants.TRUE_SCRIPT_HEX,
         );
-        // const successRaffleInputBox = testUtils.createSuccessRaffleBox(
-        //   someoneWallet.address.toString(),
-        //   1n,
-        // );
+
         // Create output boxes
         const serviceOutputBox = testUtils.createServiceOutputBox(
           creator.address.toString(),
