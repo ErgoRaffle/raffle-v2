@@ -657,7 +657,6 @@ export const executeRewardTx = (
     - creatorFundBox.value
     - serviceFeeBox.value
     - implementerFeeBox.value;
-  console.log('???????', activeRaffleBox.value, (4n * testUtils.FEE + creationFee), totalPrize)
   if(activeRaffleBox.assets.length > 2) {
     successRaffleOutputValue = BigInt(activeRaffleBox.value) - (3n * testUtils.FEE);
     creatorFundBox = testUtils.createCustomOutputBox(
