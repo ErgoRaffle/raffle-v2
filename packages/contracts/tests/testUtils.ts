@@ -278,7 +278,7 @@ export const createInactiveRaffleBoxMock = (
 
   return new ErgoUnsignedInput(
     mockUTxO({
-      value: 4n * FEE * winnersCount + creationFee,
+      value: (5n * FEE) + (4n * FEE * winnersCount) + creationFee,
       ergoTree: ergoTree,
       assets: tokens,
       additionalRegisters: {
@@ -426,7 +426,7 @@ export const createActiveRaffleBoxMock = (
   totalSoldTicket: bigint = 0n,
   ergoTree: string = contractsAddresses['activeRaffle'],
 ) => {
-  value = value || FEE * winnersCount + creationFee - FEE;
+  value = value || creationFee + 4n * FEE;
 
   const tokens = [
     {
@@ -540,7 +540,7 @@ export const createActiveRaffleOutputBox = (
   totalSoldTicket: bigint = 0n,
   deadline: bigint = 100n,
 ) => {
-  value = value || creationFee - FEE;
+  value = value || creationFee + 4n * FEE;
 
   const tokens = [
     {
@@ -663,9 +663,8 @@ export const createSuccessRaffleBox = (
   ticketTokenAmount: bigint = 1n,
   collectingTokenId?: string,
 ) => {
-  return createCustomOutputBox(
-    BigInt(boxValue),
-    [
+  return new OutputBuilder(boxValue, contractsAddresses['successRaffle'])
+    .addTokens([
       {tokenId: licenseTokenId, amount: 1n},
       {
         tokenId: ticketTokenId,
@@ -676,17 +675,15 @@ export const createSuccessRaffleBox = (
         // One extra collecting token added to this box
         amount: prizeValue
       }] : [])
-    ],
-    contractsAddresses['successRaffle'],
-    {
+    ])
+    .setAdditionalRegisters({
       R4: SColl(SLong, [BigInt(winnersCount), FEE, BigInt(totalPrize)]).toHex(),
       R5: SColl(SColl(SByte), [
         Array.from(Buffer.from(seed)),
         Array.from(Buffer.from(selectedWinnersListHash))
       ]).toHex(),
       R6: SLong(step)
-    }
-  );
+    });
 };
 
 /**
