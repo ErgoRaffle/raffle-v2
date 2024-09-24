@@ -796,11 +796,6 @@ export const executePrizeCreationTx = (
     successRaffleBox.assets.length > 2 ? successRaffleBox.assets[2].tokenId : undefined,
   );
 
-  testUtils.prettyPrintJson([
-    [successRaffleBox, winnerBox],
-    [successRaffleOutputBox, prizeBox]
-  ])
-
   const prizeTx = new TransactionBuilder(chain.height)
     .from([successRaffleBox, winnerBox])
     .to([successRaffleOutputBox, prizeBox])
