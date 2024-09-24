@@ -59,12 +59,13 @@ const createRaffleTest = () => {
   });
 
   // Created input service-box
+  const creationFee = testUtils.CREATION_FEE  // testUtils.FEE * 6n;
   const serviceBox = testUtils.createServiceBoxMock(
     creator.address.toString(),
     testUtils.LICENSE_TOKEN_COUNT,
     10n,
     10n,
-    testUtils.FEE * 6n,
+    creationFee,
   );
 
   const giftGiverWallets: KeyedMockChainParty[] = [giftgiver1, giftgiver2];
@@ -74,6 +75,7 @@ const createRaffleTest = () => {
 
   return it.extend({
     chain: chain,
+    creationFee: creationFee,
     creator: creator,
     serviceBox: serviceBox,
     implementerAddress: implementer.address.toString(),
@@ -106,6 +108,7 @@ describe('Raffle', () => {
       'should token-goal raffle with 2 winners done successful',
       ({
         chain,
+        creationFee,
         creator,
         serviceBox,
         implementerAddress,
@@ -116,7 +119,6 @@ describe('Raffle', () => {
 
         const winnersCount = 2n;
         const deadline = 2000n;
-        const prizePerWinner = 15n;
         const winnersPercent: bigint[] = [];
         for (let i = 0; i < winnersCount; i++)
           winnersPercent.push(1000n / winnersCount);
@@ -211,7 +213,7 @@ describe('Raffle', () => {
           creator.address.toString(),
           creator.address.toString(),
           implementerAddress,
-          Number(winnersCount * prizePerWinner),
+          creationFee,
           chain
         );
         expect(rewardTx.success).true;
@@ -219,13 +221,13 @@ describe('Raffle', () => {
         // Step 7: Create prize-boxes for winners
         let successRaffleBox = rewardTx.outputs[0];
 
-        let winnerIndexList: bigint[] = []
+        const winnerIndexList: bigint[] = []
         const prizeBoxes = [];
         for(let i = 0; i < 2; i++) {
           const successRaffleR5 = SConstant.from(successRaffleBox.additionalRegisters.R5!)
             .data as Uint8Array[];
-          const { newWinnerIndex, hash } = testUtils.generateNextWinnerIndex(
-            winnerIndexList,
+          const newWinnerIndex = testUtils.generateNextWinnerIndex(
+            [...winnerIndexList],
             step,
             Buffer.from(successRaffleR5[0]).toString(),
             Number(winnersCount)
@@ -238,12 +240,12 @@ describe('Raffle', () => {
               const ticketR5 = SConstant.from(tickets[index].additionalRegisters.R5!).data as bigint[];
               return ticketR5[0] <= i && ticketR5[1] > i;
             })[0]),
-            winnerIndexList,
+            [...winnerIndexList],
             newWinnerIndex,
-            hash,
+            testUtils.makeHashFromString([...winnerIndexList, newWinnerIndex].toString()),
             chain
           );
-          winnerIndexList = prizeCreationTx.winnerIndexList;
+          winnerIndexList.push(newWinnerIndex);
           expect(prizeCreationTx.success).true;
           successRaffleBox = prizeCreationTx.outputs[0];
           prizeBoxes.push(prizeCreationTx.outputs[1]);
@@ -269,7 +271,10 @@ describe('Raffle', () => {
         for(let i = 0; i < prizeBoxes.length; i++) {
           const finalPrizeTx = executeFinalPrizeTx(
             prizeBoxes[i],
-            tickets[i],
+            tickets.filter((value, index) => {
+              const ticketR5 = SConstant.from(tickets[index].additionalRegisters.R5!).data as bigint[];
+              return ticketR5[0] <= 0 && ticketR5[1] > 0;
+            })[0],
             chain
           );
           expect(finalPrizeTx.success).true;

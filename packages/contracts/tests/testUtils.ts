@@ -361,7 +361,7 @@ export const createInactiveRaffleOutputBox = (
       winnersPercents.push(1000n / winnersCount);
 
   return new OutputBuilder(
-    4n * FEE * winnersCount + creationFee,
+    (5n * FEE) + (4n * FEE * winnersCount) + creationFee,
     contractsAddresses['inactiveRaffle'],
   )
     .addTokens(tokens)
@@ -1297,20 +1297,27 @@ export const generateNextWinnerIndex = (
     throw Error('Seed length is too short');
 
   let winnerIndex = -1n;
-  const hash = makeHashFromString(seedString)
 
   seedString = seedString.slice(0, 16);
   const seed = BigInt('0x' + seedString)
   winnerIndex = seed % BigInt(winnersCount - step);
-  winnerIndex += BigInt(winnerIndexList.filter((value, index) => {return index < step}).length) - 1n;
+  let repeatedIndices = BigInt(winnerIndexList.filter((value) => {return value <= step}).length);
+  let oldWinnerIndex = winnerIndex;
+  do {
+    oldWinnerIndex = winnerIndex
+    winnerIndex += repeatedIndices;
+    repeatedIndices = BigInt(winnerIndexList.filter(
+      (value) => {
+        return value > oldWinnerIndex && value <= step + Number(oldWinnerIndex);
+      }
+    ).length);
+  } while(repeatedIndices !== 0n)
+
   // check selected winnerIndex is not duplicated
   while(winnerIndex < 0 || winnerIndexList.indexOf(winnerIndex) >= 0) winnerIndex += 1n;
 
   // prepare next loop seedString
-  return {
-    newWinnerIndex: winnerIndex,
-    hash: hash
-  };
+  return winnerIndex;
 }
 
 /**
