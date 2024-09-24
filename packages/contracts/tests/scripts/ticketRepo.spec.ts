@@ -30,7 +30,7 @@ function createInactiveRaffleTest(winnersCount: number = 1) {
     undefined,
     10n,
     undefined,
-    1_000_000_000n,
+    testUtils.CREATION_FEE,
     undefined,
     0n,
     constants.TRUE_SCRIPT_HEX,
@@ -260,6 +260,16 @@ describe('ticketRepo', () => {
           tokenId: testUtils.TICKET_TOKEN_ID,
           amount: 1n,
         });
+
+        testUtils.prettyPrintJson([
+          [inactiveRaffleInputBox, ticketRepoInputBox],
+          [
+            activeRaffleOutputBox,
+            raffleDetailsOutputBox,
+            giftTokenRepoOutputBox,
+            ...winnersOutputBoxes,
+          ]
+        ])
 
         const transaction = new TransactionBuilder(1000)
           .from([inactiveRaffleInputBox, ticketRepoInputBox])
