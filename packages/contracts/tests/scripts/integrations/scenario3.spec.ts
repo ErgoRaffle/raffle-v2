@@ -169,7 +169,7 @@ describe('Raffle', () => {
 
         // Step 4: Add two gifts to one of the winners
         let winner1 = winnerBoxes[0];
-        const winner1Gifts = [];
+        const winnersGifts = [];
         for (let i = 0; i < 2; i++) {
           const addGiftTx = executeAddGiftTx(
             winner1,
@@ -178,7 +178,7 @@ describe('Raffle', () => {
           );
           expect(addGiftTx.success).true;
           winner1 = addGiftTx.outputs[0];
-          winner1Gifts.push(addGiftTx.outputs[1]);
+          winnersGifts.push(addGiftTx.outputs[1]);
         }
 
         // Step 5: Donate fifth by five different donators
@@ -233,10 +233,14 @@ describe('Raffle', () => {
             Number(winnersCount)
           )
 
+          const winnerBoxR4 = SConstant.from(
+            winnerBoxes[Number(newWinnerIndex)].additionalRegisters.R4!
+          ).data as bigint[]
+
           const prizeCreationTx = executePrizeCreationTx(
             successRaffleBox,
             winnerBoxes[i],
-            tickets.indexOf(tickets.selectByWinnerIndex(BigInt(i))),
+            tickets.indexOf(tickets.selectByWinnerIndex(winnerBoxR4[0])),
             [...winnerIndexList],
             newWinnerIndex,
             testUtils.makeHashFromString([...winnerIndexList, newWinnerIndex].toString()),
@@ -249,11 +253,14 @@ describe('Raffle', () => {
         }
 
         // Step 8: Unwrap two gifts of the first winner
-        for(let i = 0; i < winner1Gifts.length; i++) {
+        for(let i = 0; i < winnersGifts.length; i++) {
+          const winnerIndex = SConstant.from(
+            winnersGifts[i].additionalRegisters.R5!
+          ).data as bigint;
           const giftUnwrappedTx = executeGiftUnwrapTx(
             prizeBoxes[0],
-            winner1Gifts[i],
-            tickets.selectByWinnerIndex(0n),
+            winnersGifts[i],
+            tickets.selectByWinnerIndex(winnerIndex),
             BigInt(i + 1),
             chain
           );
@@ -263,9 +270,12 @@ describe('Raffle', () => {
 
         // Step 9: Deposit winners final prize
         for(let i = 0; i < prizeBoxes.length; i++) {
+          const prizeBoxR4 = SConstant.from(
+            prizeBoxes[i].additionalRegisters.R4!
+          ).data as bigint[]
           const finalPrizeTx = executeFinalPrizeTx(
             prizeBoxes[i],
-            tickets.selectByWinnerIndex(0n),
+            tickets.selectByWinnerIndex(prizeBoxR4[0]),
             chain
           );
           expect(finalPrizeTx.success).true;

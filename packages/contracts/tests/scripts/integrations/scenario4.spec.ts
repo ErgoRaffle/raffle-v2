@@ -170,7 +170,7 @@ describe('Raffle', () => {
 
         // Step 4: Add one gift to one of the winner
         let winner1 = winnerBoxes[0];
-        const winner1Gifts = [];
+        const winnersGifts = [];
         const addGiftTx = executeAddGiftTx(
           winner1,
           (giftGiverWallets as KeyedMockChainParty[])[0],
@@ -178,7 +178,7 @@ describe('Raffle', () => {
         );
         expect(addGiftTx.success).true;
         winner1 = addGiftTx.outputs[0];
-        winner1Gifts.push(addGiftTx.outputs[1]);
+        winnersGifts.push(addGiftTx.outputs[1]);
 
         // Step 5: Donate fifth by five different donators
         let activeRaffle = mergeTx.outputs[0];
@@ -226,10 +226,15 @@ describe('Raffle', () => {
           Buffer.from(successRaffleR5[0]).toString(),
           Number(winnersCount)
         )
+
+        const winnerBoxR4 = SConstant.from(
+          winnerBoxes[Number(newWinnerIndex)].additionalRegisters.R4!
+        ).data as bigint[]
+
         const prizeCreationTx = executePrizeCreationTx(
           successRaffleBox,
           winnerBoxes[0],
-          tickets.indexOf(tickets.selectByWinnerIndex(BigInt(0))),
+          tickets.indexOf(tickets.selectByWinnerIndex(winnerBoxR4[0])),
           [],
           newWinnerIndex,
           testUtils.makeHashFromString([...winnerIndexList, newWinnerIndex].toString()),
@@ -240,11 +245,14 @@ describe('Raffle', () => {
         prizeBoxes.push(prizeCreationTx.outputs[1]);
 
         // Step 8: spending gifts
-        for(let i = 0; i < winner1Gifts.length; i++) {
+        for(let i = 0; i < winnersGifts.length; i++) {
+          const winnerIndex = SConstant.from(
+            winnersGifts[i].additionalRegisters.R5!
+          ).data as bigint;
           const giftUnwrappedTx = executeGiftUnwrapTx(
             prizeBoxes[i],
-            winner1Gifts[i],
-            tickets[i],
+            winnersGifts[i],
+            tickets.selectByWinnerIndex(winnerIndex),
             BigInt(i + 1),
             chain
           );
@@ -254,9 +262,12 @@ describe('Raffle', () => {
 
         // Step 9: spending prizes
         for(let i = 0; i < prizeBoxes.length; i++) {
+          const prizeBoxR4 = SConstant.from(
+            prizeBoxes[i].additionalRegisters.R4!
+          ).data as bigint[]
           const finalPrizeTx = executeFinalPrizeTx(
             prizeBoxes[i],
-            tickets[i],
+            tickets.selectByWinnerIndex(prizeBoxR4[0]),
             chain
           );
           expect(finalPrizeTx.success).true;
