@@ -21,7 +21,7 @@ import {
   BLOCKCHAIN_PARAMETERS,
 } from '@fleet-sdk/mock-chain';
 import { first, ensureDefaults, Network } from '@fleet-sdk/common';
-import { SColl, SByte, SLong, SInt, decode } from '@fleet-sdk/serializer';
+import { SColl, SByte, SLong, SInt, SConstant, decode } from '@fleet-sdk/serializer';
 import { blake2b256, bigintBE, hex, utf8 } from '@fleet-sdk/crypto';
 import type { ErgoUnsignedTransaction } from '@fleet-sdk/core';
 import type { ErgoHDKey } from '@fleet-sdk/wallet';
@@ -672,7 +672,6 @@ export const createSuccessRaffleBox = (
       },
       ...(collectingTokenId !== undefined ? [{
         tokenId: collectingTokenId,
-        // One extra collecting token added to this box
         amount: prizeValue
       }] : [])
     ])
@@ -717,18 +716,18 @@ export const createWinnerPrizeOutputBox = (
 /**
  * Create mocked oracle-box
  * @param value
- * @param nft_token_id
+ * @param nftTokenId
  * @returns
  */
 export const createMockedOracleUTxO = (
   value: bigint,
-  nft_token_id: string = ORACLE_BOX_MOCKED_NTF_ID,
+  nftTokenId: string = ORACLE_BOX_MOCKED_NTF_ID,
 ) => {
   const oracleUTxO = new ErgoUnsignedInput(mockUTxO({
     value: value,
     ergoTree: constants.TRUE_SCRIPT_HEX,
     assets: [{
-      tokenId: nft_token_id,
+      tokenId: nftTokenId,
       amount: 1n
     }],
     creationHeight: 5,
@@ -1298,23 +1297,18 @@ export const generateNextWinnerIndex = (
   seedString = seedString.slice(0, 16);
   const seed = BigInt('0x' + seedString)
   winnerIndex = seed % BigInt(winnersCount - step);
-  let repeatedIndices = BigInt(winnerIndexList.filter((value) => {return value <= step}).length);
-  let oldWinnerIndex = winnerIndex;
+
+  let shift = 0n, oldShift = 0n;
   do {
-    oldWinnerIndex = winnerIndex
-    winnerIndex += repeatedIndices;
-    repeatedIndices = BigInt(winnerIndexList.filter(
+    oldShift = shift
+    shift = BigInt(winnerIndexList.filter(
       (value) => {
-        return value > oldWinnerIndex && value <= step + Number(oldWinnerIndex);
+        return value <= winnerIndex + shift;
       }
     ).length);
-  } while(repeatedIndices !== 0n)
+  } while(oldShift !== shift)
 
-  // check selected winnerIndex is not duplicated
-  while(winnerIndex < 0 || winnerIndexList.indexOf(winnerIndex) >= 0) winnerIndex += 1n;
-
-  // prepare next loop seedString
-  return winnerIndex;
+  return winnerIndex + shift;
 }
 
 /**
@@ -1329,6 +1323,18 @@ export const makeHashFromString = (
     SByte,
     Array.from(blake2b256(Buffer.from(content, 'hex')))
   ).toHex()
+}
+
+/**
+ * customized array class for holding ticket-boxes by special actions
+ */
+export class Tickets extends Array {
+  public selectByWinnerIndex = (boxIndex: bigint) => {
+    return this.filter((value, index) => {
+      const ticketR5 = SConstant.from(this[index].additionalRegisters.R5!).data as bigint[];
+      return ticketR5[0] <= boxIndex && ticketR5[1] > boxIndex;
+    })[0];
+  }
 }
 
 /**
