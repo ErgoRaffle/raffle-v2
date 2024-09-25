@@ -185,7 +185,7 @@ describe('Raffle', () => {
         let activeRaffle = mergeTx.outputs[0];
         const raffleDetails = mergeTx.outputs[1];
 
-        const tickets: testUtils.OutputBox[] = [];
+        const tickets = new testUtils.Tickets();
         for (let donateCount = 0; donateCount < 5; donateCount++) {
           const donateTx = executeDonateTx(
             activeRaffle,
@@ -236,10 +236,7 @@ describe('Raffle', () => {
           const prizeCreationTx = executePrizeCreationTx(
             successRaffleBox,
             winnerBoxes[i],
-            tickets.indexOf(tickets.filter((value, index) => {
-              const ticketR5 = SConstant.from(tickets[index].additionalRegisters.R5!).data as bigint[];
-              return ticketR5[0] <= i && ticketR5[1] > i;
-            })[0]),
+            tickets.indexOf(tickets.selectByWinnerIndex(BigInt(i))),
             [...winnerIndexList],
             newWinnerIndex,
             testUtils.makeHashFromString([...winnerIndexList, newWinnerIndex].toString()),
@@ -256,10 +253,7 @@ describe('Raffle', () => {
           const giftUnwrappedTx = executeGiftUnwrapTx(
             prizeBoxes[0],
             winner1Gifts[i],
-            tickets.filter((value, index) => {
-              const ticketR5 = SConstant.from(tickets[index].additionalRegisters.R5!).data as bigint[];
-              return ticketR5[0] <= 0 && ticketR5[1] > 0;
-            })[0],
+            tickets.selectByWinnerIndex(0n),
             BigInt(i + 1),
             chain
           );
@@ -271,10 +265,7 @@ describe('Raffle', () => {
         for(let i = 0; i < prizeBoxes.length; i++) {
           const finalPrizeTx = executeFinalPrizeTx(
             prizeBoxes[i],
-            tickets.filter((value, index) => {
-              const ticketR5 = SConstant.from(tickets[index].additionalRegisters.R5!).data as bigint[];
-              return ticketR5[0] <= 0 && ticketR5[1] > 0;
-            })[0],
+            tickets.selectByWinnerIndex(0n),
             chain
           );
           expect(finalPrizeTx.success).true;

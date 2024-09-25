@@ -618,15 +618,15 @@ export const executeRewardTx = (
   const oracleBox = testUtils.createMockedOracleUTxO(testUtils.FEE);
   const r4 = SConstant.from(activeRaffleBox.additionalRegisters.R4!)
   .data as bigint[];
+  const r6 = SConstant.from(activeRaffleBox.additionalRegisters.R6!)
+  .data as bigint[];
   const winnersCount = Number(r4[6]);
+
+  const totalSoldTickets = r6[0];
+  const ticketPrice = r4[3];
   
-  let totalPrize: bigint = (
-    BigInt(activeRaffleBox.value) - (5n * testUtils.FEE + creationFee)
-  ) * (1000n - r4[0] - r4[1] - r4[2]) / 1000n;
-  if(activeRaffleBox.assets.length > 2)
-    totalPrize = (
-      (BigInt(activeRaffleBox.assets[2].amount) - 1n) * (1000n - r4[0] - r4[1] - r4[2]) / 1000n
-    );
+  const totalRaised = totalSoldTickets * ticketPrice;
+  const totalPrize = totalRaised * (1000n - r4[0] - r4[1] - r4[2]) / 1000n;
 
   const seed = oracleBox.boxId.toString()
   const winnerIndexList: bigint[] = [];
@@ -742,7 +742,7 @@ export const executePrizeCreationTx = (
   chain: testUtils.RaffleMockChain,
 ) => {
   successRaffleBox.setContextExtension({
-    0: SColl(SLong, [...winnerIndexList, outputWinnerIndex]),
+    0: SColl(SLong, [...winnerIndexList]),
     1: SLong(BigInt(winnerTicketIndex))
   });
 
@@ -812,7 +812,6 @@ export const executePrizeCreationTx = (
   return {
     success: result.success,
     outputs: unsignedOutputs,
-    winnerIndexList: winnerIndexList,
   }
 }
 

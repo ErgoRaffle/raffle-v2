@@ -673,30 +673,17 @@ describe('Service', () => {
           creator.address.toString(),
           999_999_999n,
         );
-        const activeRaffleBox = testUtils.createActiveRaffleBoxMock(
-          creator.address.toString(),
-          creator.address.toString(),
-          1n,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          constants.TRUE_SCRIPT_HEX,
-        );
-
         const successRaffleInputBox = testUtils.createSuccessRaffleBoxMock(
-          BigInt(activeRaffleBox.value),
-          activeRaffleBox.assets[0].tokenId,
+          testUtils.CREATION_FEE + 4n * testUtils.FEE,
+          testUtils.LICENSE_TOKEN_ID,
           '0123456789012345',
           '',
           60n,
           0n,
           0n,
           61n,
-          activeRaffleBox.assets[1].tokenId.toString(),
-          BigInt(activeRaffleBox.assets[1].amount),
+          testUtils.TICKET_TOKEN_ID,
+          999_999_998n,
           undefined,
           constants.TRUE_SCRIPT_HEX,
         );

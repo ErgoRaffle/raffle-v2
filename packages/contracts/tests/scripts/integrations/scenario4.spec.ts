@@ -182,7 +182,7 @@ describe('Raffle', () => {
 
         // Step 5: Donate fifth by five different donators
         let activeRaffle = mergeTx.outputs[0];
-        const tickets: testUtils.OutputBox[] = [];
+        const tickets = new testUtils.Tickets();
         for (let donateCount = 0; donateCount < 5; donateCount++) {
           const donateTx = executeDonateTx(
             activeRaffle,
@@ -229,10 +229,7 @@ describe('Raffle', () => {
         const prizeCreationTx = executePrizeCreationTx(
           successRaffleBox,
           winnerBoxes[0],
-          tickets.indexOf(tickets.filter((value, index) => {
-            const ticketR5 = SConstant.from(tickets[index].additionalRegisters.R5!).data as bigint[];
-            return ticketR5[0] <= 0 && ticketR5[1] > 0;
-          })[0]),
+          tickets.indexOf(tickets.selectByWinnerIndex(BigInt(0))),
           [],
           newWinnerIndex,
           testUtils.makeHashFromString([...winnerIndexList, newWinnerIndex].toString()),
