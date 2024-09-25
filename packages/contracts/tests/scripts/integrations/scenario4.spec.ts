@@ -115,6 +115,7 @@ describe('Raffle', () => {
         donatorWallets,
       }) => {
         chain.setTip(100);
+
         const winnersCount = 1n;
         const deadline = 2000n;
         const winnersPercent: bigint[] = [];
@@ -131,7 +132,7 @@ describe('Raffle', () => {
           winnersPercent,
           chain,
           undefined,
-          10_000_000n
+          50_000_000n
         );
         expect(createRaffleTx.success).true;
 
@@ -241,7 +242,9 @@ describe('Raffle', () => {
           chain
         );
         expect(prizeCreationTx.success).true;
+        console.log('1: ', successRaffleBox.value);
         successRaffleBox = prizeCreationTx.outputs[0];
+        console.log('2: ', successRaffleBox.value);
         prizeBoxes.push(prizeCreationTx.outputs[1]);
 
         // Step 8: spending gifts
