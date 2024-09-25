@@ -132,7 +132,7 @@ describe('Raffle', () => {
           winnersPercent,
           chain,
           undefined,
-          50_000_000n
+          10_000_000n
         );
         expect(createRaffleTx.success).true;
 

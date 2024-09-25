@@ -626,7 +626,9 @@ export const executeRewardTx = (
   const ticketPrice = r4[3];
   
   const totalRaised = totalSoldTickets * ticketPrice;
-  const totalPrize = totalRaised * (1000n - r4[0] - r4[1] - r4[2]) / 1000n;
+  let totalPrize = totalRaised * (1000n - r4[0] - r4[1] - r4[2]) / 1000n;
+  if(activeRaffleBox.assets.length <= 2)
+    totalPrize -= testUtils.FEE;
 
   const seed = oracleBox.boxId.toString()
   const winnerIndexList: bigint[] = [];
