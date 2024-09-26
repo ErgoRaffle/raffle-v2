@@ -739,7 +739,6 @@ export const executePrizeCreationTx = (
   winnerBox: testUtils.OutputBox,
   winnerTicketIndex: number,
   winnerIndexList: bigint[],
-  outputWinnerIndex: bigint,
   outputSeed: string,
   chain: testUtils.RaffleMockChain,
 ) => {
@@ -783,7 +782,7 @@ export const executePrizeCreationTx = (
     prizeBoxTokens,
   );
 
-  winnerIndexList.push(outputWinnerIndex);
+  winnerIndexList.push(BigInt(winnerTicketIndex));
   const successRaffleOutputBox = testUtils.createSuccessRaffleBox(
     successRaffleOutputValue,
     successRaffleBox.assets[0].tokenId,

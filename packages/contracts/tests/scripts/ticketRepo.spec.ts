@@ -261,16 +261,6 @@ describe('ticketRepo', () => {
           amount: 1n,
         });
 
-        testUtils.prettyPrintJson([
-          [inactiveRaffleInputBox, ticketRepoInputBox],
-          [
-            activeRaffleOutputBox,
-            raffleDetailsOutputBox,
-            giftTokenRepoOutputBox,
-            ...winnersOutputBoxes,
-          ]
-        ])
-
         const transaction = new TransactionBuilder(1000)
           .from([inactiveRaffleInputBox, ticketRepoInputBox])
           .to([
