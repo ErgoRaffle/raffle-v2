@@ -226,27 +226,22 @@ describe('Raffle', () => {
         for(let i = 0; i < 2; i++) {
           const successRaffleR5 = SConstant.from(successRaffleBox.additionalRegisters.R5!)
             .data as Uint8Array[];
-          const newWinnerIndex = testUtils.generateNextWinnerIndex(
+          const newWinnerTicketIndex = testUtils.generateNextWinnerIndex(
             [...winnerIndexList],
             step,
             Buffer.from(successRaffleR5[0]).toString(),
             Number(winnersCount)
           )
 
-          const winnerBoxR4 = SConstant.from(
-            winnerBoxes[Number(newWinnerIndex)].additionalRegisters.R4!
-          ).data as bigint[]
-
           const prizeCreationTx = executePrizeCreationTx(
             successRaffleBox,
             winnerBoxes[i],
-            tickets.indexOf(tickets.selectByWinnerIndex(winnerBoxR4[0])),
+            Number(newWinnerTicketIndex),
             [...winnerIndexList],
-            newWinnerIndex,
-            testUtils.makeHashFromString([...winnerIndexList, newWinnerIndex].toString()),
+            testUtils.makeHashFromString([...winnerIndexList, newWinnerTicketIndex].toString()),
             chain
           );
-          winnerIndexList.push(newWinnerIndex);
+          winnerIndexList.push(newWinnerTicketIndex);
           expect(prizeCreationTx.success).true;
           successRaffleBox = prizeCreationTx.outputs[0];
           prizeBoxes.push(prizeCreationTx.outputs[1]);
@@ -254,13 +249,13 @@ describe('Raffle', () => {
 
         // Step 8: Unwrap two gifts of the first winner
         for(let i = 0; i < winnersGifts.length; i++) {
-          const winnerIndex = SConstant.from(
-            winnersGifts[i].additionalRegisters.R5!
-          ).data as bigint;
+          const prizeBoxR4 = SConstant.from(
+            prizeBoxes[0].additionalRegisters.R4!
+          ).data as bigint[];
           const giftUnwrappedTx = executeGiftUnwrapTx(
             prizeBoxes[0],
             winnersGifts[i],
-            tickets.selectByWinnerIndex(winnerIndex),
+            tickets.selectByWinnerIndex(prizeBoxR4[0]),
             BigInt(i + 1),
             chain
           );
