@@ -6,14 +6,14 @@ import * as testUtils from '../../testUtils';
 
 /**
  * Create a new raffle using the specified parameters
- * @param creator: raffle creator wallet
- * @param serviceBox: current service box
+ * @param creator : raffle creator wallet
+ * @param serviceBox : current service box
  * @param feeBoxes
  * @param implementerAddress
  * @param winnersCount
  * @param deadline
  * @param winnersPercent
- * @param chain: mocked chain
+ * @param chain : mocked chain
  * @param collectingTokenId
  * @returns the create raffle signed transaction and success status
  */
@@ -89,7 +89,7 @@ export const executeCreateRaffleTx = (
  * @param ticketRepo
  * @param winnersCount
  * @param deadline
- * @param chain: mocked chain
+ * @param chain : mocked chain
  */
 export const executeMergeTx = (
   inactiveRaffle: testUtils.OutputBox,
@@ -162,7 +162,7 @@ export const executeMergeTx = (
  * @param giftTokenRepo
  * @param step
  * @param winnersCount
- * @param chain: mocked chain
+ * @param chain : mocked chain
  */
 export const executeGiftTokenReceiptTx = (
   winner: testUtils.OutputBox,
@@ -209,8 +209,8 @@ export const executeGiftTokenReceiptTx = (
 /**
  * Add gift to a selected winner
  * @param winner
- * @param giftGiver: gift giver wallet
- * @param chain: mocked chain
+ * @param giftGiver : gift giver wallet
+ * @param chain : mocked chain
  */
 export const executeAddGiftTx = (
   winner: testUtils.OutputBox,
@@ -253,9 +253,9 @@ export const executeAddGiftTx = (
 /**
  * Donate to raffle and receive ticket with the new range
  * @param activeRaffle
- * @param donator: donator wallet
+ * @param donator : donator wallet
  * @param ticketCount
- * @param chain: mocked chain
+ * @param chain : mocked chain
  */
 export const executeDonateTx = (
   activeRaffle: testUtils.OutputBox,
@@ -321,7 +321,7 @@ export const executeDonateTx = (
  * Change raffle status from active to failed after deadline
  * @param activeRaffle
  * @param raffleDetails
- * @param chain: mocked chain
+ * @param chain : mocked chain
  */
 export const executeFailureTx = (
   activeRaffle: testUtils.OutputBox,
@@ -364,7 +364,7 @@ export const executeFailureTx = (
  * @param giftRedeem
  * @param winner
  * @param gift
- * @param chain: mocked chain
+ * @param chain : mocked chain
  */
 export const executeGiftReturnTx = (
   giftRedeem: testUtils.OutputBox,
@@ -411,7 +411,7 @@ export const executeGiftReturnTx = (
  * Remove the winner box after returning all related gifts
  * @param giftRedeem
  * @param winner
- * @param chain: mocked chain
+ * @param chain : mocked chain
  */
 export const executeWinnerRemovalTx = (
   giftRedeem: testUtils.OutputBox,
@@ -448,7 +448,7 @@ export const executeWinnerRemovalTx = (
 /**
  * Forward to next step to redeem the tickets
  * @param giftRedeem
- * @param chain: mocked chain
+ * @param chain : mocked chain
  * @returns
  */
 export const executeForwardToTicketRedeemTx = (
@@ -485,7 +485,7 @@ export const executeForwardToTicketRedeemTx = (
  * Return ticket tokens and redeem donation to the donator
  * @param ticketRedeem
  * @param ticket
- * @param chain: mocked chain
+ * @param chain : mocked chain
  */
 export const executeTicketRedeemTx = (
   ticketRedeem: testUtils.OutputBox,
@@ -552,7 +552,7 @@ export const executeTicketRedeemTx = (
  * Return raffle license to the service box after raffle completion
  * @param endedRaffle
  * @param service
- * @param chain: mocked chain
+ * @param chain : mocked chain
  */
 export const executeReturnRaffleLicenseTx = (
   endedRaffle: testUtils.OutputBox,
@@ -573,18 +573,24 @@ export const executeReturnRaffleLicenseTx = (
     implementerFeePercent,
     serviceR4[2],
   );
-  const serviceFee = testUtils.createCustomOutputBox(
-    BigInt(endedRaffle.value) - testUtils.FEE,
-    [],
-    serviceFeeAddress,
-  );
+  
+  const outputs = [serviceOutputBox];
+  const serviceValue = BigInt(endedRaffle.value) - testUtils.FEE;
+  if(serviceValue > 0) {
+    const serviceFee = testUtils.createCustomOutputBox(
+      serviceValue,
+      [],
+      serviceFeeAddress,
+    );
+    if(endedRaffle.assets.length > 2)
+      serviceFee.addTokens([endedRaffle.assets[2]]);
 
-  if(endedRaffle.assets.length > 2)
-    serviceFee.addTokens([endedRaffle.assets[2]]);
+    outputs.push(serviceFee)
+  }
 
   const ticketRedeemTx = new TransactionBuilder(chain.height)
     .from([service, endedRaffle])
-    .to([serviceOutputBox, serviceFee])
+    .to(outputs)
     .burnTokens(endedRaffle.assets[1])
     .configureSelector((selector) => {
       selector.defineStrategy((inputs) => inputs);
@@ -624,7 +630,7 @@ export const executeRewardTx = (
 
   const totalSoldTickets = r6[0];
   const ticketPrice = r4[3];
-  
+
   const totalRaised = totalSoldTickets * ticketPrice;
   let totalPrize = totalRaised * (1000n - r4[0] - r4[1] - r4[2]) / 1000n;
   if(activeRaffleBox.assets.length <= 2)
@@ -638,27 +644,29 @@ export const executeRewardTx = (
   const serviceFeePercent = r4[1];
   const implementerFeePercent = r4[2];
 
-  let creatorFundBox = testUtils.createCustomOutputBox(
-    totalPrize * charityFeePercent / 1000n
-      + (4n * testUtils.FEE + creationFee),
-    [],
-    creatorAddress
-  );
   let serviceFeeBox = testUtils.createCustomOutputBox(
-    totalPrize * serviceFeePercent / 1000n,
+    totalRaised * serviceFeePercent / 1000n,
     [],
     serviceAddress
   );
   let implementerFeeBox = testUtils.createCustomOutputBox(
-    totalPrize * implementerFeePercent / 1000n,
+    totalRaised * implementerFeePercent / 1000n,
     [],
     implementerAddress
   );
-
   let successRaffleOutputValue = BigInt(activeRaffleBox.value)
-    - creatorFundBox.value
-    - serviceFeeBox.value
-    - implementerFeeBox.value;
+    - (totalRaised - totalPrize)
+    - (4n * testUtils.FEE + creationFee)
+    + testUtils.FEE;
+  
+
+  let creatorFundBox = testUtils.createCustomOutputBox(
+    BigInt(activeRaffleBox.value) - successRaffleOutputValue
+    - BigInt(serviceFeeBox.value) - BigInt(implementerFeeBox.value),
+    [],
+    creatorAddress
+  );
+
   if(activeRaffleBox.assets.length > 2) {
     successRaffleOutputValue = BigInt(activeRaffleBox.value) - (3n * testUtils.FEE);
     creatorFundBox = testUtils.createCustomOutputBox(
@@ -728,8 +736,8 @@ export const executeRewardTx = (
  * Execute prize creation transaction
  * @param successRaffleBox
  * @param winnerBox
+ * @param winnerTicketIndex
  * @param winnerIndexList
- * @param outputWinnerIndex
  * @param outputSeed
  * @param chain
  * @returns
@@ -869,7 +877,6 @@ export const executeGiftUnwrapTx = (
  * Execute final prize transaction
  * @param winnerPrizeBox
  * @param ticketBox
- * @param prizeNumber
  * @param chain
  * @returns
  */
