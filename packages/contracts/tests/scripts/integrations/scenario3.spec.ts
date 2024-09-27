@@ -163,6 +163,7 @@ describe('Raffle', () => {
             chain,
           );
           step++;
+          expect(giftTokenReceiptTx.success).true;
           winnerBoxes.push(giftTokenReceiptTx.outputs[0]);
           giftTokenRepo = giftTokenReceiptTx.outputs[1];
         }
