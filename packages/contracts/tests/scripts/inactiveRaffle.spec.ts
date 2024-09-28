@@ -1,9 +1,9 @@
 import { it, describe, expect } from 'vitest';
-import { compile } from '@fleet-sdk/compiler';
 import { MockChain, mockUTxO } from '@fleet-sdk/mock-chain';
 import { SColl, SInt, SLong, SByte } from '@fleet-sdk/serializer';
 import { TransactionBuilder, OutputBuilder } from '@fleet-sdk/core';
 
+import * as constants from '../../constants';
 import * as testUtils from '../testUtils';
 import {
   X_TOKEN_ID,
@@ -27,7 +27,7 @@ function createInactiveRaffleTest(winnersCount: number = 1) {
   });
 
   const ticketRepoInputBox = testUtils.createTicketRepoBoxMock(
-    compile('{sigmaProp(true);}').toHex().toString(),
+    constants.TRUE_SCRIPT_HEX,
   );
   const inactiveRaffleInputBox = testUtils.createInactiveRaffleBoxMock(
     creator.address.toString(),

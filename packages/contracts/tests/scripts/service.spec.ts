@@ -11,6 +11,7 @@ import {
   CREATOR_DEFAULT_BALANCE,
   UNKNOWN_WALLET_DEFAULT_BALANCE,
 } from '../testUtils';
+import * as constants from '../../constants';
 
 /*
  * create fixtures that contains below steps data:
@@ -672,10 +673,21 @@ describe('Service', () => {
           creator.address.toString(),
           999_999_999n,
         );
-        const successRaffleInputBox = testUtils.createSuccessRaffleBox(
-          someoneWallet.address.toString(),
-          1n,
+        const successRaffleInputBox = testUtils.createSuccessRaffleBoxMock(
+          testUtils.CREATION_FEE + 4n * testUtils.FEE,
+          testUtils.LICENSE_TOKEN_ID,
+          '0123456789012345',
+          '',
+          60n,
+          0n,
+          0n,
+          61n,
+          testUtils.TICKET_TOKEN_ID,
+          999_999_998n,
+          undefined,
+          constants.TRUE_SCRIPT_HEX,
         );
+
         // Create output boxes
         const serviceOutputBox = testUtils.createServiceOutputBox(
           creator.address.toString(),
