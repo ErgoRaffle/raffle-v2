@@ -199,7 +199,11 @@ describe('Raffle', () => {
 
         // Step 8: Winner removal transaction
         for (const winnerBox of [winner1, winnerBoxes[1]]) {
-          const winnerRemovalTx = executeWinnerRemovalTx(giftRedeem, winnerBox, chain);
+          const winnerRemovalTx = executeWinnerRemovalTx(
+            giftRedeem,
+            winnerBox,
+            chain,
+          );
           expect(winnerRemovalTx.success).true;
           giftRedeem = winnerRemovalTx.outputs[0];
         }
@@ -214,7 +218,11 @@ describe('Raffle', () => {
         // Step 10: Redeem two tickets to donators
         let ticketRedeem = forwardToTicketRedeemTx.outputs[0];
         for (const ticket of tickets) {
-          const ticketRedeemTx = executeTicketRedeemTx(ticketRedeem, ticket, chain);
+          const ticketRedeemTx = executeTicketRedeemTx(
+            ticketRedeem,
+            ticket,
+            chain,
+          );
           ticketRedeem = ticketRedeemTx.outputs[0];
           expect(ticketRedeemTx.success).true;
         }

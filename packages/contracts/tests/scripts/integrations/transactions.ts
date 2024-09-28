@@ -607,7 +607,7 @@ export const executeReturnRaffleLicenseTx = (
     // TODO must fix this problem
     // local/raffle-2/22
     .burnTokens(
-      serviceValue === 0n
+      serviceValue === 0n && endedRaffle.assets.length > 2
         ? [endedRaffle.assets[1], endedRaffle.assets[2]]
         : endedRaffle.assets[1],
     )

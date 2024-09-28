@@ -1,5 +1,5 @@
 import { it, describe, expect } from 'vitest';
-import { SConstant } from '@fleet-sdk/serializer'
+import { SConstant } from '@fleet-sdk/serializer';
 
 import * as testUtils from '../../testUtils';
 import {
@@ -12,7 +12,7 @@ import {
   executeRewardTx,
   executeGiftUnwrapTx,
   executeFinalPrizeTx,
-  executeReturnRaffleLicenseTx
+  executeReturnRaffleLicenseTx,
 } from './transactions';
 import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
 
@@ -26,18 +26,25 @@ import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
 const createRaffleTest = () => {
   const chain = new testUtils.RaffleMockChain({ height: 1000 });
   const {
-    creator, implementer, giftgiver1, giftgiver2,
-    donator1, donator2, donator3, donator4, donator5
+    creator,
+    implementer,
+    giftgiver1,
+    giftgiver2,
+    donator1,
+    donator2,
+    donator3,
+    donator4,
+    donator5,
   } = testUtils.createPartners(chain, {
-      Creator: testUtils.CREATOR_DEFAULT_BALANCE,
-      implementer: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
-      giftGiver1: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
-      giftGiver2: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
-      donator1: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
-      donator2: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
-      donator3: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
-      donator4: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
-      donator5: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    Creator: testUtils.CREATOR_DEFAULT_BALANCE,
+    implementer: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    giftGiver1: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    giftGiver2: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    donator1: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    donator2: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    donator3: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    donator4: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    donator5: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
   });
   creator.addBalance({
     tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000_000n }],
@@ -70,7 +77,11 @@ const createRaffleTest = () => {
 
   const giftGiverWallets: KeyedMockChainParty[] = [giftgiver1, giftgiver2];
   const donatorWallets: KeyedMockChainParty[] = [
-    donator1, donator2, donator3, donator4, donator5
+    donator1,
+    donator2,
+    donator3,
+    donator4,
+    donator5,
   ];
 
   return it.extend({
@@ -215,32 +226,35 @@ describe('Raffle', () => {
           creator.address.toString(),
           implementerAddress,
           creationFee,
-          chain
+          chain,
         );
         expect(rewardTx.success).true;
 
         // Step 7: Create prize-boxes for winners
         let successRaffleBox = rewardTx.outputs[0];
 
-        const winnerIndexList: bigint[] = []
+        const winnerIndexList: bigint[] = [];
         const prizeBoxes = [];
-        for(let i = 0; i < 2; i++) {
-          const successRaffleR5 = SConstant.from(successRaffleBox.additionalRegisters.R5!)
-            .data as Uint8Array[];
+        for (let i = 0; i < 2; i++) {
+          const successRaffleR5 = SConstant.from(
+            successRaffleBox.additionalRegisters.R5!,
+          ).data as Uint8Array[];
           const newWinnerTicketIndex = testUtils.generateNextWinnerIndex(
             [...winnerIndexList],
             step,
             Buffer.from(successRaffleR5[0]).toString(),
-            Number(winnersCount)
-          )
+            Number(winnersCount),
+          );
 
           const prizeCreationTx = executePrizeCreationTx(
             successRaffleBox,
             winnerBoxes[i],
             Number(newWinnerTicketIndex),
             [...winnerIndexList],
-            testUtils.makeHashFromString([...winnerIndexList, newWinnerTicketIndex].toString()),
-            chain
+            testUtils.makeHashFromString(
+              [...winnerIndexList, newWinnerTicketIndex].toString(),
+            ),
+            chain,
           );
           winnerIndexList.push(newWinnerTicketIndex);
           expect(prizeCreationTx.success).true;
@@ -249,30 +263,30 @@ describe('Raffle', () => {
         }
 
         // Step 8: Unwrap two gifts of the first winner
-        for(let i = 0; i < winnersGifts.length; i++) {
+        for (let i = 0; i < winnersGifts.length; i++) {
           const prizeBoxR4 = SConstant.from(
-            prizeBoxes[0].additionalRegisters.R4!
+            prizeBoxes[0].additionalRegisters.R4!,
           ).data as bigint[];
           const giftUnwrappedTx = executeGiftUnwrapTx(
             prizeBoxes[0],
             winnersGifts[i],
             tickets.selectByWinnerIndex(prizeBoxR4[0]),
             BigInt(i + 1),
-            chain
+            chain,
           );
           expect(giftUnwrappedTx.success).true;
           prizeBoxes[0] = giftUnwrappedTx.outputs[0];
         }
 
         // Step 9: Deposit winners final prize
-        for(let i = 0; i < prizeBoxes.length; i++) {
+        for (let i = 0; i < prizeBoxes.length; i++) {
           const prizeBoxR4 = SConstant.from(
-            prizeBoxes[i].additionalRegisters.R4!
-          ).data as bigint[]
+            prizeBoxes[i].additionalRegisters.R4!,
+          ).data as bigint[];
           const finalPrizeTx = executeFinalPrizeTx(
             prizeBoxes[i],
             tickets.selectByWinnerIndex(prizeBoxR4[0]),
-            chain
+            chain,
           );
           expect(finalPrizeTx.success).true;
         }
@@ -285,7 +299,7 @@ describe('Raffle', () => {
           chain,
         );
         expect(returnLicenseTx.success).true;
-      }
+      },
     );
   });
 });
