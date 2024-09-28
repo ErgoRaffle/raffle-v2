@@ -1,12 +1,18 @@
 import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
 import { SColl, SByte, SLong, SConstant } from '@fleet-sdk/serializer';
-import { TransactionBuilder, ErgoUnsignedInput, TokenAmount, Amount, Box } from '@fleet-sdk/core';
+import {
+  TransactionBuilder,
+  ErgoUnsignedInput,
+  TokenAmount,
+  Amount,
+  Box,
+} from '@fleet-sdk/core';
 
 import * as testUtils from '../../testUtils';
 
 /**
  * Create a new raffle using the specified parameters
- * @param creator : raffle creator wallet
+ * @param creator raffle creator wallet
  * @param serviceBox : current service box
  * @param feeBoxes
  * @param implementerAddress
@@ -15,6 +21,7 @@ import * as testUtils from '../../testUtils';
  * @param winnersPercent
  * @param chain : mocked chain
  * @param collectingTokenId
+ * @param ticketPrice
  * @returns the create raffle signed transaction and success status
  */
 export const executeCreateRaffleTx = (
@@ -48,7 +55,7 @@ export const executeCreateRaffleTx = (
     serviceBox.assets[1].amount - 1n,
     serviceFeePercent,
     implementerFeePercent,
-    serviceR4[2]
+    serviceR4[2],
   );
   const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
   const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
@@ -56,17 +63,19 @@ export const executeCreateRaffleTx = (
     implementerAddress,
     creator.address.toString(),
     winnersCount,
-    collectingTokenId !== undefined ? {
-      tokenId: collectingTokenId,
-      amount: 1n
-    } : undefined,
+    collectingTokenId !== undefined
+      ? {
+          tokenId: collectingTokenId,
+          amount: 1n,
+        }
+      : undefined,
     winnersPercent,
     undefined,
     undefined,
     serviceR4[2],
     serviceBox.boxId,
     deadline,
-    ticketPrice
+    ticketPrice,
   );
   const creationTx = new TransactionBuilder(chain.height)
     .from([serviceBox, ...feeBoxes])
@@ -113,11 +122,12 @@ export const executeMergeTx = (
       BigInt(ticketRepo.assets[0].amount.toString()) - winnersCount - 1n,
       ticketTokenId,
       0n,
-      inactiveRaffle.assets.length > 1 ? 
-      {
-        tokenId: inactiveRaffle.assets[1].tokenId,
-        amount: BigInt(inactiveRaffle.assets[1].amount)
-      } : undefined
+      inactiveRaffle.assets.length > 1
+        ? {
+            tokenId: inactiveRaffle.assets[1].tokenId,
+            amount: BigInt(inactiveRaffle.assets[1].amount),
+          }
+        : undefined,
     );
   const raffleDetailsOutputBox =
     testUtils.createRaffleDetailsOutputBox(ticketTokenId);
@@ -273,15 +283,14 @@ export const executeDonateTx = (
   )[0];
 
   const ticketPrice = r4[3];
-  
+
   let collectingToken;
-  let activeRaffleOutputBoxValue = BigInt(activeRaffle.value) + (
-    ticketCount * ticketPrice
-  );
-  if(activeRaffle.assets.length > 2) {
+  let activeRaffleOutputBoxValue =
+    BigInt(activeRaffle.value) + ticketCount * ticketPrice;
+  if (activeRaffle.assets.length > 2) {
     collectingToken = {
       tokenId: testUtils.X_TOKEN_ID,
-      amount: (ticketPrice * ticketCount) + BigInt(activeRaffle.assets[2].amount)
+      amount: ticketPrice * ticketCount + BigInt(activeRaffle.assets[2].amount),
     };
     activeRaffleOutputBoxValue = BigInt(activeRaffle.value.toString());
   }
@@ -294,7 +303,7 @@ export const executeDonateTx = (
       BigInt(activeRaffle.assets[1].amount.toString()) - ticketCount,
       ticketTokenId,
       totalSoldTickets + ticketCount,
-      collectingToken
+      collectingToken,
     );
 
   const ticket = testUtils.createTicketOutputBox(
@@ -334,10 +343,13 @@ export const executeFailureTx = (
   const totalSoldTickets = (
     SConstant.from(activeRaffle.additionalRegisters.R6!).data as bigint[]
   )[0];
-  const collectingToken = activeRaffle.assets.length > 2 ? {
-    tokenId: activeRaffle.assets[2].tokenId,
-    amount: BigInt(activeRaffle.assets[2].amount)
-  } : undefined;
+  const collectingToken =
+    activeRaffle.assets.length > 2
+      ? {
+          tokenId: activeRaffle.assets[2].tokenId,
+          amount: BigInt(activeRaffle.assets[2].amount),
+        }
+      : undefined;
   const giftRedeemOutputBox = testUtils.createGiftRedeemOutputBox(
     BigInt(activeRaffle.value) + BigInt(raffleDetails.value) - testUtils.FEE,
     totalSoldTickets,
@@ -346,8 +358,8 @@ export const executeFailureTx = (
     1n,
     ticketTokenId,
     // added by one token on the raffle-details box
-    BigInt(activeRaffle.assets[1].amount.toString()) + 1n, 
-    collectingToken
+    BigInt(activeRaffle.assets[1].amount.toString()) + 1n,
+    collectingToken,
   );
 
   const failureTx = new TransactionBuilder(chain.height)
@@ -440,7 +452,7 @@ export const executeWinnerRemovalTx = (
       selector.defineStrategy((inputs) => inputs);
     })
     .burnTokens(winner.assets[1]!)
-    .payFee(testUtils.FEE)
+    .payFee(testUtils.FEE);
 
   return chain.executeAndReturnOutputs(winnerRemovalTx.build());
 };
@@ -466,8 +478,8 @@ export const executeForwardToTicketRedeemTx = (
     BigInt(giftRedeem.assets[1].amount.toString()),
   );
 
-  if(giftRedeem.assets.length > 2)
-    ticketRedeemOutputBox.assets.add(giftRedeem.assets[2])
+  if (giftRedeem.assets.length > 2)
+    ticketRedeemOutputBox.assets.add(giftRedeem.assets[2]);
 
   const forwardToTicketRedeemTx = new TransactionBuilder(chain.height)
     .from([giftRedeem])
@@ -502,21 +514,23 @@ export const executeTicketRedeemTx = (
     SConstant.from(ticket.additionalRegisters.R4!).data as Uint8Array,
   ).toString();
 
-  let redeemedDonationValue = BigInt(ticket.value.toString()) - testUtils.FEE + ticketPrice * ticketCount;
+  let redeemedDonationValue =
+    BigInt(ticket.value.toString()) - testUtils.FEE + ticketPrice * ticketCount;
   const redeemedDonationTokens = [];
   let collectingToken: TokenAmount<bigint> | undefined = undefined;
-  let ticketRedeemOutputBoxValue = BigInt(ticketRedeem.value.toString()) - ticketPrice * ticketCount;
-  if(ticketRedeem.assets.length > 2) {
+  let ticketRedeemOutputBoxValue =
+    BigInt(ticketRedeem.value.toString()) - ticketPrice * ticketCount;
+  if (ticketRedeem.assets.length > 2) {
     redeemedDonationValue = BigInt(ticket.value.toString()) - testUtils.FEE;
 
     redeemedDonationTokens.push({
       tokenId: ticketRedeem.assets[2].tokenId,
-      amount: ticketCount
+      amount: ticketCount,
     });
     ticketRedeemOutputBoxValue = BigInt(ticketRedeem.value.toString());
     collectingToken = {
       tokenId: ticketRedeem.assets[2].tokenId,
-      amount: BigInt(ticketRedeem.assets[2].amount) - ticketCount
+      amount: BigInt(ticketRedeem.assets[2].amount) - ticketCount,
     };
   }
 
@@ -527,7 +541,7 @@ export const executeTicketRedeemTx = (
     redeemedTickets + ticketCount,
     ticketRedeem.assets[1].tokenId,
     BigInt(ticketRedeem.assets[1].amount.toString()) + ticketCount,
-    collectingToken
+    collectingToken,
   );
 
   const redeemedDonation = testUtils.createCustomOutputBox(
@@ -573,25 +587,30 @@ export const executeReturnRaffleLicenseTx = (
     implementerFeePercent,
     serviceR4[2],
   );
-  
+  const inputs = [service, endedRaffle];
   const outputs = [serviceOutputBox];
   const serviceValue = BigInt(endedRaffle.value) - testUtils.FEE;
-  if(serviceValue > 0) {
+  if (serviceValue > 0) {
     const serviceFee = testUtils.createCustomOutputBox(
       serviceValue,
       [],
       serviceFeeAddress,
     );
-    if(endedRaffle.assets.length > 2)
+    if (endedRaffle.assets.length > 2)
       serviceFee.addTokens([endedRaffle.assets[2]]);
 
-    outputs.push(serviceFee)
+    outputs.push(serviceFee);
   }
-
   const ticketRedeemTx = new TransactionBuilder(chain.height)
-    .from([service, endedRaffle])
+    .from(inputs)
     .to(outputs)
-    .burnTokens(endedRaffle.assets[1])
+    // TODO must fix this problem
+    // local/raffle-2/22
+    .burnTokens(
+      serviceValue === 0n
+        ? [endedRaffle.assets[1], endedRaffle.assets[2]]
+        : endedRaffle.assets[1],
+    )
     .configureSelector((selector) => {
       selector.defineStrategy((inputs) => inputs);
     })
@@ -610,7 +629,7 @@ export const executeReturnRaffleLicenseTx = (
  * @param implementerAddress
  * @param creationFee
  * @param chain
- * @returns 
+ * @returns
  */
 export const executeRewardTx = (
   activeRaffleBox: testUtils.OutputBox,
@@ -623,78 +642,53 @@ export const executeRewardTx = (
 ) => {
   const oracleBox = testUtils.createMockedOracleUTxO(testUtils.FEE);
   const r4 = SConstant.from(activeRaffleBox.additionalRegisters.R4!)
-  .data as bigint[];
+    .data as bigint[];
   const r6 = SConstant.from(activeRaffleBox.additionalRegisters.R6!)
-  .data as bigint[];
+    .data as bigint[];
   const winnersCount = Number(r4[6]);
 
   const totalSoldTickets = r6[0];
   const ticketPrice = r4[3];
 
   const totalRaised = totalSoldTickets * ticketPrice;
-  const totalPrize = totalRaised * (1000n - r4[0] - r4[1] - r4[2]) / 1000n;
+  const totalPrize = (totalRaised * (1000n - r4[0] - r4[1] - r4[2])) / 1000n;
 
-  const seed = oracleBox.boxId.toString()
+  const seed = oracleBox.boxId.toString();
   const winnerIndexList: bigint[] = [];
   const hash = testUtils.makeHashFromString(winnerIndexList.toString());
 
   const charityFeePercent = r4[0];
   const serviceFeePercent = r4[1];
   const implementerFeePercent = r4[2];
+  const winnerPercent =
+    1000n - charityFeePercent - serviceFeePercent - implementerFeePercent;
 
-  let serviceFeeBox = testUtils.createCustomOutputBox(
-    totalRaised * serviceFeePercent / 1000n,
-    [],
-    serviceAddress
-  );
-  let implementerFeeBox = testUtils.createCustomOutputBox(
-    totalRaised * implementerFeePercent / 1000n,
-    [],
-    implementerAddress
-  );
-  let successRaffleOutputValue = BigInt(activeRaffleBox.value)
-    - (totalRaised - totalPrize)
-    - (4n * testUtils.FEE + creationFee)
-    + testUtils.FEE;
-  
+  const isErgGoal = activeRaffleBox.assets.length <= 2;
 
-  let creatorFundBox = testUtils.createCustomOutputBox(
-    BigInt(activeRaffleBox.value) - successRaffleOutputValue
-    - BigInt(serviceFeeBox.value) - BigInt(implementerFeeBox.value),
-    [],
-    creatorAddress
-  );
-
-  if(activeRaffleBox.assets.length > 2) {
-    successRaffleOutputValue = BigInt(activeRaffleBox.value) - (3n * testUtils.FEE);
-    creatorFundBox = testUtils.createCustomOutputBox(
-      testUtils.FEE,
-      [{
+  const createTokenPercent = (percent: bigint): Array<TokenAmount<bigint>> => {
+    if (isErgGoal) return [];
+    return [
+      {
         tokenId: activeRaffleBox.assets[2].tokenId,
-        amount: (BigInt(activeRaffleBox.assets[2].amount)) * charityFeePercent / 1000n
-      }],
-      creatorAddress
-    );
-    serviceFeeBox = testUtils.createCustomOutputBox(
+        amount: (totalRaised * percent) / 1000n,
+      },
+    ];
+  };
+  const serviceFeeBox = testUtils.createCustomOutputBox(
+    (isErgGoal ? BigInt((totalRaised * serviceFeePercent) / 1000n) : 0n) +
       testUtils.FEE,
-      [{
-        tokenId: activeRaffleBox.assets[2].tokenId,
-        amount: (BigInt(activeRaffleBox.assets[2].amount)) * serviceFeePercent / 1000n
-      }],
-      serviceAddress
-    );
-    implementerFeeBox = testUtils.createCustomOutputBox(
+    createTokenPercent(serviceFeePercent),
+    serviceAddress,
+  );
+  const implementerFeeBox = testUtils.createCustomOutputBox(
+    (isErgGoal ? BigInt((totalRaised * implementerFeePercent) / 1000n) : 0n) +
       testUtils.FEE,
-      [{
-        tokenId: activeRaffleBox.assets[2].tokenId,
-        amount: (BigInt(activeRaffleBox.assets[2].amount)) * implementerFeePercent / 1000n
-      }],
-      implementerAddress
-    );
-  }
-
+    createTokenPercent(serviceFeePercent),
+    implementerAddress,
+  );
   const successRaffleOutputBox = testUtils.createSuccessRaffleBox(
-    successRaffleOutputValue,
+    (isErgGoal ? BigInt((totalRaised * winnerPercent) / 1000n) : 0n) +
+      testUtils.FEE,
     activeRaffleBox.assets[0].tokenId,
     seed,
     hash,
@@ -705,30 +699,43 @@ export const executeRewardTx = (
     activeRaffleBox.assets[1].tokenId,
     // plus one token that exists on the Raffle-Details box
     BigInt(activeRaffleBox.assets[1].amount) + 1n,
-    activeRaffleBox.assets.length > 2 ? activeRaffleBox.assets[2].tokenId : undefined,
+    isErgGoal ? undefined : activeRaffleBox.assets[2].tokenId,
+  );
+
+  const creatorFundBox = testUtils.createChangeBox(
+    [activeRaffleBox, raffleDetailsBox],
+    [successRaffleOutputBox, serviceFeeBox, implementerFeeBox],
+    testUtils.FEE,
+    creatorAddress,
   );
 
   const rewardTx = new TransactionBuilder(chain.height)
     .from([activeRaffleBox, raffleDetailsBox])
-    .to([successRaffleOutputBox, creatorFundBox, serviceFeeBox, implementerFeeBox])
+    .to([
+      successRaffleOutputBox,
+      creatorFundBox,
+      serviceFeeBox,
+      implementerFeeBox,
+    ])
     .withDataFrom([oracleBox])
     .configureSelector((selector) => {
       selector.defineStrategy((inputs) => inputs);
     })
+    .sendChangeTo(creatorAddress)
     .payFee(testUtils.FEE)
     .build();
 
   const result = chain.executeAndReturnOutputs(rewardTx);
 
   const unsignedOutputs = [];
-  for(const outbox of result.outputs)
-    unsignedOutputs.push(new ErgoUnsignedInput(outbox))
+  for (const outbox of result.outputs)
+    unsignedOutputs.push(new ErgoUnsignedInput(outbox));
   return {
     success: result.success,
     outputs: unsignedOutputs,
     winnerIndexList: winnerIndexList,
-  }
-}
+  };
+};
 
 /**
  * Execute prize creation transaction
@@ -750,32 +757,35 @@ export const executePrizeCreationTx = (
 ) => {
   successRaffleBox.setContextExtension({
     0: SColl(SLong, [...winnerIndexList]),
-    1: SLong(BigInt(winnerTicketIndex))
+    1: SLong(BigInt(winnerTicketIndex)),
   });
 
-  const successRaffleR4 = SConstant.from(successRaffleBox.additionalRegisters.R4!)
-    .data as bigint[];
+  const successRaffleR4 = SConstant.from(
+    successRaffleBox.additionalRegisters.R4!,
+  ).data as bigint[];
   const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
     .data as bigint[];
 
   const winnersCount = successRaffleR4[0];
   const totalPrize = successRaffleR4[2];
 
-  const giftCount = SConstant.from(winnerBox.additionalRegisters.R5!).data as bigint;
+  const giftCount = SConstant.from(winnerBox.additionalRegisters.R5!)
+    .data as bigint;
 
-  const prizeAmount = BigInt(totalPrize) * winnerR4[1] / 1000n;
+  const prizeAmount = (BigInt(totalPrize) * winnerR4[1]) / 1000n;
   const prizeBoxTokens: TokenAmount<Amount>[] = [
     winnerBox.assets[0],
     winnerBox.assets[1],
   ];
-  let prizeBoxValue = testUtils.FEE * 2n + (totalPrize * (winnerR4[1] / 1000n));
-  let successRaffleOutputValue = BigInt(successRaffleBox.value) - (totalPrize * (winnerR4[1] / 1000n));
-  if(successRaffleBox.assets.length > 2) {
+  let prizeBoxValue = testUtils.FEE * 2n + (totalPrize * winnerR4[1]) / 1000n;
+  let successRaffleOutputValue =
+    BigInt(successRaffleBox.value) - (totalPrize * winnerR4[1]) / 1000n;
+  if (successRaffleBox.assets.length > 2) {
     prizeBoxValue = testUtils.FEE * 2n;
     successRaffleOutputValue = BigInt(successRaffleBox.value);
     prizeBoxTokens.push({
       tokenId: successRaffleBox.assets[2].tokenId,
-      amount:  prizeAmount
+      amount: prizeAmount,
     });
   }
 
@@ -796,11 +806,13 @@ export const executePrizeCreationTx = (
     testUtils.makeHashFromString(winnerIndexList.toString()),
     BigInt(winnersCount),
     totalPrize,
-    totalPrize + 1n - (prizeAmount * BigInt(winnerIndexList.length)),
+    totalPrize + 1n - prizeAmount * BigInt(winnerIndexList.length),
     BigInt(winnerIndexList.length),
     successRaffleBox.assets[1].tokenId,
     BigInt(successRaffleBox.assets[1].amount),
-    successRaffleBox.assets.length > 2 ? successRaffleBox.assets[2].tokenId : undefined,
+    successRaffleBox.assets.length > 2
+      ? successRaffleBox.assets[2].tokenId
+      : undefined,
   );
 
   const prizeTx = new TransactionBuilder(chain.height)
@@ -814,13 +826,13 @@ export const executePrizeCreationTx = (
 
   const result = chain.executeAndReturnOutputs(prizeTx);
   const unsignedOutputs = [];
-  for(const outbox of result.outputs)
-    unsignedOutputs.push(new ErgoUnsignedInput(outbox))
+  for (const outbox of result.outputs)
+    unsignedOutputs.push(new ErgoUnsignedInput(outbox));
   return {
     success: result.success,
     outputs: unsignedOutputs,
-  }
-}
+  };
+};
 
 /**
  * Execute gift unwrap transaction
@@ -838,7 +850,8 @@ export const executeGiftUnwrapTx = (
   prizeNumber: bigint,
   chain: testUtils.RaffleMockChain,
 ) => {
-  const winnerPrizeR4 = SConstant.from(winnerPrizeBox.additionalRegisters.R4!).data as bigint[];
+  const winnerPrizeR4 = SConstant.from(winnerPrizeBox.additionalRegisters.R4!)
+    .data as bigint[];
 
   const prizeOutputBox = testUtils.createWinnerPrizeOutputBox(
     BigInt(winnerPrizeBox.value),
@@ -850,12 +863,17 @@ export const executeGiftUnwrapTx = (
     winnerPrizeBox.ergoTree,
   );
 
-  const giftOutputBoxTokens = giftForWinnerBox.assets.slice(1, giftForWinnerBox.assets.length);
+  const giftOutputBoxTokens = giftForWinnerBox.assets.slice(
+    1,
+    giftForWinnerBox.assets.length,
+  );
 
   const unwrappedGiftBox = testUtils.createCustomOutputBox(
     BigInt(giftForWinnerBox.value) - testUtils.FEE,
     giftOutputBoxTokens,
-    Buffer.from(SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array).toString(),
+    Buffer.from(
+      SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array,
+    ).toString(),
   );
 
   const giftUnwrapTx = new TransactionBuilder(chain.height)
@@ -869,7 +887,7 @@ export const executeGiftUnwrapTx = (
     .payFee(testUtils.FEE)
     .build();
   return chain.executeAndReturnOutputs(giftUnwrapTx);
-}
+};
 
 /**
  * Execute final prize transaction
@@ -886,7 +904,9 @@ export const executeFinalPrizeTx = (
   const finalPrizeSpendingBox = testUtils.createCustomOutputBox(
     BigInt(winnerPrizeBox.value) - testUtils.FEE,
     winnerPrizeBox.assets.length > 2 ? [winnerPrizeBox.assets[2]] : [],
-    Buffer.from(SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array).toString(),
+    Buffer.from(
+      SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array,
+    ).toString(),
   );
 
   const finalPrizeTx = new TransactionBuilder(chain.height)
@@ -901,4 +921,4 @@ export const executeFinalPrizeTx = (
     .build();
 
   return chain.executeAndReturnOutputs(finalPrizeTx);
-}
+};
