@@ -83,7 +83,7 @@
 
       // Transaction constraints
       calculatedWinnerTicketIndex == winnerTicketIndex,
-      sameSelectedWinners == false,
+      sameSelectedWinners.size == 0,
     )))
   } else {
     // License redeem
