@@ -75,8 +75,8 @@
         winnerPrize.value == totalPrize * rewardPercent / 1000 + 2 * txFee
       } else {
         allOf(Coll(
-          winnerPrize.tokens(1)._1 == successRaffle.tokens(2)._1,
-          winnerPrize.tokens(1)._2 == totalPrize * rewardPercent / 1000,
+          winnerPrize.tokens(2)._1 == successRaffle.tokens(2)._1,
+          winnerPrize.tokens(2)._2 == totalPrize * rewardPercent / 1000,
           winnerPrize.value == 2 * txFee
         ))
       }
