@@ -107,6 +107,12 @@ export const initialContracts = (): { [key: string]: string } => {
   const defaultLicenseTokenId = Buffer.from(LICENSE_TOKEN_ID, 'hex').toString(
     'base64',
   );
+  const defaultRaffleNftId = Buffer.from(RAFFLE_NFT_ID, 'hex').toString(
+    'base64',
+  );
+  const defaultOracleTokenId = Buffer.from(ORACLE_NFT_ID, 'hex').toString(
+    'base64',
+  );
 
   scriptsVars['service'] = {
     OWNER_NFT_B64: Buffer.from(OWNER_NFT_ID, 'hex').toString('base64'),
@@ -123,7 +129,13 @@ export const initialContracts = (): { [key: string]: string } => {
     GIFT_TOKEN_COUNT: GIFT_TOKEN_COUNT,
   };
   scriptsVars['activeRaffle'] = {
-    ORACLE_TOKEN_ID_B64: ORACLE_NFT_ID,
+    ORACLE_TOKEN_ID_B64: defaultOracleTokenId,
+  };
+  scriptsVars['successRaffle'] = {
+    SERVICE_NFT_B64: defaultRaffleNftId,
+  };
+  scriptsVars['raffleDetails'] = {
+    RAFFLE_LICENSE_B64: defaultLicenseTokenId,
   };
   return compileAll(
     new Map(Object.entries(scriptsVars)) as unknown as ContextVarsType,
