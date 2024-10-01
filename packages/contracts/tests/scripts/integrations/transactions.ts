@@ -4,7 +4,6 @@ import {
   TransactionBuilder,
   ErgoUnsignedInput,
   TokenAmount,
-  Amount,
   Box,
 } from '@fleet-sdk/core';
 
@@ -773,46 +772,40 @@ export const executePrizeCreationTx = (
     .data as bigint;
 
   const prizeAmount = (BigInt(totalPrize) * winnerR4[1]) / 1000n;
-  const prizeBoxTokens: TokenAmount<Amount>[] = [
-    winnerBox.assets[0],
-    winnerBox.assets[1],
-  ];
-  let prizeBoxValue = testUtils.FEE * 2n + (totalPrize * winnerR4[1]) / 1000n;
-  let successRaffleOutputValue =
-    BigInt(successRaffleBox.value) - (totalPrize * winnerR4[1]) / 1000n;
-  if (successRaffleBox.assets.length > 2) {
-    prizeBoxValue = testUtils.FEE * 2n;
-    successRaffleOutputValue = BigInt(successRaffleBox.value);
-    prizeBoxTokens.push({
-      tokenId: successRaffleBox.assets[2].tokenId,
-      amount: prizeAmount,
-    });
-  }
-
+  const isErgGoal = successRaffleBox.assets.length == 2;
   const prizeBox = testUtils.createWinnerPrizeOutputBox(
-    prizeBoxValue,
+    isErgGoal
+      ? testUtils.FEE * 2n + (totalPrize * winnerR4[1]) / 1000n
+      : testUtils.FEE * 2n,
     winnerR4[0],
     BigInt(winnerTicketIndex),
     BigInt(giftCount),
     0n,
-    prizeBoxTokens,
+    isErgGoal
+      ? [winnerBox.assets[0], winnerBox.assets[1]]
+      : [
+          winnerBox.assets[0],
+          winnerBox.assets[1],
+          {
+            tokenId: successRaffleBox.assets[2].tokenId,
+            amount: prizeAmount,
+          },
+        ],
   );
 
   winnerIndexList.push(BigInt(winnerTicketIndex));
   const successRaffleOutputBox = testUtils.createSuccessRaffleBox(
-    successRaffleOutputValue,
+    isErgGoal ? successRaffleBox.value - prizeAmount : successRaffleBox.value,
     successRaffleBox.assets[0].tokenId,
     outputSeed,
     testUtils.makeHashFromString(winnerIndexList.toString()),
     BigInt(winnersCount),
     totalPrize,
-    totalPrize + 1n - prizeAmount * BigInt(winnerIndexList.length),
+    isErgGoal ? 0n : successRaffleBox.assets[2].amount - prizeAmount,
     BigInt(winnerIndexList.length),
     successRaffleBox.assets[1].tokenId,
     BigInt(successRaffleBox.assets[1].amount),
-    successRaffleBox.assets.length > 2
-      ? successRaffleBox.assets[2].tokenId
-      : undefined,
+    isErgGoal ? undefined : successRaffleBox.assets[2].tokenId,
   );
 
   const prizeTx = new TransactionBuilder(chain.height)
