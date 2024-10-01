@@ -54,11 +54,9 @@
       res ++ longToByteArray(box.R4[Coll[Long]].get(1))}
   )
   val isErgGoal = (SELF.tokens.size == 1)
-  val activeRaffleExtraTokensVerification = if(isErgGoal) {
-      activeRaffle.tokens.size == 2
-  } else {
+  val activeRaffleExtraTokensVerification = 
+    if(isErgGoal) { true } else {
     allOf(Coll(
-      activeRaffle.tokens.size == 3,
       activeRaffle.tokens(2)._1 == SELF.tokens(1)._1,
       activeRaffle.tokens(2)._2 == SELF.tokens(1)._2
     ))
@@ -79,6 +77,7 @@
     blake2b256(activeRaffle.propositionBytes) == activeRaffleScriptHash,
     activeRaffle.tokens(0)._1 == SELF.tokens(0)._1,
     activeRaffle.tokens(1)._1 == ticketId, // Match with TicketRepo
+    activeRaffle.tokens.size == SELF.tokens.size + 1,
     activeRaffle.value == SELF.value - (4 * txFee * winnersCount) - txFee,
     activeRaffle.R4[Coll[Long]].get == SELF.R4[Coll[Long]].get,
     activeRaffle.R5[Coll[Coll[Byte]]].get == SELF.R5[Coll[Coll[Byte]]].get,
