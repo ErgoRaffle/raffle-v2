@@ -234,15 +234,19 @@ describe('Raffle', () => {
 
         const winnerTicketsList: bigint[] = [];
         const prizeBoxes = [];
+        const successRaffleR4 = SConstant.from(
+          successRaffleBox.additionalRegisters.R4!,
+        ).data as bigint[];
+        const totalSoldTickets = successRaffleR4[2];
         for (let i = 0; i < 2; i++) {
           const successRaffleR5 = SConstant.from(
             successRaffleBox.additionalRegisters.R5!,
           ).data as Uint8Array[];
           const newWinnerTicketIndex = testUtils.generateNextWinnerIndex(
             winnerTicketsList,
-            step,
-            Buffer.from(successRaffleR5[0]).toString('hex'),
-            Number(winnersCount),
+            i + 1,
+            successRaffleR5[0],
+            totalSoldTickets,
           );
 
           const prizeCreationTx = executePrizeCreationTx(

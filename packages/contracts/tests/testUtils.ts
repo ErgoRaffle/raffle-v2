@@ -1329,23 +1329,19 @@ export const prettyPrintJson = (
  *
  * @param winnerIndexList
  * @param step
- * @param seedString
- * @param winnersCount
+ * @param seed
+ * @param ticketsCount
  * @returns
  */
 export const generateNextWinnerIndex = (
   winnerIndexList: bigint[],
   step: number,
-  seedString: string,
-  winnersCount: number,
+  seed: Uint8Array,
+  ticketCount: bigint,
 ) => {
-  if (seedString.length < 16) throw Error('Seed length is too short');
-
-  let winnerIndex = -1n;
-
-  seedString = seedString.slice(0, 16);
-  const seed = BigInt('0x' + seedString);
-  winnerIndex = seed % BigInt(winnersCount - step);
+  const bigintSeed = uint8ArrayToSignedBigInt(seed.slice(0, 16));
+  const range = ticketCount - BigInt(step) + 1n;
+  const rawWinnerIndex = ((bigintSeed % range) + range) % range;
 
   let shift = 0n,
     oldShift = 0n;
@@ -1353,12 +1349,31 @@ export const generateNextWinnerIndex = (
     oldShift = shift;
     shift = BigInt(
       winnerIndexList.filter((value) => {
-        return value <= winnerIndex + shift;
+        return value <= rawWinnerIndex + shift;
       }).length,
     );
   } while (oldShift !== shift);
 
-  return winnerIndex + shift;
+  return rawWinnerIndex + shift;
+};
+
+/**
+ * Convert uint8Array to signed bigint
+ * @param buffer
+ * @returns signed bigint
+ */
+const uint8ArrayToSignedBigInt = (buffer: Uint8Array): bigint => {
+  const hexStr = Buffer.from(buffer).toString('hex');
+  const bigIntValue = BigInt('0x' + hexStr);
+  const bitLength = BigInt(hexStr.length * 4); // Each hex digit represents 4 bits
+  const maxValue = BigInt(1) << bitLength; // 2^bitLength
+
+  // Check if the number should be negative (if MSB is set)
+  if (bigIntValue >= maxValue >> BigInt(1)) {
+    return bigIntValue - maxValue;
+  }
+
+  return bigIntValue;
 };
 
 /**

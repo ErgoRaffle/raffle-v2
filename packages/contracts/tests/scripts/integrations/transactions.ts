@@ -802,7 +802,7 @@ export const executePrizeCreationTx = (
     BigInt(winnersCount),
     totalPrize,
     isErgGoal ? 0n : successRaffleBox.assets[2].amount - prizeAmount,
-    BigInt(winnerIndexList.length),
+    winnerR4[0] + 1n,
     successRaffleBox.assets[1].tokenId,
     BigInt(successRaffleBox.assets[1].amount),
     isErgGoal ? undefined : successRaffleBox.assets[2].tokenId,

@@ -49,9 +49,9 @@
       outSuccessRaffle.value == SELF.value
     }
     val calculatedWinnerTicketIndex = {
-      val seed = SELF.R5[Coll[Coll[Byte]]].get(0)
+      val seed = SELF.R5[Coll[Coll[Byte]]].get(0).slice(0, 16)
       val range = SELF.R4[Coll[Long]].get(2) - step + 1
-      val rawIndex = (((byteArrayToBigInt(seed).toBigInt % range) + range) % range).toLong
+      val rawIndex = ((byteArrayToBigInt(seed).toBigInt % range) + range) % range
       val previousWinners = selectedWinners.filter(
         {(winNumber: Long) => { winNumber < winnerTicketIndex }}
       )
@@ -71,19 +71,19 @@
       checkRemainingPrize,
       outSuccessRaffle.R4[Coll[Long]].get == SELF.R4[Coll[Long]].get,
       outSuccessRaffle.R5[Coll[Coll[Byte]]].get(0) == 
-        blake2b256(SELF.R5[Coll[Coll[Byte]]].get(0)).slice(0, 15),
+        blake2b256(SELF.R5[Coll[Coll[Byte]]].get(0)),
       outSuccessRaffle.R5[Coll[Coll[Byte]]].get(1) == blake2b256(selectedWinnersBytes),
 
       // Correct WinnerPrize format
       // R4: [WinnerTicketIndex, WinnerIndex, GiftCount]
       // R5: UnwrappedGiftCount
-      winnerPrize.tokens(0)._1 == SELF.tokens(0)._1,
+      winnerPrize.tokens(0)._1 == SELF.tokens(1)._1,
       winnerPrize.R4[Coll[Long]].get(0) == winnerTicketIndex,
       winnerPrize.R4[Coll[Long]].get(1) == step,
 
       // Transaction constraints
       calculatedWinnerTicketIndex == winnerTicketIndex,
-      sameSelectedWinners == false,
+      sameSelectedWinners.size == 0,
     )))
   } else {
     // License redeem
