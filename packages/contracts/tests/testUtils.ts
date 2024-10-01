@@ -42,6 +42,7 @@ import { compileAll } from '../lib/utils';
 
 export const FEE = constants.DEFAULT_FEE;
 export const OWNER_NFT_ID = '1234'.repeat(16);
+export const ORACLE_NFT_ID = '5678'.repeat(16);
 export const RAFFLE_NFT_ID = '1'.repeat(64);
 export const LICENSE_TOKEN_ID = '2'.repeat(64);
 export const X_TOKEN_ID = '3'.repeat(64);
@@ -120,6 +121,9 @@ export const initialContracts = (): { [key: string]: string } => {
   };
   scriptsVars['inactiveRaffle'] = {
     GIFT_TOKEN_COUNT: GIFT_TOKEN_COUNT,
+  };
+  scriptsVars['activeRaffle'] = {
+    ORACLE_TOKEN_ID_B64: ORACLE_NFT_ID,
   };
   return compileAll(
     new Map(Object.entries(scriptsVars)) as unknown as ContextVarsType,
@@ -509,7 +513,7 @@ export const createActiveRaffleWithConstantRegisters = (
         SColl(SByte),
         r5.map((value) => Array.from(value)),
       ),
-      R6: SColl(SLong, [totalSoldTicket]).toHex(),
+      R6: SLong(totalSoldTicket),
     });
 };
 
@@ -575,7 +579,7 @@ export const createActiveRaffleOutputBox = (
         Array.from(blake2b256(Buffer.from(implementerPartnerAddress))),
         Array.from(blake2b256(Buffer.from(creatorPartnerAddress))),
       ]),
-      R6: SColl(SLong, [totalSoldTicket]).toHex(),
+      R6: SLong(totalSoldTicket),
     });
 };
 
@@ -1120,7 +1124,7 @@ export const createGiftRedeemOutputBox = (
       SLong,
       Array.from([totalSoldTicket, ticketPrice, winnersCount, FEE]),
     ),
-    R5: SLong(step).toHex(),
+    R5: SLong(step),
   });
   giftRedeemOutputBox.addTokens([
     {
@@ -1268,6 +1272,7 @@ export const createCustomOutputBox = (
 ) => {
   const outputBox = new OutputBuilder(value, address);
   outputBox.setAdditionalRegisters(additionalRegisters!);
+  if (tokens.length > 0) outputBox.addTokens(tokens);
   if (tokens.length > 0) outputBox.addTokens(tokens);
   return outputBox;
 };

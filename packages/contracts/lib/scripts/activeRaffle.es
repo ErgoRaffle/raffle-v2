@@ -26,6 +26,7 @@
   val ticketPrice = SELF.R4[Coll[Long]].get(3)
   val goal = SELF.R4[Coll[Long]].get(4)
   val deadline = SELF.R4[Coll[Long]].get(5)
+  val winnersCount = SELF.R4[Coll[Long]].get(6)
   val txFee = SELF.R4[Coll[Long]].get(7)
   val isErgGoal = (SELF.tokens.size == 2)
   val totalSoldTickets = SELF.R6[Long].get
@@ -51,7 +52,7 @@
       outputRaffle.tokens(1)._2 == SELF.tokens(1)._2 - onSaleTickets,
       outputRaffle.R4[Coll[Long]].get == SELF.R4[Coll[Long]].get,
       outputRaffle.R5[Coll[Coll[Byte]]].get == SELF.R5[Coll[Coll[Byte]]].get,
-      outputRaffle.R6[Long].get = totalSoldTickets + onSaleTickets,
+      outputRaffle.R6[Long].get == totalSoldTickets + onSaleTickets,
       outputRaffle.value >= SELF.value,
       outputRaffle.tokens.size == SELF.tokens.size,
       depositTicketPrice,
@@ -62,7 +63,7 @@
       blake2b256(ticket.propositionBytes) == ticketScriptHash,
       ticket.value >= 2 * txFee,
       ticket.tokens(0)._1 == SELF.tokens(1)._1,
-      ticket.R5[Coll[Long]].get = Coll[Long](
+      ticket.R5[Coll[Long]].get == Coll[Long](
         totalSoldTickets, 
         totalSoldTickets + onSaleTickets, 
         ticketPrice
@@ -80,7 +81,6 @@
     val serviceFeePercent = SELF.R4[Coll[Long]].get(1)
     val implementerFeePercent = SELF.R4[Coll[Long]].get(2)
     val winnersPercent = 100 - projectPercent - serviceFeePercent - implementerFeePercent
-    val winnersCount = SELF.R4[Coll[Long]].get(6)
     val splittingRaisedFund = if(isErgGoal) { 
       successRaffle.value == (totalRaised * winnersPercent) / 100 + txFee &&
       serviceFee.value == (totalRaised * serviceFeePercent) / 100 + txFee &&
@@ -115,7 +115,7 @@
       successRaffle.tokens(1)._1 == SELF.tokens(1)._1,
       successRaffle.tokens(1)._2 == SELF.tokens(1)._2 + 1,
       successRaffle.tokens.size == SELF.tokens.size,
-      successRaffle.R4[Coll[Long]].get = Coll[Long](
+      successRaffle.R4[Coll[Long]].get == Coll[Long](
         winnersCount, 
         totalRaised * winnersPercent / 100,
         totalSoldTickets
@@ -133,7 +133,7 @@
     val giftRedeem = OUTPUTS(0)
     val collectingTokenCheck = if(isErgGoal) { true } else {
       giftRedeem.tokens(2)._1 == SELF.tokens(2)._1 &&
-      giftRedeem.tokens(2)._2 == SELF.tokens(2)._2 &&
+      giftRedeem.tokens(2)._2 == SELF.tokens(2)._2
     }
     sigmaProp(allOf(Coll(
       // Correct GiftRedeem format
@@ -146,7 +146,7 @@
       giftRedeem.tokens(1)._2 == SELF.tokens(1)._2 + 1,
       collectingTokenCheck,
       giftRedeem.tokens.size == SELF.tokens.size,
-      giftRedeem.R4[Coll[Long]].get = Coll[Long](
+      giftRedeem.R4[Coll[Long]].get == Coll[Long](
         totalSoldTickets, 
         ticketPrice, 
         winnersCount,

@@ -277,9 +277,8 @@ export const executeDonateTx = (
   const r5 = SConstant.from(activeRaffle.additionalRegisters.R5!)
     .data as Uint8Array[];
   const ticketTokenId = activeRaffle.assets[1].tokenId;
-  const totalSoldTickets = (
-    SConstant.from(activeRaffle.additionalRegisters.R6!).data as bigint[]
-  )[0];
+  const totalSoldTickets = SConstant.from(activeRaffle.additionalRegisters.R6!)
+    .data as bigint;
 
   const ticketPrice = r4[3];
 
@@ -339,9 +338,8 @@ export const executeFailureTx = (
   const r4 = SConstant.from(activeRaffle.additionalRegisters.R4!)
     .data as bigint[];
   const ticketTokenId = activeRaffle.assets[1].tokenId;
-  const totalSoldTickets = (
-    SConstant.from(activeRaffle.additionalRegisters.R6!).data as bigint[]
-  )[0];
+  const totalSoldTickets = SConstant.from(activeRaffle.additionalRegisters.R6!)
+    .data as bigint;
   const collectingToken =
     activeRaffle.assets.length > 2
       ? {
@@ -353,7 +351,7 @@ export const executeFailureTx = (
     BigInt(activeRaffle.value) + BigInt(raffleDetails.value) - testUtils.FEE,
     totalSoldTickets,
     r4[3],
-    r4[4],
+    r4[6],
     1n,
     ticketTokenId,
     // added by one token on the raffle-details box
@@ -451,9 +449,10 @@ export const executeWinnerRemovalTx = (
       selector.defineStrategy((inputs) => inputs);
     })
     .burnTokens(winner.assets[1]!)
-    .payFee(testUtils.FEE);
+    .payFee(testUtils.FEE)
+    .build();
 
-  return chain.executeAndReturnOutputs(winnerRemovalTx.build());
+  return chain.executeAndReturnOutputs(winnerRemovalTx);
 };
 
 /**
