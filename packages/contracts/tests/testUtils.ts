@@ -56,8 +56,6 @@ export const LICENSE_TOKEN_COUNT = 1_000_000_000n;
 export const CREATOR_DEFAULT_BALANCE = 500_000_000_000n;
 export const UNKNOWN_WALLET_DEFAULT_BALANCE = 10_000_000_000n;
 
-const ORACLE_BOX_MOCKED_NTF_ID = '0001000200030004'.repeat(4);
-
 const safeUtf8Encode = (v: unknown) =>
   v instanceof Uint8Array ? utf8.encode(v) : undefined;
 
@@ -616,7 +614,7 @@ export const createSuccessRaffleBoxMock = (
   boxValue: bigint,
   licenseTokenId: string,
   seed: string,
-  selectedWinnersListHash: string,
+  selectedWinnersList: bigint[],
   winnersCount: bigint = 1n,
   totalPrize: bigint = 1n,
   prizeValue: bigint = 0n,
@@ -649,7 +647,13 @@ export const createSuccessRaffleBoxMock = (
       R4: SColl(SLong, [BigInt(winnersCount), FEE, BigInt(totalPrize)]).toHex(),
       R5: SColl(SColl(SByte), [
         Array.from(Buffer.from(seed)),
-        Array.from(Buffer.from(selectedWinnersListHash)),
+        Array.from(
+          blake2b256(
+            Buffer.concat(
+              selectedWinnersList.map((n) => utils.bigIntToUint8Array(n)),
+            ),
+          ),
+        ),
       ]).toHex(),
       R6: SLong(step).toHex(),
     },
@@ -677,11 +681,12 @@ export const createSuccessRaffleBox = (
   boxValue: bigint,
   licenseTokenId: string,
   seed: string,
-  selectedWinnersListHash: string,
+  selectedWinnersList: bigint[],
+  totalSoldTickets: bigint,
   winnersCount: bigint = 1n,
   totalPrize: bigint = 1n,
   prizeValue: bigint = 0n,
-  step: bigint = 0n,
+  step: bigint = 1n,
   ticketTokenId: string = TICKET_TOKEN_ID,
   ticketTokenAmount: bigint = 1n,
   collectingTokenId?: string,
@@ -703,10 +708,16 @@ export const createSuccessRaffleBox = (
         : []),
     ])
     .setAdditionalRegisters({
-      R4: SColl(SLong, [BigInt(winnersCount), FEE, BigInt(totalPrize)]).toHex(),
+      R4: SColl(SLong, [winnersCount, totalPrize, totalSoldTickets]).toHex(),
       R5: SColl(SColl(SByte), [
-        Array.from(Buffer.from(seed)),
-        Array.from(Buffer.from(selectedWinnersListHash)),
+        Array.from(Buffer.from(seed, 'hex')),
+        Array.from(
+          blake2b256(
+            Buffer.concat(
+              selectedWinnersList.map((n) => utils.bigIntToUint8Array(n)),
+            ),
+          ),
+        ),
       ]).toHex(),
       R6: SLong(step),
     });
@@ -739,6 +750,7 @@ export const createWinnerPrizeOutputBox = (
         BigInt(ticketIndex),
         winnerIndex,
         BigInt(giftCount),
+        FEE,
       ]).toHex(),
       R5: SLong(unwrappedGiftCount),
     });
@@ -752,7 +764,7 @@ export const createWinnerPrizeOutputBox = (
  */
 export const createMockedOracleUTxO = (
   value: bigint,
-  nftTokenId: string = ORACLE_BOX_MOCKED_NTF_ID,
+  nftTokenId: string = ORACLE_NFT_ID,
 ) => {
   return new ErgoUnsignedInput(
     mockUTxO({
@@ -764,7 +776,7 @@ export const createMockedOracleUTxO = (
           amount: 1n,
         },
       ],
-      creationHeight: 5,
+      creationHeight: 2005,
     }),
   );
 };
