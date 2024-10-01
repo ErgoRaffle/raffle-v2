@@ -598,7 +598,7 @@ export const createActiveRaffleOutputBox = (
  * @param boxValue
  * @param licenseTokenId
  * @param seed
- * @param selectedWinnersListHash
+ * @param selectedWinnersList
  * @param winnersCount
  * @param totalPrize
  * @param prizeValue
@@ -1296,7 +1296,6 @@ export const createCustomOutputBox = (
 ) => {
   const outputBox = new OutputBuilder(value, address);
   outputBox.setAdditionalRegisters(additionalRegisters!);
-  if (tokens.length > 0) outputBox.addTokens(tokens);
   if (tokens.length > 0) outputBox.addTokens(tokens);
   return outputBox;
 };

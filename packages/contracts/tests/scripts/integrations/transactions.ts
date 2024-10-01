@@ -524,12 +524,12 @@ export const executeTicketRedeemTx = (
 
     redeemedDonationTokens.push({
       tokenId: ticketRedeem.assets[2].tokenId,
-      amount: ticketCount,
+      amount: ticketCount * ticketPrice,
     });
     ticketRedeemOutputBoxValue = BigInt(ticketRedeem.value.toString());
     collectingToken = {
       tokenId: ticketRedeem.assets[2].tokenId,
-      amount: BigInt(ticketRedeem.assets[2].amount) - ticketCount,
+      amount: BigInt(ticketRedeem.assets[2].amount) - ticketCount * ticketPrice,
     };
   }
 
@@ -742,13 +742,13 @@ export const executeRewardTx = (
 export const executePrizeCreationTx = (
   successRaffleBox: ErgoUnsignedInput,
   winnerBox: testUtils.OutputBox,
-  winnerTicketIndex: number,
+  winnerTicketIndex: bigint,
   winnerIndexList: bigint[],
   chain: testUtils.RaffleMockChain,
 ) => {
   successRaffleBox.setContextExtension({
     0: SColl(SLong, [...winnerIndexList]),
-    1: SLong(BigInt(winnerTicketIndex)),
+    1: SLong(winnerTicketIndex),
   });
 
   const successRaffleR4 = SConstant.from(
@@ -777,8 +777,8 @@ export const executePrizeCreationTx = (
       ? testUtils.FEE * 2n + (totalPrize * winnerR4[1]) / 1000n
       : testUtils.FEE * 2n,
     winnerR4[0],
-    BigInt(winnerTicketIndex),
-    BigInt(giftCount),
+    winnerTicketIndex,
+    giftCount,
     0n,
     isErgGoal
       ? [winnerBox.assets[0], winnerBox.assets[1]]
