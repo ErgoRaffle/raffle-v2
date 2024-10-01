@@ -11,7 +11,7 @@ import {
   CREATOR_DEFAULT_BALANCE,
   UNKNOWN_WALLET_DEFAULT_BALANCE,
 } from '../testUtils';
-import * as constants from '../../constants'
+import * as constants from '../../constants';
 
 /*
  * create fixtures that contains below steps data:
