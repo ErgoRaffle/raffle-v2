@@ -120,7 +120,7 @@
         totalRaised * winnersPercent / 100,
         totalSoldTickets
       ),
-      successRaffle.R5[Coll[Coll[Byte]]].get(0) == oracleBox.id.slice(0, 15),
+      successRaffle.R5[Coll[Coll[Byte]]].get(0) == oracleBox.id,
       successRaffle.R5[Coll[Coll[Byte]]].get(1) == blake2b256(Coll[Byte]()),
       successRaffle.R6[Long].get == 1,
 

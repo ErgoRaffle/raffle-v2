@@ -6,6 +6,7 @@ import {
   TokenAmount,
   Box,
 } from '@fleet-sdk/core';
+import { blake2b256 } from '@fleet-sdk/crypto';
 
 import * as testUtils from '../../testUtils';
 
@@ -33,7 +34,7 @@ export const executeCreateRaffleTx = (
   winnersPercent: Array<bigint>,
   chain: testUtils.RaffleMockChain,
   collectingTokenId?: string,
-  ticketPrice: bigint = 10n,
+  ticketPrice: bigint = 100n,
 ) => {
   serviceBox.setContextExtension({
     0: SColl(SLong, winnersPercent),
@@ -625,7 +626,6 @@ export const executeReturnRaffleLicenseTx = (
  * @param creatorAddress
  * @param serviceAddress
  * @param implementerAddress
- * @param creationFee
  * @param chain
  * @returns
  */
@@ -635,31 +635,26 @@ export const executeRewardTx = (
   creatorAddress: string,
   serviceAddress: string,
   implementerAddress: string,
-  creationFee: bigint,
   chain: testUtils.RaffleMockChain,
 ) => {
   const oracleBox = testUtils.createMockedOracleUTxO(testUtils.FEE);
   const r4 = SConstant.from(activeRaffleBox.additionalRegisters.R4!)
     .data as bigint[];
   const r6 = SConstant.from(activeRaffleBox.additionalRegisters.R6!)
-    .data as bigint[];
+    .data as bigint;
   const winnersCount = Number(r4[6]);
 
-  const totalSoldTickets = r6[0];
+  const totalSoldTickets = r6;
   const ticketPrice = r4[3];
 
   const totalRaised = totalSoldTickets * ticketPrice;
-  const totalPrize = (totalRaised * (1000n - r4[0] - r4[1] - r4[2])) / 1000n;
-
-  const seed = oracleBox.boxId.toString();
-  const winnerIndexList: bigint[] = [];
-  const hash = testUtils.makeHashFromString(winnerIndexList.toString());
+  const totalPrize = (totalRaised * (100n - r4[0] - r4[1] - r4[2])) / 100n;
 
   const charityFeePercent = r4[0];
   const serviceFeePercent = r4[1];
   const implementerFeePercent = r4[2];
   const winnerPercent =
-    1000n - charityFeePercent - serviceFeePercent - implementerFeePercent;
+    100n - charityFeePercent - serviceFeePercent - implementerFeePercent;
 
   const isErgGoal = activeRaffleBox.assets.length <= 2;
 
@@ -668,32 +663,33 @@ export const executeRewardTx = (
     return [
       {
         tokenId: activeRaffleBox.assets[2].tokenId,
-        amount: (totalRaised * percent) / 1000n,
+        amount: (totalRaised * percent) / 100n,
       },
     ];
   };
   const serviceFeeBox = testUtils.createCustomOutputBox(
-    (isErgGoal ? BigInt((totalRaised * serviceFeePercent) / 1000n) : 0n) +
+    (isErgGoal ? BigInt((totalRaised * serviceFeePercent) / 100n) : 0n) +
       testUtils.FEE,
     createTokenPercent(serviceFeePercent),
     serviceAddress,
   );
   const implementerFeeBox = testUtils.createCustomOutputBox(
-    (isErgGoal ? BigInt((totalRaised * implementerFeePercent) / 1000n) : 0n) +
+    (isErgGoal ? BigInt((totalRaised * implementerFeePercent) / 100n) : 0n) +
       testUtils.FEE,
     createTokenPercent(serviceFeePercent),
     implementerAddress,
   );
   const successRaffleOutputBox = testUtils.createSuccessRaffleBox(
-    (isErgGoal ? BigInt((totalRaised * winnerPercent) / 1000n) : 0n) +
+    (isErgGoal ? BigInt((totalRaised * winnerPercent) / 100n) : 0n) +
       testUtils.FEE,
     activeRaffleBox.assets[0].tokenId,
-    seed,
-    hash,
+    oracleBox.boxId.toString(),
+    [],
+    totalSoldTickets,
     BigInt(winnersCount),
     BigInt(totalPrize),
     BigInt(totalPrize) + 1n,
-    0n,
+    1n,
     activeRaffleBox.assets[1].tokenId,
     // plus one token that exists on the Raffle-Details box
     BigInt(activeRaffleBox.assets[1].amount) + 1n,
@@ -731,7 +727,6 @@ export const executeRewardTx = (
   return {
     success: result.success,
     outputs: unsignedOutputs,
-    winnerIndexList: winnerIndexList,
   };
 };
 
@@ -741,7 +736,6 @@ export const executeRewardTx = (
  * @param winnerBox
  * @param winnerTicketIndex
  * @param winnerIndexList
- * @param outputSeed
  * @param chain
  * @returns
  */
@@ -750,7 +744,6 @@ export const executePrizeCreationTx = (
   winnerBox: testUtils.OutputBox,
   winnerTicketIndex: number,
   winnerIndexList: bigint[],
-  outputSeed: string,
   chain: testUtils.RaffleMockChain,
 ) => {
   successRaffleBox.setContextExtension({
@@ -761,11 +754,18 @@ export const executePrizeCreationTx = (
   const successRaffleR4 = SConstant.from(
     successRaffleBox.additionalRegisters.R4!,
   ).data as bigint[];
+  const successRaffleR5 = SConstant.from(
+    successRaffleBox.additionalRegisters.R5!,
+  ).data as Uint8Array[];
   const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
     .data as bigint[];
 
   const winnersCount = successRaffleR4[0];
-  const totalPrize = successRaffleR4[2];
+  const totalPrize = successRaffleR4[1];
+  const totalSoldTickets = successRaffleR4[2];
+  const seed = Buffer.from(
+    blake2b256(Buffer.from(successRaffleR5[0])),
+  ).toString('hex');
 
   const giftCount = SConstant.from(winnerBox.additionalRegisters.R5!)
     .data as bigint;
@@ -796,8 +796,9 @@ export const executePrizeCreationTx = (
   const successRaffleOutputBox = testUtils.createSuccessRaffleBox(
     isErgGoal ? successRaffleBox.value - prizeAmount : successRaffleBox.value,
     successRaffleBox.assets[0].tokenId,
-    outputSeed,
-    testUtils.makeHashFromString(winnerIndexList.toString()),
+    seed,
+    winnerIndexList,
+    totalSoldTickets,
     BigInt(winnersCount),
     totalPrize,
     isErgGoal ? 0n : successRaffleBox.assets[2].amount - prizeAmount,
