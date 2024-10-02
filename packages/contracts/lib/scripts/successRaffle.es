@@ -63,7 +63,6 @@
     sigmaProp(allOf(Coll(
       // Correct SuccessRaffle format
       outSuccessRaffle.propositionBytes == SELF.propositionBytes,
-      outSuccessRaffle.value == SELF.value,
       outSuccessRaffle.tokens(0)._1 == SELF.tokens(0)._1,
       outSuccessRaffle.tokens(1)._1 == SELF.tokens(1)._1,
       outSuccessRaffle.tokens(1)._2 == SELF.tokens(1)._2,
