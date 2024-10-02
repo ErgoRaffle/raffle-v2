@@ -98,7 +98,7 @@ describe('Raffle', () => {
 
   describe('Create raffle', () => {
     /**
-     * @target Failed Erg-goal raffle with 1 winners
+     * @target Success Erg-goal raffle with 1 winners and 5 donators
      * @scenario
      * 1. Raffle creation phase 1 (create inactive raffle and ticketRepo with special collecting token)
      * 2. Raffle creation phase 2 (merge inactive and ticket repo and create active raffle and winners)
@@ -174,6 +174,7 @@ describe('Raffle', () => {
             winnersCount,
             chain,
           );
+          expect(giftTokenReceiptTx.success).true;
           step++;
           winnerBoxes.push(giftTokenReceiptTx.outputs[0]);
           giftTokenRepo = giftTokenReceiptTx.outputs[1];
