@@ -30,7 +30,7 @@ function createInactiveRaffleTest(winnersCount: number = 1) {
     undefined,
     10n,
     undefined,
-    1_000_000_000n,
+    testUtils.CREATION_FEE,
     undefined,
     0n,
     constants.TRUE_SCRIPT_HEX,
