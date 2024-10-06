@@ -19,5 +19,6 @@
   //   - License redeem
   //      [Service, SuccessRaffle] --> [Service]
   // 
-  sigmaProp(true)
+  val winnersCount = SELF.R4[Coll[Long]].get(0);
+  sigmaProp(winnersCount > 0)
 }

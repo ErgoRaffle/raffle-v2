@@ -2,8 +2,8 @@ import { it, describe, expect } from 'vitest';
 import { MockChain, mockUTxO } from '@fleet-sdk/mock-chain';
 import { Box, TransactionBuilder, OutputBuilder } from '@fleet-sdk/core';
 
-import * as testUtils from '../testUtils';
 import * as constants from '../../constants';
+import * as testUtils from '../testUtils';
 
 /*
  * create fixtures that contains below steps data:
@@ -24,7 +24,7 @@ const createGiftTokenRepoTest = (winnersCount: number = 1) => {
     undefined,
     BigInt(chain.height + 1000),
     0n,
-    undefined,
+    testUtils.GIFT_TOKEN_ID,
     undefined,
     constants.TRUE_SCRIPT_HEX,
   );

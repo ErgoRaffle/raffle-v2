@@ -1,8 +1,8 @@
 import { it, describe, expect } from 'vitest';
 import { MockChain, mockUTxO } from '@fleet-sdk/mock-chain';
 import { TransactionBuilder } from '@fleet-sdk/core';
-import { compile } from '@fleet-sdk/compiler';
 
+import * as constants from '../../constants';
 import * as testUtils from '../testUtils';
 
 /*
@@ -30,10 +30,10 @@ function createInactiveRaffleTest(winnersCount: number = 1) {
     undefined,
     10n,
     undefined,
-    1_000_000_000n,
+    testUtils.CREATION_FEE,
     undefined,
     0n,
-    compile('{sigmaProp(true);}').toHex().toString(),
+    constants.TRUE_SCRIPT_HEX,
   );
 
   return it.extend({
@@ -303,7 +303,7 @@ describe('ticketRepo', () => {
           1_000_000_000n,
           '1234'.repeat(16),
           0n,
-          compile('{sigmaProp(true);}').toHex().toString(),
+          constants.TRUE_SCRIPT_HEX,
         );
         const extraInputBox = mockUTxO({
           value: testUtils.FEE,

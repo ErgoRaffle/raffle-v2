@@ -21,13 +21,15 @@ import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
  */
 const createRaffleTest = () => {
   const chain = new testUtils.RaffleMockChain({ height: 1000 });
-  const { creator, implementer, donator1, donator2 } =
-    testUtils.createPartners(chain, {
+  const { creator, implementer, donator1, donator2 } = testUtils.createPartners(
+    chain,
+    {
       Creator: testUtils.CREATOR_DEFAULT_BALANCE,
       implementer: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
       donator1: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
       donator2: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
-    });
+    },
+  );
   creator.addBalance({
     tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000_000n }],
   });
@@ -77,13 +79,7 @@ describe('Raffle', () => {
      */
     raffleTest(
       'Failed token-goal raffle with 2 winners',
-      ({
-        chain,
-        creator,
-        serviceBox,
-        implementerAddress,
-        donatorWallets,
-      }) => {
+      ({ chain, creator, serviceBox, implementerAddress, donatorWallets }) => {
         chain.setTip(100);
         const winnersCount = 2n;
         const deadline = 2000n;
@@ -160,7 +156,11 @@ describe('Raffle', () => {
         // Step 6: Redeem two tickets to donators
         let ticketRedeem = forwardToTicketRedeemTx.outputs[0];
         for (const ticket of tickets) {
-          const ticketRedeemTx = executeTicketRedeemTx(ticketRedeem, ticket, chain);
+          const ticketRedeemTx = executeTicketRedeemTx(
+            ticketRedeem,
+            ticket,
+            chain,
+          );
           ticketRedeem = ticketRedeemTx.outputs[0];
           expect(ticketRedeemTx.success).true;
         }
