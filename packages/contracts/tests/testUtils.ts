@@ -925,9 +925,9 @@ export const createWinnersBoxMock = (
   extraTokens?: TokenAmount<bigint>[],
   ergoTree: string = contractsAddresses['winner'],
 ): Box[] => {
-  const mockedWinnersBoxes: Box[] = [];
+  const winnersBoxes: Box[] = [];
   for (let i = 0; i < winnersCount; i++)
-    mockedWinnersBoxes.push(
+    winnersBoxes.push(
       mockUTxO({
         value: 3n * FEE,
         ergoTree: ergoTree,
@@ -957,7 +957,7 @@ export const createWinnersBoxMock = (
       }),
     );
 
-  return mockedWinnersBoxes;
+  return winnersBoxes;
 };
 
 /**
