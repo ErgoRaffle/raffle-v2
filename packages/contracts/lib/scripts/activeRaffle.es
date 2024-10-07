@@ -2,7 +2,7 @@
   // ErgoRaffle V2 Active Raffle Contract
   //
   // Registers:
-  //   R4[Coll[Long]]: [ProjectPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, DeadlineTimestamp, WinnersCount, txFee]
+  //   R4[Coll[Long]]: [ProjectPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, Deadline, WinnersCount, txFee]
   //   R5[Coll[Coll[Byte]]]: [ServiceAddressHash, ImplementerAddressHash, CreatorAddressHash]
   //   R6[Long]: TotalSoldTickets
   // Tokens:
@@ -42,7 +42,8 @@
       outputRaffle.value >= SELF.value + ticketPrice * onSaleTickets
     } else {
       outputRaffle.tokens(2)._1 == SELF.tokens(2)._1 &&
-      outputRaffle.tokens(2)._2 >= SELF.tokens(2)._2 + ticketPrice * onSaleTickets
+      outputRaffle.tokens(2)._2 >= SELF.tokens(2)._2 + ticketPrice * onSaleTickets &&
+      outputRaffle.value >= SELF.value
     }
     sigmaProp(allOf(Coll(
       // Correct ActiveRaffle format
@@ -53,7 +54,6 @@
       outputRaffle.R4[Coll[Long]].get == SELF.R4[Coll[Long]].get,
       outputRaffle.R5[Coll[Coll[Byte]]].get == SELF.R5[Coll[Coll[Byte]]].get,
       outputRaffle.R6[Long].get == totalSoldTickets + onSaleTickets,
-      outputRaffle.value >= SELF.value,
       outputRaffle.tokens.size == SELF.tokens.size,
       depositTicketPrice,
 
