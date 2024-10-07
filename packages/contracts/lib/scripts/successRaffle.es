@@ -2,7 +2,7 @@
   // ErgoRaffle V2 Success Raffle Contract
   //
   // Registers:
-  //   R4[Coll[Long]]: [WinnersCount, txFee, TotalPrize]
+  //   R4[Coll[Long]]: [WinnersCount, TotalPrize, totalSoldTickets]
   //   R5[Coll[Coll[Byte]]]: [Seed, SelectedWinnersListHash]
   //   R6[Long]: Step
   // Tokens:
