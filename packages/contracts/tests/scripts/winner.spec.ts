@@ -3,7 +3,7 @@ import * as path from 'node:path';
 
 import { it, describe, expect } from 'vitest';
 import { compile } from '@fleet-sdk/compiler';
-import { SColl, SLong, SByte, SConstant } from '@fleet-sdk/serializer';
+import { SConstant } from '@fleet-sdk/serializer';
 import { TokenAmount, TransactionBuilder, Box } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
 
@@ -24,10 +24,10 @@ import * as constants from '../../constants';
  *   - create successRaffleBox input box
  * @returns vitest customized "it" object
  */
-function createWinnerTest(
+const createWinnerTest = (
   winnersCount: number = 1,
   collectingToken?: TokenAmount<bigint>,
-) {
+) => {
   // prepare required scripts values
   const GIFT_SCRIPT_HASH_HEX = compile('{sigmaProp(SELF.value >= 0);}').toHex();
   const WINNER_PRIZE_SCRIPT_HASH_HEX = compile(
@@ -119,7 +119,7 @@ function createWinnerTest(
     testUtils.TICKET_TOKEN_ID,
     undefined,
     1n,
-    0n,
+    1000n,
     testUtils.GIFT_TOKEN_ID,
     undefined,
     WINNER_SCRIPT_HASH_HEX,
@@ -157,7 +157,7 @@ function createWinnerTest(
     successRaffleBox: successRaffleBox,
     contractsAddresses: testUtils.contractsAddresses,
   });
-}
+};
 
 describe('winner', () => {
   const winnerTest = createWinnerTest(1);
@@ -174,7 +174,7 @@ describe('winner', () => {
      * - create giftTokenRepoBox
      * - create output boxes
      * - execute transaction
-     * - check execution must be fail
+     * - result of execution must be fail
      * @expected
      * - transaction execution must throw exception
      */
@@ -195,18 +195,16 @@ describe('winner', () => {
 
         const winnerBox = (winnerBoxes as Box[])[0];
 
-        const winnerOutputBox = testUtils.createCustomOutputBox(
-          BigInt(winnerBox.value),
-          [
-            ...winnerBox.assets,
-            {
-              tokenId: invalidTokenId,
-              amount: 1n,
-            },
-          ],
-          winnerBox.ergoTree.toString(),
-          winnerBox.additionalRegisters,
-        );
+        const winnerOutputBox =
+          testUtils.createWinnerOutputBoxWithConstantRegisters(
+            SConstant.from(winnerBox.additionalRegisters.R4!).data as bigint[],
+            testUtils.TICKET_TOKEN_ID,
+            // Set invalid gift token id
+            invalidTokenId,
+            1n,
+            0n,
+          );
+
         // Execute transaction
         const transaction = new TransactionBuilder(chain.height)
           .from([(winnerBoxes as Box[])[0], giftTokenRepoBox])
@@ -233,7 +231,7 @@ describe('winner', () => {
      * - create giftTokenRepoBox
      * - create output boxes
      * - execute transaction
-     * - check execution must be fail
+     * - result of execution must be fail
      * @expected
      * - transaction execution must throw exception
      */
@@ -263,22 +261,16 @@ describe('winner', () => {
           constants.TRUE_SCRIPT_HEX,
         );
 
-        const winnerOutputBox = testUtils.createCustomOutputBox(
-          BigInt(winnerBox.value),
-          [
-            ...winnerBox.assets,
-            {
-              tokenId: giftTokenRepoBox.assets[0].tokenId,
-              amount: 1n,
-            },
-          ],
-          winnerBox.ergoTree.toString(),
-          {
-            R4: winnerBox.additionalRegisters.R4,
-            R5: SLong(1n),
-            R6: winnerBox.additionalRegisters.R6,
-          },
-        );
+        const winnerOutputBox =
+          testUtils.createWinnerOutputBoxWithConstantRegisters(
+            SConstant.from(winnerBox.additionalRegisters.R4!).data as bigint[],
+            testUtils.TICKET_TOKEN_ID,
+            testUtils.GIFT_TOKEN_ID,
+            1n,
+            // Set invalid gift count
+            1n,
+          );
+
         // Execute transaction
         const transaction = new TransactionBuilder(chain.height)
           .from([winnerBox, giftTokenRepoBox])
@@ -301,25 +293,24 @@ describe('winner', () => {
     /**
      * @target fail when incorrect deadline put in R4 of the input winner-box
      * @scenario
-     * - create winner input box by invalid deadline
+     * - create winner input box by incorrect deadline info
      * - create giftTokenRepoBox
      * - create output boxes
      * - execute transaction
-     * - check execution must be fail
+     * - result of execution must be fail
      * @expected
      * - transaction execution must throw exception
      */
     winnerTest(
       'should fail when incorrect deadline put in R4 of the input winner-box',
       ({ WINNER_SCRIPT_HASH_HEX, chain, creator }) => {
-        // put invalid deadline to the input winners count
         const winnerBox = (
           testUtils.createWinnersBoxMock(
             1n,
             testUtils.TICKET_TOKEN_ID,
             undefined,
             3n,
-            1000n,
+            900n, // put invalid deadline to the input winners count
             testUtils.GIFT_TOKEN_ID,
             undefined,
             WINNER_SCRIPT_HASH_HEX,
@@ -338,22 +329,16 @@ describe('winner', () => {
         const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
           .data as bigint[];
         winnerR4[2] = 10n;
-        const winnerOutputBox = testUtils.createCustomOutputBox(
-          BigInt(winnerBox.value),
-          [
-            ...winnerBox.assets,
-            {
-              tokenId: giftTokenRepoBox.assets[0].tokenId,
-              amount: 1n,
-            },
-          ],
-          winnerBox.ergoTree.toString(),
-          {
-            R4: SColl(SLong, winnerR4).toHex(),
-            R5: winnerBox.additionalRegisters.R5,
-            R6: winnerBox.additionalRegisters.R6,
-          },
-        );
+        const winnerOutputBox =
+          testUtils.createWinnerOutputBoxWithConstantRegisters(
+            // Set invalid deadline time
+            winnerR4,
+            testUtils.TICKET_TOKEN_ID,
+            testUtils.GIFT_TOKEN_ID,
+            1n,
+            3n,
+          );
+
         // Execute transaction
         const transaction = new TransactionBuilder(chain.height)
           .from([winnerBox, giftTokenRepoBox])
@@ -374,18 +359,18 @@ describe('winner', () => {
     );
 
     /**
-     * @target fail when two same winner-box pass as input boxes
+     * @target fail when two same winner-boxes placed as inputs
      * @scenario
-     * - create winner input box by invalid deadline
+     * - create two winner input boxes
      * - create giftTokenRepoBox
      * - create output boxes
      * - execute transaction
-     * - check execution must be fail
+     * - result of execution must be fail
      * @expected
      * - transaction execution must throw exception
      */
     winnerTest(
-      'should fail when two same winner-box pass as input boxes',
+      'should fail when two same winner-boxes placed as inputs',
       ({ WINNER_SCRIPT_HASH_HEX, chain, creator }) => {
         // put invalid count of gift-token to the input winners count
         const inputWinnerBoxes = testUtils.createWinnersBoxMock(
@@ -410,18 +395,15 @@ describe('winner', () => {
           constants.TRUE_SCRIPT_HEX,
         );
 
-        const winnerOutputBox = testUtils.createCustomOutputBox(
-          BigInt(winnerBox1.value),
-          [
-            ...winnerBox1.assets,
-            {
-              tokenId: giftTokenRepoBox.assets[0].tokenId,
-              amount: 1n,
-            },
-          ],
-          winnerBox1.ergoTree.toString(),
-          winnerBox1.additionalRegisters,
-        );
+        const winnerOutputBox =
+          testUtils.createWinnerOutputBoxWithConstantRegisters(
+            SConstant.from(winnerBox1.additionalRegisters.R4!).data as bigint[],
+            testUtils.TICKET_TOKEN_ID,
+            testUtils.GIFT_TOKEN_ID,
+            1n,
+            3n,
+          );
+
         // Execute transaction
         const transaction = new TransactionBuilder(chain.height)
           .from([winnerBox1, giftTokenRepoBox, winnerBox2])
@@ -449,17 +431,21 @@ describe('winner', () => {
     /**
      * @target fail when two gift-tokens move to the output gift box
      * @scenario
-     * - create winner output box by invalid data about gift-token id
-     * - create giftTokenRepoBox
-     * - create output boxes
+     * - create winner output box by incorrect number of gift-tokens
+     * - create output giftBox by two gift-tokens inside it
      * - execute transaction
-     * - check execution must be fail
+     * - result of execution must be fail
      * @expected
      * - transaction execution must throw exception
      */
     winnerTest(
       'should fail when two gift-tokens move to the output gift box',
-      ({ WINNER_SCRIPT_HASH_HEX, chain, someoneWallet }) => {
+      ({
+        WINNER_SCRIPT_HASH_HEX,
+        GIFT_SCRIPT_HASH_HEX,
+        chain,
+        someoneWallet,
+      }) => {
         chain.setTip(200);
 
         const winnerBox = (
@@ -482,28 +468,21 @@ describe('winner', () => {
         // put extra gift-token to the winnerOutputBox
         const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
           .data as bigint[];
-        const outWinner = testUtils.createCustomOutputBox(
-          BigInt(winnerBox.value),
-          [
-            winnerBox.assets[0],
-            {
-              tokenId: testUtils.GIFT_TOKEN_ID,
-              amount: 97n,
-            },
-          ],
-          winnerBox.ergoTree.toString(),
-          {
-            R4: winnerBox.additionalRegisters.R4,
-            R5: SLong(2n),
-            R6: winnerBox.additionalRegisters.R6,
-          },
+        const outWinner = testUtils.createWinnerOutputBoxWithConstantRegisters(
+          SConstant.from(winnerBox.additionalRegisters.R4!).data as bigint[],
+          testUtils.TICKET_TOKEN_ID,
+          testUtils.GIFT_TOKEN_ID,
+          97n,
+          3n,
         );
+
         const gift = testUtils.createGiftOutputBox(
           winnerR4[0],
           someoneWallet.address.toString(),
           testUtils.FEE * 10n,
           testUtils.GIFT_TOKEN_ID,
-          3n,
+          2n,
+          GIFT_SCRIPT_HASH_HEX,
         );
         const transaction = new TransactionBuilder(chain.height)
           .from([winnerBox, ...someoneWallet.utxos.toArray()])
@@ -525,11 +504,10 @@ describe('winner', () => {
     /**
      * @target fail when value of input and output winner boxes is different
      * @scenario
-     * - create winner output box by invalid data about gift-token id
-     * - create giftTokenRepoBox
-     * - create output boxes
+     * - create winner output box by incorrect value
+     * - create giftBox
      * - execute transaction
-     * - check execution must be fail
+     * - result of execution must be fail
      * @expected
      * - transaction execution must throw exception
      */
@@ -557,22 +535,14 @@ describe('winner', () => {
         )[0];
         const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
           .data as bigint[];
-        const outWinner = testUtils.createCustomOutputBox(
+        const outWinner = testUtils.createWinnerOutputBoxWithConstantRegisters(
+          SConstant.from(winnerBox.additionalRegisters.R4!).data as bigint[],
+          testUtils.TICKET_TOKEN_ID,
+          testUtils.GIFT_TOKEN_ID,
+          1n,
+          3n,
           // decrease value of output winner-box
           BigInt(winnerBox.value) - testUtils.FEE,
-          [
-            winnerBox.assets[0],
-            {
-              tokenId: testUtils.GIFT_TOKEN_ID,
-              amount: 99n,
-            },
-          ],
-          winnerBox.ergoTree.toString(),
-          {
-            R4: winnerBox.additionalRegisters.R4,
-            R5: SLong(2n),
-            R6: winnerBox.additionalRegisters.R6,
-          },
         );
         const gift = testUtils.createGiftOutputBox(
           winnerR4[0],
@@ -599,18 +569,17 @@ describe('winner', () => {
     );
 
     /**
-     * @target fail when winner-index on the gift box is incorrect
+     * @target fail when winner-index on the register of gift box is incorrect
      * @scenario
-     * - create winner output box by invalid data about gift-token id
-     * - create giftTokenRepoBox
-     * - create output boxes
+     * - create winner output box
+     * - create giftBox by invalid winner-index
      * - execute transaction
-     * - check execution must be fail
+     * - result of execution must be fail
      * @expected
      * - transaction execution must throw exception
      */
     winnerTest(
-      'should fail when winner-index on the gift box is incorrect',
+      'should fail when winner-index on the register of gift box is incorrect',
       ({ WINNER_SCRIPT_HASH_HEX, chain, someoneWallet }) => {
         chain.setTip(200);
 
@@ -633,21 +602,12 @@ describe('winner', () => {
         )[0];
         const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
           .data as bigint[];
-        const outWinner = testUtils.createCustomOutputBox(
-          BigInt(winnerBox.value),
-          [
-            winnerBox.assets[0],
-            {
-              tokenId: testUtils.GIFT_TOKEN_ID,
-              amount: 99n,
-            },
-          ],
-          winnerBox.ergoTree.toString(),
-          {
-            R4: winnerBox.additionalRegisters.R4,
-            R5: SLong(2n),
-            R6: winnerBox.additionalRegisters.R6,
-          },
+        const outWinner = testUtils.createWinnerOutputBoxWithConstantRegisters(
+          SConstant.from(winnerBox.additionalRegisters.R4!).data as bigint[],
+          testUtils.TICKET_TOKEN_ID,
+          testUtils.GIFT_TOKEN_ID,
+          99n,
+          1n,
         );
         const gift = testUtils.createGiftOutputBox(
           // put incorrect index on the gift box
@@ -676,11 +636,10 @@ describe('winner', () => {
     /**
      * @target fail when amount of erg on the gift box is not enough
      * @scenario
-     * - create winner output box by invalid data about gift-token id
-     * - create giftTokenRepoBox
-     * - create output boxes
+     * - create winner output box
+     * - create giftBox by incorrect amount of erg value
      * - execute transaction
-     * - check execution must be fail
+     * - result of execution must be fail
      * @expected
      * - transaction execution must throw exception
      */
@@ -708,21 +667,12 @@ describe('winner', () => {
         )[0];
         const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
           .data as bigint[];
-        const outWinner = testUtils.createCustomOutputBox(
-          BigInt(winnerBox.value),
-          [
-            winnerBox.assets[0],
-            {
-              tokenId: testUtils.GIFT_TOKEN_ID,
-              amount: 99n,
-            },
-          ],
-          winnerBox.ergoTree.toString(),
-          {
-            R4: winnerBox.additionalRegisters.R4,
-            R5: SLong(2n),
-            R6: winnerBox.additionalRegisters.R6,
-          },
+        const outWinner = testUtils.createWinnerOutputBoxWithConstantRegisters(
+          SConstant.from(winnerBox.additionalRegisters.R4!).data as bigint[],
+          testUtils.TICKET_TOKEN_ID,
+          testUtils.GIFT_TOKEN_ID,
+          99n,
+          2n,
         );
         const gift = testUtils.createGiftOutputBox(
           winnerR4[0],
@@ -753,11 +703,12 @@ describe('winner', () => {
     /**
      * @target success erg-goal based winner-prize creation
      * @scenario
-     * - create winner output box by invalid data about gift-token id
-     * - create giftTokenRepoBox
-     * - create output boxes
+     * - create winner input box
+     * - create successRaffle input box
+     * - create prize output box
+     * - create successRaffle output box
      * - execute transaction
-     * - check execution must be fail
+     * - result of execution must be success
      * @expected
      * - transaction must done successfully
      */
@@ -788,46 +739,34 @@ describe('winner', () => {
             WINNER_SCRIPT_HASH_HEX,
           ) as Box[]
         )[0];
-        const successRaffleOutputBoxTokens = [
-          successRaffleBox.assets[0],
-          successRaffleBox.assets[1],
-        ];
 
         const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
           .data as bigint[];
 
         const prizeAmount = (BigInt(totalPrize) * BigInt(winnerR4[1])) / 1000n;
         const prizeBoxTokens = [winnerBox.assets[0], winnerBox.assets[1]];
-        const prizeBox = testUtils.createCustomOutputBox(
+        const prizeBox = testUtils.createWinnerPrizeOutputBox(
           testUtils.FEE * 2n + BigInt(prizeAmount),
+          winnerR4[0],
+          1n,
+          1n,
+          0n,
           prizeBoxTokens,
           WINNER_PRIZE_SCRIPT_HASH_HEX,
-          {
-            R4: SColl(SLong, [
-              BigInt(1n),
-              winnerBox.additionalRegisters.R4![0],
-              BigInt(1n),
-            ]).toHex(),
-            R5: SLong(0n),
-          },
         );
 
-        const successRaffleOutputBox = testUtils.createCustomOutputBox(
+        const successRaffleOutputBox = testUtils.createSuccessRaffleBox(
           BigInt(successRaffleBox.value) - BigInt(prizeAmount),
-          successRaffleOutputBoxTokens,
-          successRaffleBox.ergoTree,
-          {
-            R4: SColl(SLong, [
-              BigInt(1n),
-              testUtils.FEE,
-              BigInt(totalPrize),
-            ]).toHex(),
-            R5: SColl(SColl(SByte), [
-              Array.from(Buffer.from('test seed')),
-              Array.from(Buffer.from('')),
-            ]),
-            R6: SLong(BigInt(1n)), // step
-          },
+          testUtils.LICENSE_TOKEN_ID,
+          'test seed',
+          testUtils.makeHashFromString([].toString()),
+          1n,
+          BigInt(totalPrize),
+          0n,
+          1n,
+          testUtils.TICKET_TOKEN_ID,
+          successRaffleBox.assets[1].amount,
+          undefined,
         );
 
         const transaction = new TransactionBuilder(chain.height)
@@ -846,11 +785,12 @@ describe('winner', () => {
     /**
      * @target success token-goal based winner-prize creation
      * @scenario
-     * - create winner output box by invalid data about gift-token id
-     * - create giftTokenRepoBox
-     * - create output boxes
+     * - create winner input box
+     * - create successRaffle input box
+     * - create prize output box
+     * - create successRaffle output box
      * - execute transaction
-     * - check execution must be fail
+     * - result of execution must be success
      * @expected
      * - transaction must done successfully
      */
@@ -916,36 +856,28 @@ describe('winner', () => {
           amount:
             BigInt(successRaffleBox.assets[2]!.amount) - BigInt(prizeAmount),
         });
-        const prizeBox = testUtils.createCustomOutputBox(
+        const prizeBox = testUtils.createWinnerPrizeOutputBox(
           testUtils.FEE * 2n,
+          winnerR4[0],
+          1n,
+          1n,
+          0n,
           prizeBoxTokens,
           WINNER_PRIZE_SCRIPT_HASH_HEX,
-          {
-            R4: SColl(SLong, [
-              BigInt(1n),
-              winnerBox.additionalRegisters.R4![0],
-              BigInt(1n),
-            ]).toHex(),
-            R5: SLong(0n),
-          },
         );
 
-        const successRaffleOutputBox = testUtils.createCustomOutputBox(
+        const successRaffleOutputBox = testUtils.createSuccessRaffleBox(
           BigInt(successRaffleBox.value),
-          successRaffleOutputBoxTokens,
-          successRaffleBox.ergoTree,
-          {
-            R4: SColl(SLong, [
-              BigInt(1n),
-              testUtils.FEE,
-              BigInt(totalPrize),
-            ]).toHex(),
-            R5: SColl(SColl(SByte), [
-              Array.from(Buffer.from('test seed')),
-              Array.from(Buffer.from('')),
-            ]),
-            R6: SLong(BigInt(1n)), // step
-          },
+          testUtils.LICENSE_TOKEN_ID,
+          'test seed',
+          testUtils.makeHashFromString([].toString()),
+          1n,
+          BigInt(totalPrize),
+          BigInt(successRaffleBox.assets[2]!.amount) - BigInt(prizeAmount),
+          1n,
+          testUtils.TICKET_TOKEN_ID,
+          successRaffleBox.assets[1].amount,
+          successRaffleBox.assets[2]!.tokenId,
         );
 
         const transaction = new TransactionBuilder(chain.height)
@@ -964,11 +896,12 @@ describe('winner', () => {
     /**
      * @target fail when incorrect value puts on the erg-goal prize box
      * @scenario
-     * - create winner output box by invalid data about gift-token id
-     * - create giftTokenRepoBox
-     * - create output boxes
+     * - create winner input box
+     * - create successRaffle input box
+     * - create prize output box by incorrect value
+     * - create successRaffle output box
      * - execute transaction
-     * - check execution must be fail
+     * - result of execution must be fail
      * @expected
      * - transaction execution must throw exception
      */
@@ -999,10 +932,6 @@ describe('winner', () => {
             WINNER_SCRIPT_HASH_HEX,
           ) as Box[]
         )[0];
-        const successRaffleOutputBoxTokens = [
-          successRaffleBox.assets[0],
-          successRaffleBox.assets[1],
-        ];
 
         const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
           .data as bigint[];
@@ -1010,36 +939,27 @@ describe('winner', () => {
         const incorrectPrizeAmount =
           (BigInt(totalPrize) * BigInt(winnerR4[1])) / 1000n - 1n;
         const prizeBoxTokens = [winnerBox.assets[0], winnerBox.assets[1]];
-        const prizeBox = testUtils.createCustomOutputBox(
+        const prizeBox = testUtils.createWinnerPrizeOutputBox(
           testUtils.FEE * 2n + BigInt(incorrectPrizeAmount),
+          winnerR4[0],
+          1n,
+          1n,
+          0n,
           prizeBoxTokens,
           WINNER_PRIZE_SCRIPT_HASH_HEX,
-          {
-            R4: SColl(SLong, [
-              BigInt(1n),
-              winnerBox.additionalRegisters.R4![0],
-              BigInt(1n),
-            ]).toHex(),
-            R5: SLong(0n),
-          },
         );
 
-        const successRaffleOutputBox = testUtils.createCustomOutputBox(
+        const successRaffleOutputBox = testUtils.createSuccessRaffleBox(
           BigInt(successRaffleBox.value) - BigInt(incorrectPrizeAmount),
-          successRaffleOutputBoxTokens,
-          successRaffleBox.ergoTree,
-          {
-            R4: SColl(SLong, [
-              BigInt(1n),
-              testUtils.FEE,
-              BigInt(totalPrize),
-            ]).toHex(),
-            R5: SColl(SColl(SByte), [
-              Array.from(Buffer.from('test seed')),
-              Array.from(Buffer.from('')),
-            ]),
-            R6: SLong(BigInt(1n)), // step
-          },
+          testUtils.LICENSE_TOKEN_ID,
+          'test seed',
+          testUtils.makeHashFromString([].toString()),
+          1n,
+          BigInt(totalPrize),
+          undefined,
+          1n,
+          testUtils.TICKET_TOKEN_ID,
+          successRaffleBox.assets[1].amount,
         );
 
         const transaction = new TransactionBuilder(chain.height)
@@ -1059,11 +979,12 @@ describe('winner', () => {
     /**
      * @target fail when incorrect value puts on the token-goal prize box
      * @scenario
-     * - create winner output box by invalid data about gift-token id
-     * - create giftTokenRepoBox
-     * - create output boxes
+     * - create winner input box
+     * - create successRaffle input box
+     * - create prize output box by incorrect value
+     * - create successRaffle output box
      * - execute transaction
-     * - check execution must be fail
+     * - result of execution must be fail
      * @expected
      * - transaction execution must throw exception
      */
@@ -1131,36 +1052,28 @@ describe('winner', () => {
           amount:
             BigInt(successRaffleBox.assets[2]!.amount) - BigInt(prizeAmount),
         });
-        const prizeBox = testUtils.createCustomOutputBox(
+        const prizeBox = testUtils.createWinnerPrizeOutputBox(
           testUtils.FEE * 2n,
+          winnerR4[0],
+          1n,
+          1n,
+          0n,
           prizeBoxTokens,
           WINNER_PRIZE_SCRIPT_HASH_HEX,
-          {
-            R4: SColl(SLong, [
-              BigInt(1n),
-              winnerBox.additionalRegisters.R4![0],
-              BigInt(1n),
-            ]).toHex(),
-            R5: SLong(0n),
-          },
         );
 
-        const successRaffleOutputBox = testUtils.createCustomOutputBox(
+        const successRaffleOutputBox = testUtils.createSuccessRaffleBox(
           BigInt(successRaffleBox.value),
-          successRaffleOutputBoxTokens,
-          successRaffleBox.ergoTree,
-          {
-            R4: SColl(SLong, [
-              BigInt(1n),
-              testUtils.FEE,
-              BigInt(totalPrize),
-            ]).toHex(),
-            R5: SColl(SColl(SByte), [
-              Array.from(Buffer.from('test seed')),
-              Array.from(Buffer.from('')),
-            ]),
-            R6: SLong(BigInt(1n)), // step
-          },
+          testUtils.LICENSE_TOKEN_ID,
+          'test seed',
+          testUtils.makeHashFromString([].toString()),
+          1n,
+          BigInt(totalPrize),
+          BigInt(successRaffleBox.assets[2]!.amount) - BigInt(prizeAmount),
+          1n,
+          testUtils.TICKET_TOKEN_ID,
+          successRaffleBox.assets[1].amount,
+          successRaffleBox.assets[2]!.tokenId,
         );
 
         const transaction = new TransactionBuilder(chain.height)
@@ -1178,18 +1091,19 @@ describe('winner', () => {
     );
 
     /**
-     * @target fail when don't move total assets from winner-box to the prize-box
+     * @target fail when the total assets aren't transferred from the winner's box to the prize box
      * @scenario
-     * - create winner output box by invalid data about gift-token id
-     * - create giftTokenRepoBox
-     * - create output boxes
+     * - create winner input box
+     * - create successRaffle input box
+     * - create prize output box by incorrect amount of gift assets
+     * - create successRaffle output box
      * - execute transaction
-     * - check execution must be fail
+     * - result of execution must be fail
      * @expected
      * - transaction execution must throw exception
      */
     winnerTest(
-      "should fail when don't move total assets from winner-box to the prize-box",
+      "should fails when the total assets aren't transferred from the winner's box to the prize box",
       ({
         WINNER_PRIZE_SCRIPT_HASH_HEX,
         WINNER_SCRIPT_HASH_HEX,
@@ -1215,10 +1129,6 @@ describe('winner', () => {
             WINNER_SCRIPT_HASH_HEX,
           ) as Box[]
         )[0];
-        const successRaffleOutputBoxTokens = [
-          successRaffleBox.assets[0],
-          successRaffleBox.assets[1],
-        ];
 
         const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
           .data as bigint[];
@@ -1232,36 +1142,27 @@ describe('winner', () => {
             amount: BigInt(winnerBox.assets[1].amount) - 1n,
           },
         ];
-        const prizeBox = testUtils.createCustomOutputBox(
+        const prizeBox = testUtils.createWinnerPrizeOutputBox(
           testUtils.FEE * 2n + BigInt(prizeAmount),
+          winnerR4[0],
+          1n,
+          1n,
+          0n,
           prizeBoxTokens,
           WINNER_PRIZE_SCRIPT_HASH_HEX,
-          {
-            R4: SColl(SLong, [
-              BigInt(1n),
-              winnerBox.additionalRegisters.R4![0],
-              BigInt(1n),
-            ]).toHex(),
-            R5: SLong(0n),
-          },
         );
 
-        const successRaffleOutputBox = testUtils.createCustomOutputBox(
+        const successRaffleOutputBox = testUtils.createSuccessRaffleBox(
           BigInt(successRaffleBox.value) - BigInt(prizeAmount),
-          successRaffleOutputBoxTokens,
-          successRaffleBox.ergoTree,
-          {
-            R4: SColl(SLong, [
-              BigInt(1n),
-              testUtils.FEE,
-              BigInt(totalPrize),
-            ]).toHex(),
-            R5: SColl(SColl(SByte), [
-              Array.from(Buffer.from('test seed')),
-              Array.from(Buffer.from('')),
-            ]),
-            R6: SLong(BigInt(1n)), // step
-          },
+          testUtils.LICENSE_TOKEN_ID,
+          'test seed',
+          testUtils.makeHashFromString([].toString()),
+          1n,
+          BigInt(totalPrize),
+          undefined,
+          1n,
+          testUtils.TICKET_TOKEN_ID,
+          successRaffleBox.assets[1].amount,
         );
 
         const transaction = new TransactionBuilder(chain.height)
@@ -1283,18 +1184,19 @@ describe('winner', () => {
     );
 
     /**
-     * @target fail when put invalid winnerBox-index on the prize-box
+     * @target fail when an invalid winner box index is placed in the prize box
      * @scenario
-     * - create winner output box by invalid data about gift-token id
-     * - create giftTokenRepoBox
-     * - create output boxes
+     * - create winner input box
+     * - create successRaffle input box
+     * - create prize output box by invalid winner-index
+     * - create successRaffle output box
      * - execute transaction
-     * - check execution must be fail
+     * - result of execution must be fail
      * @expected
      * - transaction execution must throw exception
      */
     winnerTest(
-      'should fail when put invalid winnerBox-index on the prize-box',
+      'should fail when an invalid winner box index is placed in the prize box',
       ({
         WINNER_PRIZE_SCRIPT_HASH_HEX,
         WINNER_SCRIPT_HASH_HEX,
@@ -1320,43 +1222,33 @@ describe('winner', () => {
             WINNER_SCRIPT_HASH_HEX,
           ) as Box[]
         )[0];
-        const successRaffleOutputBoxTokens = [
-          successRaffleBox.assets[0],
-          successRaffleBox.assets[1],
-        ];
 
         const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
           .data as bigint[];
 
         const prizeAmount = (BigInt(totalPrize) * BigInt(winnerR4[1])) / 1000n;
         const prizeBoxTokens = [winnerBox.assets[0], winnerBox.assets[1]];
-        const prizeBox = testUtils.createCustomOutputBox(
+        const prizeBox = testUtils.createWinnerPrizeOutputBox(
           testUtils.FEE * 2n + BigInt(prizeAmount),
+          0n, // put invalid winner-index
+          1n,
+          1n,
+          0n,
           prizeBoxTokens,
           WINNER_PRIZE_SCRIPT_HASH_HEX,
-          {
-            // put invalid winner-index
-            R4: SColl(SLong, [BigInt(1n), 3n, BigInt(1n)]).toHex(),
-            R5: SLong(0n),
-          },
         );
 
-        const successRaffleOutputBox = testUtils.createCustomOutputBox(
+        const successRaffleOutputBox = testUtils.createSuccessRaffleBox(
           BigInt(successRaffleBox.value) - BigInt(prizeAmount),
-          successRaffleOutputBoxTokens,
-          successRaffleBox.ergoTree,
-          {
-            R4: SColl(SLong, [
-              BigInt(1n),
-              testUtils.FEE,
-              BigInt(totalPrize),
-            ]).toHex(),
-            R5: SColl(SColl(SByte), [
-              Array.from(Buffer.from('test seed')),
-              Array.from(Buffer.from('')),
-            ]),
-            R6: SLong(BigInt(1n)), // step
-          },
+          testUtils.LICENSE_TOKEN_ID,
+          'test seed',
+          testUtils.makeHashFromString([].toString()),
+          1n,
+          BigInt(totalPrize),
+          undefined,
+          1n,
+          testUtils.TICKET_TOKEN_ID,
+          successRaffleBox.assets[1].amount,
         );
 
         const transaction = new TransactionBuilder(chain.height)
@@ -1374,18 +1266,19 @@ describe('winner', () => {
     );
 
     /**
-     * @target fail when put invalid token on the successRaffle box
+     * @target fail when an invalid ticket token is placed in the successRaffle box
      * @scenario
-     * - create winner output box by invalid data about gift-token id
-     * - create giftTokenRepoBox
-     * - create output boxes
+     * - create winner input box
+     * - create successRaffle input box
+     * - create prize output box
+     * - create successRaffle output box by invalid ticket token id
      * - execute transaction
-     * - check execution must be fail
+     * - result of execution must be fail
      * @expected
      * - transaction execution must throw exception
      */
     winnerTest(
-      'fail when put invalid token on the successRaffle box',
+      'should fail when an invalid token is placed in the successRaffle box',
       ({
         WINNER_PRIZE_SCRIPT_HASH_HEX,
         WINNER_SCRIPT_HASH_HEX,
@@ -1412,45 +1305,33 @@ describe('winner', () => {
             WINNER_SCRIPT_HASH_HEX,
           ) as Box[]
         )[0];
-        const successRaffleOutputBoxTokens = [
-          successRaffleBox.assets[0],
-          {
-            tokenId: testUtils.X_TOKEN_ID,
-            amount: successRaffleBox.assets[1].amount,
-          },
-        ];
 
         const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
           .data as bigint[];
 
         const prizeAmount = (BigInt(totalPrize) * BigInt(winnerR4[1])) / 1000n;
         const prizeBoxTokens = [winnerBox.assets[0], winnerBox.assets[1]];
-        const prizeBox = testUtils.createCustomOutputBox(
+        const prizeBox = testUtils.createWinnerPrizeOutputBox(
           testUtils.FEE * 2n + BigInt(prizeAmount),
+          winnerR4[0],
+          1n,
+          1n,
+          0n,
           prizeBoxTokens,
           WINNER_PRIZE_SCRIPT_HASH_HEX,
-          {
-            R4: SColl(SLong, [BigInt(1n), winnerR4[0], BigInt(1n)]).toHex(),
-            R5: SLong(0n),
-          },
         );
 
-        const successRaffleOutputBox = testUtils.createCustomOutputBox(
+        const successRaffleOutputBox = testUtils.createSuccessRaffleBox(
           BigInt(successRaffleBox.value) - BigInt(prizeAmount),
-          successRaffleOutputBoxTokens,
-          successRaffleBox.ergoTree,
-          {
-            R4: SColl(SLong, [
-              BigInt(1n),
-              testUtils.FEE,
-              BigInt(totalPrize),
-            ]).toHex(),
-            R5: SColl(SColl(SByte), [
-              Array.from(Buffer.from('test seed')),
-              Array.from(Buffer.from('')),
-            ]),
-            R6: SLong(BigInt(1n)), // step
-          },
+          testUtils.LICENSE_TOKEN_ID,
+          'test seed',
+          testUtils.makeHashFromString([].toString()),
+          1n,
+          BigInt(totalPrize),
+          undefined,
+          1n,
+          testUtils.X_TOKEN_ID,
+          successRaffleBox.assets[1].amount,
         );
 
         const transaction = new TransactionBuilder(chain.height)
@@ -1475,18 +1356,19 @@ describe('winner', () => {
     );
 
     /**
-     * @target fail when two duplicated winner-boxes use as input
+     * @target fails when two duplicate winner boxes are used as input
      * @scenario
-     * - create winner output box by invalid data about gift-token id
-     * - create giftTokenRepoBox
-     * - create output boxes
+     * - create two winner input boxes
+     * - create successRaffle input box
+     * - create prize output box
+     * - create successRaffle output box
      * - execute transaction
-     * - check execution must be fail
+     * - result of execution must be fail
      * @expected
      * - transaction execution must throw exception
      */
     winnerTest(
-      'should fail when two duplicated winner-boxes use as input',
+      'should fails when two duplicate winner boxes are used as input',
       ({
         WINNER_PRIZE_SCRIPT_HASH_HEX,
         WINNER_SCRIPT_HASH_HEX,
@@ -1513,46 +1395,33 @@ describe('winner', () => {
         ) as Box[];
         const winnerBox1 = inputWinnerBoxes[0];
         const winnerBox2 = inputWinnerBoxes[1];
-        const successRaffleOutputBoxTokens = [
-          successRaffleBox.assets[0],
-          successRaffleBox.assets[1],
-        ];
 
         const winnerR4 = SConstant.from(winnerBox1.additionalRegisters.R4!)
           .data as bigint[];
 
         const prizeAmount = (BigInt(totalPrize) * BigInt(winnerR4[1])) / 1000n;
         const prizeBoxTokens = [winnerBox1.assets[0], winnerBox1.assets[1]];
-        const prizeBox = testUtils.createCustomOutputBox(
+        const prizeBox = testUtils.createWinnerPrizeOutputBox(
           testUtils.FEE * 2n + BigInt(prizeAmount),
+          winnerR4[0],
+          1n,
+          1n,
+          0n,
           prizeBoxTokens,
           WINNER_PRIZE_SCRIPT_HASH_HEX,
-          {
-            R4: SColl(SLong, [
-              BigInt(1n),
-              winnerBox1.additionalRegisters.R4![0],
-              BigInt(1n),
-            ]).toHex(),
-            R5: SLong(0n),
-          },
         );
 
-        const successRaffleOutputBox = testUtils.createCustomOutputBox(
+        const successRaffleOutputBox = testUtils.createSuccessRaffleBox(
           BigInt(successRaffleBox.value) - BigInt(prizeAmount),
-          successRaffleOutputBoxTokens,
-          successRaffleBox.ergoTree,
-          {
-            R4: SColl(SLong, [
-              BigInt(1n),
-              testUtils.FEE,
-              BigInt(totalPrize),
-            ]).toHex(),
-            R5: SColl(SColl(SByte), [
-              Array.from(Buffer.from('test seed')),
-              Array.from(Buffer.from('')),
-            ]),
-            R6: SLong(BigInt(1n)), // step
-          },
+          testUtils.LICENSE_TOKEN_ID,
+          'test seed',
+          testUtils.makeHashFromString([].toString()),
+          1n,
+          BigInt(totalPrize),
+          undefined,
+          1n,
+          testUtils.TICKET_TOKEN_ID,
+          successRaffleBox.assets[1].amount,
         );
 
         const transaction = new TransactionBuilder(chain.height)
@@ -1573,18 +1442,17 @@ describe('winner', () => {
 
   describe('Gift redeem (for failed raffle)', () => {
     /**
-     * @target success erg-goal based return gift token
+     * @target success execution of return gift erg-goal transaction
      * @scenario
-     * - create winner output box by invalid data about gift-token id
-     * - create giftTokenRepoBox
-     * - create output boxes
+     * - create winner output box
+     * - create redeemedGift output box
      * - execute transaction
-     * - check execution must be fail
+     * - result of execution must be success
      * @expected
      * - transaction must done successfully
      */
     winnerTest(
-      'should success erg-goal based return gift token',
+      'should success execution of return gift erg-goal transaction',
       ({
         GIFT_REDEEM_SCRIPT_HASH_HEX,
         WINNER_SCRIPT_HASH_HEX,
@@ -1664,18 +1532,17 @@ describe('winner', () => {
     );
 
     /**
-     * @target success erg-goal based return gift token
+     * @target fail when the return gift erg-goal transaction uses an invalid ticket token in the giftRedeem box
      * @scenario
-     * - create winner output box by invalid data about gift-token id
-     * - create giftTokenRepoBox
-     * - create output boxes
+     * - create winner output box
+     * - create redeemedGift output box by invalid ticket token
      * - execute transaction
-     * - check execution must be fail
+     * - result of execution must be fail
      * @expected
-     * - transaction must done successfully
+     * - transaction execution must throw exception
      */
     winnerTest(
-      'should fail erg-goal based return gift token by giftRedeem box with invalid ticket token',
+      'should fail when the return gift erg-goal transaction uses an invalid ticket token in the giftRedeem box',
       ({
         GIFT_REDEEM_SCRIPT_HASH_HEX,
         WINNER_SCRIPT_HASH_HEX,
@@ -1756,18 +1623,17 @@ describe('winner', () => {
     );
 
     /**
-     * @target success erg-goal based return gift token
+     * @target fail return gift erg-goal transaction by invalid number of gift token on the winner box
      * @scenario
-     * - create winner output box by invalid data about gift-token id
-     * - create giftTokenRepoBox
-     * - create output boxes
+     * - create winner output box by invalid number of gift token
+     * - create redeemedGift output box
      * - execute transaction
-     * - check execution must be fail
+     * - result of execution must be fail
      * @expected
-     * - transaction must done successfully
+     * - transaction execution must throw exception
      */
     winnerTest(
-      'should fail erg-goal based return gift token by invalid number of gift token on the winner box',
+      'should fail return gift erg-goal transaction by invalid number of gift token on the winner box',
       ({
         GIFT_REDEEM_SCRIPT_HASH_HEX,
         WINNER_SCRIPT_HASH_HEX,
@@ -1848,18 +1714,17 @@ describe('winner', () => {
     );
 
     /**
-     * @target success erg-goal based return gift token
+     * @target fail erg-goal based return gift transaction without ticket token on the output winner box
      * @scenario
-     * - create winner output box by invalid data about gift-token id
-     * - create giftTokenRepoBox
-     * - create output boxes
+     * - create winner output box without ticket token
+     * - create redeemedGift output box
      * - execute transaction
-     * - check execution must be fail
+     * - result of execution must be fail
      * @expected
-     * - transaction must done successfully
+     * - transaction execution must throw exception
      */
     winnerTest(
-      'should fail erg-goal based return gift token when gift token placed on the redeemGift box instead of output winner box',
+      'should fail erg-goal based return gift transaction without ticket token on the output winner box',
       ({
         GIFT_REDEEM_SCRIPT_HASH_HEX,
         WINNER_SCRIPT_HASH_HEX,
@@ -1947,18 +1812,18 @@ describe('winner', () => {
     );
 
     /**
-     * @target success erg-goal based return gift token
+     * @target fail erg-goal return gift transaction by with invalid winner-index on the input gift box
      * @scenario
-     * - create winner output box by invalid data about gift-token id
-     * - create giftTokenRepoBox
-     * - create output boxes
+     * - create gift input box by invalid winner-index
+     * - create winner output box
+     * - create redeemedGift output box
      * - execute transaction
-     * - check execution must be fail
+     * - result of execution must be success
      * @expected
-     * - transaction must done successfully
+     * - transaction execution must throw exception
      */
     winnerTest(
-      'should fail erg-goal based return gift token by giftRedeem box with invalid ticket token',
+      'should fail erg-goal return gift transaction by with invalid winner-index on the input gift box',
       ({
         GIFT_REDEEM_SCRIPT_HASH_HEX,
         WINNER_SCRIPT_HASH_HEX,
@@ -2039,18 +1904,18 @@ describe('winner', () => {
     );
 
     /**
-     * @target success erg-goal based return gift token
+     * @target fail return gift erg-goal transaction by two gift boxes in the input
      * @scenario
-     * - create winner output box by invalid data about gift-token id
-     * - create giftTokenRepoBox
-     * - create output boxes
+     * - create gift input box by invalid winner-index
+     * - create winner output box
+     * - create redeemedGift output box
      * - execute transaction
-     * - check execution must be fail
+     * - result of execution must be success
      * @expected
-     * - transaction must done successfully
+     * - transaction execution must throw exception
      */
     winnerTest(
-      'should fail erg-goal based return gift token by giftRedeem box with invalid ticket token',
+      'should fail return gift erg-goal transaction by two gift boxes in the input',
       ({
         GIFT_REDEEM_SCRIPT_HASH_HEX,
         WINNER_SCRIPT_HASH_HEX,
@@ -2141,18 +2006,18 @@ describe('winner', () => {
 
   describe('Winner box removal (for failed raffle)', () => {
     /**
-     * @target success erg-goal based winner removal
+     * @target success erg-goal winner removal transaction
      * @scenario
-     * - create winner output box by invalid data about gift-token id
-     * - create giftTokenRepoBox
-     * - create output boxes
+     * - create winner input box
+     * - create giftRedeem input box
+     * - create giftRedeem output box
      * - execute transaction
-     * - check execution must be fail
+     * - result of execution must be success
      * @expected
      * - transaction must done successfully
      */
     winnerTest(
-      'should success erg-goal based winner removal',
+      'should success erg-goal winner removal transaction',
       ({ GIFT_REDEEM_SCRIPT_HASH_HEX, WINNER_SCRIPT_HASH_HEX, chain }) => {
         // Create input boxes
         const winner = (
@@ -2211,18 +2076,18 @@ describe('winner', () => {
     );
 
     /**
-     * @target success erg-goal based winner removal
+     * @target fail erg-goal based winner removal transaction by redeemGift box of another raffle
      * @scenario
-     * - create winner output box by invalid data about gift-token id
-     * - create giftTokenRepoBox
-     * - create output boxes
+     * - create winner input box
+     * - create giftRedeem input box by invalid ticket token id
+     * - create giftRedeem output box
      * - execute transaction
-     * - check execution must be fail
+     * - result of execution must be fail
      * @expected
-     * - transaction must done successfully
+     * - transaction execution must throw exception
      */
     winnerTest(
-      'should fail erg-goal based winner removal by redeemGift box of another raffle',
+      'should fail erg-goal based winner removal transaction by redeemGift box of another raffle',
       ({ GIFT_REDEEM_SCRIPT_HASH_HEX, WINNER_SCRIPT_HASH_HEX, chain }) => {
         // Create input boxes
         const winner = (
@@ -2282,15 +2147,15 @@ describe('winner', () => {
     );
 
     /**
-     * @target fail erg-goal based winner removal
+     * @target fail erg-goal based winner removal when gift-count is greater than zero
      * @scenario
-     * - create winner output box by invalid data about gift-token id
-     * - create giftTokenRepoBox
-     * - create output boxes
+     * - create winner input box by gift-count greater than zero
+     * - create giftRedeem input box
+     * - create giftRedeem output box
      * - execute transaction
-     * - check execution must be fail
+     * - result of execution must be fail
      * @expected
-     * - transaction must done successfully
+     * - transaction execution must throw exception
      */
     winnerTest(
       'should fail erg-goal based winner removal when gift-count is greater than zero',
@@ -2353,18 +2218,19 @@ describe('winner', () => {
     );
 
     /**
-     * @target fail erg-goal based winner removal
+     * @target fail erg-goal based winner removal when some gift-tokens move to another box
      * @scenario
-     * - create winner output box by invalid data about gift-token id
-     * - create giftTokenRepoBox
-     * - create output boxes
+     * - create winner input box
+     * - create giftRedeem input box
+     * - create giftRedeem output box
+     * - create extraOutput box that contains some gift-tokens
      * - execute transaction
-     * - check execution must be fail
+     * - result of execution must be fail
      * @expected
-     * - transaction must done successfully
+     * - transaction execution must throw exception
      */
     winnerTest(
-      'should fail erg-goal based winner removal when gift-count is greater than zero',
+      'should fail erg-goal based winner removal when some gift-tokens move to another box',
       ({
         GIFT_REDEEM_SCRIPT_HASH_HEX,
         WINNER_SCRIPT_HASH_HEX,

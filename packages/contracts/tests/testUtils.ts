@@ -1042,6 +1042,7 @@ export const createGiftBoxMock = (
  * @param value
  * @param giftTokenId
  * @param giftTokenAmount
+ * @param ergoTree
  * @returns
  */
 export const createGiftOutputBox = (
@@ -1050,10 +1051,11 @@ export const createGiftOutputBox = (
   value: bigint = 0n,
   giftTokenId?: string,
   giftTokenAmount: bigint = 1n,
+  ergoTree: string = contractsAddresses['gift'],
 ) => {
   const giftForWinnerOutputBox = new OutputBuilder(
     value,
-    contractsAddresses['gift'],
+    ergoTree,
   ).setAdditionalRegisters({
     R4: SColl(SByte, Array.from(Buffer.from(giftGiverWalletAddress))),
     R5: SLong(winnerIndex),
@@ -1254,8 +1256,9 @@ export const createWinnerOutputBoxWithConstantRegisters = (
   giftTokenId: string = GIFT_TOKEN_ID,
   giftTokenCount = BigInt(GIFT_TOKEN_COUNT),
   giftCount = 0n,
+  value: bigint = 3n * FEE,
 ) => {
-  const winnerBox = new OutputBuilder(3n * FEE, contractsAddresses['winner'])
+  const winnerBox = new OutputBuilder(value, contractsAddresses['winner'])
     .setAdditionalRegisters({
       R4: SColl(SLong, r4),
       R5: SLong(giftCount),
