@@ -21,15 +21,14 @@ import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
  */
 const createRaffleTest = () => {
   const chain = new testUtils.RaffleMockChain({ height: 1000 });
-  const { creator, implementer, donator1, donator2 } = testUtils.createPartners(
-    chain,
-    {
+  const boxFactory = new testUtils.RaffleBoxFactory(chain);
+  const { creator, implementer, donator1, donator2 } =
+    boxFactory.createPartners({
       Creator: testUtils.CREATOR_DEFAULT_BALANCE,
       implementer: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
       donator1: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
       donator2: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
-    },
-  );
+    });
   creator.addBalance({
     tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000_000n }],
   });
@@ -41,7 +40,7 @@ const createRaffleTest = () => {
   });
 
   // Created input service-box
-  const serviceBox = testUtils.createServiceBoxMock(
+  const serviceBox = boxFactory.createServiceBoxMock(
     creator.address.toString(),
     testUtils.LICENSE_TOKEN_COUNT,
     10n,
@@ -52,7 +51,7 @@ const createRaffleTest = () => {
   const donatorWallets: KeyedMockChainParty[] = [donator1, donator2];
 
   return it.extend({
-    chain: chain,
+    boxFactory: boxFactory,
     creator: creator,
     serviceBox: serviceBox,
     implementerAddress: implementer.address.toString(),
@@ -79,8 +78,14 @@ describe('Raffle', () => {
      */
     raffleTest(
       'Failed token-goal raffle with 2 winners',
-      ({ chain, creator, serviceBox, implementerAddress, donatorWallets }) => {
-        chain.setTip(100);
+      ({
+        boxFactory,
+        creator,
+        serviceBox,
+        implementerAddress,
+        donatorWallets,
+      }) => {
+        boxFactory.chain.setTip(100);
         const winnersCount = 2n;
         const deadline = 2000n;
         const winnersPercent: bigint[] = [];
@@ -95,7 +100,7 @@ describe('Raffle', () => {
           winnersCount,
           deadline,
           winnersPercent,
-          chain,
+          boxFactory,
           testUtils.X_TOKEN_ID,
         );
         expect(createRaffleTx.success).true;
@@ -109,7 +114,7 @@ describe('Raffle', () => {
           ticketRepo,
           winnersCount,
           deadline,
-          chain,
+          boxFactory,
         );
         expect(mergeTx.success).true;
 
@@ -123,7 +128,7 @@ describe('Raffle', () => {
             activeRaffle,
             (donatorWallets as KeyedMockChainParty[])[donateCount],
             10n,
-            chain,
+            boxFactory,
           );
           expect(donateTx.success).true;
           activeRaffle = donateTx.outputs[0];
@@ -139,17 +144,21 @@ describe('Raffle', () => {
           */
 
         // Pass the raffle deadline
-        chain.setTip(2001);
+        boxFactory.chain.setTip(2001);
 
         // Step 4: Failure transaction
-        const failureTx = executeFailureTx(activeRaffle, raffleDetails, chain);
+        const failureTx = executeFailureTx(
+          activeRaffle,
+          raffleDetails,
+          boxFactory,
+        );
         expect(failureTx.success).true;
 
         // Step 5: Forward to ticket redeem phase
         const giftRedeem = failureTx.outputs[0];
         const forwardToTicketRedeemTx = executeForwardToTicketRedeemTx(
           giftRedeem,
-          chain,
+          boxFactory,
         );
         expect(forwardToTicketRedeemTx.success).true;
 
@@ -159,7 +168,7 @@ describe('Raffle', () => {
           const ticketRedeemTx = executeTicketRedeemTx(
             ticketRedeem,
             ticket,
-            chain,
+            boxFactory,
           );
           ticketRedeem = ticketRedeemTx.outputs[0];
           expect(ticketRedeemTx.success).true;
@@ -170,7 +179,7 @@ describe('Raffle', () => {
         const returnLicenseTx = executeReturnRaffleLicenseTx(
           ticketRedeem,
           service,
-          chain,
+          boxFactory,
         );
         expect(returnLicenseTx.success).true;
       },

@@ -65,11 +65,13 @@ function mergeContextVarsAndRequiredAddress(contextVars?: ContextVarsType) {
  *
  * @param contextVars - variables of raffle-v2 scripts
  * @param outputsAsHex
+ * @param trueScripts
  * @returns object that contains compiled contracts
  */
 export function compileAll(
   contextVars?: ContextVarsType,
   outputsAsHex: boolean = false,
+  trueScripts: ScriptNamesType[] = [],
 ): { [key: string]: string } {
   const contracts: { [key: string]: string } = {};
   const compiledScripts = [];
@@ -81,7 +83,8 @@ export function compileAll(
     compiledScripts.length < constants.scriptList.length
   ) {
     notCompiledAnyScript = true;
-    for (const scriptName of constants.scriptList) {
+    let trueScriptsIndex = 1;
+    for (const scriptName of constants.scriptList as ScriptNamesType[]) {
       // Check that precompiled required script already compiled or not
       let readyToCompile = true;
       const precompileScript =
@@ -105,10 +108,15 @@ export function compileAll(
           ? compiledDependenciesStatus[scriptName as ScriptNamesType] ||
             new Map<string, string>()
           : new Map<string, string>();
-      let script: string = fs.readFileSync(
-        path.join(constants.SCRIPT_DIR, `${scriptName}.es`),
-        'utf8',
-      );
+      let script: string;
+      if (trueScripts.indexOf(scriptName) >= 0) {
+        script = `{ sigmaProp(HEIGHT > ${-trueScriptsIndex}) }`;
+        trueScriptsIndex += 1;
+      } else
+        script = fs.readFileSync(
+          path.join(constants.SCRIPT_DIR, `${scriptName}.es`),
+          'utf8',
+        );
 
       for (const nameAndValue of Object.entries(scriptVars))
         script = script.replace(nameAndValue[0], nameAndValue[1]);
