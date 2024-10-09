@@ -73,12 +73,16 @@
         blake2b256(SELF.R5[Coll[Coll[Byte]]].get(0)),
       outSuccessRaffle.R5[Coll[Coll[Byte]]].get(1) == blake2b256(selectedWinnersBytes),
 
+      // Correct Winner format
+      // R4: [WinnerIndex, RewardPercent, DeadlineTimestamp, txFee]
+      // R5: GiftCount
+      winner.tokens(0)._1 == SELF.tokens(1)._1,
+      winner.R4[Coll[Long]].get(0) == step,
+
       // Correct WinnerPrize format
       // R4: [WinnerTicketIndex, WinnerIndex, GiftCount]
       // R5: UnwrappedGiftCount
-      winnerPrize.tokens(0)._1 == SELF.tokens(1)._1,
       winnerPrize.R4[Coll[Long]].get(0) == winnerTicketIndex,
-      winnerPrize.R4[Coll[Long]].get(1) == step,
 
       // Transaction constraints
       calculatedWinnerTicketIndex == winnerTicketIndex,
