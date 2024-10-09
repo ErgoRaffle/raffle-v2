@@ -677,7 +677,7 @@ describe('Service', () => {
           testUtils.CREATION_FEE + 4n * testUtils.FEE,
           testUtils.LICENSE_TOKEN_ID,
           '0123456789012345',
-          '',
+          [],
           60n,
           0n,
           0n,
