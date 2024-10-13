@@ -2,7 +2,7 @@
   // ErgoRaffle V2 WinnerPrize Contract
   //
   // Registers:
-  //   R4[Coll[Long]]: [WinnerTicketIndex, WinnerIndex, GiftCount]
+  //   R4[Coll[Long]]: [WinnerTicketIndex, WinnerIndex, GiftCount, TxFee]
   //   R5[Long]: UnwrappedGiftCount
   // Tokens:
   //   0: Ticket

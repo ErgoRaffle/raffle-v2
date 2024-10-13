@@ -50,19 +50,19 @@ const createRaffleTest = () => {
     tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000_000n }],
   });
   donator1.addBalance({
-    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000n }],
+    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000_00n }],
   });
   donator2.addBalance({
-    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000n }],
+    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000_00n }],
   });
   donator3.addBalance({
-    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000n }],
+    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000_00n }],
   });
   donator4.addBalance({
-    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000n }],
+    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000_00n }],
   });
   donator5.addBalance({
-    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000n }],
+    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000_00n }],
   });
 
   // Created input service-box
@@ -86,7 +86,6 @@ const createRaffleTest = () => {
 
   return it.extend({
     chain: chain,
-    creationFee: creationFee,
     creator: creator,
     serviceBox: serviceBox,
     implementerAddress: implementer.address.toString(),
@@ -119,7 +118,6 @@ describe('Raffle', () => {
       'should token-goal raffle with 2 winners done successful',
       ({
         chain,
-        creationFee,
         creator,
         serviceBox,
         implementerAddress,
@@ -202,7 +200,7 @@ describe('Raffle', () => {
           const donateTx = executeDonateTx(
             activeRaffle,
             (donatorWallets as KeyedMockChainParty[])[donateCount],
-            10n,
+            100n,
             chain,
           );
           expect(donateTx.success).true;
@@ -217,6 +215,8 @@ describe('Raffle', () => {
           =                          =
           ============================
         */
+        // Pass the raffle deadline
+        chain.setTip(2001);
 
         // Step 6: Reward transaction
         const rewardTx = executeRewardTx(
@@ -225,7 +225,6 @@ describe('Raffle', () => {
           creator.address.toString(),
           creator.address.toString(),
           implementerAddress,
-          creationFee,
           chain,
         );
         expect(rewardTx.success).true;
@@ -233,30 +232,31 @@ describe('Raffle', () => {
         // Step 7: Create prize-boxes for winners
         let successRaffleBox = rewardTx.outputs[0];
 
-        const winnerIndexList: bigint[] = [];
+        const winnerTicketsList: bigint[] = [];
         const prizeBoxes = [];
+        const successRaffleR4 = SConstant.from(
+          successRaffleBox.additionalRegisters.R4!,
+        ).data as bigint[];
+        const totalSoldTickets = successRaffleR4[2];
         for (let i = 0; i < 2; i++) {
           const successRaffleR5 = SConstant.from(
             successRaffleBox.additionalRegisters.R5!,
           ).data as Uint8Array[];
           const newWinnerTicketIndex = testUtils.generateNextWinnerIndex(
-            [...winnerIndexList],
-            step,
-            Buffer.from(successRaffleR5[0]).toString(),
-            Number(winnersCount),
+            winnerTicketsList,
+            i + 1,
+            successRaffleR5[0],
+            totalSoldTickets,
           );
 
           const prizeCreationTx = executePrizeCreationTx(
             successRaffleBox,
             winnerBoxes[i],
-            Number(newWinnerTicketIndex),
-            [...winnerIndexList],
-            testUtils.makeHashFromString(
-              [...winnerIndexList, newWinnerTicketIndex].toString(),
-            ),
+            newWinnerTicketIndex,
+            winnerTicketsList,
             chain,
           );
-          winnerIndexList.push(newWinnerTicketIndex);
+          winnerTicketsList.push(newWinnerTicketIndex);
           expect(prizeCreationTx.success).true;
           successRaffleBox = prizeCreationTx.outputs[0];
           prizeBoxes.push(prizeCreationTx.outputs[1]);

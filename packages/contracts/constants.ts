@@ -37,7 +37,11 @@ export const scriptsRequireAddresses: {
     winner: 'WINNER_SCRIPT_HASH_B64',
   },
   ticketRepo: {},
-  activeRaffle: {},
+  activeRaffle: {
+    successRaffle: 'SUCCESS_RAFFLE_SCRIPT_HASH_B64',
+    giftRedeem: 'GIFT_REDEEM_SCRIPT_HASH_B64',
+    ticket: 'TICKET_SCRIPT_HASH_B64',
+  },
   winner: {
     gift: 'GIFT_SCRIPT_HASH_B64',
     winnerPrize: 'WINNER_PRIZE_SCRIPT_HASH_B64',
@@ -51,7 +55,9 @@ export const scriptsRequireAddresses: {
   giftRedeem: {},
   giftTokenRepo: {},
   ticketRedeem: {},
-  raffleDetails: {},
+  raffleDetails: {
+    activeRaffle: 'ACTIVE_RAFFLE_SCRIPT_HASH_B64',
+  },
 };
 
 export const defaultScriptsVariables: {
@@ -69,16 +75,22 @@ export const defaultScriptsVariables: {
     MIN_BOX_VALUE: SAFE_MIN_BOX_VALUE,
   },
   ticketRepo: {},
-  activeRaffle: {},
+  activeRaffle: {
+    ORACLE_TOKEN_ID_B64: '',
+  },
   winner: {
     RAFFLE_LICENSE_B64: '',
   },
   ticket: {},
-  successRaffle: {},
+  successRaffle: {
+    SERVICE_NFT_B64: '',
+  },
   winnerPrize: {},
   gift: {},
   giftRedeem: {},
   giftTokenRepo: {},
   ticketRedeem: {},
-  raffleDetails: {},
+  raffleDetails: {
+    RAFFLE_LICENSE_B64: '',
+  },
 };
