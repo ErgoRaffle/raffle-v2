@@ -162,7 +162,7 @@ describe('Raffle', () => {
           const donateTx = executeDonateTx(
             activeRaffle,
             (donatorWallets as KeyedMockChainParty[])[donateCount],
-            10n,
+            BigInt(donateCount + 2),
             boxFactory,
           );
           expect(donateTx.success).true;

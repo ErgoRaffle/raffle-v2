@@ -42,6 +42,7 @@ import { compileAll } from '../lib/utils';
 
 export const FEE = constants.DEFAULT_FEE;
 export const OWNER_NFT_ID = '1234'.repeat(16);
+export const ORACLE_NFT_ID = '5678'.repeat(16);
 export const RAFFLE_NFT_ID = '1'.repeat(64);
 export const LICENSE_TOKEN_ID = '2'.repeat(64);
 export const X_TOKEN_ID = '3'.repeat(64);
@@ -53,8 +54,6 @@ export const raffleNFTToken = { amount: 1n, tokenId: RAFFLE_NFT_ID };
 export const LICENSE_TOKEN_COUNT = 1_000_000_000n;
 export const CREATOR_DEFAULT_BALANCE = 500_000_000_000n;
 export const UNKNOWN_WALLET_DEFAULT_BALANCE = 10_000_000_000n;
-
-const ORACLE_BOX_MOCKED_NTF_ID = '0001000200030004'.repeat(4);
 
 const safeUtf8Encode = (v: unknown) =>
   v instanceof Uint8Array ? utf8.encode(v) : undefined;
@@ -88,6 +87,12 @@ export const initialContracts = (
   const defaultLicenseTokenId = Buffer.from(LICENSE_TOKEN_ID, 'hex').toString(
     'base64',
   );
+  const defaultRaffleNftId = Buffer.from(RAFFLE_NFT_ID, 'hex').toString(
+    'base64',
+  );
+  const defaultOracleTokenId = Buffer.from(ORACLE_NFT_ID, 'hex').toString(
+    'base64',
+  );
 
   scriptsVars['service'] = {
     OWNER_NFT_B64: Buffer.from(OWNER_NFT_ID, 'hex').toString('base64'),
@@ -104,6 +109,15 @@ export const initialContracts = (
     GIFT_TOKEN_COUNT: GIFT_TOKEN_COUNT,
   };
 
+  scriptsVars['activeRaffle'] = {
+    ORACLE_TOKEN_ID_B64: defaultOracleTokenId,
+  };
+  scriptsVars['successRaffle'] = {
+    SERVICE_NFT_B64: defaultRaffleNftId,
+  };
+  scriptsVars['raffleDetails'] = {
+    RAFFLE_LICENSE_B64: defaultLicenseTokenId,
+  };
   return compileAll(
     new Map(Object.entries(scriptsVars)) as unknown as ContextVarsType,
     true,
@@ -472,7 +486,7 @@ export class RaffleBoxFactory {
           Array.from(Buffer.from(implementerPartnerAddress)),
           Array.from(Buffer.from(creatorPartnerAddress)),
         ]).toHex(),
-        R6: SColl(SLong, [totalSoldTicket]).toHex(),
+        R6: SLong(totalSoldTicket).toHex(),
       },
     });
   }
@@ -517,7 +531,7 @@ export class RaffleBoxFactory {
           SColl(SByte),
           r5.map((value) => Array.from(value)),
         ),
-        R6: SColl(SLong, [totalSoldTicket]).toHex(),
+        R6: SLong(totalSoldTicket).toHex(),
       });
   }
 
@@ -583,7 +597,7 @@ export class RaffleBoxFactory {
           Array.from(blake2b256(Buffer.from(implementerPartnerAddress))),
           Array.from(blake2b256(Buffer.from(creatorPartnerAddress))),
         ]),
-        R6: SColl(SLong, [totalSoldTicket]).toHex(),
+        R6: SLong(totalSoldTicket).toHex(),
       });
   }
 
@@ -650,35 +664,35 @@ export class RaffleBoxFactory {
   }
 
   /**
-   * Create and return success-raffle output box
+   * Create and return success-raffle input box
    * @param boxValue
    * @param licenseTokenId
-   * @param collectingTokenId
    * @param seed
-   * @param selectedWinnersListHash
+   * @param selectedWinnersList
    * @param winnersCount
    * @param totalPrize
    * @param prizeValue
    * @param step
    * @param ticketTokenId
    * @param ticketTokenAmount
-   * @param ticketTokenAmount
    * @param collectingTokenId
+   * @param ergoTree
    * @returns
    */
-  createSuccessRaffleBox(
+  createSuccessRaffleBox = (
     boxValue: bigint,
     licenseTokenId: string,
     seed: string,
-    selectedWinnersListHash: string,
+    selectedWinnersList: bigint[],
+    totalSoldTickets: bigint,
     winnersCount: bigint = 1n,
     totalPrize: bigint = 1n,
     prizeValue: bigint = 0n,
-    step: bigint = 0n,
+    step: bigint = 1n,
     ticketTokenId: string = TICKET_TOKEN_ID,
     ticketTokenAmount: bigint = 1n,
     collectingTokenId?: string,
-  ) {
+  ) => {
     return new OutputBuilder(boxValue, this.contractsAddresses['successRaffle'])
       .addTokens([
         { tokenId: licenseTokenId, amount: 1n },
@@ -696,18 +710,20 @@ export class RaffleBoxFactory {
           : []),
       ])
       .setAdditionalRegisters({
-        R4: SColl(SLong, [
-          BigInt(winnersCount),
-          FEE,
-          BigInt(totalPrize),
-        ]).toHex(),
+        R4: SColl(SLong, [winnersCount, totalPrize, totalSoldTickets]).toHex(),
         R5: SColl(SColl(SByte), [
-          Array.from(Buffer.from(seed)),
-          Array.from(Buffer.from(selectedWinnersListHash)),
+          Array.from(Buffer.from(seed, 'hex')),
+          Array.from(
+            blake2b256(
+              Buffer.concat(
+                selectedWinnersList.map((n) => utils.bigIntToUint8Array(n)),
+              ),
+            ),
+          ),
         ]).toHex(),
         R6: SLong(step),
       });
-  }
+  };
 
   /**
    * Create output winnerPrize box
@@ -734,6 +750,7 @@ export class RaffleBoxFactory {
           BigInt(ticketIndex),
           winnerIndex,
           BigInt(giftCount),
+          FEE,
         ]).toHex(),
         R5: SLong(unwrappedGiftCount),
       });
@@ -745,10 +762,11 @@ export class RaffleBoxFactory {
    * @param nftTokenId
    * @returns
    */
-  createMockedOracleUTxO(
+  createMockedOracleUTxO = (
     value: bigint,
-    nftTokenId: string = ORACLE_BOX_MOCKED_NTF_ID,
-  ) {
+    nftTokenId: string = ORACLE_NFT_ID,
+    creationHeight: number = 2005,
+  ) => {
     return new ErgoUnsignedInput(
       mockUTxO({
         value: value,
@@ -759,10 +777,10 @@ export class RaffleBoxFactory {
             amount: 1n,
           },
         ],
-        creationHeight: 5,
+        creationHeight: creationHeight,
       }),
     );
-  }
+  };
 
   /**
    * Create and return Raffle-details input box
@@ -1317,23 +1335,19 @@ export const prettyPrintJson = (
  *
  * @param winnerIndexList
  * @param step
- * @param seedString
- * @param winnersCount
+ * @param seed
+ * @param ticketsCount
  * @returns
  */
 export const generateNextWinnerIndex = (
   winnerIndexList: bigint[],
   step: number,
-  seedString: string,
-  winnersCount: number,
+  seed: Uint8Array,
+  ticketCount: bigint,
 ) => {
-  if (seedString.length < 16) throw Error('Seed length is too short');
-
-  let winnerIndex = -1n;
-
-  seedString = seedString.slice(0, 16);
-  const seed = BigInt('0x' + seedString);
-  winnerIndex = seed % BigInt(winnersCount - step);
+  const bigintSeed = uint8ArrayToSignedBigInt(seed.slice(0, 16));
+  const range = ticketCount - BigInt(step) + 1n;
+  const rawWinnerIndex = ((bigintSeed % range) + range) % range;
 
   let shift = 0n,
     oldShift = 0n;
@@ -1341,12 +1355,31 @@ export const generateNextWinnerIndex = (
     oldShift = shift;
     shift = BigInt(
       winnerIndexList.filter((value) => {
-        return value <= winnerIndex + shift;
+        return value <= rawWinnerIndex + shift;
       }).length,
     );
   } while (oldShift !== shift);
 
-  return winnerIndex + shift;
+  return rawWinnerIndex + shift;
+};
+
+/**
+ * Convert uint8Array to signed bigint
+ * @param buffer
+ * @returns signed bigint
+ */
+const uint8ArrayToSignedBigInt = (buffer: Uint8Array): bigint => {
+  const hexStr = Buffer.from(buffer).toString('hex');
+  const bigIntValue = BigInt('0x' + hexStr);
+  const bitLength = BigInt(hexStr.length * 4); // Each hex digit represents 4 bits
+  const maxValue = BigInt(1) << bitLength; // 2^bitLength
+
+  // Check if the number should be negative (if MSB is set)
+  if (bigIntValue >= maxValue >> BigInt(1)) {
+    return bigIntValue - maxValue;
+  }
+
+  return bigIntValue;
 };
 
 /**
@@ -1544,7 +1577,7 @@ export class RaffleMockChain extends MockChain {
 }
 
 /**
- * create changebox using input and output boxes
+ * create changeBox using input and output boxes
  * @param inputs
  * @param outputs
  * @param fee

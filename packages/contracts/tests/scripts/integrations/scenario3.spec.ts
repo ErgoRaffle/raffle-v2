@@ -120,7 +120,6 @@ describe('Raffle', () => {
       'should token-goal raffle with 2 winners done successful',
       ({
         boxFactory,
-        creationFee,
         creator,
         serviceBox,
         implementerAddress,
@@ -219,6 +218,9 @@ describe('Raffle', () => {
           ============================
         */
 
+        // Pass the raffle deadline
+        boxFactory.chain.setTip(2001);
+
         // Step 6: Reward transaction
         const rewardTx = executeRewardTx(
           activeRaffle,
@@ -226,7 +228,6 @@ describe('Raffle', () => {
           creator.address.toString(),
           creator.address.toString(),
           implementerAddress,
-          creationFee,
           boxFactory,
         );
         expect(rewardTx.success).true;
@@ -236,25 +237,26 @@ describe('Raffle', () => {
 
         const winnerIndexList: bigint[] = [];
         const prizeBoxes = [];
+        const successRaffleR4 = SConstant.from(
+          successRaffleBox.additionalRegisters.R4!,
+        ).data as bigint[];
+        const totalSoldTickets = successRaffleR4[2];
         for (let i = 0; i < 2; i++) {
           const successRaffleR5 = SConstant.from(
             successRaffleBox.additionalRegisters.R5!,
           ).data as Uint8Array[];
           const newWinnerTicketIndex = testUtils.generateNextWinnerIndex(
             [...winnerIndexList],
-            step,
-            Buffer.from(successRaffleR5[0]).toString(),
-            Number(winnersCount),
+            i + 1,
+            successRaffleR5[0],
+            totalSoldTickets,
           );
 
           const prizeCreationTx = executePrizeCreationTx(
             successRaffleBox,
             winnerBoxes[i],
-            Number(newWinnerTicketIndex),
+            newWinnerTicketIndex,
             [...winnerIndexList],
-            testUtils.makeHashFromString(
-              [...winnerIndexList, newWinnerTicketIndex].toString(),
-            ),
             boxFactory,
           );
           winnerIndexList.push(newWinnerTicketIndex);

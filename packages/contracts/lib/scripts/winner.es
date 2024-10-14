@@ -69,7 +69,7 @@
       val successRaffle = OUTPUTS(0)
       val winnerPrize = OUTPUTS(1)
       val rewardPercent = SELF.R4[Coll[Long]].get(1)
-      val totalPrize = successRaffle.R4[Coll[Long]].get(2)
+      val totalPrize = successRaffle.R4[Coll[Long]].get(1)
       val isErgGoal = (successRaffle.tokens.size == 2)
       val prizeValidation = if(isErgGoal) {
         winnerPrize.value == totalPrize * rewardPercent / 1000 + 2 * txFee
@@ -91,6 +91,7 @@
         winnerPrize.tokens(1)._2 == SELF.tokens(1)._2,
         winnerPrize.R4[Coll[Long]].get(1) == winnerIndex,
         winnerPrize.R4[Coll[Long]].get(2) == giftCount,
+        winnerPrize.R4[Coll[Long]].get(3) == txFee,
         winnerPrize.R5[Long].get == 0,
 
         // Correct SuccessRaffle format

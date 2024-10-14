@@ -6,6 +6,7 @@ import {
   TokenAmount,
   Box,
 } from '@fleet-sdk/core';
+import { blake2b256 } from '@fleet-sdk/crypto';
 
 import * as testUtils from '../../testUtils';
 
@@ -18,7 +19,7 @@ import * as testUtils from '../../testUtils';
  * @param winnersCount
  * @param deadline
  * @param winnersPercent
- * @param boxFactory : mocked chain
+ * @param boxFactory
  * @param collectingTokenId
  * @param ticketPrice
  * @returns the create raffle signed transaction and success status
@@ -33,7 +34,7 @@ export const executeCreateRaffleTx = (
   winnersPercent: Array<bigint>,
   boxFactory: testUtils.RaffleBoxFactory,
   collectingTokenId?: string,
-  ticketPrice: bigint = 10n,
+  ticketPrice: bigint = 100n,
 ) => {
   serviceBox.setContextExtension({
     0: SColl(SLong, winnersPercent),
@@ -171,7 +172,7 @@ export const executeMergeTx = (
  * @param giftTokenRepo
  * @param step
  * @param winnersCount
- * @param boxFactory : mocked chain
+ * @param boxFactory
  */
 export const executeGiftTokenReceiptTx = (
   winner: testUtils.OutputBox,
@@ -219,7 +220,7 @@ export const executeGiftTokenReceiptTx = (
  * Add gift to a selected winner
  * @param winner
  * @param giftGiver : gift giver wallet
- * @param boxFactory : mocked chain
+ * @param boxFactory
  */
 export const executeAddGiftTx = (
   winner: testUtils.OutputBox,
@@ -266,7 +267,7 @@ export const executeAddGiftTx = (
  * @param activeRaffle
  * @param donator : donator wallet
  * @param ticketCount
- * @param boxFactory : mocked chain
+ * @param boxFactory
  */
 export const executeDonateTx = (
   activeRaffle: testUtils.OutputBox,
@@ -279,9 +280,8 @@ export const executeDonateTx = (
   const r5 = SConstant.from(activeRaffle.additionalRegisters.R5!)
     .data as Uint8Array[];
   const ticketTokenId = activeRaffle.assets[1].tokenId;
-  const totalSoldTickets = (
-    SConstant.from(activeRaffle.additionalRegisters.R6!).data as bigint[]
-  )[0];
+  const totalSoldTickets = SConstant.from(activeRaffle.additionalRegisters.R6!)
+    .data as bigint;
 
   const ticketPrice = r4[3];
 
@@ -333,7 +333,7 @@ export const executeDonateTx = (
  * Change raffle status from active to failed after deadline
  * @param activeRaffle
  * @param raffleDetails
- * @param boxFactory : mocked chain
+ * @param boxFactory
  */
 export const executeFailureTx = (
   activeRaffle: testUtils.OutputBox,
@@ -343,9 +343,8 @@ export const executeFailureTx = (
   const r4 = SConstant.from(activeRaffle.additionalRegisters.R4!)
     .data as bigint[];
   const ticketTokenId = activeRaffle.assets[1].tokenId;
-  const totalSoldTickets = (
-    SConstant.from(activeRaffle.additionalRegisters.R6!).data as bigint[]
-  )[0];
+  const totalSoldTickets = SConstant.from(activeRaffle.additionalRegisters.R6!)
+    .data as bigint;
   const collectingToken =
     activeRaffle.assets.length > 2
       ? {
@@ -357,7 +356,7 @@ export const executeFailureTx = (
     BigInt(activeRaffle.value) + BigInt(raffleDetails.value) - testUtils.FEE,
     totalSoldTickets,
     r4[3],
-    r4[4],
+    r4[6],
     1n,
     ticketTokenId,
     // added by one token on the raffle-details box
@@ -379,7 +378,7 @@ export const executeFailureTx = (
  * @param giftRedeem
  * @param winner
  * @param gift
- * @param boxFactory : mocked chain
+ * @param boxFactory
  */
 export const executeGiftReturnTx = (
   giftRedeem: testUtils.OutputBox,
@@ -426,7 +425,7 @@ export const executeGiftReturnTx = (
  * Remove the winner box after returning all related gifts
  * @param giftRedeem
  * @param winner
- * @param boxFactory : mocked chain
+ * @param boxFactory
  */
 export const executeWinnerRemovalTx = (
   giftRedeem: testUtils.OutputBox,
@@ -455,15 +454,16 @@ export const executeWinnerRemovalTx = (
       selector.defineStrategy((inputs) => inputs);
     })
     .burnTokens(winner.assets[1]!)
-    .payFee(testUtils.FEE);
+    .payFee(testUtils.FEE)
+    .build();
 
-  return boxFactory.chain.executeAndReturnOutputs(winnerRemovalTx.build());
+  return boxFactory.chain.executeAndReturnOutputs(winnerRemovalTx);
 };
 
 /**
  * Forward to next step to redeem the tickets
  * @param giftRedeem
- * @param boxFactory : mocked chain
+ * @param boxFactory
  * @returns
  */
 export const executeForwardToTicketRedeemTx = (
@@ -502,7 +502,7 @@ export const executeForwardToTicketRedeemTx = (
  * Return ticket tokens and redeem donation to the donator
  * @param ticketRedeem
  * @param ticket
- * @param boxFactory : mocked chain
+ * @param boxFactory
  */
 export const executeTicketRedeemTx = (
   ticketRedeem: testUtils.OutputBox,
@@ -530,12 +530,12 @@ export const executeTicketRedeemTx = (
 
     redeemedDonationTokens.push({
       tokenId: ticketRedeem.assets[2].tokenId,
-      amount: ticketCount,
+      amount: ticketCount * ticketPrice,
     });
     ticketRedeemOutputBoxValue = BigInt(ticketRedeem.value.toString());
     collectingToken = {
       tokenId: ticketRedeem.assets[2].tokenId,
-      amount: BigInt(ticketRedeem.assets[2].amount) - ticketCount,
+      amount: BigInt(ticketRedeem.assets[2].amount) - ticketCount * ticketPrice,
     };
   }
 
@@ -571,7 +571,7 @@ export const executeTicketRedeemTx = (
  * Return raffle license to the service box after raffle completion
  * @param endedRaffle
  * @param service
- * @param boxFactory : mocked chain
+ * @param boxFactory
  */
 export const executeReturnRaffleLicenseTx = (
   endedRaffle: testUtils.OutputBox,
@@ -632,7 +632,6 @@ export const executeReturnRaffleLicenseTx = (
  * @param creatorAddress
  * @param serviceAddress
  * @param implementerAddress
- * @param creationFee
  * @param boxFactory
  * @returns
  */
@@ -642,31 +641,26 @@ export const executeRewardTx = (
   creatorAddress: string,
   serviceAddress: string,
   implementerAddress: string,
-  creationFee: bigint,
   boxFactory: testUtils.RaffleBoxFactory,
 ) => {
   const oracleBox = boxFactory.createMockedOracleUTxO(testUtils.FEE);
   const r4 = SConstant.from(activeRaffleBox.additionalRegisters.R4!)
     .data as bigint[];
   const r6 = SConstant.from(activeRaffleBox.additionalRegisters.R6!)
-    .data as bigint[];
+    .data as bigint;
   const winnersCount = Number(r4[6]);
 
-  const totalSoldTickets = r6[0];
+  const totalSoldTickets = r6;
   const ticketPrice = r4[3];
 
   const totalRaised = totalSoldTickets * ticketPrice;
-  const totalPrize = (totalRaised * (1000n - r4[0] - r4[1] - r4[2])) / 1000n;
-
-  const seed = oracleBox.boxId.toString();
-  const winnerIndexList: bigint[] = [];
-  const hash = testUtils.makeHashFromString(winnerIndexList.toString());
+  const totalPrize = (totalRaised * (100n - r4[0] - r4[1] - r4[2])) / 100n;
 
   const charityFeePercent = r4[0];
   const serviceFeePercent = r4[1];
   const implementerFeePercent = r4[2];
   const winnerPercent =
-    1000n - charityFeePercent - serviceFeePercent - implementerFeePercent;
+    100n - charityFeePercent - serviceFeePercent - implementerFeePercent;
 
   const isErgGoal = activeRaffleBox.assets.length <= 2;
 
@@ -675,32 +669,33 @@ export const executeRewardTx = (
     return [
       {
         tokenId: activeRaffleBox.assets[2].tokenId,
-        amount: (totalRaised * percent) / 1000n,
+        amount: (totalRaised * percent) / 100n,
       },
     ];
   };
   const serviceFeeBox = boxFactory.createCustomOutputBox(
-    (isErgGoal ? BigInt((totalRaised * serviceFeePercent) / 1000n) : 0n) +
+    (isErgGoal ? BigInt((totalRaised * serviceFeePercent) / 100n) : 0n) +
       testUtils.FEE,
     createTokenPercent(serviceFeePercent),
     serviceAddress,
   );
   const implementerFeeBox = boxFactory.createCustomOutputBox(
-    (isErgGoal ? BigInt((totalRaised * implementerFeePercent) / 1000n) : 0n) +
+    (isErgGoal ? BigInt((totalRaised * implementerFeePercent) / 100n) : 0n) +
       testUtils.FEE,
     createTokenPercent(serviceFeePercent),
     implementerAddress,
   );
   const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-    (isErgGoal ? BigInt((totalRaised * winnerPercent) / 1000n) : 0n) +
+    (isErgGoal ? BigInt((totalRaised * winnerPercent) / 100n) : 0n) +
       testUtils.FEE,
     activeRaffleBox.assets[0].tokenId,
-    seed,
-    hash,
+    oracleBox.boxId.toString(),
+    [],
+    totalSoldTickets,
     BigInt(winnersCount),
     BigInt(totalPrize),
     BigInt(totalPrize) + 1n,
-    0n,
+    1n,
     activeRaffleBox.assets[1].tokenId,
     // plus one token that exists on the Raffle-Details box
     BigInt(activeRaffleBox.assets[1].amount) + 1n,
@@ -738,7 +733,6 @@ export const executeRewardTx = (
   return {
     success: result.success,
     outputs: unsignedOutputs,
-    winnerIndexList: winnerIndexList,
   };
 };
 
@@ -748,31 +742,36 @@ export const executeRewardTx = (
  * @param winnerBox
  * @param winnerTicketIndex
  * @param winnerIndexList
- * @param outputSeed
  * @param boxFactory
  * @returns
  */
 export const executePrizeCreationTx = (
   successRaffleBox: ErgoUnsignedInput,
   winnerBox: testUtils.OutputBox,
-  winnerTicketIndex: number,
+  winnerTicketIndex: bigint,
   winnerIndexList: bigint[],
-  outputSeed: string,
   boxFactory: testUtils.RaffleBoxFactory,
 ) => {
   successRaffleBox.setContextExtension({
     0: SColl(SLong, [...winnerIndexList]),
-    1: SLong(BigInt(winnerTicketIndex)),
+    1: SLong(winnerTicketIndex),
   });
 
   const successRaffleR4 = SConstant.from(
     successRaffleBox.additionalRegisters.R4!,
   ).data as bigint[];
+  const successRaffleR5 = SConstant.from(
+    successRaffleBox.additionalRegisters.R5!,
+  ).data as Uint8Array[];
   const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
     .data as bigint[];
 
   const winnersCount = successRaffleR4[0];
-  const totalPrize = successRaffleR4[2];
+  const totalPrize = successRaffleR4[1];
+  const totalSoldTickets = successRaffleR4[2];
+  const seed = Buffer.from(
+    blake2b256(Buffer.from(successRaffleR5[0])),
+  ).toString('hex');
 
   const giftCount = SConstant.from(winnerBox.additionalRegisters.R5!)
     .data as bigint;
@@ -784,8 +783,8 @@ export const executePrizeCreationTx = (
       ? testUtils.FEE * 2n + (totalPrize * winnerR4[1]) / 1000n
       : testUtils.FEE * 2n,
     winnerR4[0],
-    BigInt(winnerTicketIndex),
-    BigInt(giftCount),
+    winnerTicketIndex,
+    giftCount,
     0n,
     isErgGoal
       ? [winnerBox.assets[0], winnerBox.assets[1]]
@@ -803,12 +802,13 @@ export const executePrizeCreationTx = (
   const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
     isErgGoal ? successRaffleBox.value - prizeAmount : successRaffleBox.value,
     successRaffleBox.assets[0].tokenId,
-    outputSeed,
-    testUtils.makeHashFromString(winnerIndexList.toString()),
+    seed,
+    winnerIndexList,
+    totalSoldTickets,
     BigInt(winnersCount),
     totalPrize,
     isErgGoal ? 0n : successRaffleBox.assets[2].amount - prizeAmount,
-    BigInt(winnerIndexList.length),
+    winnerR4[0] + 1n,
     successRaffleBox.assets[1].tokenId,
     BigInt(successRaffleBox.assets[1].amount),
     isErgGoal ? undefined : successRaffleBox.assets[2].tokenId,
