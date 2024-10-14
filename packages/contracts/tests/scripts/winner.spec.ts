@@ -1,11 +1,6 @@
-import * as fs from 'fs';
-import * as path from 'node:path';
-
 import { it, describe, expect } from 'vitest';
-import { compile } from '@fleet-sdk/compiler';
 import { SConstant } from '@fleet-sdk/serializer';
-import { TokenAmount, TransactionBuilder, Box } from '@fleet-sdk/core';
-import { blake2b256 } from '@fleet-sdk/crypto';
+import { TransactionBuilder, Box } from '@fleet-sdk/core';
 
 import * as testUtils from '../testUtils';
 import {
@@ -13,77 +8,26 @@ import {
   UNKNOWN_WALLET_DEFAULT_BALANCE,
 } from '../testUtils';
 import * as constants from '../../constants';
+import { ScriptNamesType } from '../../lib/types';
 
 /*
  * create fixtures that contains below steps data:
  *   - mock chain and partners
- *   - compile and override contracts
  *   - create giftTokenRepo input box
- *   - create activeRaffleBox input box
  *   - create winnerBoxes input box
  *   - create successRaffleBox input box
  * @returns vitest customized "it" object
  */
-const createWinnerTest = (
-  winnersCount: number = 1,
-  collectingToken?: TokenAmount<bigint>,
-) => {
-  // prepare required scripts values
-  const GIFT_SCRIPT_HASH_HEX = compile('{sigmaProp(SELF.value >= 0);}').toHex();
-  const WINNER_PRIZE_SCRIPT_HASH_HEX = compile(
-    '{sigmaProp(SELF.value >= 1);}',
-  ).toHex();
-  const SUCCESS_RAFFLE_SCRIPT_HASH_HEX = compile(
-    '{sigmaProp(SELF.value >= 2);}',
-  ).toHex();
-  const GIFT_REDEEM_SCRIPT_HASH_HEX = compile(
-    '{sigmaProp(SELF.value >= 3);}',
-  ).toHex();
-  const GIFT_TOKEN_REPO_HASH_HEX = compile(
-    '{sigmaProp(SELF.value >= 4);}',
-  ).toHex();
-  const GIFT_SCRIPT_HASH_B64 = Buffer.from(
-    blake2b256(GIFT_SCRIPT_HASH_HEX),
-  ).toString('base64');
-  const WINNER_PRIZE_SCRIPT_HASH_B64 = Buffer.from(
-    blake2b256(WINNER_PRIZE_SCRIPT_HASH_HEX),
-  ).toString('base64');
-  const SUCCESS_RAFFLE_SCRIPT_HASH_B64 = Buffer.from(
-    blake2b256(SUCCESS_RAFFLE_SCRIPT_HASH_HEX),
-  ).toString('base64');
-  const GIFT_REDEEM_SCRIPT_HASH_B64 = Buffer.from(
-    blake2b256(GIFT_REDEEM_SCRIPT_HASH_HEX),
-  ).toString('base64');
-
-  let winnerScript = fs.readFileSync(
-    path.join(constants.SCRIPT_DIR, `winner.es`),
-    'utf8',
-  );
-  winnerScript = winnerScript.replace(
-    'GIFT_SCRIPT_HASH_B64',
-    GIFT_SCRIPT_HASH_B64,
-  );
-  winnerScript = winnerScript.replace(
-    'WINNER_PRIZE_SCRIPT_HASH_B64',
-    WINNER_PRIZE_SCRIPT_HASH_B64,
-  );
-  winnerScript = winnerScript.replace(
-    'SUCCESS_RAFFLE_SCRIPT_HASH_B64',
-    SUCCESS_RAFFLE_SCRIPT_HASH_B64,
-  );
-  winnerScript = winnerScript.replace(
-    'GIFT_REDEEM_SCRIPT_HASH_B64',
-    GIFT_REDEEM_SCRIPT_HASH_B64,
-  );
-  winnerScript = winnerScript.replace(
-    'RAFFLE_LICENSE_B64',
-    Buffer.from(testUtils.LICENSE_TOKEN_ID, 'hex').toString('base64'),
-  );
-  const WINNER_SCRIPT_HASH_HEX = compile(winnerScript).toHex();
-
+const createWinnerTest = (winnersCount: number = 1) => {
   // preparing mocked chain and other required things
   const chain = new testUtils.RaffleMockChain({ height: 1000 });
-  const { creator, someone } = testUtils.createPartners(chain, {
+  const boxFactory = new testUtils.RaffleBoxFactory(
+    chain,
+    constants.scriptList.filter(
+      (value) => value != 'winner',
+    ) as ScriptNamesType[],
+  );
+  const { creator, someone } = boxFactory.createPartners({
     Creator: CREATOR_DEFAULT_BALANCE,
     someone: UNKNOWN_WALLET_DEFAULT_BALANCE,
   });
@@ -91,80 +35,45 @@ const createWinnerTest = (
     tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000_000_000n }],
   });
 
-  const activeRaffleBox = testUtils.createActiveRaffleBoxMock(
-    creator.address.toString(),
-    creator.address.toString(),
-    BigInt(winnersCount),
-    undefined,
-    collectingToken,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    constants.TRUE_SCRIPT_HEX,
-  );
+  const giftTokenRepoBox = boxFactory.createGiftTokenRepoBoxMock(winnersCount);
 
-  const giftTokenRepoBox = testUtils.createGiftTokenRepoBoxMock(
-    winnersCount,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    GIFT_TOKEN_REPO_HASH_HEX,
-  );
-
-  const winnerBoxes = testUtils.createWinnersBoxMock(
+  const winnerBoxes = boxFactory.createWinnersBoxMock(
     BigInt(winnersCount),
     testUtils.TICKET_TOKEN_ID,
     undefined,
-    1n,
+    0n,
     1000n,
     testUtils.GIFT_TOKEN_ID,
     undefined,
-    WINNER_SCRIPT_HASH_HEX,
   );
 
-  const successRaffleBox = testUtils.createSuccessRaffleBoxMock(
+  const successRaffleBox = boxFactory.createSuccessRaffleBoxMock(
     testUtils.CREATION_FEE + 4n * testUtils.FEE,
     testUtils.LICENSE_TOKEN_ID,
     '0123456789012345',
-    '',
+    testUtils.makeHashFromString([].toString()),
+    0n,
     60n,
     0n,
     0n,
-    61n,
     testUtils.TICKET_TOKEN_ID,
-    999_999_998n,
-    undefined,
-    SUCCESS_RAFFLE_SCRIPT_HASH_HEX,
+    61n,
   );
 
-  return it.extend({
-    GIFT_SCRIPT_HASH_HEX: GIFT_SCRIPT_HASH_HEX,
-    WINNER_PRIZE_SCRIPT_HASH_HEX: WINNER_PRIZE_SCRIPT_HASH_HEX,
-    SUCCESS_RAFFLE_SCRIPT_HASH_HEX: SUCCESS_RAFFLE_SCRIPT_HASH_HEX,
-    GIFT_REDEEM_SCRIPT_HASH_HEX: GIFT_REDEEM_SCRIPT_HASH_HEX,
-    WINNER_SCRIPT_HASH_HEX: WINNER_SCRIPT_HASH_HEX,
-    GIFT_TOKEN_REPO_HASH_HEX: GIFT_TOKEN_REPO_HASH_HEX,
+  chain.setTip(200);
 
-    chain: chain,
+  return it.extend({
+    boxFactory: boxFactory,
     someoneWallet: someone,
     creator: creator,
-    activeRaffleBox: activeRaffleBox,
     giftTokenRepoBox: giftTokenRepoBox,
     winnerBoxes: winnerBoxes,
     successRaffleBox: successRaffleBox,
-    contractsAddresses: testUtils.contractsAddresses,
   });
 };
 
 describe('winner', () => {
   const winnerTest = createWinnerTest(1);
-  const tokenGoalWinnerTest = createWinnerTest(1, {
-    tokenId: testUtils.X_TOKEN_ID,
-    amount: 100n,
-  });
 
   describe('Winner box gift token receipt', () => {
     /**
@@ -180,23 +89,22 @@ describe('winner', () => {
      */
     winnerTest(
       'should fail when move another token instead of real gift-token to the winner box',
-      ({ chain, creator, winnerBoxes, GIFT_TOKEN_REPO_HASH_HEX }) => {
+      ({ boxFactory, creator, winnerBoxes }) => {
         // put invalid token to the winnerOutputBox
         const invalidTokenId = '1234'.repeat(16);
-        const giftTokenRepoBox = testUtils.createGiftTokenRepoBoxMock(
+        const giftTokenRepoBox = boxFactory.createGiftTokenRepoBoxMock(
           1,
           undefined,
           undefined,
           undefined,
           undefined,
           invalidTokenId,
-          GIFT_TOKEN_REPO_HASH_HEX,
         );
 
         const winnerBox = (winnerBoxes as Box[])[0];
 
         const winnerOutputBox =
-          testUtils.createWinnerOutputBoxWithConstantRegisters(
+          boxFactory.createWinnerOutputBoxWithConstantRegisters(
             SConstant.from(winnerBox.additionalRegisters.R4!).data as bigint[],
             testUtils.TICKET_TOKEN_ID,
             // Set invalid gift token id
@@ -206,7 +114,7 @@ describe('winner', () => {
           );
 
         // Execute transaction
-        const transaction = new TransactionBuilder(chain.height)
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([(winnerBoxes as Box[])[0], giftTokenRepoBox])
           .to([winnerOutputBox])
           .payFee(testUtils.FEE)
@@ -219,7 +127,7 @@ describe('winner', () => {
 
         // Check execution result
         expect(() =>
-          chain.execute(transaction, { signers: [creator] }),
+          boxFactory.chain.execute(transaction, { signers: [creator] }),
         ).toThrowError();
       },
     );
@@ -237,55 +145,41 @@ describe('winner', () => {
      */
     winnerTest(
       'should fail when incorrect count of gift-token write on the R6 of the input winner-box',
-      ({ WINNER_SCRIPT_HASH_HEX, chain, creator }) => {
+      ({ boxFactory, creator }) => {
         // put invalid count of gift-token to the input winners count
         const winnerBox = (
-          testUtils.createWinnersBoxMock(
+          boxFactory.createWinnersBoxMock(
             1n,
             testUtils.TICKET_TOKEN_ID,
             undefined,
             3n,
             0n,
             testUtils.GIFT_TOKEN_ID,
-            undefined,
-            WINNER_SCRIPT_HASH_HEX,
           ) as Box[]
         )[0];
-        const giftTokenRepoBox = testUtils.createGiftTokenRepoBoxMock(
-          1,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          constants.TRUE_SCRIPT_HEX,
-        );
+        const giftTokenRepoBox = boxFactory.createGiftTokenRepoBoxMock(1);
 
         const winnerOutputBox =
-          testUtils.createWinnerOutputBoxWithConstantRegisters(
+          boxFactory.createWinnerOutputBoxWithConstantRegisters(
             SConstant.from(winnerBox.additionalRegisters.R4!).data as bigint[],
             testUtils.TICKET_TOKEN_ID,
             testUtils.GIFT_TOKEN_ID,
-            1n,
+            undefined,
             // Set invalid gift count
             1n,
           );
 
         // Execute transaction
-        const transaction = new TransactionBuilder(chain.height)
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([winnerBox, giftTokenRepoBox])
           .to([winnerOutputBox])
           .payFee(testUtils.FEE)
-          .burnTokens({
-            tokenId: giftTokenRepoBox.assets[0].tokenId,
-            amount: giftTokenRepoBox.assets[0].amount - 1n,
-          })
           .sendChangeTo(creator.address)
           .build();
 
         // Check execution result
         expect(() =>
-          chain.execute(transaction, { signers: [creator] }),
+          boxFactory.chain.execute(transaction, { signers: [creator] }),
         ).toThrowError();
       },
     );
@@ -303,9 +197,9 @@ describe('winner', () => {
      */
     winnerTest(
       'should fail when incorrect deadline put in R4 of the input winner-box',
-      ({ WINNER_SCRIPT_HASH_HEX, chain, creator }) => {
+      ({ boxFactory, creator }) => {
         const winnerBox = (
-          testUtils.createWinnersBoxMock(
+          boxFactory.createWinnersBoxMock(
             1n,
             testUtils.TICKET_TOKEN_ID,
             undefined,
@@ -313,24 +207,15 @@ describe('winner', () => {
             900n, // put invalid deadline to the input winners count
             testUtils.GIFT_TOKEN_ID,
             undefined,
-            WINNER_SCRIPT_HASH_HEX,
           ) as Box[]
         )[0];
-        const giftTokenRepoBox = testUtils.createGiftTokenRepoBoxMock(
-          1,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          constants.TRUE_SCRIPT_HEX,
-        );
+        const giftTokenRepoBox = boxFactory.createGiftTokenRepoBoxMock(1);
 
         const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
           .data as bigint[];
         winnerR4[2] = 10n;
         const winnerOutputBox =
-          testUtils.createWinnerOutputBoxWithConstantRegisters(
+          boxFactory.createWinnerOutputBoxWithConstantRegisters(
             // Set invalid deadline time
             winnerR4,
             testUtils.TICKET_TOKEN_ID,
@@ -340,7 +225,7 @@ describe('winner', () => {
           );
 
         // Execute transaction
-        const transaction = new TransactionBuilder(chain.height)
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([winnerBox, giftTokenRepoBox])
           .to([winnerOutputBox])
           .payFee(testUtils.FEE)
@@ -353,7 +238,7 @@ describe('winner', () => {
 
         // Check execution result
         expect(() =>
-          chain.execute(transaction, { signers: [creator] }),
+          boxFactory.chain.execute(transaction, { signers: [creator] }),
         ).toThrowError();
       },
     );
@@ -371,32 +256,22 @@ describe('winner', () => {
      */
     winnerTest(
       'should fail when two same winner-boxes placed as inputs',
-      ({ WINNER_SCRIPT_HASH_HEX, chain, creator }) => {
+      ({ boxFactory, creator }) => {
         // put invalid count of gift-token to the input winners count
-        const inputWinnerBoxes = testUtils.createWinnersBoxMock(
+        const inputWinnerBoxes = boxFactory.createWinnersBoxMock(
           2n,
           testUtils.TICKET_TOKEN_ID,
           undefined,
           3n,
           1000n,
           testUtils.GIFT_TOKEN_ID,
-          undefined,
-          WINNER_SCRIPT_HASH_HEX,
         ) as Box[];
         const winnerBox1 = inputWinnerBoxes[0];
         const winnerBox2 = inputWinnerBoxes[1];
-        const giftTokenRepoBox = testUtils.createGiftTokenRepoBoxMock(
-          1,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          constants.TRUE_SCRIPT_HEX,
-        );
+        const giftTokenRepoBox = boxFactory.createGiftTokenRepoBoxMock(1);
 
         const winnerOutputBox =
-          testUtils.createWinnerOutputBoxWithConstantRegisters(
+          boxFactory.createWinnerOutputBoxWithConstantRegisters(
             SConstant.from(winnerBox1.additionalRegisters.R4!).data as bigint[],
             testUtils.TICKET_TOKEN_ID,
             testUtils.GIFT_TOKEN_ID,
@@ -405,7 +280,7 @@ describe('winner', () => {
           );
 
         // Execute transaction
-        const transaction = new TransactionBuilder(chain.height)
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([winnerBox1, giftTokenRepoBox, winnerBox2])
           .to([winnerOutputBox])
           .payFee(testUtils.FEE)
@@ -421,7 +296,7 @@ describe('winner', () => {
 
         // Check execution result
         expect(() =>
-          chain.execute(transaction, { signers: [creator] }),
+          boxFactory.chain.execute(transaction, { signers: [creator] }),
         ).toThrowError();
       },
     );
@@ -440,16 +315,9 @@ describe('winner', () => {
      */
     winnerTest(
       'should fail when two gift-tokens move to the output gift box',
-      ({
-        WINNER_SCRIPT_HASH_HEX,
-        GIFT_SCRIPT_HASH_HEX,
-        chain,
-        someoneWallet,
-      }) => {
-        chain.setTip(200);
-
+      ({ boxFactory, someoneWallet }) => {
         const winnerBox = (
-          testUtils.createWinnersBoxMock(
+          boxFactory.createWinnersBoxMock(
             1n,
             testUtils.TICKET_TOKEN_ID,
             undefined,
@@ -462,13 +330,12 @@ describe('winner', () => {
                 amount: 100n,
               },
             ],
-            WINNER_SCRIPT_HASH_HEX,
           ) as Box[]
         )[0];
         // put extra gift-token to the winnerOutputBox
         const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
           .data as bigint[];
-        const outWinner = testUtils.createWinnerOutputBoxWithConstantRegisters(
+        const outWinner = boxFactory.createWinnerOutputBoxWithConstantRegisters(
           SConstant.from(winnerBox.additionalRegisters.R4!).data as bigint[],
           testUtils.TICKET_TOKEN_ID,
           testUtils.GIFT_TOKEN_ID,
@@ -476,15 +343,14 @@ describe('winner', () => {
           3n,
         );
 
-        const gift = testUtils.createGiftOutputBox(
+        const gift = boxFactory.createGiftOutputBox(
           winnerR4[0],
           someoneWallet.address.toString(),
           testUtils.FEE * 10n,
           testUtils.GIFT_TOKEN_ID,
           2n,
-          GIFT_SCRIPT_HASH_HEX,
         );
-        const transaction = new TransactionBuilder(chain.height)
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([winnerBox, ...someoneWallet.utxos.toArray()])
           .to([outWinner, gift])
           .configureSelector((selector) => {
@@ -496,7 +362,7 @@ describe('winner', () => {
 
         // Check execution result
         expect(() =>
-          chain.execute(transaction, { signers: [someoneWallet] }),
+          boxFactory.chain.execute(transaction, { signers: [someoneWallet] }),
         ).toThrowError();
       },
     );
@@ -513,11 +379,9 @@ describe('winner', () => {
      */
     winnerTest(
       'should fail when value of input and output winner boxes is different',
-      ({ WINNER_SCRIPT_HASH_HEX, chain, someoneWallet }) => {
-        chain.setTip(200);
-
+      ({ boxFactory, someoneWallet }) => {
         const winnerBox = (
-          testUtils.createWinnersBoxMock(
+          boxFactory.createWinnersBoxMock(
             1n,
             testUtils.TICKET_TOKEN_ID,
             undefined,
@@ -530,12 +394,11 @@ describe('winner', () => {
                 amount: 100n,
               },
             ],
-            WINNER_SCRIPT_HASH_HEX,
           ) as Box[]
         )[0];
         const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
           .data as bigint[];
-        const outWinner = testUtils.createWinnerOutputBoxWithConstantRegisters(
+        const outWinner = boxFactory.createWinnerOutputBoxWithConstantRegisters(
           SConstant.from(winnerBox.additionalRegisters.R4!).data as bigint[],
           testUtils.TICKET_TOKEN_ID,
           testUtils.GIFT_TOKEN_ID,
@@ -544,14 +407,14 @@ describe('winner', () => {
           // decrease value of output winner-box
           BigInt(winnerBox.value) - testUtils.FEE,
         );
-        const gift = testUtils.createGiftOutputBox(
+        const gift = boxFactory.createGiftOutputBox(
           winnerR4[0],
           someoneWallet.address.toString(),
           // increase value of output gift-box
           testUtils.FEE * 11n,
           testUtils.GIFT_TOKEN_ID,
         );
-        const transaction = new TransactionBuilder(chain.height)
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([winnerBox, ...someoneWallet.utxos.toArray()])
           .to([outWinner, gift])
           .configureSelector((selector) => {
@@ -563,7 +426,7 @@ describe('winner', () => {
 
         // Check execution result
         expect(() =>
-          chain.execute(transaction, { signers: [someoneWallet] }),
+          boxFactory.chain.execute(transaction, { signers: [someoneWallet] }),
         ).toThrowError();
       },
     );
@@ -580,11 +443,9 @@ describe('winner', () => {
      */
     winnerTest(
       'should fail when winner-index on the register of gift box is incorrect',
-      ({ WINNER_SCRIPT_HASH_HEX, chain, someoneWallet }) => {
-        chain.setTip(200);
-
+      ({ boxFactory, someoneWallet }) => {
         const winnerBox = (
-          testUtils.createWinnersBoxMock(
+          boxFactory.createWinnersBoxMock(
             1n,
             testUtils.TICKET_TOKEN_ID,
             undefined,
@@ -597,26 +458,25 @@ describe('winner', () => {
                 amount: 100n,
               },
             ],
-            WINNER_SCRIPT_HASH_HEX,
           ) as Box[]
         )[0];
         const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
           .data as bigint[];
-        const outWinner = testUtils.createWinnerOutputBoxWithConstantRegisters(
+        const outWinner = boxFactory.createWinnerOutputBoxWithConstantRegisters(
           SConstant.from(winnerBox.additionalRegisters.R4!).data as bigint[],
           testUtils.TICKET_TOKEN_ID,
           testUtils.GIFT_TOKEN_ID,
           99n,
           1n,
         );
-        const gift = testUtils.createGiftOutputBox(
+        const gift = boxFactory.createGiftOutputBox(
           // put incorrect index on the gift box
           winnerR4[0] + 1n,
           someoneWallet.address.toString(),
           testUtils.FEE * 10n,
           testUtils.GIFT_TOKEN_ID,
         );
-        const transaction = new TransactionBuilder(chain.height)
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([winnerBox, ...someoneWallet.utxos.toArray()])
           .to([outWinner, gift])
           .configureSelector((selector) => {
@@ -628,7 +488,7 @@ describe('winner', () => {
 
         // Check execution result
         expect(() =>
-          chain.execute(transaction, { signers: [someoneWallet] }),
+          boxFactory.chain.execute(transaction, { signers: [someoneWallet] }),
         ).toThrowError();
       },
     );
@@ -645,11 +505,9 @@ describe('winner', () => {
      */
     winnerTest(
       'fail when amount of erg on the gift box is not enough',
-      ({ WINNER_SCRIPT_HASH_HEX, chain, someoneWallet }) => {
-        chain.setTip(200);
-
+      ({ boxFactory, someoneWallet }) => {
         const winnerBox = (
-          testUtils.createWinnersBoxMock(
+          boxFactory.createWinnersBoxMock(
             1n,
             testUtils.TICKET_TOKEN_ID,
             undefined,
@@ -662,26 +520,25 @@ describe('winner', () => {
                 amount: 100n,
               },
             ],
-            WINNER_SCRIPT_HASH_HEX,
           ) as Box[]
         )[0];
         const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
           .data as bigint[];
-        const outWinner = testUtils.createWinnerOutputBoxWithConstantRegisters(
+        const outWinner = boxFactory.createWinnerOutputBoxWithConstantRegisters(
           SConstant.from(winnerBox.additionalRegisters.R4!).data as bigint[],
           testUtils.TICKET_TOKEN_ID,
           testUtils.GIFT_TOKEN_ID,
           99n,
           2n,
         );
-        const gift = testUtils.createGiftOutputBox(
+        const gift = boxFactory.createGiftOutputBox(
           winnerR4[0],
           someoneWallet.address.toString(),
           // sets lower erg amount than is required
           testUtils.FEE * 1n,
           testUtils.GIFT_TOKEN_ID,
         );
-        const transaction = new TransactionBuilder(chain.height)
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([winnerBox, ...someoneWallet.utxos.toArray()])
           .to([outWinner, gift])
           .configureSelector((selector) => {
@@ -693,7 +550,7 @@ describe('winner', () => {
 
         // Check execution result
         expect(() =>
-          chain.execute(transaction, { signers: [someoneWallet] }),
+          boxFactory.chain.execute(transaction, { signers: [someoneWallet] }),
         ).toThrowError();
       },
     );
@@ -714,16 +571,11 @@ describe('winner', () => {
      */
     winnerTest(
       'should success erg-goal based winner-prize creation',
-      ({
-        WINNER_PRIZE_SCRIPT_HASH_HEX,
-        WINNER_SCRIPT_HASH_HEX,
-        chain,
-        successRaffleBox,
-      }) => {
+      ({ boxFactory, successRaffleBox }) => {
         const totalPrize = 1;
 
         const winnerBox = (
-          testUtils.createWinnersBoxMock(
+          boxFactory.createWinnersBoxMock(
             1n,
             testUtils.TICKET_TOKEN_ID,
             undefined,
@@ -736,7 +588,6 @@ describe('winner', () => {
                 amount: 100n,
               },
             ],
-            WINNER_SCRIPT_HASH_HEX,
           ) as Box[]
         )[0];
 
@@ -745,21 +596,21 @@ describe('winner', () => {
 
         const prizeAmount = (BigInt(totalPrize) * BigInt(winnerR4[1])) / 1000n;
         const prizeBoxTokens = [winnerBox.assets[0], winnerBox.assets[1]];
-        const prizeBox = testUtils.createWinnerPrizeOutputBox(
+        const prizeBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 2n + BigInt(prizeAmount),
           winnerR4[0],
           1n,
           1n,
           0n,
           prizeBoxTokens,
-          WINNER_PRIZE_SCRIPT_HASH_HEX,
         );
 
-        const successRaffleOutputBox = testUtils.createSuccessRaffleBox(
+        const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
           BigInt(successRaffleBox.value) - BigInt(prizeAmount),
           testUtils.LICENSE_TOKEN_ID,
           'test seed',
-          testUtils.makeHashFromString([].toString()),
+          [],
+          0n,
           1n,
           BigInt(totalPrize),
           0n,
@@ -769,7 +620,7 @@ describe('winner', () => {
           undefined,
         );
 
-        const transaction = new TransactionBuilder(chain.height)
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([successRaffleBox, winnerBox])
           .to([successRaffleOutputBox, prizeBox])
           .configureSelector((selector) => {
@@ -778,7 +629,7 @@ describe('winner', () => {
           .payFee(testUtils.FEE)
           .build();
 
-        expect(chain.execute(transaction)).true;
+        expect(boxFactory.chain.execute(transaction)).true;
       },
     );
 
@@ -794,16 +645,11 @@ describe('winner', () => {
      * @expected
      * - transaction must done successfully
      */
-    tokenGoalWinnerTest(
+    winnerTest(
       'should success token-goal based winner-prize creation',
-      ({
-        WINNER_PRIZE_SCRIPT_HASH_HEX,
-        WINNER_SCRIPT_HASH_HEX,
-        SUCCESS_RAFFLE_SCRIPT_HASH_HEX,
-        chain,
-      }) => {
+      ({ boxFactory }) => {
         const totalPrize = 1;
-        const successRaffleBox = testUtils.createSuccessRaffleBoxMock(
+        const successRaffleBox = boxFactory.createSuccessRaffleBoxMock(
           testUtils.CREATION_FEE + 4n * testUtils.FEE,
           testUtils.LICENSE_TOKEN_ID,
           '0123456789012345',
@@ -815,11 +661,10 @@ describe('winner', () => {
           testUtils.TICKET_TOKEN_ID,
           999_999_998n,
           '0'.repeat(64),
-          SUCCESS_RAFFLE_SCRIPT_HASH_HEX,
         );
 
         const winnerBox = (
-          testUtils.createWinnersBoxMock(
+          boxFactory.createWinnersBoxMock(
             1n,
             testUtils.TICKET_TOKEN_ID,
             undefined,
@@ -832,7 +677,6 @@ describe('winner', () => {
                 amount: 100n,
               },
             ],
-            WINNER_SCRIPT_HASH_HEX,
           ) as Box[]
         )[0];
         const successRaffleOutputBoxTokens = [
@@ -856,21 +700,21 @@ describe('winner', () => {
           amount:
             BigInt(successRaffleBox.assets[2]!.amount) - BigInt(prizeAmount),
         });
-        const prizeBox = testUtils.createWinnerPrizeOutputBox(
+        const prizeBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 2n,
           winnerR4[0],
           1n,
           1n,
           0n,
           prizeBoxTokens,
-          WINNER_PRIZE_SCRIPT_HASH_HEX,
         );
 
-        const successRaffleOutputBox = testUtils.createSuccessRaffleBox(
+        const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
           BigInt(successRaffleBox.value),
           testUtils.LICENSE_TOKEN_ID,
           'test seed',
-          testUtils.makeHashFromString([].toString()),
+          [],
+          0n,
           1n,
           BigInt(totalPrize),
           BigInt(successRaffleBox.assets[2]!.amount) - BigInt(prizeAmount),
@@ -880,7 +724,7 @@ describe('winner', () => {
           successRaffleBox.assets[2]!.tokenId,
         );
 
-        const transaction = new TransactionBuilder(chain.height)
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([successRaffleBox, winnerBox])
           .to([successRaffleOutputBox, prizeBox])
           .configureSelector((selector) => {
@@ -889,7 +733,7 @@ describe('winner', () => {
           .payFee(testUtils.FEE)
           .build();
 
-        expect(chain.execute(transaction)).true;
+        expect(boxFactory.chain.execute(transaction)).true;
       },
     );
 
@@ -907,16 +751,11 @@ describe('winner', () => {
      */
     winnerTest(
       'should fail when incorrect value puts on the erg-goal prize box',
-      ({
-        WINNER_PRIZE_SCRIPT_HASH_HEX,
-        WINNER_SCRIPT_HASH_HEX,
-        chain,
-        successRaffleBox,
-      }) => {
+      ({ boxFactory, successRaffleBox }) => {
         const totalPrize = 1;
 
         const winnerBox = (
-          testUtils.createWinnersBoxMock(
+          boxFactory.createWinnersBoxMock(
             1n,
             testUtils.TICKET_TOKEN_ID,
             undefined,
@@ -929,7 +768,6 @@ describe('winner', () => {
                 amount: 100n,
               },
             ],
-            WINNER_SCRIPT_HASH_HEX,
           ) as Box[]
         )[0];
 
@@ -939,21 +777,21 @@ describe('winner', () => {
         const incorrectPrizeAmount =
           (BigInt(totalPrize) * BigInt(winnerR4[1])) / 1000n - 1n;
         const prizeBoxTokens = [winnerBox.assets[0], winnerBox.assets[1]];
-        const prizeBox = testUtils.createWinnerPrizeOutputBox(
+        const prizeBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 2n + BigInt(incorrectPrizeAmount),
           winnerR4[0],
           1n,
           1n,
           0n,
           prizeBoxTokens,
-          WINNER_PRIZE_SCRIPT_HASH_HEX,
         );
 
-        const successRaffleOutputBox = testUtils.createSuccessRaffleBox(
+        const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
           BigInt(successRaffleBox.value) - BigInt(incorrectPrizeAmount),
           testUtils.LICENSE_TOKEN_ID,
           'test seed',
-          testUtils.makeHashFromString([].toString()),
+          [],
+          0n,
           1n,
           BigInt(totalPrize),
           undefined,
@@ -962,7 +800,7 @@ describe('winner', () => {
           successRaffleBox.assets[1].amount,
         );
 
-        const transaction = new TransactionBuilder(chain.height)
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([successRaffleBox, winnerBox])
           .to([successRaffleOutputBox, prizeBox])
           .configureSelector((selector) => {
@@ -972,7 +810,7 @@ describe('winner', () => {
           .build();
 
         // Check execution result
-        expect(() => chain.execute(transaction)).toThrowError();
+        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
       },
     );
 
@@ -988,17 +826,11 @@ describe('winner', () => {
      * @expected
      * - transaction execution must throw exception
      */
-    tokenGoalWinnerTest(
+    winnerTest(
       'should fail when incorrect value puts on the token-goal prize box',
-      ({
-        WINNER_PRIZE_SCRIPT_HASH_HEX,
-        WINNER_SCRIPT_HASH_HEX,
-        SUCCESS_RAFFLE_SCRIPT_HASH_HEX,
-        chain,
-        someoneWallet,
-      }) => {
+      ({ boxFactory, someoneWallet }) => {
         const totalPrize = 1;
-        const successRaffleBox = testUtils.createSuccessRaffleBoxMock(
+        const successRaffleBox = boxFactory.createSuccessRaffleBoxMock(
           testUtils.CREATION_FEE + 4n * testUtils.FEE,
           testUtils.LICENSE_TOKEN_ID,
           '0123456789012345',
@@ -1010,11 +842,10 @@ describe('winner', () => {
           testUtils.TICKET_TOKEN_ID,
           999_999_998n,
           '0'.repeat(64),
-          SUCCESS_RAFFLE_SCRIPT_HASH_HEX,
         );
 
         const winnerBox = (
-          testUtils.createWinnersBoxMock(
+          boxFactory.createWinnersBoxMock(
             1n,
             testUtils.TICKET_TOKEN_ID,
             undefined,
@@ -1027,7 +858,6 @@ describe('winner', () => {
                 amount: 100n,
               },
             ],
-            WINNER_SCRIPT_HASH_HEX,
           ) as Box[]
         )[0];
         const successRaffleOutputBoxTokens = [
@@ -1052,21 +882,21 @@ describe('winner', () => {
           amount:
             BigInt(successRaffleBox.assets[2]!.amount) - BigInt(prizeAmount),
         });
-        const prizeBox = testUtils.createWinnerPrizeOutputBox(
+        const prizeBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 2n,
           winnerR4[0],
           1n,
           1n,
           0n,
           prizeBoxTokens,
-          WINNER_PRIZE_SCRIPT_HASH_HEX,
         );
 
-        const successRaffleOutputBox = testUtils.createSuccessRaffleBox(
+        const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
           BigInt(successRaffleBox.value),
           testUtils.LICENSE_TOKEN_ID,
           'test seed',
-          testUtils.makeHashFromString([].toString()),
+          [],
+          0n,
           1n,
           BigInt(totalPrize),
           BigInt(successRaffleBox.assets[2]!.amount) - BigInt(prizeAmount),
@@ -1076,7 +906,7 @@ describe('winner', () => {
           successRaffleBox.assets[2]!.tokenId,
         );
 
-        const transaction = new TransactionBuilder(chain.height)
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([successRaffleBox, winnerBox])
           .to([successRaffleOutputBox, prizeBox])
           .sendChangeTo(someoneWallet.address)
@@ -1086,7 +916,7 @@ describe('winner', () => {
           .payFee(testUtils.FEE)
           .build();
 
-        expect(() => chain.execute(transaction)).toThrowError();
+        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
       },
     );
 
@@ -1104,16 +934,11 @@ describe('winner', () => {
      */
     winnerTest(
       "should fails when the total assets aren't transferred from the winner's box to the prize box",
-      ({
-        WINNER_PRIZE_SCRIPT_HASH_HEX,
-        WINNER_SCRIPT_HASH_HEX,
-        chain,
-        successRaffleBox,
-      }) => {
+      ({ boxFactory, successRaffleBox }) => {
         const totalPrize = 1;
 
         const winnerBox = (
-          testUtils.createWinnersBoxMock(
+          boxFactory.createWinnersBoxMock(
             1n,
             testUtils.TICKET_TOKEN_ID,
             undefined,
@@ -1126,7 +951,6 @@ describe('winner', () => {
                 amount: 100n,
               },
             ],
-            WINNER_SCRIPT_HASH_HEX,
           ) as Box[]
         )[0];
 
@@ -1142,21 +966,21 @@ describe('winner', () => {
             amount: BigInt(winnerBox.assets[1].amount) - 1n,
           },
         ];
-        const prizeBox = testUtils.createWinnerPrizeOutputBox(
+        const prizeBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 2n + BigInt(prizeAmount),
           winnerR4[0],
           1n,
           1n,
           0n,
           prizeBoxTokens,
-          WINNER_PRIZE_SCRIPT_HASH_HEX,
         );
 
-        const successRaffleOutputBox = testUtils.createSuccessRaffleBox(
+        const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
           BigInt(successRaffleBox.value) - BigInt(prizeAmount),
           testUtils.LICENSE_TOKEN_ID,
           'test seed',
-          testUtils.makeHashFromString([].toString()),
+          [],
+          0n,
           1n,
           BigInt(totalPrize),
           undefined,
@@ -1165,7 +989,7 @@ describe('winner', () => {
           successRaffleBox.assets[1].amount,
         );
 
-        const transaction = new TransactionBuilder(chain.height)
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([successRaffleBox, winnerBox])
           .to([successRaffleOutputBox, prizeBox])
           .configureSelector((selector) => {
@@ -1179,7 +1003,7 @@ describe('winner', () => {
           .build();
 
         // Check execution result
-        expect(() => chain.execute(transaction, {})).toThrowError();
+        expect(() => boxFactory.chain.execute(transaction, {})).toThrowError();
       },
     );
 
@@ -1197,16 +1021,11 @@ describe('winner', () => {
      */
     winnerTest(
       'should fail when an invalid winner box index is placed in the prize box',
-      ({
-        WINNER_PRIZE_SCRIPT_HASH_HEX,
-        WINNER_SCRIPT_HASH_HEX,
-        chain,
-        successRaffleBox,
-      }) => {
+      ({ boxFactory, successRaffleBox }) => {
         const totalPrize = 1;
 
         const winnerBox = (
-          testUtils.createWinnersBoxMock(
+          boxFactory.createWinnersBoxMock(
             1n,
             testUtils.TICKET_TOKEN_ID,
             undefined,
@@ -1219,7 +1038,6 @@ describe('winner', () => {
                 amount: 100n,
               },
             ],
-            WINNER_SCRIPT_HASH_HEX,
           ) as Box[]
         )[0];
 
@@ -1228,21 +1046,21 @@ describe('winner', () => {
 
         const prizeAmount = (BigInt(totalPrize) * BigInt(winnerR4[1])) / 1000n;
         const prizeBoxTokens = [winnerBox.assets[0], winnerBox.assets[1]];
-        const prizeBox = testUtils.createWinnerPrizeOutputBox(
+        const prizeBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 2n + BigInt(prizeAmount),
           0n, // put invalid winner-index
           1n,
           1n,
           0n,
           prizeBoxTokens,
-          WINNER_PRIZE_SCRIPT_HASH_HEX,
         );
 
-        const successRaffleOutputBox = testUtils.createSuccessRaffleBox(
+        const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
           BigInt(successRaffleBox.value) - BigInt(prizeAmount),
           testUtils.LICENSE_TOKEN_ID,
           'test seed',
-          testUtils.makeHashFromString([].toString()),
+          [],
+          0n,
           1n,
           BigInt(totalPrize),
           undefined,
@@ -1251,7 +1069,7 @@ describe('winner', () => {
           successRaffleBox.assets[1].amount,
         );
 
-        const transaction = new TransactionBuilder(chain.height)
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([successRaffleBox, winnerBox])
           .to([successRaffleOutputBox, prizeBox])
           .configureSelector((selector) => {
@@ -1261,7 +1079,7 @@ describe('winner', () => {
           .build();
 
         // Check execution result
-        expect(() => chain.execute(transaction, {})).toThrowError();
+        expect(() => boxFactory.chain.execute(transaction, {})).toThrowError();
       },
     );
 
@@ -1279,17 +1097,11 @@ describe('winner', () => {
      */
     winnerTest(
       'should fail when an invalid token is placed in the successRaffle box',
-      ({
-        WINNER_PRIZE_SCRIPT_HASH_HEX,
-        WINNER_SCRIPT_HASH_HEX,
-        chain,
-        someoneWallet,
-        successRaffleBox,
-      }) => {
+      ({ boxFactory, someoneWallet, successRaffleBox }) => {
         const totalPrize = 1;
 
         const winnerBox = (
-          testUtils.createWinnersBoxMock(
+          boxFactory.createWinnersBoxMock(
             1n,
             testUtils.TICKET_TOKEN_ID,
             undefined,
@@ -1302,7 +1114,6 @@ describe('winner', () => {
                 amount: 100n,
               },
             ],
-            WINNER_SCRIPT_HASH_HEX,
           ) as Box[]
         )[0];
 
@@ -1311,21 +1122,21 @@ describe('winner', () => {
 
         const prizeAmount = (BigInt(totalPrize) * BigInt(winnerR4[1])) / 1000n;
         const prizeBoxTokens = [winnerBox.assets[0], winnerBox.assets[1]];
-        const prizeBox = testUtils.createWinnerPrizeOutputBox(
+        const prizeBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 2n + BigInt(prizeAmount),
           winnerR4[0],
           1n,
           1n,
           0n,
           prizeBoxTokens,
-          WINNER_PRIZE_SCRIPT_HASH_HEX,
         );
 
-        const successRaffleOutputBox = testUtils.createSuccessRaffleBox(
+        const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
           BigInt(successRaffleBox.value) - BigInt(prizeAmount),
           testUtils.LICENSE_TOKEN_ID,
           'test seed',
-          testUtils.makeHashFromString([].toString()),
+          [],
+          0n,
           1n,
           BigInt(totalPrize),
           undefined,
@@ -1334,7 +1145,7 @@ describe('winner', () => {
           successRaffleBox.assets[1].amount,
         );
 
-        const transaction = new TransactionBuilder(chain.height)
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([successRaffleBox, winnerBox, ...someoneWallet.utxos])
           .to([successRaffleOutputBox, prizeBox])
           .configureSelector((selector) => {
@@ -1351,7 +1162,7 @@ describe('winner', () => {
           .build();
 
         // Check execution result
-        expect(() => chain.execute(transaction, {})).toThrowError();
+        expect(() => boxFactory.chain.execute(transaction, {})).toThrowError();
       },
     );
 
@@ -1369,16 +1180,10 @@ describe('winner', () => {
      */
     winnerTest(
       'should fails when two duplicate winner boxes are used as input',
-      ({
-        WINNER_PRIZE_SCRIPT_HASH_HEX,
-        WINNER_SCRIPT_HASH_HEX,
-        chain,
-        someoneWallet,
-        successRaffleBox,
-      }) => {
+      ({ boxFactory, someoneWallet, successRaffleBox }) => {
         const totalPrize = 1;
 
-        const inputWinnerBoxes = testUtils.createWinnersBoxMock(
+        const inputWinnerBoxes = boxFactory.createWinnersBoxMock(
           2n,
           testUtils.TICKET_TOKEN_ID,
           undefined,
@@ -1391,7 +1196,6 @@ describe('winner', () => {
               amount: 100n,
             },
           ],
-          WINNER_SCRIPT_HASH_HEX,
         ) as Box[];
         const winnerBox1 = inputWinnerBoxes[0];
         const winnerBox2 = inputWinnerBoxes[1];
@@ -1401,21 +1205,21 @@ describe('winner', () => {
 
         const prizeAmount = (BigInt(totalPrize) * BigInt(winnerR4[1])) / 1000n;
         const prizeBoxTokens = [winnerBox1.assets[0], winnerBox1.assets[1]];
-        const prizeBox = testUtils.createWinnerPrizeOutputBox(
+        const prizeBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 2n + BigInt(prizeAmount),
           winnerR4[0],
           1n,
           1n,
           0n,
           prizeBoxTokens,
-          WINNER_PRIZE_SCRIPT_HASH_HEX,
         );
 
-        const successRaffleOutputBox = testUtils.createSuccessRaffleBox(
+        const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
           BigInt(successRaffleBox.value) - BigInt(prizeAmount),
           testUtils.LICENSE_TOKEN_ID,
           'test seed',
-          testUtils.makeHashFromString([].toString()),
+          [],
+          0n,
           1n,
           BigInt(totalPrize),
           undefined,
@@ -1424,7 +1228,7 @@ describe('winner', () => {
           successRaffleBox.assets[1].amount,
         );
 
-        const transaction = new TransactionBuilder(chain.height)
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([successRaffleBox, winnerBox1, winnerBox2])
           .to([successRaffleOutputBox, prizeBox])
           .configureSelector((selector) => {
@@ -1435,7 +1239,7 @@ describe('winner', () => {
           .build();
 
         // Check execution result
-        expect(() => chain.execute(transaction, {})).toThrowError();
+        expect(() => boxFactory.chain.execute(transaction, {})).toThrowError();
       },
     );
   });
@@ -1453,18 +1257,12 @@ describe('winner', () => {
      */
     winnerTest(
       'should success execution of return gift erg-goal transaction',
-      ({
-        GIFT_REDEEM_SCRIPT_HASH_HEX,
-        WINNER_SCRIPT_HASH_HEX,
-        GIFT_SCRIPT_HASH_HEX,
-        chain,
-        someoneWallet,
-      }) => {
+      ({ boxFactory, someoneWallet }) => {
         const giftCount = 3n;
 
         // Create input boxes
         const winner = (
-          testUtils.createWinnersBoxMock(
+          boxFactory.createWinnersBoxMock(
             1n,
             testUtils.TICKET_TOKEN_ID,
             undefined,
@@ -1477,27 +1275,25 @@ describe('winner', () => {
                 amount: 1n,
               },
             ],
-            WINNER_SCRIPT_HASH_HEX,
           ) as Box[]
         )[0];
-        const gift = testUtils.createGiftBoxMock(
+        const gift = boxFactory.createGiftBoxMock(
           1n,
           someoneWallet.address.toString(),
           testUtils.FEE * 2n,
           testUtils.GIFT_TOKEN_ID,
           1n,
-          GIFT_SCRIPT_HASH_HEX,
         );
 
         // Create output boxes
-        const outWinner = testUtils.createWinnerOutputBoxWithConstantRegisters(
+        const outWinner = boxFactory.createWinnerOutputBoxWithConstantRegisters(
           SConstant.from(winner.additionalRegisters.R4!).data as bigint[],
           testUtils.TICKET_TOKEN_ID,
           testUtils.GIFT_TOKEN_ID,
           BigInt(winner.assets[1].amount.toString()) + 1n,
           giftCount - 1n,
         );
-        const giftRedeemBox = testUtils.createGiftRedeemBoxMock(
+        const giftRedeemBox = boxFactory.createGiftRedeemBoxMock(
           1_000_000_000n,
           0n,
           testUtils.FEE * 2n,
@@ -1506,18 +1302,17 @@ describe('winner', () => {
           testUtils.TICKET_TOKEN_ID,
           1n,
           undefined,
-          GIFT_REDEEM_SCRIPT_HASH_HEX,
         );
 
         const giftGiverAddress = Buffer.from(
           SConstant.from(gift.additionalRegisters.R4!).data as Uint8Array,
         ).toString();
-        const redeemedGift = testUtils.createCustomOutputBox(
+        const redeemedGift = boxFactory.createCustomOutputBox(
           BigInt(gift.value.toString()) - testUtils.FEE,
           gift.assets.slice(1),
           giftGiverAddress,
         );
-        const giftReturnTx = new TransactionBuilder(chain.height)
+        const giftReturnTx = new TransactionBuilder(boxFactory.chain.height)
           .from([winner, gift])
           .to([outWinner, redeemedGift])
           .withDataFrom([giftRedeemBox])
@@ -1527,7 +1322,7 @@ describe('winner', () => {
           .payFee(testUtils.FEE)
           .build();
 
-        expect(chain.execute(giftReturnTx)).true;
+        expect(boxFactory.chain.execute(giftReturnTx)).true;
       },
     );
 
@@ -1543,18 +1338,12 @@ describe('winner', () => {
      */
     winnerTest(
       'should fail when the return gift erg-goal transaction uses an invalid ticket token in the giftRedeem box',
-      ({
-        GIFT_REDEEM_SCRIPT_HASH_HEX,
-        WINNER_SCRIPT_HASH_HEX,
-        GIFT_SCRIPT_HASH_HEX,
-        chain,
-        someoneWallet,
-      }) => {
+      ({ boxFactory, someoneWallet }) => {
         const giftCount = 3n;
 
         // Create input boxes
         const winner = (
-          testUtils.createWinnersBoxMock(
+          boxFactory.createWinnersBoxMock(
             1n,
             testUtils.TICKET_TOKEN_ID,
             undefined,
@@ -1567,27 +1356,25 @@ describe('winner', () => {
                 amount: 1n,
               },
             ],
-            WINNER_SCRIPT_HASH_HEX,
           ) as Box[]
         )[0];
-        const gift = testUtils.createGiftBoxMock(
+        const gift = boxFactory.createGiftBoxMock(
           1n,
           someoneWallet.address.toString(),
           testUtils.FEE * 2n,
           testUtils.GIFT_TOKEN_ID,
           1n,
-          GIFT_SCRIPT_HASH_HEX,
         );
 
         // Create output boxes
-        const outWinner = testUtils.createWinnerOutputBoxWithConstantRegisters(
+        const outWinner = boxFactory.createWinnerOutputBoxWithConstantRegisters(
           SConstant.from(winner.additionalRegisters.R4!).data as bigint[],
           testUtils.TICKET_TOKEN_ID,
           testUtils.GIFT_TOKEN_ID,
           BigInt(winner.assets[1].amount.toString()) + 1n,
           giftCount - 1n,
         );
-        const giftRedeemBox = testUtils.createGiftRedeemBoxMock(
+        const giftRedeemBox = boxFactory.createGiftRedeemBoxMock(
           1_000_000_000n,
           0n,
           testUtils.FEE * 2n,
@@ -1597,18 +1384,17 @@ describe('winner', () => {
           testUtils.X_TOKEN_ID,
           1n,
           undefined,
-          GIFT_REDEEM_SCRIPT_HASH_HEX,
         );
 
         const giftGiverAddress = Buffer.from(
           SConstant.from(gift.additionalRegisters.R4!).data as Uint8Array,
         ).toString();
-        const redeemedGift = testUtils.createCustomOutputBox(
+        const redeemedGift = boxFactory.createCustomOutputBox(
           BigInt(gift.value.toString()) - testUtils.FEE,
           gift.assets.slice(1),
           giftGiverAddress,
         );
-        const giftReturnTx = new TransactionBuilder(chain.height)
+        const giftReturnTx = new TransactionBuilder(boxFactory.chain.height)
           .from([winner, gift])
           .to([outWinner, redeemedGift])
           .withDataFrom([giftRedeemBox])
@@ -1618,7 +1404,7 @@ describe('winner', () => {
           .payFee(testUtils.FEE)
           .build();
 
-        expect(() => chain.execute(giftReturnTx)).toThrowError();
+        expect(() => boxFactory.chain.execute(giftReturnTx)).toThrowError();
       },
     );
 
@@ -1634,18 +1420,12 @@ describe('winner', () => {
      */
     winnerTest(
       'should fail return gift erg-goal transaction by invalid number of gift token on the winner box',
-      ({
-        GIFT_REDEEM_SCRIPT_HASH_HEX,
-        WINNER_SCRIPT_HASH_HEX,
-        GIFT_SCRIPT_HASH_HEX,
-        chain,
-        someoneWallet,
-      }) => {
+      ({ boxFactory, someoneWallet }) => {
         const giftCount = 3n;
 
         // Create input boxes
         const winner = (
-          testUtils.createWinnersBoxMock(
+          boxFactory.createWinnersBoxMock(
             1n,
             testUtils.TICKET_TOKEN_ID,
             undefined,
@@ -1659,27 +1439,25 @@ describe('winner', () => {
                 amount: 1n,
               },
             ],
-            WINNER_SCRIPT_HASH_HEX,
           ) as Box[]
         )[0];
-        const gift = testUtils.createGiftBoxMock(
+        const gift = boxFactory.createGiftBoxMock(
           1n,
           someoneWallet.address.toString(),
           testUtils.FEE * 2n,
           testUtils.GIFT_TOKEN_ID,
           1n,
-          GIFT_SCRIPT_HASH_HEX,
         );
 
         // Create output boxes
-        const outWinner = testUtils.createWinnerOutputBoxWithConstantRegisters(
+        const outWinner = boxFactory.createWinnerOutputBoxWithConstantRegisters(
           SConstant.from(winner.additionalRegisters.R4!).data as bigint[],
           testUtils.TICKET_TOKEN_ID,
           testUtils.GIFT_TOKEN_ID,
           BigInt(winner.assets[1].amount.toString()) + 1n,
           giftCount - 1n,
         );
-        const giftRedeemBox = testUtils.createGiftRedeemBoxMock(
+        const giftRedeemBox = boxFactory.createGiftRedeemBoxMock(
           1_000_000_000n,
           0n,
           testUtils.FEE * 2n,
@@ -1688,18 +1466,17 @@ describe('winner', () => {
           testUtils.TICKET_TOKEN_ID,
           1n,
           undefined,
-          GIFT_REDEEM_SCRIPT_HASH_HEX,
         );
 
         const giftGiverAddress = Buffer.from(
           SConstant.from(gift.additionalRegisters.R4!).data as Uint8Array,
         ).toString();
-        const redeemedGift = testUtils.createCustomOutputBox(
+        const redeemedGift = boxFactory.createCustomOutputBox(
           BigInt(gift.value.toString()) - testUtils.FEE,
           gift.assets.slice(1),
           giftGiverAddress,
         );
-        const giftReturnTx = new TransactionBuilder(chain.height)
+        const giftReturnTx = new TransactionBuilder(boxFactory.chain.height)
           .from([winner, gift])
           .to([outWinner, redeemedGift])
           .withDataFrom([giftRedeemBox])
@@ -1709,7 +1486,7 @@ describe('winner', () => {
           .payFee(testUtils.FEE)
           .build();
 
-        expect(() => chain.execute(giftReturnTx)).toThrowError();
+        expect(() => boxFactory.chain.execute(giftReturnTx)).toThrowError();
       },
     );
 
@@ -1725,18 +1502,12 @@ describe('winner', () => {
      */
     winnerTest(
       'should fail erg-goal based return gift transaction without ticket token on the output winner box',
-      ({
-        GIFT_REDEEM_SCRIPT_HASH_HEX,
-        WINNER_SCRIPT_HASH_HEX,
-        GIFT_SCRIPT_HASH_HEX,
-        chain,
-        someoneWallet,
-      }) => {
+      ({ boxFactory, someoneWallet }) => {
         const giftCount = 3n;
 
         // Create input boxes
         const winner = (
-          testUtils.createWinnersBoxMock(
+          boxFactory.createWinnersBoxMock(
             1n,
             testUtils.TICKET_TOKEN_ID,
             undefined,
@@ -1749,20 +1520,18 @@ describe('winner', () => {
                 amount: 1n,
               },
             ],
-            WINNER_SCRIPT_HASH_HEX,
           ) as Box[]
         )[0];
-        const gift = testUtils.createGiftBoxMock(
+        const gift = boxFactory.createGiftBoxMock(
           1n,
           someoneWallet.address.toString(),
           testUtils.FEE * 2n,
           testUtils.GIFT_TOKEN_ID,
           1n,
-          GIFT_SCRIPT_HASH_HEX,
         );
 
         // Create output boxes
-        const outWinner = testUtils.createWinnerOutputBoxWithConstantRegisters(
+        const outWinner = boxFactory.createWinnerOutputBoxWithConstantRegisters(
           SConstant.from(winner.additionalRegisters.R4!).data as bigint[],
           testUtils.TICKET_TOKEN_ID,
           undefined,
@@ -1770,7 +1539,7 @@ describe('winner', () => {
           0n,
           giftCount - 1n,
         );
-        const giftRedeemBox = testUtils.createGiftRedeemBoxMock(
+        const giftRedeemBox = boxFactory.createGiftRedeemBoxMock(
           1_000_000_000n,
           0n,
           testUtils.FEE * 2n,
@@ -1779,13 +1548,12 @@ describe('winner', () => {
           testUtils.TICKET_TOKEN_ID,
           1n,
           undefined,
-          GIFT_REDEEM_SCRIPT_HASH_HEX,
         );
 
         const giftGiverAddress = Buffer.from(
           SConstant.from(gift.additionalRegisters.R4!).data as Uint8Array,
         ).toString();
-        const redeemedGift = testUtils.createCustomOutputBox(
+        const redeemedGift = boxFactory.createCustomOutputBox(
           BigInt(gift.value.toString()) - testUtils.FEE,
           [
             ...gift.assets.slice(1),
@@ -1797,7 +1565,7 @@ describe('winner', () => {
           ],
           giftGiverAddress,
         );
-        const giftReturnTx = new TransactionBuilder(chain.height)
+        const giftReturnTx = new TransactionBuilder(boxFactory.chain.height)
           .from([winner, gift])
           .to([outWinner, redeemedGift])
           .withDataFrom([giftRedeemBox])
@@ -1807,7 +1575,7 @@ describe('winner', () => {
           .payFee(testUtils.FEE)
           .build();
 
-        expect(() => chain.execute(giftReturnTx)).toThrowError();
+        expect(() => boxFactory.chain.execute(giftReturnTx)).toThrowError();
       },
     );
 
@@ -1824,18 +1592,12 @@ describe('winner', () => {
      */
     winnerTest(
       'should fail erg-goal return gift transaction by with invalid winner-index on the input gift box',
-      ({
-        GIFT_REDEEM_SCRIPT_HASH_HEX,
-        WINNER_SCRIPT_HASH_HEX,
-        GIFT_SCRIPT_HASH_HEX,
-        chain,
-        someoneWallet,
-      }) => {
+      ({ boxFactory, someoneWallet }) => {
         const giftCount = 3n;
 
         // Create input boxes
         const winner = (
-          testUtils.createWinnersBoxMock(
+          boxFactory.createWinnersBoxMock(
             1n,
             testUtils.TICKET_TOKEN_ID,
             undefined,
@@ -1848,28 +1610,26 @@ describe('winner', () => {
                 amount: 1n,
               },
             ],
-            WINNER_SCRIPT_HASH_HEX,
           ) as Box[]
         )[0];
-        const gift = testUtils.createGiftBoxMock(
+        const gift = boxFactory.createGiftBoxMock(
           // set invalid winner-index to this box
           7n,
           someoneWallet.address.toString(),
           testUtils.FEE * 2n,
           testUtils.GIFT_TOKEN_ID,
           1n,
-          GIFT_SCRIPT_HASH_HEX,
         );
 
         // Create output boxes
-        const outWinner = testUtils.createWinnerOutputBoxWithConstantRegisters(
+        const outWinner = boxFactory.createWinnerOutputBoxWithConstantRegisters(
           SConstant.from(winner.additionalRegisters.R4!).data as bigint[],
           testUtils.TICKET_TOKEN_ID,
           testUtils.GIFT_TOKEN_ID,
           BigInt(winner.assets[1].amount.toString()) + 1n,
           giftCount - 1n,
         );
-        const giftRedeemBox = testUtils.createGiftRedeemBoxMock(
+        const giftRedeemBox = boxFactory.createGiftRedeemBoxMock(
           1_000_000_000n,
           0n,
           testUtils.FEE * 2n,
@@ -1878,18 +1638,17 @@ describe('winner', () => {
           testUtils.TICKET_TOKEN_ID,
           1n,
           undefined,
-          GIFT_REDEEM_SCRIPT_HASH_HEX,
         );
 
         const giftGiverAddress = Buffer.from(
           SConstant.from(gift.additionalRegisters.R4!).data as Uint8Array,
         ).toString();
-        const redeemedGift = testUtils.createCustomOutputBox(
+        const redeemedGift = boxFactory.createCustomOutputBox(
           BigInt(gift.value.toString()) - testUtils.FEE,
           gift.assets.slice(1),
           giftGiverAddress,
         );
-        const giftReturnTx = new TransactionBuilder(chain.height)
+        const giftReturnTx = new TransactionBuilder(boxFactory.chain.height)
           .from([winner, gift])
           .to([outWinner, redeemedGift])
           .withDataFrom([giftRedeemBox])
@@ -1899,7 +1658,7 @@ describe('winner', () => {
           .payFee(testUtils.FEE)
           .build();
 
-        expect(() => chain.execute(giftReturnTx)).toThrowError();
+        expect(() => boxFactory.chain.execute(giftReturnTx)).toThrowError();
       },
     );
 
@@ -1916,18 +1675,12 @@ describe('winner', () => {
      */
     winnerTest(
       'should fail return gift erg-goal transaction by two gift boxes in the input',
-      ({
-        GIFT_REDEEM_SCRIPT_HASH_HEX,
-        WINNER_SCRIPT_HASH_HEX,
-        GIFT_SCRIPT_HASH_HEX,
-        chain,
-        someoneWallet,
-      }) => {
+      ({ boxFactory, someoneWallet }) => {
         const giftCount = 3n;
 
         // Create input boxes
         const winner = (
-          testUtils.createWinnersBoxMock(
+          boxFactory.createWinnersBoxMock(
             1n,
             testUtils.TICKET_TOKEN_ID,
             undefined,
@@ -1940,36 +1693,33 @@ describe('winner', () => {
                 amount: 1n,
               },
             ],
-            WINNER_SCRIPT_HASH_HEX,
           ) as Box[]
         )[0];
-        const gift1 = testUtils.createGiftBoxMock(
+        const gift1 = boxFactory.createGiftBoxMock(
           1n,
           someoneWallet.address.toString(),
           testUtils.FEE * 2n,
           testUtils.GIFT_TOKEN_ID,
           1n,
-          GIFT_SCRIPT_HASH_HEX,
         );
 
-        const gift2 = testUtils.createGiftBoxMock(
+        const gift2 = boxFactory.createGiftBoxMock(
           1n,
           someoneWallet.address.toString(),
           testUtils.FEE * 2n,
           testUtils.GIFT_TOKEN_ID,
           1n,
-          GIFT_SCRIPT_HASH_HEX,
         );
 
         // Create output boxes
-        const outWinner = testUtils.createWinnerOutputBoxWithConstantRegisters(
+        const outWinner = boxFactory.createWinnerOutputBoxWithConstantRegisters(
           SConstant.from(winner.additionalRegisters.R4!).data as bigint[],
           testUtils.TICKET_TOKEN_ID,
           testUtils.GIFT_TOKEN_ID,
           BigInt(winner.assets[1].amount.toString()) + 1n,
           giftCount - 1n,
         );
-        const giftRedeemBox = testUtils.createGiftRedeemBoxMock(
+        const giftRedeemBox = boxFactory.createGiftRedeemBoxMock(
           1_000_000_000n,
           0n,
           testUtils.FEE * 2n,
@@ -1978,18 +1728,17 @@ describe('winner', () => {
           testUtils.TICKET_TOKEN_ID,
           1n,
           undefined,
-          GIFT_REDEEM_SCRIPT_HASH_HEX,
         );
 
         const giftGiverAddress = Buffer.from(
           SConstant.from(gift1.additionalRegisters.R4!).data as Uint8Array,
         ).toString();
-        const redeemedGift = testUtils.createCustomOutputBox(
+        const redeemedGift = boxFactory.createCustomOutputBox(
           BigInt(gift1.value.toString()) + gift2.value - testUtils.FEE,
           [...gift1.assets.slice(1), ...gift2.assets],
           giftGiverAddress,
         );
-        const giftReturnTx = new TransactionBuilder(chain.height)
+        const giftReturnTx = new TransactionBuilder(boxFactory.chain.height)
           .from([winner, gift1, gift2])
           .to([outWinner, redeemedGift])
           .withDataFrom([giftRedeemBox])
@@ -1999,7 +1748,7 @@ describe('winner', () => {
           .payFee(testUtils.FEE)
           .build();
 
-        expect(() => chain.execute(giftReturnTx)).toThrowError();
+        expect(() => boxFactory.chain.execute(giftReturnTx)).toThrowError();
       },
     );
   });
@@ -2018,10 +1767,10 @@ describe('winner', () => {
      */
     winnerTest(
       'should success erg-goal winner removal transaction',
-      ({ GIFT_REDEEM_SCRIPT_HASH_HEX, WINNER_SCRIPT_HASH_HEX, chain }) => {
+      ({ boxFactory }) => {
         // Create input boxes
         const winner = (
-          testUtils.createWinnersBoxMock(
+          boxFactory.createWinnersBoxMock(
             1n,
             testUtils.TICKET_TOKEN_ID,
             undefined,
@@ -2034,10 +1783,9 @@ describe('winner', () => {
                 amount: 1n,
               },
             ],
-            WINNER_SCRIPT_HASH_HEX,
           ) as Box[]
         )[0];
-        const redeemedGift = testUtils.createGiftRedeemBoxMock(
+        const redeemedGift = boxFactory.createGiftRedeemBoxMock(
           testUtils.FEE,
           0n,
           1_000n,
@@ -2046,11 +1794,10 @@ describe('winner', () => {
           testUtils.TICKET_TOKEN_ID,
           1n,
           undefined,
-          GIFT_REDEEM_SCRIPT_HASH_HEX,
         );
 
         // create output boxes
-        const redeemedGiftOutputBox = testUtils.createGiftRedeemOutputBox(
+        const redeemedGiftOutputBox = boxFactory.createGiftRedeemOutputBox(
           BigInt(winner.value),
           1n,
           1_000n,
@@ -2061,7 +1808,7 @@ describe('winner', () => {
           undefined,
         );
 
-        const giftReturnTx = new TransactionBuilder(chain.height)
+        const giftReturnTx = new TransactionBuilder(boxFactory.chain.height)
           .from([redeemedGift, winner])
           .to([redeemedGiftOutputBox])
           .configureSelector((selector) => {
@@ -2071,7 +1818,7 @@ describe('winner', () => {
           .payFee(testUtils.FEE)
           .build();
 
-        expect(chain.execute(giftReturnTx)).true;
+        expect(boxFactory.chain.execute(giftReturnTx)).true;
       },
     );
 
@@ -2088,10 +1835,10 @@ describe('winner', () => {
      */
     winnerTest(
       'should fail erg-goal based winner removal transaction by redeemGift box of another raffle',
-      ({ GIFT_REDEEM_SCRIPT_HASH_HEX, WINNER_SCRIPT_HASH_HEX, chain }) => {
+      ({ boxFactory }) => {
         // Create input boxes
         const winner = (
-          testUtils.createWinnersBoxMock(
+          boxFactory.createWinnersBoxMock(
             1n,
             testUtils.TICKET_TOKEN_ID,
             undefined,
@@ -2104,10 +1851,9 @@ describe('winner', () => {
                 amount: 1n,
               },
             ],
-            WINNER_SCRIPT_HASH_HEX,
           ) as Box[]
         )[0];
-        const redeemGift = testUtils.createGiftRedeemBoxMock(
+        const redeemGift = boxFactory.createGiftRedeemBoxMock(
           testUtils.FEE,
           0n,
           1_000n,
@@ -2117,11 +1863,10 @@ describe('winner', () => {
           testUtils.X_TOKEN_ID,
           1n,
           undefined,
-          GIFT_REDEEM_SCRIPT_HASH_HEX,
         );
 
         // create output boxes
-        const redeemGiftOutputBox = testUtils.createGiftRedeemOutputBox(
+        const redeemGiftOutputBox = boxFactory.createGiftRedeemOutputBox(
           BigInt(winner.value),
           1n,
           1_000n,
@@ -2132,7 +1877,7 @@ describe('winner', () => {
           undefined,
         );
 
-        const giftReturnTx = new TransactionBuilder(chain.height)
+        const giftReturnTx = new TransactionBuilder(boxFactory.chain.height)
           .from([redeemGift, winner])
           .to([redeemGiftOutputBox])
           .configureSelector((selector) => {
@@ -2142,7 +1887,7 @@ describe('winner', () => {
           .payFee(testUtils.FEE)
           .build();
 
-        expect(() => chain.execute(giftReturnTx)).toThrowError();
+        expect(() => boxFactory.chain.execute(giftReturnTx)).toThrowError();
       },
     );
 
@@ -2159,10 +1904,10 @@ describe('winner', () => {
      */
     winnerTest(
       'should fail erg-goal based winner removal when gift-count is greater than zero',
-      ({ GIFT_REDEEM_SCRIPT_HASH_HEX, WINNER_SCRIPT_HASH_HEX, chain }) => {
+      ({ boxFactory }) => {
         // Create input boxes
         const winner = (
-          testUtils.createWinnersBoxMock(
+          boxFactory.createWinnersBoxMock(
             1n,
             testUtils.TICKET_TOKEN_ID,
             undefined,
@@ -2176,10 +1921,9 @@ describe('winner', () => {
                 amount: 1n,
               },
             ],
-            WINNER_SCRIPT_HASH_HEX,
           ) as Box[]
         )[0];
-        const redeemedGift = testUtils.createGiftRedeemBoxMock(
+        const redeemedGift = boxFactory.createGiftRedeemBoxMock(
           testUtils.FEE,
           0n,
           1_000n,
@@ -2188,11 +1932,10 @@ describe('winner', () => {
           testUtils.TICKET_TOKEN_ID,
           1n,
           undefined,
-          GIFT_REDEEM_SCRIPT_HASH_HEX,
         );
 
         // create output boxes
-        const redeemedGiftOutputBox = testUtils.createGiftRedeemOutputBox(
+        const redeemedGiftOutputBox = boxFactory.createGiftRedeemOutputBox(
           BigInt(winner.value),
           1n,
           1_000n,
@@ -2203,7 +1946,7 @@ describe('winner', () => {
           undefined,
         );
 
-        const giftReturnTx = new TransactionBuilder(chain.height)
+        const giftReturnTx = new TransactionBuilder(boxFactory.chain.height)
           .from([redeemedGift, winner])
           .to([redeemedGiftOutputBox])
           .configureSelector((selector) => {
@@ -2213,7 +1956,7 @@ describe('winner', () => {
           .payFee(testUtils.FEE)
           .build();
 
-        expect(() => chain.execute(giftReturnTx)).toThrowError();
+        expect(() => boxFactory.chain.execute(giftReturnTx)).toThrowError();
       },
     );
 
@@ -2231,15 +1974,10 @@ describe('winner', () => {
      */
     winnerTest(
       'should fail erg-goal based winner removal when some gift-tokens move to another box',
-      ({
-        GIFT_REDEEM_SCRIPT_HASH_HEX,
-        WINNER_SCRIPT_HASH_HEX,
-        chain,
-        someoneWallet,
-      }) => {
+      ({ boxFactory, someoneWallet }) => {
         // Create input boxes
         const winner = (
-          testUtils.createWinnersBoxMock(
+          boxFactory.createWinnersBoxMock(
             1n,
             testUtils.TICKET_TOKEN_ID,
             undefined,
@@ -2252,10 +1990,9 @@ describe('winner', () => {
                 amount: 1n,
               },
             ],
-            WINNER_SCRIPT_HASH_HEX,
           ) as Box[]
         )[0];
-        const redeemedGift = testUtils.createGiftRedeemBoxMock(
+        const redeemedGift = boxFactory.createGiftRedeemBoxMock(
           testUtils.FEE,
           0n,
           1_000n,
@@ -2264,11 +2001,10 @@ describe('winner', () => {
           testUtils.TICKET_TOKEN_ID,
           1n,
           undefined,
-          GIFT_REDEEM_SCRIPT_HASH_HEX,
         );
 
         // create output boxes
-        const redeemedGiftOutputBox = testUtils.createGiftRedeemOutputBox(
+        const redeemedGiftOutputBox = boxFactory.createGiftRedeemOutputBox(
           BigInt(winner.value) - testUtils.FEE,
           1n,
           1_000n,
@@ -2278,7 +2014,7 @@ describe('winner', () => {
           2n,
           undefined,
         );
-        const extraOutputBox = testUtils.createCustomOutputBox(
+        const extraOutputBox = boxFactory.createCustomOutputBox(
           testUtils.FEE,
           [
             {
@@ -2289,7 +2025,7 @@ describe('winner', () => {
           someoneWallet.address.toString(),
         );
 
-        const giftReturnTx = new TransactionBuilder(chain.height)
+        const giftReturnTx = new TransactionBuilder(boxFactory.chain.height)
           .from([redeemedGift, winner])
           .to([redeemedGiftOutputBox, extraOutputBox])
           .configureSelector((selector) => {
@@ -2298,7 +2034,7 @@ describe('winner', () => {
           .payFee(testUtils.FEE)
           .build();
 
-        expect(() => chain.execute(giftReturnTx)).toThrowError();
+        expect(() => boxFactory.chain.execute(giftReturnTx)).toThrowError();
       },
     );
   });
