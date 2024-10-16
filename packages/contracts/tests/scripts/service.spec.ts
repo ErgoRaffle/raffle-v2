@@ -19,14 +19,13 @@ import { ScriptNamesType } from '../../lib/types';
  * @returns vitest customized "it" object
  */
 const createRaffleServiceTest = (winnersCount: bigint = 1n) => {
-  const chain = new testUtils.RaffleMockChain({ height: 1000 });
-  chain.setTip(100);
   const boxFactory = new testUtils.RaffleBoxFactory(
-    chain,
+    { height: 1000 },
     constants.scriptList.filter(
       (value) => value != 'service',
     ) as ScriptNamesType[],
   );
+  boxFactory.chain.setTip(100);
   const { creator, someone } = boxFactory.createPartners({
     Creator: CREATOR_DEFAULT_BALANCE,
     someone: UNKNOWN_WALLET_DEFAULT_BALANCE,
