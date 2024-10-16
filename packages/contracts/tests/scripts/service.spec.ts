@@ -1,34 +1,40 @@
 import { it, describe, expect } from 'vitest';
-import { MockChain } from '@fleet-sdk/mock-chain';
 import { SColl, SByte, SLong } from '@fleet-sdk/serializer';
 import { Box, TransactionBuilder, OutputBuilder } from '@fleet-sdk/core';
 
 import * as testUtils from '../testUtils';
 import {
-  createPartners,
-  createServiceBoxMock,
   X_TOKEN_ID,
   CREATOR_DEFAULT_BALANCE,
   UNKNOWN_WALLET_DEFAULT_BALANCE,
 } from '../testUtils';
 import * as constants from '../../constants';
+import { ScriptNamesType } from '../../lib/types';
 
 /*
  * create fixtures that contains below steps data:
- *   - mock chain and partners
+ *   - mock boxFactory.chain and partners
  *   - compile contracts
  *   - create service input box
  * @returns vitest customized "it" object
  */
 const createRaffleServiceTest = (winnersCount: bigint = 1n) => {
-  const chain_ = new MockChain({ height: 1000 });
-  const { creator, someone } = createPartners(chain_, {
+  const boxFactory = new testUtils.RaffleBoxFactory(
+    { height: 1000 },
+    constants.scriptList.filter(
+      (value) => value != 'service',
+    ) as ScriptNamesType[],
+  );
+  boxFactory.chain.setTip(100);
+  const { creator, someone } = boxFactory.createPartners({
     Creator: CREATOR_DEFAULT_BALANCE,
     someone: UNKNOWN_WALLET_DEFAULT_BALANCE,
   });
   creator.addBalance({ tokens: [{ tokenId: X_TOKEN_ID, amount: 100n }] });
   // Created input service-box
-  const serviceBox = createServiceBoxMock(creator.address.toString());
+  const serviceBox = boxFactory.createServiceBoxMock(
+    creator.address.toString(),
+  );
   const winnersPercent = [];
   for (let i = 0; i < winnersCount; i++)
     winnersPercent.push(1000n / winnersCount);
@@ -41,7 +47,7 @@ const createRaffleServiceTest = (winnersCount: bigint = 1n) => {
   });
 
   return it.extend({
-    chain: chain_,
+    boxFactory: boxFactory,
     someoneWallet: someone,
     creator: creator,
     inputBoxes: [serviceBox, ...creator.utxos.toArray()],
@@ -65,32 +71,35 @@ describe('Service', () => {
      */
     raffleServiceTest(
       'should create raffle by 1 winner and by erg-goal successfully',
-      ({ chain, someoneWallet, creator, inputBoxes }) => {
-        const serviceOutputBox = testUtils.createServiceOutputBox(
+      ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
+        const serviceOutputBox = boxFactory.createServiceOutputBox(
           creator.address.toString(),
         );
-        const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
-        const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
-          creator.address.toString(),
-          someoneWallet.address.toString(),
-          creator.address.toString(),
-          1n,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          1_000_000_000n,
-          inputBoxes[0].boxId.toString(),
-        );
+        const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
+        const inactiveRaffleOutputBox =
+          boxFactory.createInactiveRaffleOutputBox(
+            creator.address.toString(),
+            someoneWallet.address.toString(),
+            creator.address.toString(),
+            1n,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            1_000_000_000n,
+            inputBoxes[0].boxId.toString(),
+          );
         // Execute transaction
-        const transaction = new TransactionBuilder(chain.height)
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from(inputBoxes)
           .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
           .payFee(testUtils.FEE)
           .sendChangeTo(creator.address)
           .build();
 
-        const res = chain.execute(transaction, { signers: [creator] });
+        const res = boxFactory.chain.execute(transaction, {
+          signers: [creator],
+        });
         // Check execution result
         expect(res).true;
       },
@@ -108,33 +117,36 @@ describe('Service', () => {
      */
     raffleServiceBy10WinnersTest(
       'should create raffle by 10 winners and by erg-goal successfully',
-      ({ chain, someoneWallet, creator, inputBoxes }) => {
+      ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox(
+        const serviceOutputBox = boxFactory.createServiceOutputBox(
           creator.address.toString(),
         );
-        const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
-        const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
-          creator.address.toString(),
-          someoneWallet.address.toString(),
-          creator.address.toString(),
-          10n,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          1_000_000_000n,
-          inputBoxes[0].boxId.toString(),
-        );
+        const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
+        const inactiveRaffleOutputBox =
+          boxFactory.createInactiveRaffleOutputBox(
+            creator.address.toString(),
+            someoneWallet.address.toString(),
+            creator.address.toString(),
+            10n,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            1_000_000_000n,
+            inputBoxes[0].boxId.toString(),
+          );
         // Execute transaction
-        const transaction = new TransactionBuilder(chain.height)
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from(inputBoxes)
           .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
           .payFee(testUtils.FEE)
           .sendChangeTo(creator.address)
           .build();
 
-        const res = chain.execute(transaction, { signers: [creator] });
+        const res = boxFactory.chain.execute(transaction, {
+          signers: [creator],
+        });
         // Check execution result
         expect(res).true;
       },
@@ -153,33 +165,36 @@ describe('Service', () => {
      */
     raffleServiceTest(
       'should create raffle by 1 winner and X token-goal successfully',
-      ({ chain, someoneWallet, creator, inputBoxes }) => {
+      ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox(
+        const serviceOutputBox = boxFactory.createServiceOutputBox(
           creator.address.toString(),
         );
-        const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
-        const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
-          creator.address.toString(),
-          someoneWallet.address.toString(),
-          creator.address.toString(),
-          1n,
-          { tokenId: testUtils.X_TOKEN_ID, amount: 1n },
-          undefined,
-          undefined,
-          undefined,
-          1_000_000_000n,
-          inputBoxes[0].boxId.toString(),
-        );
+        const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
+        const inactiveRaffleOutputBox =
+          boxFactory.createInactiveRaffleOutputBox(
+            creator.address.toString(),
+            someoneWallet.address.toString(),
+            creator.address.toString(),
+            1n,
+            { tokenId: testUtils.X_TOKEN_ID, amount: 1n },
+            undefined,
+            undefined,
+            undefined,
+            1_000_000_000n,
+            inputBoxes[0].boxId.toString(),
+          );
         // Execute transaction
-        const transaction = new TransactionBuilder(chain.height)
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from(inputBoxes)
           .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
           .payFee(testUtils.FEE)
           .sendChangeTo(creator.address)
           .build();
 
-        const res = chain.execute(transaction, { signers: [creator] });
+        const res = boxFactory.chain.execute(transaction, {
+          signers: [creator],
+        });
         // Check execution result
         expect(res).true;
       },
@@ -197,21 +212,22 @@ describe('Service', () => {
      */
     raffleServiceTest(
       'should fail when try to create new raffle without LicenseToken on the inactiveRaffleOutputBox',
-      ({ chain, someoneWallet, creator, inputBoxes }) => {
+      ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox(
+        const serviceOutputBox = boxFactory.createServiceOutputBox(
           creator.address.toString(),
         );
-        const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
-        const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
-          creator.address.toString(),
-          someoneWallet.address.toString(),
-          creator.address.toString(),
-          1n,
-        );
+        const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
+        const inactiveRaffleOutputBox =
+          boxFactory.createInactiveRaffleOutputBox(
+            creator.address.toString(),
+            someoneWallet.address.toString(),
+            creator.address.toString(),
+            1n,
+          );
         inactiveRaffleOutputBox.assets.remove(testUtils.LICENSE_TOKEN_ID);
         // Execute transaction
-        const transaction = new TransactionBuilder(chain.height)
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from(inputBoxes)
           .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
           .payFee(testUtils.FEE)
@@ -219,7 +235,7 @@ describe('Service', () => {
           .build();
 
         expect(() =>
-          chain.execute(transaction, { signers: [creator] }),
+          boxFactory.chain.execute(transaction, { signers: [creator] }),
         ).toThrowError();
       },
     );
@@ -237,22 +253,23 @@ describe('Service', () => {
      */
     raffleServiceTest(
       'should fail when try to create new raffle without decreasing LicenseToken from serviceOutputBox',
-      ({ chain, someoneWallet, creator, inputBoxes }) => {
+      ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox(
+        const serviceOutputBox = boxFactory.createServiceOutputBox(
           creator.address.toString(),
           1000000000n,
         );
-        const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
-        const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
-          creator.address.toString(),
-          someoneWallet.address.toString(),
-          creator.address.toString(),
-          1n,
-        );
+        const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
+        const inactiveRaffleOutputBox =
+          boxFactory.createInactiveRaffleOutputBox(
+            creator.address.toString(),
+            someoneWallet.address.toString(),
+            creator.address.toString(),
+            1n,
+          );
         inactiveRaffleOutputBox.assets.remove(testUtils.LICENSE_TOKEN_ID);
         // Execute transaction
-        const transaction = new TransactionBuilder(chain.height)
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from(inputBoxes)
           .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
           .payFee(testUtils.FEE)
@@ -260,7 +277,7 @@ describe('Service', () => {
           .build();
 
         expect(() =>
-          chain.execute(transaction, { signers: [creator] }),
+          boxFactory.chain.execute(transaction, { signers: [creator] }),
         ).toThrowError();
       },
     );
@@ -277,23 +294,24 @@ describe('Service', () => {
      */
     raffleServiceTest(
       'should fail when try to create new raffle with incorrect service fee',
-      ({ chain, someoneWallet, creator, inputBoxes }) => {
+      ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox(
+        const serviceOutputBox = boxFactory.createServiceOutputBox(
           creator.address.toString(),
         );
-        const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
-        const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
-          creator.address.toString(),
-          someoneWallet.address.toString(),
-          creator.address.toString(),
-          1n,
-          undefined,
-          undefined,
-          110n,
-        );
+        const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
+        const inactiveRaffleOutputBox =
+          boxFactory.createInactiveRaffleOutputBox(
+            creator.address.toString(),
+            someoneWallet.address.toString(),
+            creator.address.toString(),
+            1n,
+            undefined,
+            undefined,
+            110n,
+          );
         // Execute transaction
-        const transaction = new TransactionBuilder(chain.height)
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from(inputBoxes)
           .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
           .payFee(testUtils.FEE)
@@ -301,7 +319,7 @@ describe('Service', () => {
           .build();
 
         expect(() =>
-          chain.execute(transaction, { signers: [creator] }),
+          boxFactory.chain.execute(transaction, { signers: [creator] }),
         ).toThrowError();
       },
     );
@@ -318,23 +336,24 @@ describe('Service', () => {
      */
     raffleServiceTest(
       'should fail when try to create new raffle with invalid license fee on the output service box',
-      ({ chain, someoneWallet, creator, inputBoxes }) => {
+      ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox(
+        const serviceOutputBox = boxFactory.createServiceOutputBox(
           creator.address.toString(),
           20n,
           10n,
           110n,
         );
-        const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
-        const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
-          creator.address.toString(),
-          someoneWallet.address.toString(),
-          creator.address.toString(),
-          1n,
-        );
+        const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
+        const inactiveRaffleOutputBox =
+          boxFactory.createInactiveRaffleOutputBox(
+            creator.address.toString(),
+            someoneWallet.address.toString(),
+            creator.address.toString(),
+            1n,
+          );
         // Execute transaction
-        const transaction = new TransactionBuilder(chain.height)
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from(inputBoxes)
           .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
           .payFee(testUtils.FEE)
@@ -342,7 +361,7 @@ describe('Service', () => {
           .build();
 
         expect(() =>
-          chain.execute(transaction, { signers: [creator] }),
+          boxFactory.chain.execute(transaction, { signers: [creator] }),
         ).toThrowError();
       },
     );
@@ -359,26 +378,27 @@ describe('Service', () => {
      */
     raffleServiceTest(
       'should fail when try to create new raffle with incorrect sum of winners percents',
-      ({ chain, someoneWallet, creator, inputBoxes }) => {
+      ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
         const serviceBox = inputBoxes[0];
         serviceBox.setContextExtension({
           0: SColl(SLong, [500n, 600n]),
         });
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox(
+        const serviceOutputBox = boxFactory.createServiceOutputBox(
           creator.address.toString(),
         );
-        const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
-        const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
-          creator.address.toString(),
-          someoneWallet.address.toString(),
-          creator.address.toString(),
-          2n,
-          undefined,
-          [500n, 600n],
-        );
+        const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
+        const inactiveRaffleOutputBox =
+          boxFactory.createInactiveRaffleOutputBox(
+            creator.address.toString(),
+            someoneWallet.address.toString(),
+            creator.address.toString(),
+            2n,
+            undefined,
+            [500n, 600n],
+          );
         // Execute transaction
-        const transaction = new TransactionBuilder(chain.height)
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from(inputBoxes)
           .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
           .payFee(testUtils.FEE)
@@ -386,7 +406,7 @@ describe('Service', () => {
           .build();
 
         expect(() =>
-          chain.execute(transaction, { signers: [creator] }),
+          boxFactory.chain.execute(transaction, { signers: [creator] }),
         ).toThrowError();
       },
     );
@@ -403,24 +423,25 @@ describe('Service', () => {
      */
     raffleServiceTest(
       'should fail when try to create new raffle with invalid winners hash',
-      ({ chain, someoneWallet, creator, inputBoxes }) => {
+      ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox(
+        const serviceOutputBox = boxFactory.createServiceOutputBox(
           creator.address.toString(),
         );
-        const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
-        const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
-          creator.address.toString(),
-          someoneWallet.address.toString(),
-          creator.address.toString(),
-          1n,
-          undefined,
-          undefined,
-          undefined,
-          Buffer.from('invalid winners count hash').toString('hex'),
-        );
+        const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
+        const inactiveRaffleOutputBox =
+          boxFactory.createInactiveRaffleOutputBox(
+            creator.address.toString(),
+            someoneWallet.address.toString(),
+            creator.address.toString(),
+            1n,
+            undefined,
+            undefined,
+            undefined,
+            Buffer.from('invalid winners count hash').toString('hex'),
+          );
         // Execute transaction
-        const transaction = new TransactionBuilder(chain.height)
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from(inputBoxes)
           .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
           .payFee(testUtils.FEE)
@@ -428,7 +449,7 @@ describe('Service', () => {
           .build();
 
         expect(() =>
-          chain.execute(transaction, { signers: [creator] }),
+          boxFactory.chain.execute(transaction, { signers: [creator] }),
         ).toThrowError();
       },
     );
@@ -445,27 +466,28 @@ describe('Service', () => {
      */
     raffleServiceTest(
       'should fail of try to create new raffle with incorrect winners count',
-      ({ chain, someoneWallet, creator, inputBoxes }) => {
+      ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
         // Mock Required Things
         const serviceBox = inputBoxes[0];
         serviceBox.setContextExtension({
           0: SColl(SLong, [500n, 500n]),
         });
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox(
+        const serviceOutputBox = boxFactory.createServiceOutputBox(
           creator.address.toString(),
         );
-        const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
-        const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
-          creator.address.toString(),
-          someoneWallet.address.toString(),
-          creator.address.toString(),
-          2n,
-          undefined,
-          [1000n],
-        );
+        const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
+        const inactiveRaffleOutputBox =
+          boxFactory.createInactiveRaffleOutputBox(
+            creator.address.toString(),
+            someoneWallet.address.toString(),
+            creator.address.toString(),
+            2n,
+            undefined,
+            [1000n],
+          );
         // Execute transaction
-        const transaction = new TransactionBuilder(chain.height)
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from(inputBoxes)
           .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
           .payFee(testUtils.FEE)
@@ -473,7 +495,7 @@ describe('Service', () => {
           .build();
 
         expect(() =>
-          chain.execute(transaction, { signers: [creator] }),
+          boxFactory.chain.execute(transaction, { signers: [creator] }),
         ).toThrowError();
       },
     );
@@ -490,20 +512,21 @@ describe('Service', () => {
      */
     raffleServiceTest(
       'should fail when try to create new raffle with incorrect winners count in extension',
-      ({ chain, someoneWallet, creator, inputBoxes }) => {
+      ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox(
+        const serviceOutputBox = boxFactory.createServiceOutputBox(
           creator.address.toString(),
         );
-        const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
-        const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
-          creator.address.toString(),
-          someoneWallet.address.toString(),
-          creator.address.toString(),
-          2n,
-        );
+        const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
+        const inactiveRaffleOutputBox =
+          boxFactory.createInactiveRaffleOutputBox(
+            creator.address.toString(),
+            someoneWallet.address.toString(),
+            creator.address.toString(),
+            2n,
+          );
         // Execute transaction
-        const transaction = new TransactionBuilder(chain.height)
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from(inputBoxes)
           .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
           .payFee(testUtils.FEE)
@@ -511,7 +534,7 @@ describe('Service', () => {
           .build();
 
         expect(() =>
-          chain.execute(transaction, { signers: [creator] }),
+          boxFactory.chain.execute(transaction, { signers: [creator] }),
         ).toThrowError();
       },
     );
@@ -528,27 +551,28 @@ describe('Service', () => {
      */
     raffleServiceTest(
       'should fail when try to create new raffle with incorrect sum of winners percents',
-      ({ chain, someoneWallet, creator, inputBoxes }) => {
+      ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
         // Mock Required Things
         const serviceBox = inputBoxes[0];
         serviceBox.setContextExtension({
           0: SColl(SLong, [450n, 450n]),
         });
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox(
+        const serviceOutputBox = boxFactory.createServiceOutputBox(
           creator.address.toString(),
         );
-        const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
-        const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
-          creator.address.toString(),
-          someoneWallet.address.toString(),
-          creator.address.toString(),
-          2n,
-          undefined,
-          [450n, 450n],
-        );
+        const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
+        const inactiveRaffleOutputBox =
+          boxFactory.createInactiveRaffleOutputBox(
+            creator.address.toString(),
+            someoneWallet.address.toString(),
+            creator.address.toString(),
+            2n,
+            undefined,
+            [450n, 450n],
+          );
         // Execute transaction
-        const transaction = new TransactionBuilder(chain.height)
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from(inputBoxes)
           .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
           .payFee(testUtils.FEE)
@@ -556,7 +580,7 @@ describe('Service', () => {
           .build();
 
         expect(() =>
-          chain.execute(transaction, { signers: [creator] }),
+          boxFactory.chain.execute(transaction, { signers: [creator] }),
         ).toThrowError();
       },
     );
@@ -573,30 +597,31 @@ describe('Service', () => {
      */
     raffleServiceTest(
       'should fail when try to create new raffle with incorrect ticket-id',
-      ({ chain, someoneWallet, creator, inputBoxes }) => {
+      ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
         const serviceBox = inputBoxes[0];
         serviceBox.setContextExtension({
           0: SColl(SLong, [500n, 500n]),
         });
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox(
+        const serviceOutputBox = boxFactory.createServiceOutputBox(
           creator.address.toString(),
         );
-        const ticketRepoOutputBox = testUtils.createTicketRepoOutputBox();
-        const inactiveRaffleOutputBox = testUtils.createInactiveRaffleOutputBox(
-          creator.address.toString(),
-          someoneWallet.address.toString(),
-          creator.address.toString(),
-          2n,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          1_000_000_000n,
-          '0'.repeat(64),
-        );
+        const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
+        const inactiveRaffleOutputBox =
+          boxFactory.createInactiveRaffleOutputBox(
+            creator.address.toString(),
+            someoneWallet.address.toString(),
+            creator.address.toString(),
+            2n,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            1_000_000_000n,
+            '0'.repeat(64),
+          );
         // Execute transaction
-        const transaction = new TransactionBuilder(chain.height)
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from(inputBoxes)
           .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
           .payFee(testUtils.FEE)
@@ -604,7 +629,7 @@ describe('Service', () => {
           .build();
 
         expect(() =>
-          chain.execute(transaction, { signers: [creator] }),
+          boxFactory.chain.execute(transaction, { signers: [creator] }),
         ).toThrowError();
       },
     );
@@ -622,7 +647,7 @@ describe('Service', () => {
      */
     raffleServiceTest(
       'should spend raffle ServiceBox by OwnerNFT',
-      ({ chain, creator, inputBoxes }) => {
+      ({ boxFactory, creator, inputBoxes }) => {
         const serviceBox = inputBoxes[0];
         creator.addBalance({
           tokens: [{ tokenId: testUtils.OWNER_NFT_ID, amount: 1n }],
@@ -642,13 +667,15 @@ describe('Service', () => {
           },
         ]);
         // Execute transaction
-        const transaction = new TransactionBuilder(chain.height)
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from(newInputBoxes)
           .to([outputBox])
           .payFee(testUtils.FEE)
           .sendChangeTo(creator.address)
           .build();
-        const res = chain.execute(transaction, { signers: [creator] });
+        const res = boxFactory.chain.execute(transaction, {
+          signers: [creator],
+        });
         // Check execution result
         expect(res).true;
       },
@@ -667,13 +694,13 @@ describe('Service', () => {
      */
     raffleServiceTest(
       'should close raffle or Redeem Raffle',
-      ({ chain, creator, someoneWallet }) => {
+      ({ boxFactory, creator, someoneWallet }) => {
         // Mock Required Things
-        const serviceBox = testUtils.createServiceBoxMock(
+        const serviceBox = boxFactory.createServiceBoxMock(
           creator.address.toString(),
           999_999_999n,
         );
-        const successRaffleInputBox = testUtils.createSuccessRaffleBoxMock(
+        const successRaffleInputBox = boxFactory.createSuccessRaffleBoxMock(
           testUtils.CREATION_FEE + 4n * testUtils.FEE,
           testUtils.LICENSE_TOKEN_ID,
           '0123456789012345',
@@ -685,11 +712,10 @@ describe('Service', () => {
           testUtils.TICKET_TOKEN_ID,
           999_999_998n,
           undefined,
-          constants.TRUE_SCRIPT_HEX,
         );
 
         // Create output boxes
-        const serviceOutputBox = testUtils.createServiceOutputBox(
+        const serviceOutputBox = boxFactory.createServiceOutputBox(
           creator.address.toString(),
           1_000_000_000n,
         );
@@ -699,14 +725,16 @@ describe('Service', () => {
           ...creator.utxos.toArray(),
         ];
         // Execute transaction
-        const transaction = new TransactionBuilder(chain.height)
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from(inputBoxes)
           .to([serviceOutputBox])
           .payFee(testUtils.FEE)
           .sendChangeTo(creator.address)
           .build();
 
-        const res = chain.execute(transaction, { signers: [someoneWallet] });
+        const res = boxFactory.chain.execute(transaction, {
+          signers: [someoneWallet],
+        });
         // Check execution result
         expect(res).true;
       },

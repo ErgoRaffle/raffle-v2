@@ -24,9 +24,9 @@ import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
  * @returns vitest customized "it" object
  */
 const createRaffleTest = () => {
-  const chain = new testUtils.RaffleMockChain({ height: 1000 });
+  const boxFactory = new testUtils.RaffleBoxFactory({ height: 1000 });
   const { creator, implementer, giftgiver1, giftgiver2, donator1, donator2 } =
-    testUtils.createPartners(chain, {
+    boxFactory.createPartners({
       Creator: testUtils.CREATOR_DEFAULT_BALANCE,
       implementer: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
       giftGiver1: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
@@ -36,7 +36,7 @@ const createRaffleTest = () => {
     });
 
   // Created input service-box
-  const serviceBox = testUtils.createServiceBoxMock(
+  const serviceBox = boxFactory.createServiceBoxMock(
     creator.address.toString(),
     testUtils.LICENSE_TOKEN_COUNT,
     10n,
@@ -48,7 +48,7 @@ const createRaffleTest = () => {
   const donatorWallets: KeyedMockChainParty[] = [donator1, donator2];
 
   return it.extend({
-    chain: chain,
+    boxFactory: boxFactory,
     creator: creator,
     serviceBox: serviceBox,
     implementerAddress: implementer.address.toString(),
@@ -81,14 +81,14 @@ describe('Raffle', () => {
     raffleTest(
       'Failed Erg-goal raffle with 2 winners',
       ({
-        chain,
+        boxFactory,
         creator,
         serviceBox,
         implementerAddress,
         giftGiverWallets,
         donatorWallets,
       }) => {
-        chain.setTip(100);
+        boxFactory.chain.setTip(100);
         const winnersCount = 2n;
         const deadline = 2000n;
         const winnersPercent: bigint[] = [];
@@ -103,7 +103,7 @@ describe('Raffle', () => {
           winnersCount,
           deadline,
           winnersPercent,
-          chain,
+          boxFactory,
         );
         expect(createRaffleTx.success).true;
 
@@ -116,7 +116,7 @@ describe('Raffle', () => {
           ticketRepo,
           winnersCount,
           deadline,
-          chain,
+          boxFactory,
         );
         expect(mergeTx.success).true;
 
@@ -133,7 +133,7 @@ describe('Raffle', () => {
             giftTokenRepo,
             step,
             winnersCount,
-            chain,
+            boxFactory,
           );
           step++;
           winnerBoxes.push(giftTokenReceiptTx.outputs[0]);
@@ -147,7 +147,7 @@ describe('Raffle', () => {
           const addGiftTx = executeAddGiftTx(
             winner1,
             (giftGiverWallets as KeyedMockChainParty[])[i],
-            chain,
+            boxFactory,
           );
           expect(addGiftTx.success).true;
           winner1 = addGiftTx.outputs[0];
@@ -162,7 +162,7 @@ describe('Raffle', () => {
             activeRaffle,
             (donatorWallets as KeyedMockChainParty[])[donateCount],
             BigInt(donateCount + 2),
-            chain,
+            boxFactory,
           );
           expect(donateTx.success).true;
           activeRaffle = donateTx.outputs[0];
@@ -178,10 +178,14 @@ describe('Raffle', () => {
           */
 
         // Pass the raffle deadline
-        chain.setTip(2001);
+        boxFactory.chain.setTip(2001);
 
         // Step 6: Failure transaction
-        const failureTx = executeFailureTx(activeRaffle, raffleDetails, chain);
+        const failureTx = executeFailureTx(
+          activeRaffle,
+          raffleDetails,
+          boxFactory,
+        );
         expect(failureTx.success).true;
 
         // Step 7: Returning two gifts of the first winner
@@ -191,7 +195,7 @@ describe('Raffle', () => {
             giftRedeem,
             winner1,
             winner1Gifts[i],
-            chain,
+            boxFactory,
           );
           expect(giftRedeemTx.success).true;
           winner1 = giftRedeemTx.outputs[0];
@@ -202,7 +206,7 @@ describe('Raffle', () => {
           const winnerRemovalTx = executeWinnerRemovalTx(
             giftRedeem,
             winnerBox,
-            chain,
+            boxFactory,
           );
           expect(winnerRemovalTx.success).true;
           giftRedeem = winnerRemovalTx.outputs[0];
@@ -211,7 +215,7 @@ describe('Raffle', () => {
         // Step 9: Forward to ticket redeem phase
         const forwardToTicketRedeemTx = executeForwardToTicketRedeemTx(
           giftRedeem,
-          chain,
+          boxFactory,
         );
         expect(forwardToTicketRedeemTx.success).true;
 
@@ -221,7 +225,7 @@ describe('Raffle', () => {
           const ticketRedeemTx = executeTicketRedeemTx(
             ticketRedeem,
             ticket,
-            chain,
+            boxFactory,
           );
           ticketRedeem = ticketRedeemTx.outputs[0];
           expect(ticketRedeemTx.success).true;
@@ -232,7 +236,7 @@ describe('Raffle', () => {
         const returnLicenseTx = executeReturnRaffleLicenseTx(
           ticketRedeem,
           service,
-          chain,
+          boxFactory,
         );
         expect(returnLicenseTx.success).true;
       },
