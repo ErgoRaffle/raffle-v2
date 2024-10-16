@@ -51,19 +51,19 @@ const createRaffleTest = () => {
     tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000_000n }],
   });
   donator1.addBalance({
-    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000n }],
+    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000_000n }],
   });
   donator2.addBalance({
-    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000n }],
+    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000_000n }],
   });
   donator3.addBalance({
-    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000n }],
+    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000_000n }],
   });
   donator4.addBalance({
-    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000n }],
+    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000_000n }],
   });
   donator5.addBalance({
-    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000n }],
+    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000_000n }],
   });
 
   // Created input service-box
@@ -202,7 +202,7 @@ describe('Raffle', () => {
           const donateTx = executeDonateTx(
             activeRaffle,
             (donatorWallets as KeyedMockChainParty[])[donateCount],
-            10n,
+            100n,
             boxFactory,
           );
           expect(donateTx.success).true;
@@ -235,7 +235,7 @@ describe('Raffle', () => {
         // Step 7: Create prize-boxes for winners
         let successRaffleBox = rewardTx.outputs[0];
 
-        const winnerIndexList: bigint[] = [];
+        const winnerTicketsList: bigint[] = [];
         const prizeBoxes = [];
         const successRaffleR4 = SConstant.from(
           successRaffleBox.additionalRegisters.R4!,
@@ -246,7 +246,7 @@ describe('Raffle', () => {
             successRaffleBox.additionalRegisters.R5!,
           ).data as Uint8Array[];
           const newWinnerTicketIndex = testUtils.generateNextWinnerIndex(
-            [...winnerIndexList],
+            winnerTicketsList,
             i + 1,
             successRaffleR5[0],
             totalSoldTickets,
@@ -256,10 +256,10 @@ describe('Raffle', () => {
             successRaffleBox,
             winnerBoxes[i],
             newWinnerTicketIndex,
-            [...winnerIndexList],
+            winnerTicketsList,
             boxFactory,
           );
-          winnerIndexList.push(newWinnerTicketIndex);
+          winnerTicketsList.push(newWinnerTicketIndex);
           expect(prizeCreationTx.success).true;
           successRaffleBox = prizeCreationTx.outputs[0];
           prizeBoxes.push(prizeCreationTx.outputs[1]);

@@ -620,7 +620,7 @@ export class RaffleBoxFactory {
     boxValue: bigint,
     licenseTokenId: string,
     seed: string,
-    selectedWinnersListHash: string,
+    selectedWinnersList: bigint[],
     winnersCount: bigint = 1n,
     totalPrize: bigint = 1n,
     prizeValue: bigint = 0n,
@@ -656,7 +656,9 @@ export class RaffleBoxFactory {
         ]).toHex(),
         R5: SColl(SColl(SByte), [
           Array.from(Buffer.from(seed)),
-          Array.from(Buffer.from(selectedWinnersListHash)),
+          Array.from(
+            Buffer.from(makeHashFromString(selectedWinnersList.toString())),
+          ),
         ]).toHex(),
         R6: SLong(step).toHex(),
       },
