@@ -20,9 +20,8 @@ import { ScriptNamesType } from '../../lib/types';
  */
 const createWinnerTest = (winnersCount: number = 1) => {
   // preparing mocked chain and other required things
-  const chain = new testUtils.RaffleMockChain({ height: 1000 });
   const boxFactory = new testUtils.RaffleBoxFactory(
-    chain,
+    { height: 1000 },
     constants.scriptList.filter(
       (value) => value != 'winner',
     ) as ScriptNamesType[],
@@ -60,7 +59,7 @@ const createWinnerTest = (winnersCount: number = 1) => {
     61n,
   );
 
-  chain.setTip(200);
+  boxFactory.chain.setTip(200);
 
   return it.extend({
     boxFactory: boxFactory,
