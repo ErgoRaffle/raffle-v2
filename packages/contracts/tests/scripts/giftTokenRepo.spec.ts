@@ -14,9 +14,8 @@ import { ScriptNamesType } from '../../lib/types';
  * @returns vitest customized "it" object
  */
 const createGiftTokenRepoTest = (winnersCount: number = 1) => {
-  const chain = new testUtils.RaffleMockChain({ height: 1000 });
   const boxFactory = new testUtils.RaffleBoxFactory(
-    chain,
+    { height: 1000 },
     constants.scriptList.filter(
       (value) => value != 'giftTokenRepo',
     ) as ScriptNamesType[],

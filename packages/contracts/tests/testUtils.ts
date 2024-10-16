@@ -130,9 +130,12 @@ export class RaffleBoxFactory {
   trueScripts: ScriptNamesType[];
   contractsAddresses: { [key: string]: string };
 
-  constructor(chain: RaffleMockChain, trueScripts: ScriptNamesType[] = []) {
+  constructor(
+    chainOptions: MockChainOptions,
+    trueScripts: ScriptNamesType[] = [],
+  ) {
     this.trueScripts = trueScripts;
-    this.chain = chain;
+    this.chain = new RaffleMockChain(chainOptions);
     this.contractsAddresses = initialContracts(trueScripts);
   }
 
@@ -657,7 +660,11 @@ export class RaffleBoxFactory {
         R5: SColl(SColl(SByte), [
           Array.from(Buffer.from(seed)),
           Array.from(
-            Buffer.from(makeHashFromString(selectedWinnersList.toString())),
+            blake2b256(
+              Buffer.concat(
+                selectedWinnersList.map((n) => utils.bigIntToUint8Array(n)),
+              ),
+            ),
           ),
         ]).toHex(),
         R6: SLong(step).toHex(),

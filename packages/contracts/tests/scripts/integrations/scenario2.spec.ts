@@ -20,8 +20,7 @@ import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
  * @returns vitest customized "it" object
  */
 const createRaffleTest = () => {
-  const chain = new testUtils.RaffleMockChain({ height: 1000 });
-  const boxFactory = new testUtils.RaffleBoxFactory(chain);
+  const boxFactory = new testUtils.RaffleBoxFactory({ height: 1000 });
   const { creator, implementer, donator1, donator2 } =
     boxFactory.createPartners({
       Creator: testUtils.CREATOR_DEFAULT_BALANCE,
