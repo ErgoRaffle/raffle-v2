@@ -41,7 +41,7 @@ const createWinnerTest = (winnersCount: number = 1) => {
     BigInt(winnersCount),
     testUtils.TICKET_TOKEN_ID,
     undefined,
-    0n,
+    undefined,
     1000n,
     testUtils.GIFT_TOKEN_ID,
     undefined,
@@ -52,7 +52,7 @@ const createWinnerTest = (winnersCount: number = 1) => {
     testUtils.LICENSE_TOKEN_ID,
     '0123456789012345',
     testUtils.makeHashFromString([].toString()),
-    0n,
+    BigInt(winnersCount),
     60n,
     0n,
     0n,
@@ -77,6 +77,48 @@ describe('winner', () => {
 
   describe('Winner box gift token receipt', () => {
     /**
+     * @target success erg-goal based gift token receipt
+     * @scenario
+     * - create winner output box
+     * - create giftTokenRepoBox
+     * - create output boxes
+     * - execute transaction
+     * - result of execution must be fail
+     * @expected
+     * - transaction must done successfully
+     */
+    winnerTest(
+      'should success erg-goal based gift token receipt',
+      ({ boxFactory, creator, winnerBoxes, giftTokenRepoBox }) => {
+        const winnerBox = (winnerBoxes as Box[])[0];
+
+        const winnerOutputBox =
+          boxFactory.createWinnerOutputBoxWithConstantRegisters(
+            SConstant.from(winnerBox.additionalRegisters.R4!).data as bigint[],
+            testUtils.TICKET_TOKEN_ID,
+          );
+
+        // Execute transaction
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
+          .from([(winnerBoxes as Box[])[0], giftTokenRepoBox])
+          .to([winnerOutputBox])
+          .payFee(testUtils.FEE)
+          .sendChangeTo(creator.address)
+          .configureSelector((selector) => {
+            selector.defineStrategy((inputs) => inputs);
+          })
+          .build();
+
+        const result = boxFactory.chain.execute(transaction, {
+          signers: [creator],
+        });
+
+        // Check execution result
+        expect(result).true;
+      },
+    );
+
+    /**
      * @target fail when move another token instead of real gift-token to the winner box
      * @scenario
      * - create winner output box by invalid data about gift-token id
@@ -90,8 +132,9 @@ describe('winner', () => {
     winnerTest(
       'should fail when move another token instead of real gift-token to the winner box',
       ({ boxFactory, creator, winnerBoxes }) => {
-        // put invalid token to the winnerOutputBox
         const invalidTokenId = '1234'.repeat(16);
+
+        const winnerBox = (winnerBoxes as Box[])[0];
         const giftTokenRepoBox = boxFactory.createGiftTokenRepoBoxMock(
           1,
           undefined,
@@ -101,16 +144,13 @@ describe('winner', () => {
           invalidTokenId,
         );
 
-        const winnerBox = (winnerBoxes as Box[])[0];
-
+        // put invalid token to the winnerOutputBox
         const winnerOutputBox =
           boxFactory.createWinnerOutputBoxWithConstantRegisters(
             SConstant.from(winnerBox.additionalRegisters.R4!).data as bigint[],
             testUtils.TICKET_TOKEN_ID,
             // Set invalid gift token id
             invalidTokenId,
-            1n,
-            0n,
           );
 
         // Execute transaction
@@ -118,11 +158,10 @@ describe('winner', () => {
           .from([(winnerBoxes as Box[])[0], giftTokenRepoBox])
           .to([winnerOutputBox])
           .payFee(testUtils.FEE)
-          .burnTokens({
-            tokenId: giftTokenRepoBox.assets[0].tokenId,
-            amount: BigInt(giftTokenRepoBox.assets[0].amount) - 1n,
-          })
           .sendChangeTo(creator.address)
+          .configureSelector((selector) => {
+            selector.defineStrategy((inputs) => inputs);
+          })
           .build();
 
         // Check execution result
@@ -133,31 +172,19 @@ describe('winner', () => {
     );
 
     /**
-     * @target fail when incorrect count of gift-token write on the R6 of the input winner-box
+     * @target fail when incorrect count of gift-token write on the R6 of the output winner-box
      * @scenario
-     * - create winner output box by invalid data about gift-token count
-     * - create giftTokenRepoBox
-     * - create output boxes
+     * - create winner output box
+     * - create output boxes by invalid data about gift-token count
      * - execute transaction
      * - result of execution must be fail
      * @expected
      * - transaction execution must throw exception
      */
     winnerTest(
-      'should fail when incorrect count of gift-token write on the R6 of the input winner-box',
-      ({ boxFactory, creator }) => {
-        // put invalid count of gift-token to the input winners count
-        const winnerBox = (
-          boxFactory.createWinnersBoxMock(
-            1n,
-            testUtils.TICKET_TOKEN_ID,
-            undefined,
-            3n,
-            0n,
-            testUtils.GIFT_TOKEN_ID,
-          ) as Box[]
-        )[0];
-        const giftTokenRepoBox = boxFactory.createGiftTokenRepoBoxMock(1);
+      'should fail when incorrect count of gift-token write on the R6 of the output winner-box',
+      ({ boxFactory, creator, winnerBoxes, giftTokenRepoBox }) => {
+        const winnerBox = (winnerBoxes as Box[])[0];
 
         const winnerOutputBox =
           boxFactory.createWinnerOutputBoxWithConstantRegisters(
@@ -175,6 +202,9 @@ describe('winner', () => {
           .to([winnerOutputBox])
           .payFee(testUtils.FEE)
           .sendChangeTo(creator.address)
+          .configureSelector((selector) => {
+            selector.defineStrategy((inputs) => inputs);
+          })
           .build();
 
         // Check execution result
@@ -185,31 +215,19 @@ describe('winner', () => {
     );
 
     /**
-     * @target fail when incorrect deadline put in R4 of the input winner-box
+     * @target fail when incorrect deadline put in R4 of the output winner-box
      * @scenario
-     * - create winner input box by incorrect deadline info
-     * - create giftTokenRepoBox
-     * - create output boxes
+     * - create winner input box
+     * - create output boxes by incorrect deadline info
      * - execute transaction
      * - result of execution must be fail
      * @expected
      * - transaction execution must throw exception
      */
     winnerTest(
-      'should fail when incorrect deadline put in R4 of the input winner-box',
-      ({ boxFactory, creator }) => {
-        const winnerBox = (
-          boxFactory.createWinnersBoxMock(
-            1n,
-            testUtils.TICKET_TOKEN_ID,
-            undefined,
-            3n,
-            900n, // put invalid deadline to the input winners count
-            testUtils.GIFT_TOKEN_ID,
-            undefined,
-          ) as Box[]
-        )[0];
-        const giftTokenRepoBox = boxFactory.createGiftTokenRepoBoxMock(1);
+      'should fail when incorrect deadline put in R4 of the output winner-box',
+      ({ boxFactory, creator, winnerBoxes, giftTokenRepoBox }) => {
+        const winnerBox = (winnerBoxes as Box[])[0];
 
         const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
           .data as bigint[];
@@ -220,8 +238,6 @@ describe('winner', () => {
             winnerR4,
             testUtils.TICKET_TOKEN_ID,
             testUtils.GIFT_TOKEN_ID,
-            1n,
-            3n,
           );
 
         // Execute transaction
@@ -229,11 +245,10 @@ describe('winner', () => {
           .from([winnerBox, giftTokenRepoBox])
           .to([winnerOutputBox])
           .payFee(testUtils.FEE)
-          .burnTokens({
-            tokenId: giftTokenRepoBox.assets[0].tokenId,
-            amount: giftTokenRepoBox.assets[0].amount - 1n,
-          })
           .sendChangeTo(creator.address)
+          .configureSelector((selector) => {
+            selector.defineStrategy((inputs) => inputs);
+          })
           .build();
 
         // Check execution result
@@ -247,7 +262,6 @@ describe('winner', () => {
      * @target fail when two same winner-boxes placed as inputs
      * @scenario
      * - create two winner input boxes
-     * - create giftTokenRepoBox
      * - create output boxes
      * - execute transaction
      * - result of execution must be fail
@@ -257,26 +271,24 @@ describe('winner', () => {
     winnerTest(
       'should fail when two same winner-boxes placed as inputs',
       ({ boxFactory, creator }) => {
-        // put invalid count of gift-token to the input winners count
+        const giftTokenRepoBox = boxFactory.createGiftTokenRepoBoxMock(2);
         const inputWinnerBoxes = boxFactory.createWinnersBoxMock(
           2n,
           testUtils.TICKET_TOKEN_ID,
           undefined,
-          3n,
+          undefined,
           1000n,
           testUtils.GIFT_TOKEN_ID,
-        ) as Box[];
+          undefined,
+        );
         const winnerBox1 = inputWinnerBoxes[0];
         const winnerBox2 = inputWinnerBoxes[1];
-        const giftTokenRepoBox = boxFactory.createGiftTokenRepoBoxMock(1);
 
         const winnerOutputBox =
           boxFactory.createWinnerOutputBoxWithConstantRegisters(
             SConstant.from(winnerBox1.additionalRegisters.R4!).data as bigint[],
             testUtils.TICKET_TOKEN_ID,
             testUtils.GIFT_TOKEN_ID,
-            1n,
-            3n,
           );
 
         // Execute transaction
@@ -284,14 +296,10 @@ describe('winner', () => {
           .from([winnerBox1, giftTokenRepoBox, winnerBox2])
           .to([winnerOutputBox])
           .payFee(testUtils.FEE)
-          .burnTokens([
-            {
-              tokenId: giftTokenRepoBox.assets[0].tokenId,
-              amount: giftTokenRepoBox.assets[0].amount - 1n,
-            },
-            winnerBox2.assets[0],
-          ])
           .sendChangeTo(creator.address)
+          .configureSelector((selector) => {
+            selector.defineStrategy((inputs) => inputs);
+          })
           .build();
 
         // Check execution result
@@ -303,6 +311,70 @@ describe('winner', () => {
   });
 
   describe('New gift creation', () => {
+    /**
+     * @target success erg-goal based new gift creation
+     * @scenario
+     * - create winner output box
+     * - create output giftBox
+     * - execute transaction
+     * - result of execution must be fail
+     * @expected
+     * - transaction must done successfully
+     */
+    winnerTest(
+      'should success erg-goal based new gift creation',
+      ({ boxFactory, someoneWallet }) => {
+        const winnerBox = (
+          boxFactory.createWinnersBoxMock(
+            1n,
+            testUtils.TICKET_TOKEN_ID,
+            undefined,
+            undefined,
+            10000n,
+            undefined,
+            [
+              {
+                tokenId: testUtils.GIFT_TOKEN_ID,
+                amount: 100n,
+              },
+            ],
+          ) as Box[]
+        )[0];
+        const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
+          .data as bigint[];
+        const outWinner = boxFactory.createWinnerOutputBoxWithConstantRegisters(
+          winnerR4,
+          testUtils.TICKET_TOKEN_ID,
+          testUtils.GIFT_TOKEN_ID,
+          99n,
+          1n,
+        );
+        const gift = boxFactory.createGiftOutputBox(
+          winnerR4[0],
+          someoneWallet.address.toString(),
+          testUtils.FEE * 10n,
+          testUtils.GIFT_TOKEN_ID,
+        );
+
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
+          .from([winnerBox, ...someoneWallet.utxos.toArray()])
+          .to([outWinner, gift])
+          .configureSelector((selector) => {
+            selector.defineStrategy((inputs) => inputs);
+          })
+          .payFee(testUtils.FEE)
+          .sendChangeTo(someoneWallet.address)
+          .build();
+
+        const result = boxFactory.chain.execute(transaction, {
+          signers: [someoneWallet],
+        });
+
+        // Check execution result
+        expect(result).true;
+      },
+    );
+
     /**
      * @target fail when two gift-tokens move to the output gift box
      * @scenario
@@ -339,8 +411,8 @@ describe('winner', () => {
           SConstant.from(winnerBox.additionalRegisters.R4!).data as bigint[],
           testUtils.TICKET_TOKEN_ID,
           testUtils.GIFT_TOKEN_ID,
-          97n,
-          3n,
+          98n,
+          1n,
         );
 
         const gift = boxFactory.createGiftOutputBox(
@@ -348,8 +420,9 @@ describe('winner', () => {
           someoneWallet.address.toString(),
           testUtils.FEE * 10n,
           testUtils.GIFT_TOKEN_ID,
-          2n,
+          1n,
         );
+
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([winnerBox, ...someoneWallet.utxos.toArray()])
           .to([outWinner, gift])
@@ -385,7 +458,7 @@ describe('winner', () => {
             1n,
             testUtils.TICKET_TOKEN_ID,
             undefined,
-            1n,
+            undefined,
             10000n,
             undefined,
             [
@@ -402,8 +475,8 @@ describe('winner', () => {
           SConstant.from(winnerBox.additionalRegisters.R4!).data as bigint[],
           testUtils.TICKET_TOKEN_ID,
           testUtils.GIFT_TOKEN_ID,
+          99n,
           1n,
-          3n,
           // decrease value of output winner-box
           BigInt(winnerBox.value) - testUtils.FEE,
         );
@@ -449,7 +522,7 @@ describe('winner', () => {
             1n,
             testUtils.TICKET_TOKEN_ID,
             undefined,
-            1n,
+            undefined,
             10000n,
             undefined,
             [
@@ -511,7 +584,7 @@ describe('winner', () => {
             1n,
             testUtils.TICKET_TOKEN_ID,
             undefined,
-            1n,
+            undefined,
             10000n,
             undefined,
             [
@@ -529,7 +602,7 @@ describe('winner', () => {
           testUtils.TICKET_TOKEN_ID,
           testUtils.GIFT_TOKEN_ID,
           99n,
-          2n,
+          1n,
         );
         const gift = boxFactory.createGiftOutputBox(
           winnerR4[0],
@@ -617,7 +690,6 @@ describe('winner', () => {
           1n,
           testUtils.TICKET_TOKEN_ID,
           successRaffleBox.assets[1].amount,
-          undefined,
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
@@ -753,7 +825,6 @@ describe('winner', () => {
       'should fail when incorrect value puts on the erg-goal prize box',
       ({ boxFactory, successRaffleBox }) => {
         const totalPrize = 1;
-
         const winnerBox = (
           boxFactory.createWinnersBoxMock(
             1n,
@@ -996,6 +1067,7 @@ describe('winner', () => {
             selector.defineStrategy((inputs) => inputs);
           })
           .burnTokens({
+            // Missing one token amount
             tokenId: winnerBox.assets[1].tokenId,
             amount: 1n,
           })
@@ -1099,7 +1171,6 @@ describe('winner', () => {
       'should fail when an invalid token is placed in the successRaffle box',
       ({ boxFactory, someoneWallet, successRaffleBox }) => {
         const totalPrize = 1;
-
         const winnerBox = (
           boxFactory.createWinnersBoxMock(
             1n,
@@ -1151,12 +1222,6 @@ describe('winner', () => {
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
           })
-          .burnTokens([
-            {
-              tokenId: successRaffleBox.assets[1].tokenId,
-              amount: successRaffleBox.assets[1].amount,
-            },
-          ])
           .sendChangeTo(someoneWallet.address)
           .payFee(testUtils.FEE)
           .build();
@@ -1182,7 +1247,6 @@ describe('winner', () => {
       'should fails when two duplicate winner boxes are used as input',
       ({ boxFactory, someoneWallet, successRaffleBox }) => {
         const totalPrize = 1;
-
         const inputWinnerBoxes = boxFactory.createWinnersBoxMock(
           2n,
           testUtils.TICKET_TOKEN_ID,
@@ -1258,8 +1322,8 @@ describe('winner', () => {
     winnerTest(
       'should success execution of return gift erg-goal transaction',
       ({ boxFactory, someoneWallet }) => {
+        boxFactory.chain.setTip(2001);
         const giftCount = 3n;
-
         // Create input boxes
         const winner = (
           boxFactory.createWinnersBoxMock(
@@ -1301,7 +1365,6 @@ describe('winner', () => {
           0n,
           testUtils.TICKET_TOKEN_ID,
           1n,
-          undefined,
         );
 
         const giftGiverAddress = Buffer.from(
@@ -1339,8 +1402,8 @@ describe('winner', () => {
     winnerTest(
       'should fail when the return gift erg-goal transaction uses an invalid ticket token in the giftRedeem box',
       ({ boxFactory, someoneWallet }) => {
+        boxFactory.chain.setTip(2001);
         const giftCount = 3n;
-
         // Create input boxes
         const winner = (
           boxFactory.createWinnersBoxMock(
@@ -1383,7 +1446,6 @@ describe('winner', () => {
           // Set invalid ticket token id
           testUtils.X_TOKEN_ID,
           1n,
-          undefined,
         );
 
         const giftGiverAddress = Buffer.from(
@@ -1421,17 +1483,15 @@ describe('winner', () => {
     winnerTest(
       'should fail return gift erg-goal transaction by invalid number of gift token on the winner box',
       ({ boxFactory, someoneWallet }) => {
-        const giftCount = 3n;
-
+        boxFactory.chain.setTip(2001);
         // Create input boxes
         const winner = (
           boxFactory.createWinnersBoxMock(
             1n,
             testUtils.TICKET_TOKEN_ID,
             undefined,
-            // Set invalid giftToken
-            5n,
-            0n,
+            2n,
+            1000n,
             testUtils.GIFT_TOKEN_ID,
             [
               {
@@ -1454,9 +1514,11 @@ describe('winner', () => {
           SConstant.from(winner.additionalRegisters.R4!).data as bigint[],
           testUtils.TICKET_TOKEN_ID,
           testUtils.GIFT_TOKEN_ID,
-          BigInt(winner.assets[1].amount.toString()) + 1n,
-          giftCount - 1n,
+          // set invalid amount of gift token to this box
+          BigInt(winner.assets[1].amount.toString()),
+          1n,
         );
+
         const giftRedeemBox = boxFactory.createGiftRedeemBoxMock(
           1_000_000_000n,
           0n,
@@ -1483,6 +1545,10 @@ describe('winner', () => {
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
           })
+          .burnTokens({
+            tokenId: testUtils.GIFT_TOKEN_ID,
+            amount: 1n,
+          })
           .payFee(testUtils.FEE)
           .build();
 
@@ -1491,9 +1557,9 @@ describe('winner', () => {
     );
 
     /**
-     * @target fail erg-goal based return gift transaction without ticket token on the output winner box
+     * @target fail erg-goal based return gift transaction without gift token on the output winner box
      * @scenario
-     * - create winner output box without ticket token
+     * - create winner output box without gift token
      * - create redeemedGift output box
      * - execute transaction
      * - result of execution must be fail
@@ -1501,10 +1567,10 @@ describe('winner', () => {
      * - transaction execution must throw exception
      */
     winnerTest(
-      'should fail erg-goal based return gift transaction without ticket token on the output winner box',
+      'should fail erg-goal based return gift transaction without gift token on the output winner box',
       ({ boxFactory, someoneWallet }) => {
+        boxFactory.chain.setTip(2001);
         const giftCount = 3n;
-
         // Create input boxes
         const winner = (
           boxFactory.createWinnersBoxMock(
@@ -1593,8 +1659,8 @@ describe('winner', () => {
     winnerTest(
       'should fail erg-goal return gift transaction by with invalid winner-index on the input gift box',
       ({ boxFactory, someoneWallet }) => {
+        boxFactory.chain.setTip(2001);
         const giftCount = 3n;
-
         // Create input boxes
         const winner = (
           boxFactory.createWinnersBoxMock(
@@ -1676,8 +1742,8 @@ describe('winner', () => {
     winnerTest(
       'should fail return gift erg-goal transaction by two gift boxes in the input',
       ({ boxFactory, someoneWallet }) => {
+        boxFactory.chain.setTip(2001);
         const giftCount = 3n;
-
         // Create input boxes
         const winner = (
           boxFactory.createWinnersBoxMock(
@@ -1842,7 +1908,7 @@ describe('winner', () => {
             1n,
             testUtils.TICKET_TOKEN_ID,
             undefined,
-            3n,
+            0n,
             0n,
             testUtils.GIFT_TOKEN_ID,
             [
@@ -1859,7 +1925,7 @@ describe('winner', () => {
           1_000n,
           1n,
           1n,
-          // set different ticket token id
+          // set other raffle ticket token id
           testUtils.X_TOKEN_ID,
           1n,
           undefined,
