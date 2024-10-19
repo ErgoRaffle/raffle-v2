@@ -609,7 +609,8 @@ export class RaffleBoxFactory {
    * @param boxValue
    * @param licenseTokenId
    * @param seed
-   * @param selectedWinnersListHash
+   * @param selectedWinnersList
+   * @param totalSoldTickets
    * @param winnersCount
    * @param totalPrize
    * @param prizeValue
@@ -624,6 +625,7 @@ export class RaffleBoxFactory {
     licenseTokenId: string,
     seed: string,
     selectedWinnersList: bigint[],
+    totalSoldTickets: bigint,
     winnersCount: bigint = 1n,
     totalPrize: bigint = 1n,
     prizeValue: bigint = 0n,
@@ -645,20 +647,15 @@ export class RaffleBoxFactory {
           ? [
               {
                 tokenId: collectingTokenId,
-                // One extra collecting token added to this box
                 amount: prizeValue,
               },
             ]
           : []),
       ],
       additionalRegisters: {
-        R4: SColl(SLong, [
-          BigInt(winnersCount),
-          FEE,
-          BigInt(totalPrize),
-        ]).toHex(),
+        R4: SColl(SLong, [winnersCount, totalPrize, totalSoldTickets]).toHex(),
         R5: SColl(SColl(SByte), [
-          Array.from(Buffer.from(seed)),
+          Array.from(Buffer.from(seed, 'hex')),
           Array.from(
             blake2b256(
               Buffer.concat(
@@ -678,6 +675,7 @@ export class RaffleBoxFactory {
    * @param licenseTokenId
    * @param seed
    * @param selectedWinnersList
+   * @param totalSoldTickets
    * @param winnersCount
    * @param totalPrize
    * @param prizeValue
@@ -685,7 +683,6 @@ export class RaffleBoxFactory {
    * @param ticketTokenId
    * @param ticketTokenAmount
    * @param collectingTokenId
-   * @param ergoTree
    * @returns
    */
   createSuccessRaffleBox = (
