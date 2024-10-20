@@ -432,8 +432,9 @@ export class RaffleBoxFactory {
 
   /**
    * Create output box of active-raffle
-   * @param creatorPartnerAddress
+   * @param serviceAddress
    * @param implementerPartnerAddress
+   * @param creatorPartnerAddress
    * @param winnersCount
    * @param serviceFeePercent
    * @param collectingToken
@@ -444,8 +445,9 @@ export class RaffleBoxFactory {
    * @returns
    */
   createActiveRaffleBoxMock(
-    creatorPartnerAddress: string,
+    serviceAddress: string,
     implementerPartnerAddress: string,
+    creatorPartnerAddress: string,
     winnersCount: bigint = 1n,
     serviceFeePercent: bigint = 10n,
     collectingToken?: TokenAmount<bigint>,
@@ -485,9 +487,9 @@ export class RaffleBoxFactory {
           FEE, // TxFee
         ]).toHex(),
         R5: SColl(SColl(SByte), [
-          Array.from(Buffer.from(creatorPartnerAddress, 'hex')),
-          Array.from(Buffer.from(implementerPartnerAddress)),
-          Array.from(Buffer.from(creatorPartnerAddress)),
+          Array.from(blake2b256(Buffer.from(serviceAddress))),
+          Array.from(blake2b256(Buffer.from(implementerPartnerAddress))),
+          Array.from(blake2b256(Buffer.from(creatorPartnerAddress))),
         ]).toHex(),
         R6: SLong(totalSoldTicket).toHex(),
       },
@@ -540,9 +542,9 @@ export class RaffleBoxFactory {
 
   /**
    * Create output box of active-raffle
-   * @param ownerAddress
-   * @param creatorPartnerAddress
+   * @param serviceAddress
    * @param implementerPartnerAddress
+   * @param creatorPartnerAddress
    * @param winnersCount
    * @param serviceFeePercent
    * @param collectingToken
@@ -555,9 +557,9 @@ export class RaffleBoxFactory {
    * @returns
    */
   createActiveRaffleOutputBox(
-    ownerAddress: string,
-    creatorPartnerAddress: string,
+    serviceAddress: string,
     implementerPartnerAddress: string,
+    creatorPartnerAddress: string,
     winnersCount: bigint = 1n,
     serviceFeePercent: bigint = 10n,
     collectingToken?: TokenAmount<bigint>,
@@ -567,6 +569,7 @@ export class RaffleBoxFactory {
     ticketTokenId: string = TICKET_TOKEN_ID,
     totalSoldTicket: bigint = 0n,
     deadline: bigint = 100n,
+    extraTokens: TokenAmount<bigint>[] = [],
   ) {
     value = value || creationFee + 4n * FEE;
 
@@ -579,6 +582,7 @@ export class RaffleBoxFactory {
         tokenId: ticketTokenId,
         amount: ticketTokenAmount || 1_000_000_000n - 1n - winnersCount,
       },
+      ...extraTokens,
     ];
     if (collectingToken != null) tokens.push(collectingToken);
 
@@ -596,7 +600,7 @@ export class RaffleBoxFactory {
           FEE, // TxFee
         ]).toHex(),
         R5: SColl(SColl(SByte), [
-          Array.from(blake2b256(Buffer.from(ownerAddress))),
+          Array.from(blake2b256(Buffer.from(serviceAddress))),
           Array.from(blake2b256(Buffer.from(implementerPartnerAddress))),
           Array.from(blake2b256(Buffer.from(creatorPartnerAddress))),
         ]),
@@ -1121,7 +1125,11 @@ export class RaffleBoxFactory {
         R4: SColl(SByte, Array.from(Buffer.from(donatorWalletAddress))),
         R5: SColl(SLong, r5).toHex(),
       })
-      .addTokens({ tokenId: ticketTokenId, amount: ticketCount });
+      .addTokens(
+        ticketCount > 0
+          ? [{ tokenId: ticketTokenId, amount: ticketCount }]
+          : [],
+      );
     return donateTicketOutputBox;
   }
 
