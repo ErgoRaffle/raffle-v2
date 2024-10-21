@@ -1922,7 +1922,7 @@ describe('winner', () => {
         )[0];
         const redeemedGift = boxFactory.createGiftRedeemBoxMock(
           testUtils.FEE,
-          0n,
+          1n,
           1_000n,
           1n,
           1n,
@@ -1934,7 +1934,7 @@ describe('winner', () => {
         // create output boxes
         const redeemedGiftOutputBox = boxFactory.createGiftRedeemOutputBox(
           BigInt(winner.value),
-          0n,
+          1n,
           1_000n,
           1n,
           2n,
@@ -2006,7 +2006,7 @@ describe('winner', () => {
           1n,
           1_000n,
           1n,
-          1n,
+          2n,
           testUtils.X_TOKEN_ID,
           1n,
           undefined,
@@ -2060,7 +2060,7 @@ describe('winner', () => {
         )[0];
         const redeemedGift = boxFactory.createGiftRedeemBoxMock(
           testUtils.FEE,
-          0n,
+          1n,
           1_000n,
           1n,
           1n,
@@ -2072,7 +2072,7 @@ describe('winner', () => {
         // create output boxes
         const redeemedGiftOutputBox = boxFactory.createGiftRedeemOutputBox(
           BigInt(winner.value),
-          0n,
+          1n,
           1_000n,
           1n,
           2n,
@@ -2129,7 +2129,7 @@ describe('winner', () => {
         )[0];
         const redeemedGift = boxFactory.createGiftRedeemBoxMock(
           testUtils.FEE,
-          0n,
+          1n,
           1_000n,
           1n,
           1n,
@@ -2141,7 +2141,7 @@ describe('winner', () => {
         // create output boxes
         const redeemedGiftOutputBox = boxFactory.createGiftRedeemOutputBox(
           BigInt(winner.value) - testUtils.FEE,
-          0n,
+          1n,
           1_000n,
           1n,
           2n,
