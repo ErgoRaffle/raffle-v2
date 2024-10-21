@@ -850,7 +850,7 @@ export class RaffleBoxFactory {
     giftGiverWalletAddress: string,
     value: bigint = 0n,
     giftTokenId: string,
-    giftTokenAmount: bigint,
+    giftTokenAmount: bigint = 1n,
   ) {
     const giftForWinnerOutputBox = mockUTxO({
       value: value,
