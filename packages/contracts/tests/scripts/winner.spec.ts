@@ -1643,7 +1643,6 @@ describe('winner', () => {
       'should fail erg-goal based return gift transaction with incorrect amount of gift token on the output winner box',
       ({ boxFactory, someoneWallet }) => {
         boxFactory.chain.setTip(2001);
-        const giftCount = 3n;
         // Create input boxes
         const winner = (
           boxFactory.createWinnersBoxMock(
@@ -1674,9 +1673,9 @@ describe('winner', () => {
           SConstant.from(winner.additionalRegisters.R4!).data as bigint[],
           testUtils.TICKET_TOKEN_ID,
           testUtils.GIFT_TOKEN_ID,
-          // put incorrect amount of gift token to the output winner box
-          1n,
-          giftCount - 1n,
+          BigInt(winner.assets[1].amount.toString()) + 1n,
+          // put incorrect amount of gift token to the R5
+          0n,
         );
         const giftRedeemBox = boxFactory.createGiftRedeemBoxMock(
           1_000_000_000n,
@@ -1702,10 +1701,6 @@ describe('winner', () => {
           .withDataFrom([giftRedeemBox])
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
-          })
-          .burnTokens({
-            tokenId: testUtils.GIFT_TOKEN_ID,
-            amount: BigInt(winner.assets[1].amount.toString()),
           })
           .payFee(testUtils.FEE)
           .build();
