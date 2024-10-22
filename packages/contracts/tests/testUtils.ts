@@ -618,7 +618,8 @@ export class RaffleBoxFactory {
    * @param boxValue
    * @param licenseTokenId
    * @param seed
-   * @param selectedWinnersListHash
+   * @param selectedWinnersList
+   * @param totalSoldTickets
    * @param winnersCount
    * @param totalPrize
    * @param prizeValue
@@ -633,6 +634,7 @@ export class RaffleBoxFactory {
     licenseTokenId: string,
     seed: string,
     selectedWinnersList: bigint[],
+    totalSoldTickets: bigint,
     winnersCount: bigint = 1n,
     totalPrize: bigint = 1n,
     prizeValue: bigint = 0n,
@@ -654,20 +656,15 @@ export class RaffleBoxFactory {
           ? [
               {
                 tokenId: collectingTokenId,
-                // One extra collecting token added to this box
                 amount: prizeValue,
               },
             ]
           : []),
       ],
       additionalRegisters: {
-        R4: SColl(SLong, [
-          BigInt(winnersCount),
-          FEE,
-          BigInt(totalPrize),
-        ]).toHex(),
+        R4: SColl(SLong, [winnersCount, totalPrize, totalSoldTickets]).toHex(),
         R5: SColl(SColl(SByte), [
-          Array.from(Buffer.from(seed)),
+          Array.from(Buffer.from(seed, 'hex')),
           Array.from(
             blake2b256(
               Buffer.concat(
@@ -687,6 +684,7 @@ export class RaffleBoxFactory {
    * @param licenseTokenId
    * @param seed
    * @param selectedWinnersList
+   * @param totalSoldTickets
    * @param winnersCount
    * @param totalPrize
    * @param prizeValue
@@ -694,7 +692,6 @@ export class RaffleBoxFactory {
    * @param ticketTokenId
    * @param ticketTokenAmount
    * @param collectingTokenId
-   * @param ergoTree
    * @returns
    */
   createSuccessRaffleBox = (
@@ -848,6 +845,43 @@ export class RaffleBoxFactory {
           tokenId: ticketTokenId,
         },
       ]);
+  }
+
+  /**
+   * Create gift output box
+   * @param winnerIndex
+   * @param giftGiverWalletAddress
+   * @param value
+   * @param giftTokenId
+   * @param giftTokenAmount
+   * @returns
+   */
+  createGiftBoxMock(
+    winnerIndex: bigint,
+    giftGiverWalletAddress: string,
+    value: bigint = 0n,
+    giftTokenId: string,
+    giftTokenAmount: bigint = 1n,
+  ) {
+    const giftForWinnerOutputBox = mockUTxO({
+      value: value,
+      ergoTree: this.contractsAddresses['gift'],
+      additionalRegisters: {
+        R4: SColl(
+          SByte,
+          Array.from(Buffer.from(giftGiverWalletAddress)),
+        ).toHex(),
+        R5: SLong(winnerIndex).toHex(),
+      },
+      assets: [
+        {
+          tokenId: giftTokenId,
+          amount: giftTokenAmount,
+        },
+      ],
+    });
+
+    return giftForWinnerOutputBox;
   }
 
   /**
@@ -1047,34 +1081,53 @@ export class RaffleBoxFactory {
   }
 
   /**
-   * Create gift output box
-   * @param winnerIndex
-   * @param giftGiverWalletAddress
+   * Create gift redeem box
    * @param value
-   * @param giftToken
+   * @param totalSoldTicket
+   * @param ticketPrice
+   * @param winnersCount
+   * @param step
+   * @param ticketTokenId
+   * @param ticketTokenCount
+   * @param collectingToken
    * @returns
    */
-  createGiftBoxMock(
-    winnerIndex: bigint,
-    giftGiverWalletAddress: string,
-    value: bigint = 0n,
-    giftToken?: TokenAmount<bigint>,
+  createGiftRedeemBoxMock(
+    value: bigint,
+    totalSoldTicket: bigint,
+    ticketPrice: bigint,
+    winnersCount: bigint,
+    step: bigint,
+    ticketTokenId: string,
+    ticketTokenCount: bigint,
+    collectingToken?: TokenAmount<bigint>,
   ) {
-    const giftForWinnerOutputBox = mockUTxO({
-      value: value,
-      ergoTree: this.contractsAddresses['gift'],
-      additionalRegisters: {
-        R4: SColl(
-          SByte,
-          Array.from(Buffer.from(giftGiverWalletAddress)),
-        ).toHex(),
-        R5: SLong(winnerIndex).toHex(),
-      },
-    });
-    if (giftToken !== undefined) {
-      giftForWinnerOutputBox.assets.push(giftToken);
-    }
-    return giftForWinnerOutputBox;
+    const giftRedeemBox = new ErgoUnsignedInput(
+      mockUTxO({
+        value: value,
+        ergoTree: this.contractsAddresses['giftRedeem'],
+        additionalRegisters: {
+          R4: SColl(
+            SLong,
+            Array.from([totalSoldTicket, ticketPrice, winnersCount, FEE]),
+          ).toHex(),
+          R5: SLong(step).toHex(),
+        },
+        assets: [
+          {
+            tokenId: LICENSE_TOKEN_ID,
+            amount: 1n,
+          },
+          {
+            tokenId: ticketTokenId,
+            amount: ticketTokenCount,
+          },
+          ...(collectingToken !== undefined ? [collectingToken] : []),
+        ],
+      }),
+    );
+
+    return giftRedeemBox;
   }
 
   /**
@@ -1252,9 +1305,10 @@ export class RaffleBoxFactory {
     giftTokenId: string = GIFT_TOKEN_ID,
     giftTokenCount = BigInt(GIFT_TOKEN_COUNT),
     giftCount = 0n,
+    value: bigint = 3n * FEE,
   ) {
     const winnerBox = new OutputBuilder(
-      3n * FEE,
+      value,
       this.contractsAddresses['winner'],
     )
       .setAdditionalRegisters({
