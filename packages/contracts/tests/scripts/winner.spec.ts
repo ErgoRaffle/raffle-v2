@@ -1277,6 +1277,7 @@ describe('winner', () => {
           BigInt(totalPrize),
           undefined,
           1n,
+          // Used X-token instead of ticket token
           testUtils.X_TOKEN_ID,
           successRaffleBox.assets[1].amount,
         );
