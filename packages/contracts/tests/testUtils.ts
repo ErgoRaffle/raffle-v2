@@ -442,6 +442,7 @@ export class RaffleBoxFactory {
    * @param value
    * @param deadline
    * @param totalSoldTicket
+   * @param goal
    * @returns
    */
   createActiveRaffleBoxMock(
@@ -455,6 +456,7 @@ export class RaffleBoxFactory {
     value?: bigint,
     deadline: bigint = 100n,
     totalSoldTicket: bigint = 0n,
+    goal: bigint = 1000n,
   ) {
     value = value || creationFee + 4n * FEE;
 
@@ -481,7 +483,7 @@ export class RaffleBoxFactory {
           serviceFeePercent, // ServiceFeePercent,
           10n, // ImplementerFeePercent,
           10n, // TicketPrice,
-          1000n, // Goal,
+          goal, // Goal,
           deadline, // DeadlineTimestamp,
           winnersCount, // WinnersCount,
           FEE, // TxFee
@@ -554,6 +556,8 @@ export class RaffleBoxFactory {
    * @param ticketTokenId
    * @param totalSoldTicket
    * @param deadline
+   * @param extraTokens
+   * @param goal
    * @returns
    */
   createActiveRaffleOutputBox(
@@ -570,6 +574,7 @@ export class RaffleBoxFactory {
     totalSoldTicket: bigint = 0n,
     deadline: bigint = 100n,
     extraTokens: TokenAmount<bigint>[] = [],
+    goal: bigint = 1000n,
   ) {
     value = value || creationFee + 4n * FEE;
 
@@ -594,7 +599,7 @@ export class RaffleBoxFactory {
           serviceFeePercent, // ServiceFeePercent,
           10n, // ImplementerFeePercent,
           10n, // TicketPrice,
-          1000n, // Goal,
+          goal, // Goal,
           deadline, // DeadlineTimestamp,
           winnersCount, // WinnersCount,
           FEE, // TxFee
@@ -705,6 +710,7 @@ export class RaffleBoxFactory {
     ticketTokenId: string = TICKET_TOKEN_ID,
     ticketTokenAmount: bigint = 1n,
     collectingTokenId?: string,
+    extraTokens: TokenAmount<bigint>[] = [],
   ) => {
     return new OutputBuilder(boxValue, this.contractsAddresses['successRaffle'])
       .addTokens([
@@ -721,6 +727,7 @@ export class RaffleBoxFactory {
               },
             ]
           : []),
+        ...extraTokens,
       ])
       .setAdditionalRegisters({
         R4: SColl(SLong, [winnersCount, totalPrize, totalSoldTickets]).toHex(),
@@ -1154,6 +1161,7 @@ export class RaffleBoxFactory {
     ticketTokenId: string,
     ticketTokenCount: bigint,
     collectingToken?: TokenAmount<bigint>,
+    extraTokens: TokenAmount<bigint>[] = [],
   ) {
     const giftRedeemOutputBox = new OutputBuilder(
       value,
@@ -1179,6 +1187,8 @@ export class RaffleBoxFactory {
 
     if (collectingToken !== undefined)
       giftRedeemOutputBox.addTokens([collectingToken]);
+
+    if (extraTokens !== undefined) giftRedeemOutputBox.addTokens(extraTokens);
 
     return giftRedeemOutputBox;
   }
