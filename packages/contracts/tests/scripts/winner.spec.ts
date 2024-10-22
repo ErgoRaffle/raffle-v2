@@ -1985,7 +1985,7 @@ describe('winner', () => {
         )[0];
         const redeemGift = boxFactory.createGiftRedeemBoxMock(
           testUtils.FEE,
-          0n,
+          1n,
           1_000n,
           1n,
           1n,
