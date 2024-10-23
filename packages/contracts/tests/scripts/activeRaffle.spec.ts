@@ -156,18 +156,18 @@ describe('ActiveRaffle', () => {
           40n,
           undefined,
           1_000_000n,
-          1_000_000_010n,
+          1_000_000_050n,
           // one ticket-token move to the ticket box
-          BigInt(activeRaffleBox.assets[1].amount) - 1n,
+          BigInt(activeRaffleBox.assets[1].amount) - 5n,
           undefined,
-          1n,
+          5n,
           1000n,
         );
         const ticketOutputBox = boxFactory.createTicketOutputBox(
           donatorWallet.address.toString(),
-          1n,
+          5n,
           testUtils.TICKET_TOKEN_ID,
-          [0n, 1n, 10n], // from-ticket-range, to-ticket-range, ticket-price
+          [0n, 5n, 10n], // from-ticket-range, to-ticket-range, ticket-price
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
@@ -209,21 +209,21 @@ describe('ActiveRaffle', () => {
           40n,
           {
             tokenId: testUtils.X_TOKEN_ID,
-            amount: 20n,
+            amount: 51n,
           },
           1_000_000n,
-          1_000_000_010n,
+          1_000_000_000n,
           // one ticket-token move to the ticket box
-          BigInt(activeRaffleBox.assets[1].amount) - 1n,
+          BigInt(activeRaffleBox.assets[1].amount) - 5n,
           undefined,
-          1n,
+          5n,
           1000n,
         );
         const ticketOutputBox = boxFactory.createTicketOutputBox(
           donatorWallet.address.toString(),
-          1n,
+          5n,
           testUtils.TICKET_TOKEN_ID,
-          [0n, 1n, 10n], // from-ticket-range, to-ticket-range, ticket-price
+          [0n, 5n, 10n], // from-ticket-range, to-ticket-range, ticket-price
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
@@ -244,7 +244,7 @@ describe('ActiveRaffle', () => {
      * @scenario
      * - create activeRaffle & ticket output boxes
      * - execute transaction
-     * - check execution done successfully
+     * - result of execution must be fail
      * @expected
      * - transaction result must throw error
      */
@@ -295,7 +295,7 @@ describe('ActiveRaffle', () => {
      * @scenario
      * - create activeRaffle & ticket output boxes
      * - execute transaction
-     * - check execution done successfully
+     * - result of execution must be fail
      * @expected
      * - transaction result must throw error
      */
@@ -349,7 +349,7 @@ describe('ActiveRaffle', () => {
      * @scenario
      * - create activeRaffle & ticket output boxes
      * - execute transaction
-     * - check execution done successfully
+     * - result of execution must be fail
      * @expected
      * - transaction result must throw error
      */
@@ -400,7 +400,7 @@ describe('ActiveRaffle', () => {
      * @scenario
      * - create activeRaffle & ticket output boxes
      * - execute transaction
-     * - check execution done successfully
+     * - result of execution must be fail
      * @expected
      * - transaction result must throw error
      */
@@ -445,7 +445,7 @@ describe('ActiveRaffle', () => {
      * @scenario
      * - create activeRaffle & ticket output boxes
      * - execute transaction
-     * - check execution done successfully
+     * - result of execution must be fail
      * @expected
      * - transaction result must throw error
      */
@@ -505,7 +505,7 @@ describe('ActiveRaffle', () => {
      * @scenario
      * - create activeRaffle & ticket output boxes
      * - execute transaction
-     * - check execution done successfully
+     * - result of execution must be fail
      * @expected
      * - transaction result must throw error
      */
@@ -559,7 +559,7 @@ describe('ActiveRaffle', () => {
      * @scenario
      * - create activeRaffle & ticket output boxes
      * - execute transaction
-     * - check execution done successfully
+     * - result of execution must be fail
      * @expected
      * - transaction result must throw error
      */
@@ -617,7 +617,7 @@ describe('ActiveRaffle', () => {
      * @scenario
      * - create activeRaffle & ticket output boxes
      * - execute transaction
-     * - check execution done successfully
+     * - result of execution must be fail
      * @expected
      * - transaction result must throw error
      */
@@ -668,7 +668,7 @@ describe('ActiveRaffle', () => {
      * @scenario
      * - create activeRaffle & ticket output boxes
      * - execute transaction
-     * - check execution done successfully
+     * - result of execution must be fail
      * @expected
      * - transaction result must throw error
      */
@@ -893,16 +893,16 @@ describe('ActiveRaffle', () => {
     );
 
     /**
-     * @target should fail with an invalid oracle box
+     * @target should fail with an invalid nft-id of oracle box
      * @scenario
      * - create activeRaffle & successRaffle output boxes
      * - execute transaction
-     * - check execution done successfully
+     * - result of execution must be fail
      * @expected
      * - transaction result must throw error
      */
     activeRaffleTest(
-      'should fail with an invalid oracle box',
+      'should fail with an invalid nft-id of oracle box',
       ({
         boxFactory,
         creatorWallet,
@@ -982,11 +982,101 @@ describe('ActiveRaffle', () => {
     );
 
     /**
+     * @target should fail with an invalid creation-height of oracle box
+     * @scenario
+     * - create activeRaffle & successRaffle output boxes
+     * - execute transaction
+     * - result of execution must be fail
+     * @expected
+     * - transaction result must throw error
+     */
+    activeRaffleTest(
+      'should fail with an invalid creation-height of oracle box',
+      ({
+        boxFactory,
+        creatorWallet,
+        implementerWallet,
+        raffleDetailsBox,
+        serviceFeeBox,
+        implementerFeeBox,
+        winnerPercent,
+        totalPrize,
+        totalRaised,
+      }) => {
+        boxFactory.chain.setTip(2001);
+
+        const oracleBox = boxFactory.createMockedOracleUTxO(
+          testUtils.FEE,
+          undefined,
+          // set invalid creation-height
+          50,
+        );
+        const winnersCount = 1;
+        const totalSoldTickets = 10n;
+        const serviceFeePercent = 20n;
+
+        const activeRaffleBox = boxFactory.createActiveRaffleBoxMock(
+          creatorWallet.address.toString(),
+          implementerWallet.address.toString(),
+          creatorWallet.address.toString(),
+          BigInt(winnersCount),
+          serviceFeePercent,
+          undefined,
+          1_000_000n,
+          1_000_000_100n,
+          1_000n,
+          totalSoldTickets,
+          100n,
+        );
+
+        const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
+          BigInt((totalRaised * winnerPercent) / 100n) + testUtils.FEE,
+          activeRaffleBox.assets[0].tokenId,
+          oracleBox.boxId.toString(),
+          [],
+          totalSoldTickets,
+          BigInt(winnersCount),
+          BigInt(totalPrize),
+          BigInt(totalPrize) + 1n,
+          1n,
+          activeRaffleBox.assets[1].tokenId,
+          // plus one token that exists on the Raffle-Details box
+          BigInt(activeRaffleBox.assets[1].amount) + 1n,
+        );
+
+        const creatorFundBox = testUtils.createChangeBox(
+          [activeRaffleBox, raffleDetailsBox],
+          [successRaffleOutputBox, serviceFeeBox, implementerFeeBox],
+          testUtils.FEE,
+          creatorWallet.address.toString(),
+        );
+
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
+          .from([activeRaffleBox, raffleDetailsBox])
+          .to([
+            successRaffleOutputBox,
+            creatorFundBox,
+            serviceFeeBox,
+            implementerFeeBox,
+          ])
+          .withDataFrom([oracleBox])
+          .configureSelector((selector) => {
+            selector.defineStrategy((inputs) => inputs);
+          })
+          .sendChangeTo(creatorWallet.address.toString())
+          .payFee(testUtils.FEE)
+          .build();
+
+        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
+      },
+    );
+
+    /**
      * @target should fail if an arbitrary token is added to erg-goal success raffle
      * @scenario
      * - create activeRaffle & successRaffle output boxes
      * - execute transaction
-     * - check execution done successfully
+     * - result of execution must be fail
      * @expected
      * - transaction result must throw error
      */
@@ -1080,7 +1170,7 @@ describe('ActiveRaffle', () => {
      * @scenario
      * - create activeRaffle & successRaffle output boxes
      * - execute transaction
-     * - check execution done successfully
+     * - result of execution must be fail
      * @expected
      * - transaction result must throw error
      */
@@ -1166,7 +1256,7 @@ describe('ActiveRaffle', () => {
      * @scenario
      * - create activeRaffle & successRaffle output boxes
      * - execute transaction
-     * - check execution done successfully
+     * - result of execution must be fail
      * @expected
      * - transaction result must throw error
      */
@@ -1266,7 +1356,7 @@ describe('ActiveRaffle', () => {
      * @scenario
      * - create activeRaffle & successRaffle output boxes
      * - execute transaction
-     * - check execution done successfully
+     * - result of execution must be fail
      * @expected
      * - transaction result must throw error
      */
@@ -1378,7 +1468,7 @@ describe('ActiveRaffle', () => {
      * @scenario
      * - create activeRaffle & successRaffle output boxes
      * - execute transaction
-     * - check execution done successfully
+     * - result of execution must be fail
      * @expected
      * - transaction result must throw error
      */
@@ -1464,7 +1554,7 @@ describe('ActiveRaffle', () => {
      * @scenario
      * - create activeRaffle & successRaffle output boxes
      * - execute transaction
-     * - check execution done successfully
+     * - result of execution must be fail
      * @expected
      * - transaction result must throw error
      */
@@ -1550,7 +1640,7 @@ describe('ActiveRaffle', () => {
      * @scenario
      * - create activeRaffle & successRaffle output boxes
      * - execute transaction
-     * - check execution done successfully
+     * - result of execution must be fail
      * @expected
      * - transaction result must throw error
      */
@@ -1694,7 +1784,7 @@ describe('ActiveRaffle', () => {
     );
 
     /**
-     * @target should successfully finalize a failed erg-goal raffle
+     * @target should successfully finalize a failed token-goal raffle
      * @scenario
      * - create giftRedeem output box
      * - execute transaction
@@ -1703,7 +1793,7 @@ describe('ActiveRaffle', () => {
      * - transaction result must be true
      */
     activeRaffleTokenGoalTest(
-      'should successfully finalize a failed erg-goal raffle',
+      'should successfully finalize a failed token-goal raffle',
       ({ boxFactory, creatorWallet, implementerWallet, raffleDetailsBox }) => {
         boxFactory.chain.setTip(2001);
 
@@ -1765,7 +1855,7 @@ describe('ActiveRaffle', () => {
      * @scenario
      * - create giftRedeem output box
      * - execute transaction
-     * - check execution done successfully
+     * - result of execution must be fail
      * @expected
      * - transaction result must throw error
      */
@@ -1839,7 +1929,7 @@ describe('ActiveRaffle', () => {
      * @scenario
      * - create giftRedeem output box
      * - execute transaction
-     * - check execution done successfully
+     * - result of execution must be fail
      * @expected
      * - transaction result must throw error
      */
@@ -1899,7 +1989,7 @@ describe('ActiveRaffle', () => {
      * @scenario
      * - create giftRedeem output box
      * - execute transaction
-     * - check execution done successfully
+     * - result of execution must be fail
      * @expected
      * - transaction result must throw error
      */

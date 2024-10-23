@@ -317,7 +317,7 @@ describe('winner', () => {
      * - create winner output box
      * - create output giftBox
      * - execute transaction
-     * - result of execution must be fail
+     * - check execution done successfully
      * @expected
      * - transaction must done successfully
      */
