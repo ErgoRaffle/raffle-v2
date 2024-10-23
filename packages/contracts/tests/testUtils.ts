@@ -282,7 +282,7 @@ export class RaffleBoxFactory {
     ownerAddress: string,
     implementerPartnerAddress: string,
     creatorPartnerAddress: string,
-    winnersCount: bigint = 1n,
+    winnersCount: number = 1,
     collectingToken?: TokenAmount<bigint>,
     winnersPercents?: bigint[],
     serviceFeePercent: bigint = 10n,
@@ -302,12 +302,12 @@ export class RaffleBoxFactory {
     winnersPercents = winnersPercents || [];
     if (winnersPercents.length === 0)
       for (let i = 0; i < winnersCount; i++) {
-        winnersPercents.push(1000n / winnersCount);
+        winnersPercents.push(1000n / BigInt(winnersCount));
       }
 
     return new ErgoUnsignedInput(
       mockUTxO({
-        value: 5n * FEE + 4n * FEE * winnersCount + creationFee,
+        value: 5n * FEE + 4n * FEE * BigInt(winnersCount) + creationFee,
         ergoTree: this.contractsAddresses['inactiveRaffle'],
         assets: tokens,
         additionalRegisters: {
@@ -318,7 +318,6 @@ export class RaffleBoxFactory {
             10n, // TicketPrice,
             1000n, // Goal,
             deadline, // DeadlineTimestamp,
-            winnersCount, // WinnersCount,
             FEE, // TxFee
           ]).toHex(),
           R5: SColl(SColl(SByte), [
@@ -342,6 +341,7 @@ export class RaffleBoxFactory {
                 ),
               ),
             ]).toHex(),
+          R8: SInt(winnersCount).toHex(),
         },
       }),
     );
@@ -367,7 +367,7 @@ export class RaffleBoxFactory {
     ownerAddress: string,
     implementerPartnerAddress: string,
     creatorPartnerAddress: string,
-    winnersCount: bigint = 1n,
+    winnersCount: number = 1,
     collectingToken?: TokenAmount<bigint>,
     winnersPercents?: bigint[],
     serviceFeePercent: bigint = 10n,
@@ -388,10 +388,10 @@ export class RaffleBoxFactory {
     winnersPercents = winnersPercents || [];
     if (winnersPercents.length === 0)
       for (let i = 0; i < winnersCount; i++)
-        winnersPercents.push(1000n / winnersCount);
+        winnersPercents.push(1000n / BigInt(winnersCount));
 
     return new OutputBuilder(
-      5n * FEE + 4n * FEE * winnersCount + creationFee,
+      5n * FEE + 4n * FEE * BigInt(winnersCount) + creationFee,
       this.contractsAddresses['inactiveRaffle'],
     )
       .addTokens(tokens)
@@ -402,8 +402,7 @@ export class RaffleBoxFactory {
           10n, // ImplementerFeePercent,
           ticketPrice, // TicketPrice,
           1000n, // Goal,
-          deadline, // DeadlineTimestamp,
-          winnersCount, // WinnersCount,
+          deadline, // Deadline,
           FEE, // TxFee
         ]),
         R5: SColl(SColl(SByte), [
@@ -427,6 +426,7 @@ export class RaffleBoxFactory {
               ),
             ),
           ]).toHex(),
+        R8: SInt(winnersCount).toHex(),
       });
   }
 

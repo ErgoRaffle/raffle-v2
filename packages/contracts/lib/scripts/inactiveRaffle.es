@@ -2,10 +2,11 @@
   // ErgoRaffle V2 Inactive Raffle Contract
   //
   // Registers:
-  //   R4[Coll[Long]]: [CharityPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, DeadlineTimestamp, WinnersCount, txFee]
+  //   R4[Coll[Long]]: [CharityPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, Deadline, txFee]
   //   R5[Coll[Coll[Byte]]]: [ServiceAddressHash, ImplementerAddressHash, CreatorAddressHash]
   //   R6[Coll[Coll[Byte]]]: [Name, Description, Pictures(optional)]
   //   R7[Coll[Coll[Byte]]]: [TicketId, WinnersPercentListHash]
+  //   R8[Int]: winnersCount
   // Tokens:
   //   0: RaffleLicense
   //   1: CollectingToken (if token-goal raffle)
