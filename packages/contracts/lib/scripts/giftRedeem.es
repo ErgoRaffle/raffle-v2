@@ -3,7 +3,8 @@
   //
   // Registers:
   //   R4[Coll[Long]]: [TotalSoldTicket, TicketPrice, txFee]
-  //   R5[Coll[Int]]: [WinnersCount, Step]
+  //   R5[Int]: WinnersCount
+  //   R6[Int]: Step
   // Tokens:
   //   0: RaffleLicense
   //   1: Ticket
