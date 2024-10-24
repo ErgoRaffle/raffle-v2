@@ -30,12 +30,13 @@
   val raffleLicense = fromBase64("RAFFLE_LICENSE_B64")
 
   val outWinner = OUTPUTS(0)
-  val winnerIndex = SELF.R4[Coll[Long]].get(0)
-  val deadline = SELF.R4[Coll[Long]].get(2)
-  val txFee = SELF.R4[Coll[Long]].get(3)
-  val giftCount = SELF.R5[Long].get
+  val deadline = SELF.R4[Coll[Long]].get(1)
+  val txFee = SELF.R4[Coll[Long]].get(2)
+  val winnerIndex = SELF.R5[Int].get
+  val giftCount = SELF.R6[Long].get
   val selfReplication = allOf(Coll(
     outWinner.R4[Coll[Long]].get == SELF.R4[Coll[Long]].get,
+    outWinner.R5[Int].get == SELF.R5[Int].get,
     outWinner.tokens(0)._1 == SELF.tokens(0)._1,
     outWinner.value == SELF.value
   ))
@@ -44,11 +45,11 @@
     // Winner box gift token receipt
     // [Winner, GiftTokenRepo] --> [Winner, GiftTokenRepo(optional)]
     val giftTokenRepo = INPUTS(1)
-    val giftTokenId = SELF.R6[Coll[Byte]].get
+    val giftTokenId = SELF.R7[Coll[Byte]].get
     sigmaProp(allOf(Coll(
       // Correct Winner format  
       selfReplication,
-      outWinner.R5[Long].get == giftCount,
+      outWinner.R6[Long].get == giftCount,
       outWinner.tokens(1)._1 == giftTokenId,
     )))
   } else if(INPUTS(0).tokens(0)._1 == raffleLicense) {
@@ -69,8 +70,8 @@
       // [SuccessRaffle, Winner] --> [SuccessRaffle, WinnerPrize]
       val successRaffle = OUTPUTS(0)
       val winnerPrize = OUTPUTS(1)
-      val rewardPercent = SELF.R4[Coll[Long]].get(1)
-      val totalPrize = successRaffle.R4[Coll[Long]].get(1)
+      val rewardPercent = SELF.R4[Coll[Long]].get(0)
+      val totalPrize = successRaffle.R4[Coll[Long]].get(0)
       val isErgGoal = (successRaffle.tokens.size == 2)
       val prizeValidation = if(isErgGoal) {
         winnerPrize.value == totalPrize * rewardPercent / 1000 + 2 * txFee
@@ -83,17 +84,18 @@
       }
       sigmaProp(allOf(Coll(
         // Correct WinnerPrize format
-        // R4: [WinnerTicketIndex, WinnerIndex, GiftCount]
-        // R5: UnwrappedGiftCount
+        // R4: [WinnerTicketIndex, GiftCount]
+        // R5: WinnerIndex
+        // R6: UnwrappedGiftCount
         prizeValidation,
         blake2b256(winnerPrize.propositionBytes) == winnerPrizeScriptHash,
         winnerPrize.tokens(0)._1 == SELF.tokens(0)._1,
         winnerPrize.tokens(1)._1 == SELF.tokens(1)._1,
         winnerPrize.tokens(1)._2 == SELF.tokens(1)._2,
-        winnerPrize.R4[Coll[Long]].get(1) == winnerIndex,
-        winnerPrize.R4[Coll[Long]].get(2) == giftCount,
-        winnerPrize.R4[Coll[Long]].get(3) == txFee,
-        winnerPrize.R5[Long].get == 0,
+        winnerPrize.R4[Coll[Long]].get(1) == giftCount,
+        winnerPrize.R4[Coll[Long]].get(2) == txFee,
+        winnerPrize.R5[Int].get == winnerIndex,
+        winnerPrize.R6[Long].get == 0,
 
         // Correct SuccessRaffle format
         successRaffle.tokens(1)._1 == SELF.tokens(0)._1,
@@ -115,11 +117,11 @@
       selfReplication,
       outWinner.tokens(1)._1 == SELF.tokens(1)._1,
       outWinner.tokens(1)._2 == SELF.tokens(1)._2 + 1,
-      outWinner.R5[Long].get == giftCount - 1,
+      outWinner.R6[Long].get == giftCount - 1,
 
       // Correct Gift format
       gift.tokens(0)._1 == SELF.tokens(1)._1,
-      gift.R5[Long].get == winnerIndex,
+      gift.R5[Int].get == winnerIndex,
 
       // Transaction constraints
       INPUTS.size == 2, // Prevent multiple gifts
@@ -134,15 +136,15 @@
       selfReplication,
       outWinner.tokens(1)._1 == SELF.tokens(1)._1,
       outWinner.tokens(1)._2 == SELF.tokens(1)._2 - 1,
-      outWinner.R5[Long].get == giftCount + 1,
+      outWinner.R6[Long].get == giftCount + 1,
 
       // Correct Gift format
-      // R4[Coll[Byte]]: [DonatorAddress]
-      // R5[Long]: [WinnerIndex]
+      // R4: [DonatorAddress]
+      // R5: [WinnerIndex]
       blake2b256(gift.propositionBytes) == giftScriptHash,
       gift.tokens(0)._1 == SELF.tokens(1)._1,
       gift.value >= 2 * txFee,
-      gift.R5[Long].get == winnerIndex,
+      gift.R5[Int].get == winnerIndex,
     )))
   }
 }

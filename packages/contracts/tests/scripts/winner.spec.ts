@@ -37,13 +37,12 @@ const createWinnerTest = (winnersCount: number = 1) => {
   const giftTokenRepoBox = boxFactory.createGiftTokenRepoBoxMock(winnersCount);
 
   const winnerBoxes = boxFactory.createWinnersBoxMock(
-    BigInt(winnersCount),
+    winnersCount,
     testUtils.TICKET_TOKEN_ID,
     undefined,
     undefined,
     1000n,
     testUtils.GIFT_TOKEN_ID,
-    undefined,
   );
 
   const successRaffleBox = boxFactory.createSuccessRaffleBoxMock(
@@ -228,9 +227,9 @@ describe('winner', () => {
       'should fail when incorrect deadline put in R4 of the output winner-box',
       ({ boxFactory, creator, winnerBoxes, giftTokenRepoBox }) => {
         const winnerBox = (winnerBoxes as Box[])[0];
-
         const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
           .data as bigint[];
+
         winnerR4[2] = 10n;
         const winnerOutputBox =
           boxFactory.createWinnerOutputBoxWithConstantRegisters(
@@ -273,7 +272,7 @@ describe('winner', () => {
       ({ boxFactory, creator }) => {
         const giftTokenRepoBox = boxFactory.createGiftTokenRepoBoxMock(2);
         const inputWinnerBoxes = boxFactory.createWinnersBoxMock(
-          2n,
+          2,
           testUtils.TICKET_TOKEN_ID,
           undefined,
           undefined,
@@ -326,7 +325,7 @@ describe('winner', () => {
       ({ boxFactory, someoneWallet }) => {
         const winnerBox = (
           boxFactory.createWinnersBoxMock(
-            1n,
+            1,
             testUtils.TICKET_TOKEN_ID,
             undefined,
             undefined,
@@ -350,7 +349,7 @@ describe('winner', () => {
           1n,
         );
         const gift = boxFactory.createGiftOutputBox(
-          winnerR4[0],
+          1,
           someoneWallet.address.toString(),
           testUtils.FEE * 10n,
           testUtils.GIFT_TOKEN_ID,
@@ -390,7 +389,7 @@ describe('winner', () => {
       ({ boxFactory, someoneWallet }) => {
         const winnerBox = (
           boxFactory.createWinnersBoxMock(
-            1n,
+            1,
             testUtils.TICKET_TOKEN_ID,
             undefined,
             1n,
@@ -405,8 +404,6 @@ describe('winner', () => {
           ) as Box[]
         )[0];
         // put extra gift-token to the winnerOutputBox
-        const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
-          .data as bigint[];
         const outWinner = boxFactory.createWinnerOutputBoxWithConstantRegisters(
           SConstant.from(winnerBox.additionalRegisters.R4!).data as bigint[],
           testUtils.TICKET_TOKEN_ID,
@@ -416,7 +413,7 @@ describe('winner', () => {
         );
 
         const gift = boxFactory.createGiftOutputBox(
-          winnerR4[0],
+          1,
           someoneWallet.address.toString(),
           testUtils.FEE * 10n,
           testUtils.GIFT_TOKEN_ID,
@@ -455,7 +452,7 @@ describe('winner', () => {
       ({ boxFactory, someoneWallet }) => {
         const winnerBox = (
           boxFactory.createWinnersBoxMock(
-            1n,
+            1,
             testUtils.TICKET_TOKEN_ID,
             undefined,
             undefined,
@@ -469,8 +466,6 @@ describe('winner', () => {
             ],
           ) as Box[]
         )[0];
-        const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
-          .data as bigint[];
         const outWinner = boxFactory.createWinnerOutputBoxWithConstantRegisters(
           SConstant.from(winnerBox.additionalRegisters.R4!).data as bigint[],
           testUtils.TICKET_TOKEN_ID,
@@ -481,7 +476,7 @@ describe('winner', () => {
           BigInt(winnerBox.value) - testUtils.FEE,
         );
         const gift = boxFactory.createGiftOutputBox(
-          winnerR4[0],
+          1,
           someoneWallet.address.toString(),
           // increase value of output gift-box
           testUtils.FEE * 11n,
@@ -519,7 +514,7 @@ describe('winner', () => {
       ({ boxFactory, someoneWallet }) => {
         const winnerBox = (
           boxFactory.createWinnersBoxMock(
-            1n,
+            1,
             testUtils.TICKET_TOKEN_ID,
             undefined,
             undefined,
@@ -533,8 +528,6 @@ describe('winner', () => {
             ],
           ) as Box[]
         )[0];
-        const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
-          .data as bigint[];
         const outWinner = boxFactory.createWinnerOutputBoxWithConstantRegisters(
           SConstant.from(winnerBox.additionalRegisters.R4!).data as bigint[],
           testUtils.TICKET_TOKEN_ID,
@@ -544,7 +537,7 @@ describe('winner', () => {
         );
         const gift = boxFactory.createGiftOutputBox(
           // put incorrect index on the gift box
-          winnerR4[0] + 1n,
+          2,
           someoneWallet.address.toString(),
           testUtils.FEE * 10n,
           testUtils.GIFT_TOKEN_ID,
@@ -581,7 +574,7 @@ describe('winner', () => {
       ({ boxFactory, someoneWallet }) => {
         const winnerBox = (
           boxFactory.createWinnersBoxMock(
-            1n,
+            1,
             testUtils.TICKET_TOKEN_ID,
             undefined,
             undefined,
@@ -595,8 +588,6 @@ describe('winner', () => {
             ],
           ) as Box[]
         )[0];
-        const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
-          .data as bigint[];
         const outWinner = boxFactory.createWinnerOutputBoxWithConstantRegisters(
           SConstant.from(winnerBox.additionalRegisters.R4!).data as bigint[],
           testUtils.TICKET_TOKEN_ID,
@@ -605,7 +596,7 @@ describe('winner', () => {
           1n,
         );
         const gift = boxFactory.createGiftOutputBox(
-          winnerR4[0],
+          1,
           someoneWallet.address.toString(),
           // sets lower erg amount than is required
           testUtils.FEE * 1n,
@@ -649,7 +640,7 @@ describe('winner', () => {
 
         const winnerBox = (
           boxFactory.createWinnersBoxMock(
-            1n,
+            1,
             testUtils.TICKET_TOKEN_ID,
             undefined,
             1n,
@@ -667,10 +658,10 @@ describe('winner', () => {
         const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
           .data as bigint[];
 
-        const prizeAmount = (BigInt(totalPrize) * BigInt(winnerR4[1])) / 1000n;
+        const prizeAmount = (BigInt(totalPrize) * BigInt(winnerR4[0])) / 1000n;
         const prizeBoxTokens = [winnerBox.assets[0], winnerBox.assets[1]];
         const winnerTicketIndex = testUtils.generateNextWinnerIndex(
-          [0n],
+          [],
           1,
           (
             SConstant.from(successRaffleBox.additionalRegisters.R5!)
@@ -680,7 +671,7 @@ describe('winner', () => {
         );
         const prizeBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 2n + BigInt(prizeAmount),
-          winnerR4[0],
+          1,
           winnerTicketIndex,
           1n,
           0n,
@@ -693,7 +684,7 @@ describe('winner', () => {
           'test seed',
           [winnerTicketIndex],
           0n,
-          1n,
+          1,
           BigInt(totalPrize),
           0n,
           1n,
@@ -747,7 +738,7 @@ describe('winner', () => {
 
         const winnerBox = (
           boxFactory.createWinnersBoxMock(
-            1n,
+            1,
             testUtils.TICKET_TOKEN_ID,
             undefined,
             1n,
@@ -769,7 +760,7 @@ describe('winner', () => {
         const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
           .data as bigint[];
 
-        const prizeAmount = (BigInt(totalPrize) * BigInt(winnerR4[1])) / 1000n;
+        const prizeAmount = (BigInt(totalPrize) * BigInt(winnerR4[0])) / 1000n;
         const prizeBoxTokens = [winnerBox.assets[0], winnerBox.assets[1]];
 
         prizeBoxTokens.push({
@@ -793,7 +784,7 @@ describe('winner', () => {
         );
         const prizeBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 2n,
-          winnerR4[0],
+          1,
           winnerTicketIndex,
           1n,
           0n,
@@ -806,7 +797,7 @@ describe('winner', () => {
           'test seed',
           [winnerTicketIndex],
           0n,
-          1n,
+          1,
           BigInt(totalPrize),
           BigInt(successRaffleBox.assets[2]!.amount) - BigInt(prizeAmount),
           2n,
@@ -846,7 +837,7 @@ describe('winner', () => {
         const totalPrize = 60;
         const winnerBox = (
           boxFactory.createWinnersBoxMock(
-            1n,
+            1,
             testUtils.TICKET_TOKEN_ID,
             undefined,
             1n,
@@ -878,7 +869,7 @@ describe('winner', () => {
         );
         const prizeBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 2n + BigInt(incorrectPrizeAmount),
-          winnerR4[0],
+          1,
           winnerTicketIndex,
           1n,
           0n,
@@ -891,7 +882,7 @@ describe('winner', () => {
           'test seed',
           [winnerTicketIndex],
           0n,
-          1n,
+          1,
           BigInt(totalPrize),
           undefined,
           1n,
@@ -946,7 +937,7 @@ describe('winner', () => {
 
         const winnerBox = (
           boxFactory.createWinnersBoxMock(
-            1n,
+            1,
             testUtils.TICKET_TOKEN_ID,
             undefined,
             1n,
@@ -993,7 +984,7 @@ describe('winner', () => {
         );
         const prizeBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 2n,
-          winnerR4[0],
+          1,
           winnerTicketIndex,
           1n,
           0n,
@@ -1006,7 +997,7 @@ describe('winner', () => {
           'test seed',
           [winnerTicketIndex],
           0n,
-          1n,
+          1,
           BigInt(totalPrize),
           BigInt(successRaffleBox.assets[2]!.amount) - BigInt(prizeAmount),
           1n,
@@ -1048,7 +1039,7 @@ describe('winner', () => {
 
         const winnerBox = (
           boxFactory.createWinnersBoxMock(
-            1n,
+            1,
             testUtils.TICKET_TOKEN_ID,
             undefined,
             1n,
@@ -1066,7 +1057,7 @@ describe('winner', () => {
         const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
           .data as bigint[];
 
-        const prizeAmount = (BigInt(totalPrize) * BigInt(winnerR4[1])) / 1000n;
+        const prizeAmount = (BigInt(totalPrize) * BigInt(winnerR4[0])) / 1000n;
         const prizeBoxTokens = [
           winnerBox.assets[0],
           // Missing one token amount
@@ -1086,7 +1077,7 @@ describe('winner', () => {
         );
         const prizeBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 2n + BigInt(prizeAmount),
-          winnerR4[0],
+          1,
           winnerTicketIndex,
           1n,
           0n,
@@ -1099,7 +1090,7 @@ describe('winner', () => {
           'test seed',
           [winnerTicketIndex],
           0n,
-          1n,
+          1,
           BigInt(totalPrize),
           undefined,
           1n,
@@ -1145,7 +1136,7 @@ describe('winner', () => {
 
         const winnerBox = (
           boxFactory.createWinnersBoxMock(
-            1n,
+            1,
             testUtils.TICKET_TOKEN_ID,
             undefined,
             1n,
@@ -1163,7 +1154,7 @@ describe('winner', () => {
         const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
           .data as bigint[];
 
-        const prizeAmount = (BigInt(totalPrize) * BigInt(winnerR4[1])) / 1000n;
+        const prizeAmount = (BigInt(totalPrize) * BigInt(winnerR4[0])) / 1000n;
         const prizeBoxTokens = [winnerBox.assets[0], winnerBox.assets[1]];
         const winnerTicketIndex = testUtils.generateNextWinnerIndex(
           [0n],
@@ -1176,7 +1167,7 @@ describe('winner', () => {
         );
         const prizeBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 2n + BigInt(prizeAmount),
-          0n, // put invalid winner-index
+          0, // put invalid winner-index
           winnerTicketIndex,
           1n,
           0n,
@@ -1189,7 +1180,7 @@ describe('winner', () => {
           'test seed',
           [winnerTicketIndex],
           0n,
-          1n,
+          1,
           BigInt(totalPrize),
           undefined,
           1n,
@@ -1229,7 +1220,7 @@ describe('winner', () => {
         const totalPrize = 60;
         const winnerBox = (
           boxFactory.createWinnersBoxMock(
-            1n,
+            1,
             testUtils.TICKET_TOKEN_ID,
             undefined,
             1n,
@@ -1247,7 +1238,7 @@ describe('winner', () => {
         const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
           .data as bigint[];
 
-        const prizeAmount = (BigInt(totalPrize) * BigInt(winnerR4[1])) / 1000n;
+        const prizeAmount = (BigInt(totalPrize) * BigInt(winnerR4[0])) / 1000n;
         const prizeBoxTokens = [winnerBox.assets[0], winnerBox.assets[1]];
         const winnerTicketIndex = testUtils.generateNextWinnerIndex(
           [0n],
@@ -1260,7 +1251,7 @@ describe('winner', () => {
         );
         const prizeBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 2n + BigInt(prizeAmount),
-          winnerR4[0],
+          1,
           winnerTicketIndex,
           1n,
           0n,
@@ -1273,7 +1264,7 @@ describe('winner', () => {
           'test seed',
           [winnerTicketIndex],
           0n,
-          1n,
+          1,
           BigInt(totalPrize),
           undefined,
           1n,
@@ -1314,7 +1305,7 @@ describe('winner', () => {
       ({ boxFactory, someoneWallet, successRaffleBox }) => {
         const totalPrize = 60;
         const inputWinnerBoxes = boxFactory.createWinnersBoxMock(
-          2n,
+          2,
           testUtils.TICKET_TOKEN_ID,
           undefined,
           1n,
@@ -1333,7 +1324,7 @@ describe('winner', () => {
         const winnerR4 = SConstant.from(winnerBox1.additionalRegisters.R4!)
           .data as bigint[];
 
-        const prizeAmount = (BigInt(totalPrize) * BigInt(winnerR4[1])) / 1000n;
+        const prizeAmount = (BigInt(totalPrize) * BigInt(winnerR4[0])) / 1000n;
         const prizeBoxTokens = [winnerBox1.assets[0], winnerBox1.assets[1]];
         const winnerTicketIndex = testUtils.generateNextWinnerIndex(
           [0n],
@@ -1346,7 +1337,7 @@ describe('winner', () => {
         );
         const prizeBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 2n + BigInt(prizeAmount),
-          winnerR4[0],
+          1,
           winnerTicketIndex,
           1n,
           0n,
@@ -1359,7 +1350,7 @@ describe('winner', () => {
           'test seed',
           [winnerTicketIndex],
           0n,
-          1n,
+          1,
           BigInt(totalPrize),
           undefined,
           1n,
@@ -1402,7 +1393,7 @@ describe('winner', () => {
         // Create input boxes
         const winner = (
           boxFactory.createWinnersBoxMock(
-            1n,
+            1,
             testUtils.TICKET_TOKEN_ID,
             undefined,
             3n,
@@ -1417,7 +1408,7 @@ describe('winner', () => {
           ) as Box[]
         )[0];
         const gift = boxFactory.createGiftBoxMock(
-          1n,
+          1,
           someoneWallet.address.toString(),
           testUtils.FEE * 2n,
           testUtils.GIFT_TOKEN_ID,
@@ -1482,7 +1473,7 @@ describe('winner', () => {
         // Create input boxes
         const winner = (
           boxFactory.createWinnersBoxMock(
-            1n,
+            1,
             testUtils.TICKET_TOKEN_ID,
             undefined,
             3n,
@@ -1497,7 +1488,7 @@ describe('winner', () => {
           ) as Box[]
         )[0];
         const gift = boxFactory.createGiftBoxMock(
-          1n,
+          1,
           someoneWallet.address.toString(),
           testUtils.FEE * 2n,
           testUtils.GIFT_TOKEN_ID,
@@ -1561,7 +1552,7 @@ describe('winner', () => {
         // Create input boxes
         const winner = (
           boxFactory.createWinnersBoxMock(
-            1n,
+            1,
             testUtils.TICKET_TOKEN_ID,
             undefined,
             2n,
@@ -1576,7 +1567,7 @@ describe('winner', () => {
           ) as Box[]
         )[0];
         const gift = boxFactory.createGiftBoxMock(
-          1n,
+          1,
           someoneWallet.address.toString(),
           testUtils.FEE * 2n,
           testUtils.GIFT_TOKEN_ID,
@@ -1647,7 +1638,7 @@ describe('winner', () => {
         // Create input boxes
         const winner = (
           boxFactory.createWinnersBoxMock(
-            1n,
+            1,
             testUtils.TICKET_TOKEN_ID,
             undefined,
             3n,
@@ -1662,7 +1653,7 @@ describe('winner', () => {
           ) as Box[]
         )[0];
         const gift = boxFactory.createGiftBoxMock(
-          1n,
+          1,
           someoneWallet.address.toString(),
           testUtils.FEE * 2n,
           testUtils.GIFT_TOKEN_ID,
@@ -1729,7 +1720,7 @@ describe('winner', () => {
         // Create input boxes
         const winner = (
           boxFactory.createWinnersBoxMock(
-            10n,
+            10,
             testUtils.TICKET_TOKEN_ID,
             undefined,
             3n,
@@ -1745,7 +1736,7 @@ describe('winner', () => {
         )[0];
         const gift = boxFactory.createGiftBoxMock(
           // set invalid winner-index to this box
-          7n,
+          7,
           someoneWallet.address.toString(),
           testUtils.FEE * 2n,
           testUtils.GIFT_TOKEN_ID,
@@ -1812,7 +1803,7 @@ describe('winner', () => {
         // Create input boxes
         const winner = (
           boxFactory.createWinnersBoxMock(
-            1n,
+            1,
             testUtils.TICKET_TOKEN_ID,
             undefined,
             3n,
@@ -1827,7 +1818,7 @@ describe('winner', () => {
           ) as Box[]
         )[0];
         const gift1 = boxFactory.createGiftBoxMock(
-          1n,
+          1,
           someoneWallet.address.toString(),
           testUtils.FEE * 2n,
           testUtils.GIFT_TOKEN_ID,
@@ -1835,7 +1826,7 @@ describe('winner', () => {
         );
 
         const gift2 = boxFactory.createGiftBoxMock(
-          1n,
+          1,
           someoneWallet.address.toString(),
           testUtils.FEE * 2n,
           testUtils.GIFT_TOKEN_ID,
@@ -1902,7 +1893,7 @@ describe('winner', () => {
         // Create input boxes
         const winner = (
           boxFactory.createWinnersBoxMock(
-            1n,
+            1,
             testUtils.TICKET_TOKEN_ID,
             undefined,
             0n,
@@ -1932,7 +1923,7 @@ describe('winner', () => {
           BigInt(winner.value),
           1n,
           1_000n,
-          1n,
+          1,
           2n,
           testUtils.TICKET_TOKEN_ID,
           2n,
@@ -1970,7 +1961,7 @@ describe('winner', () => {
         // Create input boxes
         const winner = (
           boxFactory.createWinnersBoxMock(
-            1n,
+            1,
             testUtils.TICKET_TOKEN_ID,
             undefined,
             0n,
@@ -2001,7 +1992,7 @@ describe('winner', () => {
           BigInt(winner.value),
           1n,
           1_000n,
-          1n,
+          1,
           2n,
           testUtils.X_TOKEN_ID,
           1n,
@@ -2039,7 +2030,7 @@ describe('winner', () => {
         // Create input boxes
         const winner = (
           boxFactory.createWinnersBoxMock(
-            1n,
+            1,
             testUtils.TICKET_TOKEN_ID,
             undefined,
             // set gift count greater than zero
@@ -2070,7 +2061,7 @@ describe('winner', () => {
           BigInt(winner.value),
           1n,
           1_000n,
-          1n,
+          1,
           2n,
           testUtils.TICKET_TOKEN_ID,
           2n,
@@ -2109,7 +2100,7 @@ describe('winner', () => {
         // Create input boxes
         const winner = (
           boxFactory.createWinnersBoxMock(
-            1n,
+            1,
             testUtils.TICKET_TOKEN_ID,
             undefined,
             0n,
@@ -2139,7 +2130,7 @@ describe('winner', () => {
           BigInt(winner.value) - testUtils.FEE,
           1n,
           1_000n,
-          1n,
+          1,
           2n,
           testUtils.TICKET_TOKEN_ID,
           2n,
