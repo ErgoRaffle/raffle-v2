@@ -1294,8 +1294,8 @@ export class RaffleBoxFactory {
     giftTokenId: string = GIFT_TOKEN_ID,
     giftTokenCount = BigInt(GIFT_TOKEN_COUNT),
     giftCount = 0n,
-    value: bigint = 3n * FEE,
     winnerIndex: number = 1,
+    value: bigint = 3n * FEE,
   ) {
     const winnerBox = new OutputBuilder(
       value,

@@ -472,6 +472,7 @@ describe('winner', () => {
           testUtils.GIFT_TOKEN_ID,
           99n,
           1n,
+          1,
           // decrease value of output winner-box
           BigInt(winnerBox.value) - testUtils.FEE,
         );
