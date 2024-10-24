@@ -702,10 +702,10 @@ export class RaffleBoxFactory {
     seed: string,
     selectedWinnersList: bigint[],
     totalSoldTickets: bigint,
-    winnersCount: bigint = 1n,
+    winnersCount: number = 1,
     totalPrize: bigint = 1n,
     prizeValue: bigint = 0n,
-    step: bigint = 1n,
+    step: number = 1,
     ticketTokenId: string = TICKET_TOKEN_ID,
     ticketTokenAmount: bigint = 1n,
     collectingTokenId?: string,
@@ -729,8 +729,9 @@ export class RaffleBoxFactory {
         ...extraTokens,
       ])
       .setAdditionalRegisters({
-        R4: SColl(SLong, [winnersCount, totalPrize, totalSoldTickets]).toHex(),
-        R5: SColl(SColl(SByte), [
+        R4: SColl(SLong, [totalPrize, totalSoldTickets]).toHex(),
+        R5: SInt(winnersCount),
+        R6: SColl(SColl(SByte), [
           Array.from(Buffer.from(seed, 'hex')),
           Array.from(
             blake2b256(
@@ -740,7 +741,7 @@ export class RaffleBoxFactory {
             ),
           ),
         ]).toHex(),
-        R6: SLong(step),
+        R7: SInt(step),
       });
   };
 
@@ -756,7 +757,7 @@ export class RaffleBoxFactory {
    */
   createWinnerPrizeOutputBox(
     value: bigint,
-    winnerIndex: bigint,
+    winnerIndex: number,
     ticketIndex: bigint,
     giftCount: bigint,
     unwrappedGiftCount: bigint,
@@ -765,13 +766,9 @@ export class RaffleBoxFactory {
     return new OutputBuilder(value, this.contractsAddresses['winnerPrize'])
       .addTokens(tokens)
       .setAdditionalRegisters({
-        R4: SColl(SLong, [
-          BigInt(ticketIndex),
-          winnerIndex,
-          BigInt(giftCount),
-          FEE,
-        ]).toHex(),
-        R5: SLong(unwrappedGiftCount),
+        R4: SColl(SLong, [ticketIndex, giftCount, FEE]),
+        R5: SInt(winnerIndex),
+        R6: SLong(unwrappedGiftCount),
       });
   }
 
@@ -859,7 +856,7 @@ export class RaffleBoxFactory {
    * @returns
    */
   createGiftBoxMock(
-    winnerIndex: bigint,
+    winnerIndex: number,
     giftGiverWalletAddress: string,
     value: bigint = 0n,
     giftTokenId: string,
@@ -873,7 +870,7 @@ export class RaffleBoxFactory {
           SByte,
           Array.from(Buffer.from(giftGiverWalletAddress)),
         ).toHex(),
-        R5: SLong(winnerIndex).toHex(),
+        R5: SInt(winnerIndex).toHex(),
       },
       assets: [
         {
@@ -1134,7 +1131,7 @@ export class RaffleBoxFactory {
    * @returns
    */
   createGiftOutputBox(
-    winnerIndex: bigint,
+    winnerIndex: number,
     giftGiverWalletAddress: string,
     value: bigint = 0n,
     giftTokenId?: string,
@@ -1145,7 +1142,7 @@ export class RaffleBoxFactory {
       this.contractsAddresses['gift'],
     ).setAdditionalRegisters({
       R4: SColl(SByte, Array.from(Buffer.from(giftGiverWalletAddress))),
-      R5: SLong(winnerIndex),
+      R5: SInt(winnerIndex),
     });
     if (giftTokenId !== undefined) {
       giftForWinnerOutputBox.assets.add({
@@ -1203,8 +1200,8 @@ export class RaffleBoxFactory {
     value: bigint,
     totalSoldTicket: bigint,
     ticketPrice: bigint,
-    winnersCount: bigint,
-    step: bigint,
+    winnersCount: number,
+    step: number,
     ticketTokenId: string,
     ticketTokenCount: bigint,
     collectingToken?: TokenAmount<bigint>,
@@ -1215,11 +1212,9 @@ export class RaffleBoxFactory {
       this.contractsAddresses['giftRedeem'],
     );
     giftRedeemOutputBox.setAdditionalRegisters({
-      R4: SColl(
-        SLong,
-        Array.from([totalSoldTicket, ticketPrice, winnersCount, FEE]),
-      ),
-      R5: SLong(step).toHex(),
+      R4: SColl(SLong, Array.from([totalSoldTicket, ticketPrice, FEE])),
+      R5: SInt(winnersCount).toHex(),
+      R6: SInt(step).toHex(),
     });
     giftRedeemOutputBox.addTokens([
       {
@@ -1300,6 +1295,7 @@ export class RaffleBoxFactory {
     giftTokenCount = BigInt(GIFT_TOKEN_COUNT),
     giftCount = 0n,
     value: bigint = 3n * FEE,
+    winnerIndex: number = 1,
   ) {
     const winnerBox = new OutputBuilder(
       value,
@@ -1307,8 +1303,9 @@ export class RaffleBoxFactory {
     )
       .setAdditionalRegisters({
         R4: SColl(SLong, r4),
-        R5: SLong(giftCount),
-        R6: SColl(SByte, Array.from(Buffer.from(giftTokenId, 'hex'))),
+        R5: SInt(winnerIndex),
+        R6: SLong(giftCount),
+        R7: SColl(SByte, Array.from(Buffer.from(giftTokenId, 'hex'))),
       })
       .addTokens({
         tokenId: ticketTokenId,

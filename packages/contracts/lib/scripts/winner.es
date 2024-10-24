@@ -140,7 +140,7 @@
 
       // Correct Gift format
       // R4: [DonatorAddress]
-      // R5: [WinnerIndex]
+      // R5: WinnerIndex
       blake2b256(gift.propositionBytes) == giftScriptHash,
       gift.tokens(0)._1 == SELF.tokens(1)._1,
       gift.value >= 2 * txFee,

@@ -3,8 +3,9 @@
   //
   // Registers:
   //   R4[Coll[Long]]: [TotalPrize, totalSoldTickets]
-  //   R5[Coll[Coll[Byte]]]: [Seed, SelectedWinnersListHash]
-  //   R6[Coll[Int]]: [WinnersCount, Step]
+  //   R5[Int]: WinnersCount
+  //   R6[Coll[Coll[Byte]]]: [Seed, SelectedWinnersListHash]
+  //   R7[Int]: Step
   // Tokens:
   //   0: RaffleLicense
   //   1: Ticket
