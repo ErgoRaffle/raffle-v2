@@ -31,7 +31,7 @@ function createInactiveRaffleTest(winnersCount: number = 1) {
     creator.address.toString(),
     someone.address.toString(),
     creator.address.toString(),
-    BigInt(winnersCount),
+    winnersCount,
     undefined,
     undefined,
     10n,
@@ -77,15 +77,14 @@ describe('ticketRepo', () => {
           creator.address.toString(),
           creator.address.toString(),
           someoneWallet.address.toString(),
-          1n,
         );
         const raffleDetailsOutputBox =
           boxFactory.createRaffleDetailsOutputBox();
         const giftTokenRepoOutputBox =
-          boxFactory.createGiftTokenRepoOutputBox(1n);
+          boxFactory.createGiftTokenRepoOutputBox(1);
 
         const winnersBoxes = boxFactory.createWinnersOutputBox(
-          1n,
+          1,
           inactiveRaffleInputBox.boxId.toString(),
         );
 
@@ -131,12 +130,12 @@ describe('ticketRepo', () => {
           creator.address.toString(),
           creator.address.toString(),
           someoneWallet.address.toString(),
-          5n,
+          5,
         );
         const raffleDetailsOutputBox =
           boxFactory.createRaffleDetailsOutputBox();
         const giftTokenRepoOutputBox =
-          boxFactory.createGiftTokenRepoOutputBox(5n);
+          boxFactory.createGiftTokenRepoOutputBox(5);
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([inactiveRaffleInputBox, ticketRepoInputBox])
           .to([
@@ -144,7 +143,7 @@ describe('ticketRepo', () => {
             raffleDetailsOutputBox,
             giftTokenRepoOutputBox,
             ...boxFactory.createWinnersOutputBox(
-              5n,
+              5,
               inactiveRaffleInputBox.boxId.toString(),
             ),
           ])
@@ -182,16 +181,15 @@ describe('ticketRepo', () => {
           creator.address.toString(),
           creator.address.toString(),
           someoneWallet.address.toString(),
-          1n,
         );
         const raffleDetailsOutputBox =
           boxFactory.createRaffleDetailsOutputBox();
         const winnersOutputBoxes = boxFactory.createWinnersOutputBox(
-          1n,
+          1,
           inactiveRaffleInputBox.boxId.toString(),
         );
         const giftTokenRepoOutputBox =
-          boxFactory.createGiftTokenRepoOutputBox(1n);
+          boxFactory.createGiftTokenRepoOutputBox(1);
 
         // Replace Ticket-Token with another token
         const extraInputBox = mockUTxO({
@@ -250,7 +248,7 @@ describe('ticketRepo', () => {
           creator.address.toString(),
           creator.address.toString(),
           someoneWallet.address.toString(),
-          1n,
+          1,
           undefined,
           undefined,
           // Decreasing Ticket-Token number sets in activeRaffleOutputBox
@@ -261,11 +259,11 @@ describe('ticketRepo', () => {
         const raffleDetailsOutputBox =
           boxFactory.createRaffleDetailsOutputBox();
         const winnersOutputBoxes = boxFactory.createWinnersOutputBox(
-          1n,
+          1,
           inactiveRaffleInputBox.boxId.toString(),
         );
         const giftTokenRepoOutputBox =
-          boxFactory.createGiftTokenRepoOutputBox(1n);
+          boxFactory.createGiftTokenRepoOutputBox(1);
 
         // Move one extra Ticket-Token to the giftTokenRepoOutputBox
         giftTokenRepoOutputBox.assets.add({
@@ -307,7 +305,7 @@ describe('ticketRepo', () => {
           creator.address.toString(),
           someoneWallet.address.toString(),
           creator.address.toString(),
-          1n,
+          1,
           undefined,
           undefined,
           10n,
@@ -331,16 +329,15 @@ describe('ticketRepo', () => {
           creator.address.toString(),
           creator.address.toString(),
           someoneWallet.address.toString(),
-          1n,
         );
         const raffleDetailsOutputBox =
           boxFactory.createRaffleDetailsOutputBox();
         const winnersOutputBoxes = boxFactory.createWinnersOutputBox(
-          1n,
+          1,
           inactiveRaffleInputBox.boxId.toString(),
         );
         const giftTokenRepoOutputBox =
-          boxFactory.createGiftTokenRepoOutputBox(1n);
+          boxFactory.createGiftTokenRepoOutputBox(1);
 
         const transaction = new TransactionBuilder(1000)
           .from([inactiveRaffleInputBox, ticketRepoInputBox, extraInputBox])
@@ -383,14 +380,12 @@ describe('ticketRepo', () => {
         creator.address.toString(),
         creator.address.toString(),
         someoneWallet.address.toString(),
-        1n,
       );
 
       const raffleDetailsOutputBox = boxFactory.createRaffleDetailsOutputBox();
-      const giftTokenRepoOutputBox =
-        boxFactory.createGiftTokenRepoOutputBox(1n);
+      const giftTokenRepoOutputBox = boxFactory.createGiftTokenRepoOutputBox(1);
       const winnerBoxes = boxFactory.createWinnersOutputBox(
-        1n,
+        1,
         inactiveRaffleInputBox.boxId.toString(),
       );
 
