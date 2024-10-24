@@ -5,9 +5,9 @@
   //   R4[Coll[Byte]]: TokenName
   //   R5[Coll[Byte]]: TokenDescription
   //   R6[Coll[Byte]]: Decimals (0)
-  //   R7[Coll[Int]]: [GiftTokenCount, WinnersCount, txFee]
+  //   R7[Coll[Long]]: [GiftTokenCount, txFee]
   //   R8[Coll[Byte]]: TicketId
-  //   R9[Int]: Step
+  //   R9[Coll[Int]]: [WinnersCount, Step]
   // Tokens:
   //   0: GiftToken
   //

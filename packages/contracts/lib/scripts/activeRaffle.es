@@ -2,9 +2,10 @@
   // ErgoRaffle V2 Active Raffle Contract
   //
   // Registers:
-  //   R4[Coll[Long]]: [ProjectPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, Deadline, WinnersCount, txFee]
+  //   R4[Coll[Long]]: [ProjectPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, Deadline, txFee]
   //   R5[Coll[Coll[Byte]]]: [ServiceAddressHash, ImplementerAddressHash, CreatorAddressHash]
-  //   R6[Long]: TotalSoldTickets
+  //   R6[Int]: winnersCount
+  //   R7[Long]: TotalSoldTickets
   // Tokens:
   //   0: RaffleLicense
   //   1: Ticket
