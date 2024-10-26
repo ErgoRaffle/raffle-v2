@@ -182,8 +182,8 @@ export class RaffleBoxFactory {
         ],
         additionalRegisters: {
           R4: SColl(SLong, [
-            serviceFeePercent,
-            implementerFeePercent,
+            serviceFeePercent * 10n,
+            implementerFeePercent * 10n,
             creationFee,
             FEE,
           ]).toHex(),
@@ -219,8 +219,8 @@ export class RaffleBoxFactory {
       ])
       .setAdditionalRegisters({
         R4: SColl(SLong, [
-          serviceFeePercent,
-          implementerFeePercent,
+          serviceFeePercent * 10n,
+          implementerFeePercent * 10n,
           creationFee,
           FEE,
         ]).toHex(),
@@ -312,9 +312,9 @@ export class RaffleBoxFactory {
         assets: tokens,
         additionalRegisters: {
           R4: SColl(SLong, [
-            60n, // CharityPercentage,
-            serviceFeePercent, // ServiceFeePercent,
-            10n, // ImplementerFeePercent,
+            200n, // WinnersPercentage,
+            serviceFeePercent * 10n, // ServiceFeePercent,
+            100n, // ImplementerFeePercent,
             10n, // TicketPrice,
             1000n, // Goal,
             deadline, // DeadlineTimestamp,
@@ -397,9 +397,9 @@ export class RaffleBoxFactory {
       .addTokens(tokens)
       .setAdditionalRegisters({
         R4: SColl(SLong, [
-          60n, // CharityPercentage,
-          serviceFeePercent, // ServiceFeePercent,
-          10n, // ImplementerFeePercent,
+          200n, // WinnersPercentage,
+          serviceFeePercent * 10n, // ServiceFeePercent,
+          100n, // ImplementerFeePercent,
           ticketPrice, // TicketPrice,
           1000n, // Goal,
           deadline, // Deadline,
@@ -479,9 +479,9 @@ export class RaffleBoxFactory {
       assets: tokens,
       additionalRegisters: {
         R4: SColl(SLong, [
-          60n, // CharityPercentage,
-          serviceFeePercent, // ServiceFeePercent,
-          10n, // ImplementerFeePercent,
+          200n, // WinnersPercentage,
+          serviceFeePercent * 10n, // ServiceFeePercent,
+          100n, // ImplementerFeePercent,
           10n, // TicketPrice,
           goal, // Goal,
           deadline, // DeadlineTimestamp,
@@ -597,9 +597,9 @@ export class RaffleBoxFactory {
       .addTokens(tokens)
       .setAdditionalRegisters({
         R4: SColl(SLong, [
-          60n, // CharityPercentage,
-          serviceFeePercent, // ServiceFeePercent,
-          10n, // ImplementerFeePercent,
+          200n, // WinnersPercentage,
+          serviceFeePercent * 10n, // ServiceFeePercent,
+          100n, // ImplementerFeePercent,
           10n, // TicketPrice,
           goal, // Goal,
           deadline, // DeadlineTimestamp,

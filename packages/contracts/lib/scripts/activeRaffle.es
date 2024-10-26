@@ -2,7 +2,7 @@
   // ErgoRaffle V2 Active Raffle Contract
   //
   // Registers:
-  //   R4[Coll[Long]]: [ProjectPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, Deadline, txFee]
+  //   R4[Coll[Long]]: [WinnersPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, Deadline, txFee]
   //   R5[Coll[Coll[Byte]]]: [ServiceAddressHash, ImplementerAddressHash, CreatorAddressHash]
   //   R6[Int]: winnersCount
   //   R7[Long]: TotalSoldTickets
@@ -79,14 +79,13 @@
     val serviceFee = OUTPUTS(2)
     val implementerFee = OUTPUTS(3)
     val oracleBox = CONTEXT.dataInputs(0)
-    val projectPercent = SELF.R4[Coll[Long]].get(0)
+    val winnersPercent = SELF.R4[Coll[Long]].get(0)
     val serviceFeePercent = SELF.R4[Coll[Long]].get(1)
     val implementerFeePercent = SELF.R4[Coll[Long]].get(2)
-    val winnersPercent = 100 - projectPercent - serviceFeePercent - implementerFeePercent
     val splittingRaisedFund = if(isErgGoal) { 
-      successRaffle.value == (totalRaised * winnersPercent) / 100 + txFee &&
-      serviceFee.value == (totalRaised * serviceFeePercent) / 100 + txFee &&
-      implementerFee.value == (totalRaised * implementerFeePercent) / 100 + txFee &&
+      successRaffle.value == (totalRaised * winnersPercent) / 1000 + txFee &&
+      serviceFee.value == (totalRaised * serviceFeePercent) / 1000 + txFee &&
+      implementerFee.value == (totalRaised * implementerFeePercent) / 1000 + txFee &&
       projectFund.value >= 
         SELF.value - successRaffle.value - serviceFee.value - implementerFee.value
     } else {
@@ -94,10 +93,11 @@
       projectFund.tokens(0)._1 == SELF.tokens(2)._1 &&
       serviceFee.tokens(0)._1 == SELF.tokens(2)._1 &&
       implementerFee.tokens(0)._1 == SELF.tokens(2)._1 &&
-      successRaffle.tokens(2)._2 == (totalRaised * winnersPercent) / 100 + 1 &&
-      projectFund.tokens(0)._2 >= (totalRaised * projectPercent) / 100 &&
-      serviceFee.tokens(0)._2 == (totalRaised * serviceFeePercent) / 100 &&
-      implementerFee.tokens(0)._2 == (totalRaised * implementerFeePercent) / 100 &&
+      successRaffle.tokens(2)._2 == (totalRaised * winnersPercent) / 1000 + 1 &&
+      serviceFee.tokens(0)._2 == (totalRaised * serviceFeePercent) / 1000 &&
+      implementerFee.tokens(0)._2 == (totalRaised * implementerFeePercent) / 1000 &&
+      projectFund.tokens(0)._2 >= 
+        SELF.tokens(2)._2 - successRaffle.tokens(2)._2 - serviceFee.tokens(0)._2 - implementerFee.tokens(0)._2 &&
       successRaffle.value == txFee &&
       projectFund.value == SELF.value - 3 * txFee &&
       serviceFee.value == txFee &&
@@ -119,7 +119,7 @@
       successRaffle.tokens(1)._2 == SELF.tokens(1)._2 + 1,
       successRaffle.tokens.size == SELF.tokens.size,
       successRaffle.R4[Coll[Long]].get == Coll[Long](
-        totalRaised * winnersPercent / 100,
+        totalRaised * winnersPercent / 1000,
         totalSoldTickets
       ),
       successRaffle.R5[Int].get == winnersCount,

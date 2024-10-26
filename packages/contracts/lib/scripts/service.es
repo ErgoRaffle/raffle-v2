@@ -79,7 +79,7 @@
         ticketRepo.value == txFee,
 
         // Correct InactiveRaffle format
-        // R4: [CreatorPercentage, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, DeadlineTimestamp, TxFee]
+        // R4: [WinnersPercentage, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, DeadlineTimestamp, TxFee]
         // R5: [ServiceAddressHash, ImplementerAddressHash, CreatorAddressHash]
         // R6: [Name, Description, Pictures(optional)]
         // R7: [TicketId, WinnersPercentListHash]
@@ -87,10 +87,9 @@
         blake2b256(inactiveRaffle.propositionBytes) == inactiveRaffleScriptHash,
         inactiveRaffle.tokens(0)._1 == raffleLicense,
         inactiveRaffle.R4[Coll[Long]].get.size == 7,
-        inactiveRaffle.R4[Coll[Long]].get(0) > 0L,
         inactiveRaffle.R4[Coll[Long]].get(1) == serviceFeePercent,
         inactiveRaffle.R4[Coll[Long]].get(2) == implementerFeePercent,
-        inactiveRaffle.R4[Coll[Long]].get(0) + serviceFeePercent + implementerFeePercent <= 100L,
+        inactiveRaffle.R4[Coll[Long]].get(0) + serviceFeePercent + implementerFeePercent < 1000L,
         inactiveRaffle.R4[Coll[Long]].get(6) == txFee,
         inactiveRaffle.R5[Coll[Coll[Byte]]].get.size == 3,
         inactiveRaffle.R5[Coll[Coll[Byte]]].get(0) == blake2b256(serviceAddress),

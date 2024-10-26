@@ -35,15 +35,10 @@ const createActiveRaffleTest = (
   const totalSoldTickets = 10n;
   const ticketPrice = 10n;
   const totalRaised = totalSoldTickets * ticketPrice;
-  const serviceFeePercent = 20n;
+  const serviceFeePercent = 40n;
   const implementerFeePercent = 10n;
-  const charityFeePercent = 60n;
-  const winnerPercent =
-    100n - charityFeePercent - serviceFeePercent - implementerFeePercent;
-  const totalPrize =
-    (totalRaised *
-      (100n - charityFeePercent - serviceFeePercent - implementerFeePercent)) /
-    100n;
+  const winnerPercent = 20n;
+  const totalPrize = (totalRaised * winnerPercent) / 100n;
 
   const { creator, implementer, someone, donator } = boxFactory.createPartners({
     creator: CREATOR_DEFAULT_BALANCE,
@@ -64,7 +59,7 @@ const createActiveRaffleTest = (
     implementer.address.toString(),
     creator.address.toString(),
     winnersCount,
-    40n,
+    serviceFeePercent,
     collectingToken,
     1_000_000n,
     1_000_000_000n,
@@ -743,7 +738,6 @@ describe('ActiveRaffle', () => {
         boxFactory.chain.setTip(2001);
 
         const winnersCount = 1;
-        const serviceFeePercent = 20n;
         const totalSoldTickets = 10n;
 
         const activeRaffleBox = boxFactory.createActiveRaffleBoxMock(
@@ -751,7 +745,7 @@ describe('ActiveRaffle', () => {
           implementerWallet.address.toString(),
           creatorWallet.address.toString(),
           winnersCount,
-          serviceFeePercent,
+          40n,
           undefined,
           1_000_000n,
           1_000_000_100n,
@@ -829,14 +823,13 @@ describe('ActiveRaffle', () => {
         const winnersCount = 1;
         const totalSoldTickets = 10n;
         const ticketPrice = 10n;
-        const serviceFeePercent = 20n;
 
         const activeRaffleBox = boxFactory.createActiveRaffleBoxMock(
           creatorWallet.address.toString(),
           implementerWallet.address.toString(),
           creatorWallet.address.toString(),
           1,
-          serviceFeePercent,
+          40n,
           {
             tokenId: testUtils.X_TOKEN_ID,
             amount: totalSoldTickets * ticketPrice + 1n,
@@ -923,14 +916,13 @@ describe('ActiveRaffle', () => {
         );
         const winnersCount = 1;
         const totalSoldTickets = 10n;
-        const serviceFeePercent = 20n;
 
         const activeRaffleBox = boxFactory.createActiveRaffleBoxMock(
           creatorWallet.address.toString(),
           implementerWallet.address.toString(),
           creatorWallet.address.toString(),
           winnersCount,
-          serviceFeePercent,
+          40n,
           undefined,
           1_000_000n,
           1_000_000_100n,
@@ -1013,14 +1005,13 @@ describe('ActiveRaffle', () => {
         );
         const winnersCount = 1;
         const totalSoldTickets = 10n;
-        const serviceFeePercent = 20n;
 
         const activeRaffleBox = boxFactory.createActiveRaffleBoxMock(
           creatorWallet.address.toString(),
           implementerWallet.address.toString(),
           creatorWallet.address.toString(),
           winnersCount,
-          serviceFeePercent,
+          40n,
           undefined,
           1_000_000n,
           1_000_000_100n,
@@ -1098,7 +1089,6 @@ describe('ActiveRaffle', () => {
         boxFactory.chain.setTip(2001);
 
         const winnersCount = 1;
-        const serviceFeePercent = 20n;
         const totalSoldTickets = 10n;
 
         const activeRaffleBox = boxFactory.createActiveRaffleBoxMock(
@@ -1106,7 +1096,7 @@ describe('ActiveRaffle', () => {
           implementerWallet.address.toString(),
           creatorWallet.address.toString(),
           winnersCount,
-          serviceFeePercent,
+          40n,
           undefined,
           1_000_000n,
           1_000_000_100n,
@@ -1191,7 +1181,6 @@ describe('ActiveRaffle', () => {
         boxFactory.chain.setTip(2001);
 
         const winnersCount = 1;
-        const serviceFeePercent = 20n;
         const totalSoldTickets = 10n;
 
         const activeRaffleBox = boxFactory.createActiveRaffleBoxMock(
@@ -1199,7 +1188,7 @@ describe('ActiveRaffle', () => {
           implementerWallet.address.toString(),
           creatorWallet.address.toString(),
           winnersCount,
-          serviceFeePercent,
+          40n,
           undefined,
           1_000_000n,
           1_000_000_100n,
@@ -1490,14 +1479,13 @@ describe('ActiveRaffle', () => {
 
         const winnersCount = 1;
         const totalSoldTickets = 10n;
-        const serviceFeePercent = 20n;
 
         const activeRaffleBox = boxFactory.createActiveRaffleBoxMock(
           creatorWallet.address.toString(),
           implementerWallet.address.toString(),
           creatorWallet.address.toString(),
           winnersCount,
-          serviceFeePercent,
+          40n,
           undefined,
           1_000_000n,
           1_000_000_100n,
@@ -1576,14 +1564,13 @@ describe('ActiveRaffle', () => {
 
         const winnersCount = 1;
         const totalSoldTickets = 10n;
-        const serviceFeePercent = 20n;
 
         const activeRaffleBox = boxFactory.createActiveRaffleBoxMock(
           creatorWallet.address.toString(),
           implementerWallet.address.toString(),
           creatorWallet.address.toString(),
           winnersCount,
-          serviceFeePercent,
+          40n,
           undefined,
           1_000_000n,
           1_000_000_100n,
@@ -1662,14 +1649,13 @@ describe('ActiveRaffle', () => {
 
         const winnersCount = 1;
         const totalSoldTickets = 10n;
-        const serviceFeePercent = 20n;
 
         const activeRaffleBox = boxFactory.createActiveRaffleBoxMock(
           creatorWallet.address.toString(),
           implementerWallet.address.toString(),
           creatorWallet.address.toString(),
           winnersCount,
-          serviceFeePercent,
+          40n,
           undefined,
           1_000_000n,
           1_000_000_100n,
@@ -1740,14 +1726,13 @@ describe('ActiveRaffle', () => {
         const winnersCount = 1;
         const totalSoldTickets = 8n;
         const ticketPrice = 10n;
-        const serviceFeePercent = 20n;
 
         const activeRaffleBox = boxFactory.createActiveRaffleBoxMock(
           creatorWallet.address.toString(),
           implementerWallet.address.toString(),
           creatorWallet.address.toString(),
           winnersCount,
-          serviceFeePercent,
+          40n,
           undefined,
           1_000_000n,
           1_000_000_080n,
@@ -1800,14 +1785,13 @@ describe('ActiveRaffle', () => {
         const winnersCount = 1;
         const totalSoldTickets = 8n;
         const ticketPrice = 10n;
-        const serviceFeePercent = 20n;
 
         const activeRaffleBox = boxFactory.createActiveRaffleBoxMock(
           creatorWallet.address.toString(),
           implementerWallet.address.toString(),
           creatorWallet.address.toString(),
           1,
-          serviceFeePercent,
+          40n,
           {
             tokenId: testUtils.X_TOKEN_ID,
             amount: totalSoldTickets * ticketPrice + 1n,
@@ -1873,14 +1857,13 @@ describe('ActiveRaffle', () => {
         const winnersCount = 1;
         const totalSoldTickets = 8n;
         const ticketPrice = 10n;
-        const serviceFeePercent = 20n;
 
         const activeRaffleBox = boxFactory.createActiveRaffleBoxMock(
           creatorWallet.address.toString(),
           implementerWallet.address.toString(),
           creatorWallet.address.toString(),
           winnersCount,
-          serviceFeePercent,
+          40n,
           undefined,
           1_000_000n,
           1_000_000_080n,
@@ -1941,14 +1924,13 @@ describe('ActiveRaffle', () => {
         const winnersCount = 1;
         const totalSoldTickets = 8n;
         const ticketPrice = 10n;
-        const serviceFeePercent = 20n;
 
         const activeRaffleBox = boxFactory.createActiveRaffleBoxMock(
           creatorWallet.address.toString(),
           implementerWallet.address.toString(),
           creatorWallet.address.toString(),
           winnersCount,
-          serviceFeePercent,
+          40n,
           undefined,
           1_000_000n,
           1_000_000_080n,
@@ -2001,14 +1983,13 @@ describe('ActiveRaffle', () => {
         const winnersCount = 1;
         const totalSoldTickets = 8n;
         const ticketPrice = 10n;
-        const serviceFeePercent = 20n;
 
         const activeRaffleBox = boxFactory.createActiveRaffleBoxMock(
           creatorWallet.address.toString(),
           implementerWallet.address.toString(),
           creatorWallet.address.toString(),
           winnersCount,
-          serviceFeePercent,
+          40n,
           undefined,
           1_000_000n,
           1_000_000_080n,
