@@ -81,7 +81,7 @@ describe('Service', () => {
             creator.address.toString(),
             someoneWallet.address.toString(),
             creator.address.toString(),
-            1n,
+            1,
             undefined,
             undefined,
             undefined,
@@ -128,7 +128,7 @@ describe('Service', () => {
             creator.address.toString(),
             someoneWallet.address.toString(),
             creator.address.toString(),
-            10n,
+            10,
             undefined,
             undefined,
             undefined,
@@ -176,7 +176,7 @@ describe('Service', () => {
             creator.address.toString(),
             someoneWallet.address.toString(),
             creator.address.toString(),
-            1n,
+            1,
             { tokenId: testUtils.X_TOKEN_ID, amount: 1n },
             undefined,
             undefined,
@@ -207,8 +207,7 @@ describe('Service', () => {
      * - execute transaction
      * - check execution done successfully
      * @expected
-     * - transaction result must be true
-     * - it should create three output box
+     * - transaction result must throw error
      */
     raffleServiceTest(
       'should fail when try to create new raffle without LicenseToken on the inactiveRaffleOutputBox',
@@ -223,7 +222,6 @@ describe('Service', () => {
             creator.address.toString(),
             someoneWallet.address.toString(),
             creator.address.toString(),
-            1n,
           );
         inactiveRaffleOutputBox.assets.remove(testUtils.LICENSE_TOKEN_ID);
         // Execute transaction
@@ -248,8 +246,7 @@ describe('Service', () => {
      * - execute transaction
      * - check execution done successfully
      * @expected
-     * - transaction result must be true
-     * - it should create three output box
+     * - transaction result must throw error
      */
     raffleServiceTest(
       'should fail when try to create new raffle without decreasing LicenseToken from serviceOutputBox',
@@ -265,7 +262,6 @@ describe('Service', () => {
             creator.address.toString(),
             someoneWallet.address.toString(),
             creator.address.toString(),
-            1n,
           );
         inactiveRaffleOutputBox.assets.remove(testUtils.LICENSE_TOKEN_ID);
         // Execute transaction
@@ -289,8 +285,7 @@ describe('Service', () => {
      * - execute transaction
      * - check execution done successfully
      * @expected
-     * - transaction result must be true
-     * - it should create three output box
+     * - transaction result must throw error
      */
     raffleServiceTest(
       'should fail when try to create new raffle with incorrect service fee',
@@ -305,7 +300,7 @@ describe('Service', () => {
             creator.address.toString(),
             someoneWallet.address.toString(),
             creator.address.toString(),
-            1n,
+            1,
             undefined,
             undefined,
             110n,
@@ -331,8 +326,7 @@ describe('Service', () => {
      * - execute transaction
      * - check execution done successfully
      * @expected
-     * - transaction result must be true
-     * - it should create three output box
+     * - transaction result must throw error
      */
     raffleServiceTest(
       'should fail when try to create new raffle with invalid license fee on the output service box',
@@ -350,7 +344,6 @@ describe('Service', () => {
             creator.address.toString(),
             someoneWallet.address.toString(),
             creator.address.toString(),
-            1n,
           );
         // Execute transaction
         const transaction = new TransactionBuilder(boxFactory.chain.height)
@@ -373,8 +366,7 @@ describe('Service', () => {
      * - execute transaction
      * - check execution done successfully
      * @expected
-     * - transaction result must be true
-     * - it should create three output box
+     * - transaction result must throw error
      */
     raffleServiceTest(
       'should fail when try to create new raffle with incorrect sum of winners percents',
@@ -393,7 +385,7 @@ describe('Service', () => {
             creator.address.toString(),
             someoneWallet.address.toString(),
             creator.address.toString(),
-            2n,
+            2,
             undefined,
             [500n, 600n],
           );
@@ -418,8 +410,7 @@ describe('Service', () => {
      * - execute transaction
      * - check execution done successfully
      * @expected
-     * - transaction result must be true
-     * - it should create three output box
+     * - transaction result must throw error
      */
     raffleServiceTest(
       'should fail when try to create new raffle with invalid winners hash',
@@ -434,7 +425,7 @@ describe('Service', () => {
             creator.address.toString(),
             someoneWallet.address.toString(),
             creator.address.toString(),
-            1n,
+            1,
             undefined,
             undefined,
             undefined,
@@ -461,8 +452,7 @@ describe('Service', () => {
      * - execute transaction
      * - check execution done successfully
      * @expected
-     * - transaction result must be true
-     * - it should create three output box
+     * - transaction result must throw error
      */
     raffleServiceTest(
       'should fail of try to create new raffle with incorrect winners count',
@@ -482,7 +472,7 @@ describe('Service', () => {
             creator.address.toString(),
             someoneWallet.address.toString(),
             creator.address.toString(),
-            2n,
+            2,
             undefined,
             [1000n],
           );
@@ -507,8 +497,7 @@ describe('Service', () => {
      * - execute transaction
      * - check execution done successfully
      * @expected
-     * - transaction result must be true
-     * - it should create three output box
+     * - transaction result must throw error
      */
     raffleServiceTest(
       'should fail when try to create new raffle with incorrect winners count in extension',
@@ -523,7 +512,7 @@ describe('Service', () => {
             creator.address.toString(),
             someoneWallet.address.toString(),
             creator.address.toString(),
-            2n,
+            2,
           );
         // Execute transaction
         const transaction = new TransactionBuilder(boxFactory.chain.height)
@@ -546,8 +535,7 @@ describe('Service', () => {
      * - execute transaction
      * - check execution done successfully
      * @expected
-     * - transaction result must be true
-     * - it should create three output box
+     * - transaction result must throw error
      */
     raffleServiceTest(
       'should fail when try to create new raffle with incorrect sum of winners percents',
@@ -567,7 +555,7 @@ describe('Service', () => {
             creator.address.toString(),
             someoneWallet.address.toString(),
             creator.address.toString(),
-            2n,
+            2,
             undefined,
             [450n, 450n],
           );
@@ -592,8 +580,7 @@ describe('Service', () => {
      * - execute transaction
      * - check execution done successfully
      * @expected
-     * - transaction result must be true
-     * - it should create three output box
+     * - transaction result must throw error
      */
     raffleServiceTest(
       'should fail when try to create new raffle with incorrect ticket-id',
@@ -612,7 +599,7 @@ describe('Service', () => {
             creator.address.toString(),
             someoneWallet.address.toString(),
             creator.address.toString(),
-            2n,
+            2,
             undefined,
             undefined,
             undefined,

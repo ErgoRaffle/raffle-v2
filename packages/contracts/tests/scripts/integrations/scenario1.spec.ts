@@ -89,11 +89,11 @@ describe('Raffle', () => {
         donatorWallets,
       }) => {
         boxFactory.chain.setTip(100);
-        const winnersCount = 2n;
+        const winnersCount = 2;
         const deadline = 2000n;
         const winnersPercent: bigint[] = [];
         for (let i = 0; i < winnersCount; i++)
-          winnersPercent.push(1000n / winnersCount);
+          winnersPercent.push(1000n / BigInt(winnersCount));
         // Step 1: Raffle creation phase 1 (create inactive raffle and ticketRepo)
         const createRaffleTx = executeCreateRaffleTx(
           creator,

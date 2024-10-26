@@ -124,11 +124,11 @@ describe('Raffle', () => {
       }) => {
         boxFactory.chain.setTip(100);
 
-        const winnersCount = 1n;
+        const winnersCount = 1;
         const deadline = 2000n;
         const winnersPercent: bigint[] = [];
         for (let i = 0; i < winnersCount; i++)
-          winnersPercent.push(1000n / winnersCount);
+          winnersPercent.push(1000n / BigInt(winnersCount));
         // Step 1: Raffle creation phase 1 (create inactive raffle and ticketRepo)
         const createRaffleTx = executeCreateRaffleTx(
           creator,
@@ -233,14 +233,14 @@ describe('Raffle', () => {
         const successRaffleR4 = SConstant.from(
           successRaffleBox.additionalRegisters.R4!,
         ).data as bigint[];
-        const totalSoldTickets = successRaffleR4[2];
-        const successRaffleR5 = SConstant.from(
-          successRaffleBox.additionalRegisters.R5!,
+        const totalSoldTickets = successRaffleR4[1];
+        const successRaffleR6 = SConstant.from(
+          successRaffleBox.additionalRegisters.R6!,
         ).data as Uint8Array[];
         const newWinnerTicketIndex = testUtils.generateNextWinnerIndex(
           winnerTicketsList,
           1,
-          successRaffleR5[0],
+          successRaffleR6[0],
           totalSoldTickets,
         );
 

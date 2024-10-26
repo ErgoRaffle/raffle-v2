@@ -70,7 +70,7 @@ export const defaultScriptsVariables: {
     MIN_BOX_VALUE: SAFE_MIN_BOX_VALUE,
   },
   inactiveRaffle: {
-    GIFT_TOKEN_COUNT: 1000,
+    GIFT_TOKEN_COUNT: '1000L',
     FEE: constants.DEFAULT_FEE,
     MIN_BOX_VALUE: SAFE_MIN_BOX_VALUE,
   },

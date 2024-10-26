@@ -79,19 +79,19 @@
         ticketRepo.value == txFee,
 
         // Correct InactiveRaffle format
-        // R4: [CreatorPercentage, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, DeadlineTimestamp, WinnersCount, TxFee]
+        // R4: [CreatorPercentage, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, DeadlineTimestamp, TxFee]
         // R5: [ServiceAddressHash, ImplementerAddressHash, CreatorAddressHash]
         // R6: [Name, Description, Pictures(optional)]
         // R7: [TicketId, WinnersPercentListHash]
+        // R8: WinnersCount
         blake2b256(inactiveRaffle.propositionBytes) == inactiveRaffleScriptHash,
         inactiveRaffle.tokens(0)._1 == raffleLicense,
-        inactiveRaffle.R4[Coll[Long]].get.size == 8,
+        inactiveRaffle.R4[Coll[Long]].get.size == 7,
         inactiveRaffle.R4[Coll[Long]].get(0) > 0L,
         inactiveRaffle.R4[Coll[Long]].get(1) == serviceFeePercent,
         inactiveRaffle.R4[Coll[Long]].get(2) == implementerFeePercent,
         inactiveRaffle.R4[Coll[Long]].get(0) + serviceFeePercent + implementerFeePercent <= 100L,
-        inactiveRaffle.R4[Coll[Long]].get(6) == winnersCount,
-        inactiveRaffle.R4[Coll[Long]].get(7) == txFee,
+        inactiveRaffle.R4[Coll[Long]].get(6) == txFee,
         inactiveRaffle.R5[Coll[Coll[Byte]]].get.size == 3,
         inactiveRaffle.R5[Coll[Coll[Byte]]].get(0) == blake2b256(serviceAddress),
         inactiveRaffle.R5[Coll[Coll[Byte]]].get(1) == blake2b256(implementerAddress),
@@ -99,6 +99,7 @@
         inactiveRaffle.R6[Coll[Coll[Byte]]].get.size >= 2,
         inactiveRaffle.R7[Coll[Coll[Byte]]].get(0) == SELF.id, // Storing TicketId to match with TicketRepo
         inactiveRaffle.R7[Coll[Coll[Byte]]].get(1) == blake2b256(winnersPercentBytes),
+        inactiveRaffle.R8[Int].get == winnersCount,
         inactiveRaffle.value >= (4 * txFee * winnersCount) + creationFee,
 
         // Transaction constraints
