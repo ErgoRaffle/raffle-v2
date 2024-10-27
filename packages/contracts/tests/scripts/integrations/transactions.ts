@@ -770,7 +770,7 @@ export const executePrizeCreationTx = (
   const totalPrize = successRaffleR4[1];
   const totalSoldTickets = successRaffleR4[2];
   const seed = Buffer.from(
-    blake2b256(Buffer.from(successRaffleR5[0])),
+    blake2b256(Uint8Array.from(Buffer.from(successRaffleR5[0]))),
   ).toString('hex');
 
   const giftCount = SConstant.from(winnerBox.additionalRegisters.R5!)
