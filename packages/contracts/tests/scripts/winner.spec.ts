@@ -51,10 +51,10 @@ const createWinnerTest = (winnersCount: number = 1) => {
     '0123456789012345',
     [],
     0n,
-    BigInt(winnersCount),
+    winnersCount,
     60n,
     0n,
-    0n,
+    0,
     testUtils.TICKET_TOKEN_ID,
     60n,
   );
@@ -665,7 +665,7 @@ describe('winner', () => {
           [],
           1,
           (
-            SConstant.from(successRaffleBox.additionalRegisters.R5!)
+            SConstant.from(successRaffleBox.additionalRegisters.R6!)
               .data as Uint8Array[]
           )[0],
           1n,
@@ -728,10 +728,10 @@ describe('winner', () => {
           '0123456789012345',
           [],
           0n,
-          1n,
+          1,
           BigInt(totalPrize),
           BigInt(totalPrize) + 1n,
-          1n,
+          1,
           testUtils.TICKET_TOKEN_ID,
           999_999_998n,
           testUtils.X_TOKEN_ID,
@@ -778,7 +778,7 @@ describe('winner', () => {
           [],
           1,
           (
-            SConstant.from(successRaffleBox.additionalRegisters.R5!)
+            SConstant.from(successRaffleBox.additionalRegisters.R6!)
               .data as Uint8Array[]
           )[0],
           1n,
@@ -863,7 +863,7 @@ describe('winner', () => {
           [0n],
           1,
           (
-            SConstant.from(successRaffleBox.additionalRegisters.R5!)
+            SConstant.from(successRaffleBox.additionalRegisters.R6!)
               .data as Uint8Array[]
           )[0],
           1n,
@@ -927,10 +927,10 @@ describe('winner', () => {
           '0123456789012345',
           [],
           0n,
-          1n,
+          1,
           BigInt(totalPrize),
           BigInt(totalPrize) + 1n,
-          1n,
+          1,
           testUtils.TICKET_TOKEN_ID,
           999_999_998n,
           testUtils.X_TOKEN_ID,
@@ -978,7 +978,7 @@ describe('winner', () => {
           [0n],
           1,
           (
-            SConstant.from(successRaffleBox.additionalRegisters.R5!)
+            SConstant.from(successRaffleBox.additionalRegisters.R6!)
               .data as Uint8Array[]
           )[0],
           1n,
@@ -1071,7 +1071,7 @@ describe('winner', () => {
           [0n],
           1,
           (
-            SConstant.from(successRaffleBox.additionalRegisters.R5!)
+            SConstant.from(successRaffleBox.additionalRegisters.R6!)
               .data as Uint8Array[]
           )[0],
           1n,
@@ -1161,7 +1161,7 @@ describe('winner', () => {
           [0n],
           1,
           (
-            SConstant.from(successRaffleBox.additionalRegisters.R5!)
+            SConstant.from(successRaffleBox.additionalRegisters.R6!)
               .data as Uint8Array[]
           )[0],
           1n,
@@ -1245,7 +1245,7 @@ describe('winner', () => {
           [0n],
           1,
           (
-            SConstant.from(successRaffleBox.additionalRegisters.R5!)
+            SConstant.from(successRaffleBox.additionalRegisters.R6!)
               .data as Uint8Array[]
           )[0],
           1n,
@@ -1331,7 +1331,7 @@ describe('winner', () => {
           [0n],
           1,
           (
-            SConstant.from(successRaffleBox.additionalRegisters.R5!)
+            SConstant.from(successRaffleBox.additionalRegisters.R6!)
               .data as Uint8Array[]
           )[0],
           1n,

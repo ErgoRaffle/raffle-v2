@@ -637,47 +637,50 @@ export class RaffleBoxFactory {
     seed: string,
     selectedWinnersList: bigint[],
     totalSoldTickets: bigint,
-    winnersCount: bigint = 1n,
+    winnersCount: number = 1,
     totalPrize: bigint = 1n,
     prizeValue: bigint = 0n,
-    step: bigint = 0n,
+    step: number = 0,
     ticketTokenId: string = TICKET_TOKEN_ID,
     ticketTokenAmount: bigint = 1n,
     collectingTokenId?: string,
   ) {
-    return mockUTxO({
-      value: boxValue,
-      ergoTree: this.contractsAddresses['successRaffle'],
-      assets: [
-        { tokenId: licenseTokenId, amount: 1n },
-        {
-          tokenId: ticketTokenId,
-          amount: ticketTokenAmount,
-        },
-        ...(collectingTokenId !== undefined
-          ? [
-              {
-                tokenId: collectingTokenId,
-                amount: prizeValue,
-              },
-            ]
-          : []),
-      ],
-      additionalRegisters: {
-        R4: SColl(SLong, [winnersCount, totalPrize, totalSoldTickets]).toHex(),
-        R5: SColl(SColl(SByte), [
-          Array.from(Buffer.from(seed, 'hex')),
-          Array.from(
-            blake2b256(
-              Buffer.concat(
-                selectedWinnersList.map((n) => utils.bigIntToUint8Array(n)),
+    return new ErgoUnsignedInput(
+      mockUTxO({
+        value: boxValue,
+        ergoTree: this.contractsAddresses['successRaffle'],
+        assets: [
+          { tokenId: licenseTokenId, amount: 1n },
+          {
+            tokenId: ticketTokenId,
+            amount: ticketTokenAmount,
+          },
+          ...(collectingTokenId !== undefined
+            ? [
+                {
+                  tokenId: collectingTokenId,
+                  amount: prizeValue,
+                },
+              ]
+            : []),
+        ],
+        additionalRegisters: {
+          R4: SColl(SLong, [totalPrize, BigInt(totalSoldTickets)]).toHex(),
+          R5: SInt(winnersCount).toHex(),
+          R6: SColl(SColl(SByte), [
+            Array.from(Buffer.from(seed, 'hex')),
+            Array.from(
+              blake2b256(
+                Buffer.concat(
+                  selectedWinnersList.map((n) => utils.bigIntToUint8Array(n)),
+                ),
               ),
             ),
-          ),
-        ]).toHex(),
-        R6: SLong(step).toHex(),
-      },
-    });
+          ]).toHex(),
+          R7: SInt(step).toHex(),
+        },
+      }),
+    );
   }
 
   /**
@@ -761,7 +764,7 @@ export class RaffleBoxFactory {
     ticketIndex: bigint,
     giftCount: bigint,
     unwrappedGiftCount: bigint,
-    tokens: TokenAmount<bigint>[] | TokenAmount<Amount>[],
+    tokens: TokenAmount<bigint>[] | TokenAmount<Amount>[] = [],
   ) {
     return new OutputBuilder(value, this.contractsAddresses['winnerPrize'])
       .addTokens(tokens)
@@ -1441,7 +1444,7 @@ export const generateNextWinnerIndex = (
  * @param buffer
  * @returns signed bigint
  */
-const uint8ArrayToSignedBigInt = (buffer: Uint8Array): bigint => {
+export const uint8ArrayToSignedBigInt = (buffer: Uint8Array): bigint => {
   const hexStr = Buffer.from(buffer).toString('hex');
   const bigIntValue = BigInt('0x' + hexStr);
   const bitLength = BigInt(hexStr.length * 4); // Each hex digit represents 4 bits
