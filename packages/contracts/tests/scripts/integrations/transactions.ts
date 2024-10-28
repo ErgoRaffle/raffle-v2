@@ -48,8 +48,8 @@ export const executeCreateRaffleTx = (
   ).toString('hex');
   const serviceR4 = SConstant.from(serviceBox.additionalRegisters.R4!)
     .data as bigint[];
-  const serviceFeePercent = serviceR4[0] / 10n;
-  const implementerFeePercent = serviceR4[1] / 10n;
+  const serviceFeePercent = serviceR4[0];
+  const implementerFeePercent = serviceR4[1];
   const serviceOutputBox = boxFactory.createServiceOutputBox(
     serviceFeeErgoTree,
     serviceBox.assets[1].amount - 1n,
@@ -70,7 +70,7 @@ export const executeCreateRaffleTx = (
         }
       : undefined,
     winnersPercent,
-    undefined,
+    serviceFeePercent,
     undefined,
     serviceR4[2],
     serviceBox.boxId,
@@ -604,8 +604,8 @@ export const executeReturnRaffleLicenseTx = (
   ).toString('hex');
   const serviceR4 = SConstant.from(service.additionalRegisters.R4!)
     .data as bigint[];
-  const serviceFeePercent = serviceR4[0] / 10n;
-  const implementerFeePercent = serviceR4[0] / 10n;
+  const serviceFeePercent = serviceR4[0];
+  const implementerFeePercent = serviceR4[1];
   const serviceOutputBox = boxFactory.createServiceOutputBox(
     serviceFeeErgoTree,
     BigInt(service.assets[1].amount.toString()) + 1n,

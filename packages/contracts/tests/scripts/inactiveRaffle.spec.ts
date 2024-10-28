@@ -182,7 +182,7 @@ describe('inactiveRaffle', () => {
           someoneWallet.address.toString(),
           creator.address.toString(),
           1,
-          10n,
+          undefined,
           { tokenId: X_TOKEN_ID, amount: 1n },
         );
         const raffleDetailsOutputBox =
@@ -430,12 +430,12 @@ describe('inactiveRaffle', () => {
         // replace invalid R5 value of the Active-Raffle box
         activeRaffleOutputBox.setAdditionalRegisters({
           R4: SColl(SLong, [
-            60n, // CharityPercentage,
-            10n, // ServiceFeePercent,
-            10n, // ImplementerFeePercent,
+            200n, // WinnersPercent,
+            100n, // ServiceFeePercent,
+            100n, // ImplementerFeePercent,
             10n, // TicketPrice,
             1000n, // Goal,
-            0n, // DeadlineTimestamp,
+            0n, // Deadline,
             1n, // WinnersCount,
             testUtils.FEE, // TxFee
           ]).toHex(),
@@ -542,7 +542,7 @@ describe('inactiveRaffle', () => {
           someoneWallet.address.toString(),
           creator.address.toString(),
           1,
-          10n,
+          undefined,
           { tokenId: X_TOKEN_ID, amount: 1n }, // set collecting token
         );
         const extraInputBox = mockUTxO({
@@ -1258,7 +1258,7 @@ describe('inactiveRaffle', () => {
           1,
           undefined,
           undefined,
-          10n,
+          undefined,
           undefined,
           1_000_000_000n,
           '1234'.repeat(16),

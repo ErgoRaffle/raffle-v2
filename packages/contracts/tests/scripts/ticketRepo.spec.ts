@@ -308,7 +308,7 @@ describe('ticketRepo', () => {
           1,
           undefined,
           undefined,
-          10n,
+          undefined,
           undefined,
           1_000_000_000n,
           '1234'.repeat(16),

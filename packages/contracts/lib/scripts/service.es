@@ -79,7 +79,7 @@
         ticketRepo.value == txFee,
 
         // Correct InactiveRaffle format
-        // R4: [WinnersPercentage, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, DeadlineTimestamp, TxFee]
+        // R4: [WinnersPercentage, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, Deadline, TxFee]
         // R5: [ServiceAddressHash, ImplementerAddressHash, CreatorAddressHash]
         // R6: [Name, Description, Pictures(optional)]
         // R7: [TicketId, WinnersPercentListHash]

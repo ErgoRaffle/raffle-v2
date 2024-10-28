@@ -47,8 +47,8 @@ const createRaffleTest = () => {
   const serviceBox = boxFactory.createServiceBoxMock(
     owner.ergoTree,
     testUtils.LICENSE_TOKEN_COUNT,
-    10n,
-    10n,
+    105n,
+    100n,
     1_000_000_000n,
   );
 
