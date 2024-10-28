@@ -432,8 +432,9 @@ export class RaffleBoxFactory {
 
   /**
    * Create output box of active-raffle
-   * @param creatorPartnerAddress
+   * @param serviceAddress
    * @param implementerPartnerAddress
+   * @param creatorPartnerAddress
    * @param winnersCount
    * @param serviceFeePercent
    * @param collectingToken
@@ -441,11 +442,14 @@ export class RaffleBoxFactory {
    * @param value
    * @param deadline
    * @param totalSoldTicket
+   * @param goal
+   * @param ticketPrice
    * @returns
    */
   createActiveRaffleBoxMock(
-    creatorPartnerAddress: string,
+    serviceAddress: string,
     implementerPartnerAddress: string,
+    creatorPartnerAddress: string,
     winnersCount: bigint = 1n,
     serviceFeePercent: bigint = 10n,
     collectingToken?: TokenAmount<bigint>,
@@ -453,6 +457,8 @@ export class RaffleBoxFactory {
     value?: bigint,
     deadline: bigint = 100n,
     totalSoldTicket: bigint = 0n,
+    goal: bigint = 1000n,
+    ticketPrice: bigint = 10n,
   ) {
     value = value || creationFee + 4n * FEE;
 
@@ -478,16 +484,16 @@ export class RaffleBoxFactory {
           60n, // CharityPercentage,
           serviceFeePercent, // ServiceFeePercent,
           10n, // ImplementerFeePercent,
-          10n, // TicketPrice,
-          1000n, // Goal,
+          ticketPrice, // TicketPrice,
+          goal, // Goal,
           deadline, // DeadlineTimestamp,
           winnersCount, // WinnersCount,
           FEE, // TxFee
         ]).toHex(),
         R5: SColl(SColl(SByte), [
-          Array.from(Buffer.from(creatorPartnerAddress, 'hex')),
-          Array.from(Buffer.from(implementerPartnerAddress)),
-          Array.from(Buffer.from(creatorPartnerAddress)),
+          Array.from(blake2b256(Buffer.from(serviceAddress))),
+          Array.from(blake2b256(Buffer.from(implementerPartnerAddress))),
+          Array.from(blake2b256(Buffer.from(creatorPartnerAddress))),
         ]).toHex(),
         R6: SLong(totalSoldTicket).toHex(),
       },
@@ -540,9 +546,9 @@ export class RaffleBoxFactory {
 
   /**
    * Create output box of active-raffle
-   * @param ownerAddress
-   * @param creatorPartnerAddress
+   * @param serviceAddress
    * @param implementerPartnerAddress
+   * @param creatorPartnerAddress
    * @param winnersCount
    * @param serviceFeePercent
    * @param collectingToken
@@ -552,12 +558,15 @@ export class RaffleBoxFactory {
    * @param ticketTokenId
    * @param totalSoldTicket
    * @param deadline
+   * @param extraTokens
+   * @param goal
+   * @param ticketPrice
    * @returns
    */
   createActiveRaffleOutputBox(
-    ownerAddress: string,
-    creatorPartnerAddress: string,
+    serviceAddress: string,
     implementerPartnerAddress: string,
+    creatorPartnerAddress: string,
     winnersCount: bigint = 1n,
     serviceFeePercent: bigint = 10n,
     collectingToken?: TokenAmount<bigint>,
@@ -567,6 +576,9 @@ export class RaffleBoxFactory {
     ticketTokenId: string = TICKET_TOKEN_ID,
     totalSoldTicket: bigint = 0n,
     deadline: bigint = 100n,
+    extraTokens: TokenAmount<bigint>[] = [],
+    goal: bigint = 1000n,
+    ticketPrice: bigint = 10n,
   ) {
     value = value || creationFee + 4n * FEE;
 
@@ -579,6 +591,7 @@ export class RaffleBoxFactory {
         tokenId: ticketTokenId,
         amount: ticketTokenAmount || 1_000_000_000n - 1n - winnersCount,
       },
+      ...extraTokens,
     ];
     if (collectingToken != null) tokens.push(collectingToken);
 
@@ -589,14 +602,14 @@ export class RaffleBoxFactory {
           60n, // CharityPercentage,
           serviceFeePercent, // ServiceFeePercent,
           10n, // ImplementerFeePercent,
-          10n, // TicketPrice,
-          1000n, // Goal,
+          ticketPrice, // TicketPrice,
+          goal, // Goal,
           deadline, // DeadlineTimestamp,
           winnersCount, // WinnersCount,
           FEE, // TxFee
         ]).toHex(),
         R5: SColl(SColl(SByte), [
-          Array.from(blake2b256(Buffer.from(ownerAddress))),
+          Array.from(blake2b256(Buffer.from(serviceAddress))),
           Array.from(blake2b256(Buffer.from(implementerPartnerAddress))),
           Array.from(blake2b256(Buffer.from(creatorPartnerAddress))),
         ]),
@@ -698,6 +711,7 @@ export class RaffleBoxFactory {
     ticketTokenId: string = TICKET_TOKEN_ID,
     ticketTokenAmount: bigint = 1n,
     collectingTokenId?: string,
+    extraTokens: TokenAmount<bigint>[] = [],
   ) => {
     return new OutputBuilder(boxValue, this.contractsAddresses['successRaffle'])
       .addTokens([
@@ -714,6 +728,7 @@ export class RaffleBoxFactory {
               },
             ]
           : []),
+        ...extraTokens,
       ])
       .setAdditionalRegisters({
         R4: SColl(SLong, [winnersCount, totalPrize, totalSoldTickets]).toHex(),
@@ -1174,7 +1189,11 @@ export class RaffleBoxFactory {
         R4: SColl(SByte, Array.from(Buffer.from(donatorWalletAddress))),
         R5: SColl(SLong, r5).toHex(),
       })
-      .addTokens({ tokenId: ticketTokenId, amount: ticketCount });
+      .addTokens(
+        ticketCount > 0
+          ? [{ tokenId: ticketTokenId, amount: ticketCount }]
+          : [],
+      );
     return donateTicketOutputBox;
   }
 
@@ -1199,6 +1218,7 @@ export class RaffleBoxFactory {
     ticketTokenId: string,
     ticketTokenCount: bigint,
     collectingToken?: TokenAmount<bigint>,
+    extraTokens: TokenAmount<bigint>[] = [],
   ) {
     const giftRedeemOutputBox = new OutputBuilder(
       value,
@@ -1224,6 +1244,8 @@ export class RaffleBoxFactory {
 
     if (collectingToken !== undefined)
       giftRedeemOutputBox.addTokens([collectingToken]);
+
+    if (extraTokens !== undefined) giftRedeemOutputBox.addTokens(extraTokens);
 
     return giftRedeemOutputBox;
   }

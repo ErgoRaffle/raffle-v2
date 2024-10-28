@@ -207,8 +207,7 @@ describe('Service', () => {
      * - execute transaction
      * - check execution done successfully
      * @expected
-     * - transaction result must be true
-     * - it should create three output box
+     * - transaction result must throw error
      */
     raffleServiceTest(
       'should fail when try to create new raffle without LicenseToken on the inactiveRaffleOutputBox',
@@ -248,8 +247,7 @@ describe('Service', () => {
      * - execute transaction
      * - check execution done successfully
      * @expected
-     * - transaction result must be true
-     * - it should create three output box
+     * - transaction result must throw error
      */
     raffleServiceTest(
       'should fail when try to create new raffle without decreasing LicenseToken from serviceOutputBox',
@@ -289,8 +287,7 @@ describe('Service', () => {
      * - execute transaction
      * - check execution done successfully
      * @expected
-     * - transaction result must be true
-     * - it should create three output box
+     * - transaction result must throw error
      */
     raffleServiceTest(
       'should fail when try to create new raffle with incorrect service fee',
@@ -331,8 +328,7 @@ describe('Service', () => {
      * - execute transaction
      * - check execution done successfully
      * @expected
-     * - transaction result must be true
-     * - it should create three output box
+     * - transaction result must throw error
      */
     raffleServiceTest(
       'should fail when try to create new raffle with invalid license fee on the output service box',
@@ -373,8 +369,7 @@ describe('Service', () => {
      * - execute transaction
      * - check execution done successfully
      * @expected
-     * - transaction result must be true
-     * - it should create three output box
+     * - transaction result must throw error
      */
     raffleServiceTest(
       'should fail when try to create new raffle with incorrect sum of winners percents',
@@ -418,8 +413,7 @@ describe('Service', () => {
      * - execute transaction
      * - check execution done successfully
      * @expected
-     * - transaction result must be true
-     * - it should create three output box
+     * - transaction result must throw error
      */
     raffleServiceTest(
       'should fail when try to create new raffle with invalid winners hash',
@@ -461,8 +455,7 @@ describe('Service', () => {
      * - execute transaction
      * - check execution done successfully
      * @expected
-     * - transaction result must be true
-     * - it should create three output box
+     * - transaction result must throw error
      */
     raffleServiceTest(
       'should fail of try to create new raffle with incorrect winners count',
@@ -507,8 +500,7 @@ describe('Service', () => {
      * - execute transaction
      * - check execution done successfully
      * @expected
-     * - transaction result must be true
-     * - it should create three output box
+     * - transaction result must throw error
      */
     raffleServiceTest(
       'should fail when try to create new raffle with incorrect winners count in extension',
@@ -546,8 +538,7 @@ describe('Service', () => {
      * - execute transaction
      * - check execution done successfully
      * @expected
-     * - transaction result must be true
-     * - it should create three output box
+     * - transaction result must throw error
      */
     raffleServiceTest(
       'should fail when try to create new raffle with incorrect sum of winners percents',
@@ -592,8 +583,7 @@ describe('Service', () => {
      * - execute transaction
      * - check execution done successfully
      * @expected
-     * - transaction result must be true
-     * - it should create three output box
+     * - transaction result must throw error
      */
     raffleServiceTest(
       'should fail when try to create new raffle with incorrect ticket-id',
