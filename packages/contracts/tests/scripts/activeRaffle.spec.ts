@@ -45,11 +45,7 @@ const createActiveRaffleEndTest = (
         }
       : undefined;
   const implementerFeePercent = 10n;
-  // const charityFeePercent = 60n;
   const serviceFeePercent = 20n;
-  // const winnerPercent =
-  //   100n - charityFeePercent - serviceFeePercent - implementerFeePercent;
-  // const totalPrize = (totalRaised * winnerPercent) / 100n;
 
   const { creator, implementer, someone, donator } = boxFactory.createPartners({
     creator: CREATOR_DEFAULT_BALANCE,
@@ -624,10 +620,10 @@ describe('ActiveRaffle', () => {
           {
             tokenId: testUtils.X_TOKEN_ID,
             // move one lower amount of tokens
-            amount: 20n,
+            amount: 21n,
           },
           1_000_000n,
-          1_000_000_000n,
+          999_999_999n,
           // one ticket-token move to the ticket box
           BigInt(activeRaffleBoxForDonate.assets[1].amount) - 2n,
           undefined,
@@ -1635,7 +1631,7 @@ describe('ActiveRaffle', () => {
           BigInt(totalPrize),
           BigInt(totalPrize) + 1n,
           // set invalid step number to the R6
-          0n,
+          2n,
           activeRaffleBoxForSuccessEnd.assets[1].tokenId,
           // plus one token that exists on the Raffle-Details box
           BigInt(activeRaffleBoxForSuccessEnd.assets[1].amount) + 1n,
