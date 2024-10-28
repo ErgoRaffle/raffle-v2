@@ -157,7 +157,7 @@ export class RaffleBoxFactory {
 
   /**
    * Create input Service-Box
-   * @param ownerAddress
+   * @param ownerErgoTree
    * @param licenseTokenCount
    * @param serviceFeePercent
    * @param implementerFeePercent
@@ -165,7 +165,7 @@ export class RaffleBoxFactory {
    * @returns Service Box
    */
   createServiceBoxMock(
-    ownerAddress: string,
+    ownerErgoTree: string,
     licenseTokenCount: bigint = LICENSE_TOKEN_COUNT,
     serviceFeePercent: bigint = 10n,
     implementerFeePercent: bigint = 10n,
@@ -187,7 +187,10 @@ export class RaffleBoxFactory {
             creationFee,
             FEE,
           ]).toHex(),
-          R5: SColl(SByte, Array.from(Buffer.from(ownerAddress))).toHex(),
+          R5: SColl(
+            SByte,
+            Array.from(Buffer.from(ownerErgoTree, 'hex')),
+          ).toHex(),
         },
       }),
     );
@@ -195,7 +198,7 @@ export class RaffleBoxFactory {
 
   /**
    * create output Service-Box
-   * @param ownerAddress
+   * @param ownerErgoTree
    * @param licenseTokenCount
    * @param serviceFeePercent
    * @param implementerFeePercent
@@ -203,7 +206,7 @@ export class RaffleBoxFactory {
    * @returns ServiceBox
    */
   createServiceOutputBox(
-    ownerAddress: string,
+    ownerErgoTree: string,
     licenseTokenCount: bigint = 999999999n,
     serviceFeePercent: bigint = 10n,
     implementerFeePercent: bigint = 10n,
@@ -224,7 +227,7 @@ export class RaffleBoxFactory {
           creationFee,
           FEE,
         ]).toHex(),
-        R5: SColl(SByte, Array.from(Buffer.from(ownerAddress))).toHex(),
+        R5: SColl(SByte, Array.from(Buffer.from(ownerErgoTree, 'hex'))).toHex(),
       });
   }
 
@@ -349,9 +352,9 @@ export class RaffleBoxFactory {
 
   /**
    * create output Inactive-Raffle-box
-   * @param ownerAddress
-   * @param implementerPartnerAddress
-   * @param creatorPartnerAddress
+   * @param ownerErgoTree
+   * @param implementerErgoTree
+   * @param creatorErgoTree
    * @param winnersCount
    * @param collectingToken if sets then raffle can only pay charity by this token instead of Erg
    * @param winnersPercents
@@ -364,9 +367,9 @@ export class RaffleBoxFactory {
    * @returns InactiveRaffleBox
    */
   createInactiveRaffleOutputBox(
-    ownerAddress: string,
-    implementerPartnerAddress: string,
-    creatorPartnerAddress: string,
+    ownerErgoTree: string,
+    implementerErgoTree: string,
+    creatorErgoTree: string,
     winnersCount: number = 1,
     collectingToken?: TokenAmount<bigint>,
     winnersPercents?: bigint[],
@@ -406,9 +409,9 @@ export class RaffleBoxFactory {
           FEE, // TxFee
         ]),
         R5: SColl(SColl(SByte), [
-          Array.from(blake2b256(Buffer.from(ownerAddress))),
-          Array.from(blake2b256(Buffer.from(implementerPartnerAddress))),
-          Array.from(blake2b256(Buffer.from(creatorPartnerAddress))),
+          Array.from(blake2b256(Buffer.from(ownerErgoTree, 'hex'))),
+          Array.from(blake2b256(Buffer.from(implementerErgoTree, 'hex'))),
+          Array.from(blake2b256(Buffer.from(creatorErgoTree, 'hex'))),
         ]),
         R6: SColl(SColl(SByte), [
           Array.from(Buffer.from('Test')),
@@ -685,6 +688,7 @@ export class RaffleBoxFactory {
    * @param boxValue
    * @param licenseTokenId
    * @param seed
+   * @param projectAddressHash
    * @param selectedWinnersList
    * @param totalSoldTickets
    * @param winnersCount
@@ -700,6 +704,7 @@ export class RaffleBoxFactory {
     boxValue: bigint,
     licenseTokenId: string,
     seed: string,
+    creatorAddressHash: Uint8Array,
     selectedWinnersList: bigint[],
     totalSoldTickets: bigint,
     winnersCount: number = 1,
@@ -729,9 +734,10 @@ export class RaffleBoxFactory {
         ...extraTokens,
       ])
       .setAdditionalRegisters({
-        R4: SColl(SLong, [totalPrize, totalSoldTickets]).toHex(),
+        R4: SColl(SLong, [totalPrize, totalSoldTickets, FEE]).toHex(),
         R5: SInt(winnersCount),
-        R6: SColl(SColl(SByte), [
+        R6: SColl(SByte, Array.from(creatorAddressHash)),
+        R7: SColl(SColl(SByte), [
           Array.from(Buffer.from(seed, 'hex')),
           Array.from(
             blake2b256(
@@ -741,7 +747,7 @@ export class RaffleBoxFactory {
             ),
           ),
         ]).toHex(),
-        R7: SInt(step),
+        R8: SInt(step),
       });
   };
 
