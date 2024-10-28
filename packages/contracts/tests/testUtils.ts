@@ -317,7 +317,7 @@ export class RaffleBoxFactory {
             100n, // ImplementerFeePercent,
             10n, // TicketPrice,
             1000n, // Goal,
-            deadline, // DeadlineTimestamp,
+            deadline, // Deadline,
             FEE, // TxFee
           ]).toHex(),
           R5: SColl(SColl(SByte), [
@@ -443,6 +443,7 @@ export class RaffleBoxFactory {
    * @param deadline
    * @param totalSoldTicket
    * @param goal
+   * @param ticketPrice
    * @returns
    */
   createActiveRaffleBoxMock(
@@ -450,13 +451,14 @@ export class RaffleBoxFactory {
     implementerPartnerAddress: string,
     creatorPartnerAddress: string,
     winnersCount: number = 1,
-    serviceFeePercent: bigint = 10n,
+    serviceFeePercent: bigint = 100n,
     collectingToken?: TokenAmount<bigint>,
     creationFee: bigint = CREATION_FEE,
     value?: bigint,
     deadline: bigint = 100n,
     totalSoldTicket: bigint = 0n,
     goal: bigint = 1000n,
+    ticketPrice: bigint = 10n,
   ) {
     value = value || creationFee + 4n * FEE;
 
@@ -480,11 +482,11 @@ export class RaffleBoxFactory {
       additionalRegisters: {
         R4: SColl(SLong, [
           200n, // WinnersPercentage,
-          serviceFeePercent * 10n, // ServiceFeePercent,
+          serviceFeePercent, // ServiceFeePercent,
           100n, // ImplementerFeePercent,
-          10n, // TicketPrice,
+          ticketPrice, // TicketPrice,
           goal, // Goal,
-          deadline, // DeadlineTimestamp,
+          deadline, // Deadline,
           FEE, // TxFee
         ]).toHex(),
         R5: SColl(SColl(SByte), [
@@ -560,6 +562,7 @@ export class RaffleBoxFactory {
    * @param deadline
    * @param extraTokens
    * @param goal
+   * @param ticketPrice
    * @returns
    */
   createActiveRaffleOutputBox(
@@ -567,7 +570,7 @@ export class RaffleBoxFactory {
     implementerPartnerAddress: string,
     creatorPartnerAddress: string,
     winnersCount: number = 1,
-    serviceFeePercent: bigint = 10n,
+    serviceFeePercent: bigint = 100n,
     collectingToken?: TokenAmount<bigint>,
     creationFee = CREATION_FEE,
     value?: bigint,
@@ -577,6 +580,7 @@ export class RaffleBoxFactory {
     deadline: bigint = 100n,
     extraTokens: TokenAmount<bigint>[] = [],
     goal: bigint = 1000n,
+    ticketPrice: bigint = 10n,
   ) {
     value = value || creationFee + 4n * FEE;
 
@@ -598,11 +602,11 @@ export class RaffleBoxFactory {
       .setAdditionalRegisters({
         R4: SColl(SLong, [
           200n, // WinnersPercentage,
-          serviceFeePercent * 10n, // ServiceFeePercent,
+          serviceFeePercent, // ServiceFeePercent,
           100n, // ImplementerFeePercent,
-          10n, // TicketPrice,
+          ticketPrice, // TicketPrice,
           goal, // Goal,
-          deadline, // DeadlineTimestamp,
+          deadline, // Deadline,
           FEE, // TxFee
         ]).toHex(),
         R5: SColl(SColl(SByte), [
