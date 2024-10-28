@@ -39,7 +39,7 @@ const createRaffleTest = () => {
   const serviceBox = boxFactory.createServiceBoxMock(
     creator.address.toString(),
     testUtils.LICENSE_TOKEN_COUNT,
-    100n,
+    105n,
     100n,
     1_000_000_000n,
   );

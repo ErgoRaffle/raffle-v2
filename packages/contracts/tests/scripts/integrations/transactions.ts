@@ -70,7 +70,7 @@ export const executeCreateRaffleTx = (
         }
       : undefined,
     winnersPercent,
-    undefined,
+    serviceFeePercent,
     undefined,
     serviceR4[2],
     serviceBox.boxId,
@@ -604,7 +604,7 @@ export const executeReturnRaffleLicenseTx = (
   const serviceR4 = SConstant.from(service.additionalRegisters.R4!)
     .data as bigint[];
   const serviceFeePercent = serviceR4[0];
-  const implementerFeePercent = serviceR4[0];
+  const implementerFeePercent = serviceR4[1];
   const serviceOutputBox = boxFactory.createServiceOutputBox(
     serviceFeeAddress,
     BigInt(service.assets[1].amount.toString()) + 1n,
