@@ -317,7 +317,7 @@ export class RaffleBoxFactory {
             10n, // ImplementerFeePercent,
             10n, // TicketPrice,
             1000n, // Goal,
-            deadline, // DeadlineTimestamp,
+            deadline, // Deadline,
             FEE, // TxFee
           ]).toHex(),
           R5: SColl(SColl(SByte), [
@@ -486,7 +486,7 @@ export class RaffleBoxFactory {
           10n, // ImplementerFeePercent,
           ticketPrice, // TicketPrice,
           goal, // Goal,
-          deadline, // DeadlineTimestamp,
+          deadline, // Deadline,
           FEE, // TxFee
         ]).toHex(),
         R5: SColl(SColl(SByte), [
@@ -606,7 +606,7 @@ export class RaffleBoxFactory {
           10n, // ImplementerFeePercent,
           ticketPrice, // TicketPrice,
           goal, // Goal,
-          deadline, // DeadlineTimestamp,
+          deadline, // Deadline,
           FEE, // TxFee
         ]).toHex(),
         R5: SColl(SColl(SByte), [

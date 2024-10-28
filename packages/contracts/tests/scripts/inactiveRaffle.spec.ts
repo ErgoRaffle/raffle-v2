@@ -435,7 +435,7 @@ describe('inactiveRaffle', () => {
             10n, // ImplementerFeePercent,
             10n, // TicketPrice,
             1000n, // Goal,
-            0n, // DeadlineTimestamp,
+            0n, // Deadline,
             1n, // WinnersCount,
             testUtils.FEE, // TxFee
           ]).toHex(),

@@ -77,14 +77,16 @@
       outSuccessRaffle.R7[Int].get == step + 1,
 
       // Correct Winner format
-      // R4: [WinnerIndex, RewardPercent, DeadlineTimestamp, txFee]
-      // R5: GiftCount
+      // R4: [RewardPercent, Deadline, txFee]
+      // R5: WinnerIndex
+      // R6: GiftCount
       winner.tokens(0)._1 == SELF.tokens(1)._1,
       winner.R5[Int].get == step,
 
       // Correct WinnerPrize format
-      // R4: [WinnerTicketIndex, WinnerIndex, GiftCount]
-      // R5: UnwrappedGiftCount
+      // R4: [WinnerTicketIndex, GiftCount]
+      // R5: WinnerIndex
+      // R6: UnwrappedGiftCount
       winnerPrize.R4[Coll[Long]].get(0) == winnerTicketIndex,
 
       // Transaction constraints

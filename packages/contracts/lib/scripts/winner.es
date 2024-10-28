@@ -2,7 +2,7 @@
   // ErgoRaffle V2 Winner Contract
   //
   // Registers:
-  //   R4[Coll[Long]]: [RewardPercent, DeadlineTimestamp, txFee]
+  //   R4[Coll[Long]]: [RewardPercent, Deadline, txFee]
   //   R5[Int]: WinnerIndex
   //   R6[Long]: GiftCount
   //   R7[Coll[Byte]]: GiftTokenId
