@@ -322,15 +322,9 @@ export class RaffleBoxFactory {
             FEE, // TxFee
           ]).toHex(),
           R5: SColl(SColl(SByte), [
-            Array.from(blake2b256(Uint8Array.from(Buffer.from(ownerAddress)))),
-            Array.from(
-              blake2b256(
-                Uint8Array.from(Buffer.from(implementerPartnerAddress)),
-              ),
-            ),
-            Array.from(
-              blake2b256(Uint8Array.from(Buffer.from(creatorPartnerAddress))),
-            ),
+            Array.from(blake2b256(Buffer.from(ownerAddress))),
+            Array.from(blake2b256(Buffer.from(implementerPartnerAddress))),
+            Array.from(blake2b256(Buffer.from(creatorPartnerAddress))),
           ]).toHex(),
           R6: SColl(SColl(SByte), [
             Array.from(Buffer.from('Test')),
@@ -342,10 +336,8 @@ export class RaffleBoxFactory {
               Array.from(Buffer.from(ticketTokenId, 'hex')),
               Array.from(
                 blake2b256(
-                  Uint8Array.from(
-                    Buffer.concat(
-                      winnersPercents.map((n) => utils.bigIntToUint8Array(n)),
-                    ),
+                  Buffer.concat(
+                    winnersPercents.map((n) => utils.bigIntToUint8Array(n)),
                   ),
                 ),
               ),
@@ -415,13 +407,9 @@ export class RaffleBoxFactory {
           FEE, // TxFee
         ]),
         R5: SColl(SColl(SByte), [
-          Array.from(blake2b256(Uint8Array.from(Buffer.from(ownerAddress)))),
-          Array.from(
-            blake2b256(Uint8Array.from(Buffer.from(implementerPartnerAddress))),
-          ),
-          Array.from(
-            blake2b256(Uint8Array.from(Buffer.from(creatorPartnerAddress))),
-          ),
+          Array.from(blake2b256(Buffer.from(ownerAddress))),
+          Array.from(blake2b256(Buffer.from(implementerPartnerAddress))),
+          Array.from(blake2b256(Buffer.from(creatorPartnerAddress))),
         ]),
         R6: SColl(SColl(SByte), [
           Array.from(Buffer.from('Test')),
@@ -433,10 +421,8 @@ export class RaffleBoxFactory {
             Array.from(Buffer.from(ticketToken, 'hex')),
             Array.from(
               blake2b256(
-                Uint8Array.from(
-                  Buffer.concat(
-                    winnersPercents.map((n) => utils.bigIntToUint8Array(n)),
-                  ),
+                Buffer.concat(
+                  winnersPercents.map((n) => utils.bigIntToUint8Array(n)),
                 ),
               ),
             ),
@@ -505,13 +491,9 @@ export class RaffleBoxFactory {
           FEE, // TxFee
         ]).toHex(),
         R5: SColl(SColl(SByte), [
-          Array.from(blake2b256(Uint8Array.from(Buffer.from(serviceAddress)))),
-          Array.from(
-            blake2b256(Uint8Array.from(Buffer.from(implementerPartnerAddress))),
-          ),
-          Array.from(
-            blake2b256(Uint8Array.from(Buffer.from(creatorPartnerAddress))),
-          ),
+          Array.from(blake2b256(Buffer.from(serviceAddress))),
+          Array.from(blake2b256(Buffer.from(implementerPartnerAddress))),
+          Array.from(blake2b256(Buffer.from(creatorPartnerAddress))),
         ]).toHex(),
         R6: SLong(totalSoldTicket).toHex(),
       },
@@ -627,13 +609,9 @@ export class RaffleBoxFactory {
           FEE, // TxFee
         ]).toHex(),
         R5: SColl(SColl(SByte), [
-          Array.from(blake2b256(Uint8Array.from(Buffer.from(serviceAddress)))),
-          Array.from(
-            blake2b256(Uint8Array.from(Buffer.from(implementerPartnerAddress))),
-          ),
-          Array.from(
-            blake2b256(Uint8Array.from(Buffer.from(creatorPartnerAddress))),
-          ),
+          Array.from(blake2b256(Buffer.from(serviceAddress))),
+          Array.from(blake2b256(Buffer.from(implementerPartnerAddress))),
+          Array.from(blake2b256(Buffer.from(creatorPartnerAddress))),
         ]),
         R6: SLong(totalSoldTicket).toHex(),
       });
@@ -693,10 +671,8 @@ export class RaffleBoxFactory {
           Array.from(Buffer.from(seed, 'hex')),
           Array.from(
             blake2b256(
-              Uint8Array.from(
-                Buffer.concat(
-                  selectedWinnersList.map((n) => utils.bigIntToUint8Array(n)),
-                ),
+              Buffer.concat(
+                selectedWinnersList.map((n) => utils.bigIntToUint8Array(n)),
               ),
             ),
           ),
@@ -760,10 +736,8 @@ export class RaffleBoxFactory {
           Array.from(Buffer.from(seed, 'hex')),
           Array.from(
             blake2b256(
-              Uint8Array.from(
-                Buffer.concat(
-                  selectedWinnersList.map((n) => utils.bigIntToUint8Array(n)),
-                ),
+              Buffer.concat(
+                selectedWinnersList.map((n) => utils.bigIntToUint8Array(n)),
               ),
             ),
           ),
@@ -1501,7 +1475,7 @@ const uint8ArrayToSignedBigInt = (buffer: Uint8Array): bigint => {
 export const makeHashFromString = (content: string) => {
   return SColl(
     SByte,
-    Array.from(blake2b256(Uint8Array.from(Buffer.from(content, 'hex')))),
+    Array.from(blake2b256(Buffer.from(content, 'hex'))),
   ).toHex();
 };
 
