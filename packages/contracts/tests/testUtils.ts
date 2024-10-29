@@ -317,7 +317,7 @@ export class RaffleBoxFactory {
             10n, // ImplementerFeePercent,
             10n, // TicketPrice,
             1000n, // Goal,
-            deadline, // DeadlineTimestamp,
+            deadline, // Deadline,
             FEE, // TxFee
           ]).toHex(),
           R5: SColl(SColl(SByte), [
@@ -443,6 +443,7 @@ export class RaffleBoxFactory {
    * @param deadline
    * @param totalSoldTicket
    * @param goal
+   * @param ticketPrice
    * @returns
    */
   createActiveRaffleBoxMock(
@@ -457,6 +458,7 @@ export class RaffleBoxFactory {
     deadline: bigint = 100n,
     totalSoldTicket: bigint = 0n,
     goal: bigint = 1000n,
+    ticketPrice: bigint = 10n,
   ) {
     value = value || creationFee + 4n * FEE;
 
@@ -482,9 +484,9 @@ export class RaffleBoxFactory {
           60n, // CharityPercentage,
           serviceFeePercent, // ServiceFeePercent,
           10n, // ImplementerFeePercent,
-          10n, // TicketPrice,
+          ticketPrice, // TicketPrice,
           goal, // Goal,
-          deadline, // DeadlineTimestamp,
+          deadline, // Deadline,
           FEE, // TxFee
         ]).toHex(),
         R5: SColl(SColl(SByte), [
@@ -560,6 +562,7 @@ export class RaffleBoxFactory {
    * @param deadline
    * @param extraTokens
    * @param goal
+   * @param ticketPrice
    * @returns
    */
   createActiveRaffleOutputBox(
@@ -577,6 +580,7 @@ export class RaffleBoxFactory {
     deadline: bigint = 100n,
     extraTokens: TokenAmount<bigint>[] = [],
     goal: bigint = 1000n,
+    ticketPrice: bigint = 10n,
   ) {
     value = value || creationFee + 4n * FEE;
 
@@ -600,9 +604,9 @@ export class RaffleBoxFactory {
           60n, // CharityPercentage,
           serviceFeePercent, // ServiceFeePercent,
           10n, // ImplementerFeePercent,
-          10n, // TicketPrice,
+          ticketPrice, // TicketPrice,
           goal, // Goal,
-          deadline, // DeadlineTimestamp,
+          deadline, // Deadline,
           FEE, // TxFee
         ]).toHex(),
         R5: SColl(SColl(SByte), [
