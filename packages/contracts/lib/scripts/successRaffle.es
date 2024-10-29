@@ -102,6 +102,10 @@
     val projectFund = OUTPUTS(1)
     val txFee = SELF.R4[Coll[Long]].get(2)
     val projectAddressHash = SELF.R6[Coll[Byte]].get
+    val hasStolenTickets = OUTPUTS.exists{
+      (box: Box) => 
+        box.tokens.exists{(token: (Coll[Byte], Long)) => token._1 == SELF.tokens(1)._1}
+    }
     sigmaProp(allOf(Coll(
       // Correct Service format
       service.tokens(0)._1 == serviceNft,
@@ -110,7 +114,10 @@
       // Correct ProjectFund format
       blake2b256(projectFund.propositionBytes) == projectAddressHash,
       projectFund.value == SELF.value - txFee,
-      if(!isErgGoal) projectFund.tokens(0) == SELF.tokens(2) else true
+      if(!isErgGoal) projectFund.tokens(0) == SELF.tokens(2) else true,
+
+      // Transaction constraints
+      hasStolenTickets == false,
     )))
   }
 }
