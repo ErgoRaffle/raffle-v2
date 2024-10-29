@@ -268,9 +268,9 @@ export class RaffleBoxFactory {
 
   /**
    * create Inactive-Raffle UTxO
-   * @param ownerAddress
-   * @param implementerPartnerAddress
-   * @param creatorPartnerAddress
+   * @param serviceFeeErgoTree
+   * @param implementerFeeErgoTree
+   * @param creatorErgoTree
    * @param winnersCount
    * @param collectingToken if sets then raffle can only pay charity by this token instead of Erg
    * @param winnersPercents
@@ -282,9 +282,9 @@ export class RaffleBoxFactory {
    * @returns InactiveRaffleBox
    */
   createInactiveRaffleBoxMock(
-    ownerAddress: string,
-    implementerPartnerAddress: string,
-    creatorPartnerAddress: string,
+    serviceFeeErgoTree: string,
+    implementerFeeErgoTree: string,
+    creatorErgoTree: string,
     winnersCount: number = 1,
     collectingToken?: TokenAmount<bigint>,
     winnersPercents?: bigint[],
@@ -324,9 +324,9 @@ export class RaffleBoxFactory {
             FEE, // TxFee
           ]).toHex(),
           R5: SColl(SColl(SByte), [
-            Array.from(blake2b256(Buffer.from(ownerAddress))),
-            Array.from(blake2b256(Buffer.from(implementerPartnerAddress))),
-            Array.from(blake2b256(Buffer.from(creatorPartnerAddress))),
+            Array.from(blake2b256(Buffer.from(serviceFeeErgoTree, 'hex'))),
+            Array.from(blake2b256(Buffer.from(implementerFeeErgoTree, 'hex'))),
+            Array.from(blake2b256(Buffer.from(creatorErgoTree, 'hex'))),
           ]).toHex(),
           R6: SColl(SColl(SByte), [
             Array.from(Buffer.from('Test')),
@@ -435,9 +435,9 @@ export class RaffleBoxFactory {
 
   /**
    * Create output box of active-raffle
-   * @param serviceAddress
-   * @param implementerPartnerAddress
-   * @param creatorPartnerAddress
+   * @param serviceFeeErgoTree
+   * @param implementerFeeErgoTree
+   * @param creatorErgoTree
    * @param winnersCount
    * @param serviceFeePercent
    * @param collectingToken
@@ -450,9 +450,9 @@ export class RaffleBoxFactory {
    * @returns
    */
   createActiveRaffleBoxMock(
-    serviceAddress: string,
-    implementerPartnerAddress: string,
-    creatorPartnerAddress: string,
+    serviceFeeErgoTree: string,
+    implementerFeeErgoTree: string,
+    creatorErgoTree: string,
     winnersCount: number = 1,
     serviceFeePercent: bigint = 100n,
     collectingToken?: TokenAmount<bigint>,
@@ -493,9 +493,9 @@ export class RaffleBoxFactory {
           FEE, // TxFee
         ]).toHex(),
         R5: SColl(SColl(SByte), [
-          Array.from(blake2b256(Buffer.from(serviceAddress))),
-          Array.from(blake2b256(Buffer.from(implementerPartnerAddress))),
-          Array.from(blake2b256(Buffer.from(creatorPartnerAddress))),
+          Array.from(blake2b256(Buffer.from(serviceFeeErgoTree, 'hex'))),
+          Array.from(blake2b256(Buffer.from(implementerFeeErgoTree, 'hex'))),
+          Array.from(blake2b256(Buffer.from(creatorErgoTree, 'hex'))),
         ]).toHex(),
         R6: SInt(winnersCount).toHex(),
         R7: SLong(totalSoldTicket).toHex(),
@@ -551,9 +551,9 @@ export class RaffleBoxFactory {
 
   /**
    * Create output box of active-raffle
-   * @param serviceAddress
-   * @param implementerPartnerAddress
-   * @param creatorPartnerAddress
+   * @param serviceFeeErgoTree
+   * @param implementerFeeErgoTree
+   * @param creatorErgoTree
    * @param winnersCount
    * @param serviceFeePercent
    * @param collectingToken
@@ -569,9 +569,9 @@ export class RaffleBoxFactory {
    * @returns
    */
   createActiveRaffleOutputBox(
-    serviceAddress: string,
-    implementerPartnerAddress: string,
-    creatorPartnerAddress: string,
+    serviceFeeErgoTree: string,
+    implementerFeeErgoTree: string,
+    creatorErgoTree: string,
     winnersCount: number = 1,
     serviceFeePercent: bigint = 100n,
     collectingToken?: TokenAmount<bigint>,
@@ -613,9 +613,9 @@ export class RaffleBoxFactory {
           FEE, // TxFee
         ]).toHex(),
         R5: SColl(SColl(SByte), [
-          Array.from(blake2b256(Buffer.from(serviceAddress))),
-          Array.from(blake2b256(Buffer.from(implementerPartnerAddress))),
-          Array.from(blake2b256(Buffer.from(creatorPartnerAddress))),
+          Array.from(blake2b256(Buffer.from(serviceFeeErgoTree, 'hex'))),
+          Array.from(blake2b256(Buffer.from(implementerFeeErgoTree, 'hex'))),
+          Array.from(blake2b256(Buffer.from(creatorErgoTree, 'hex'))),
         ]),
         R6: SInt(winnersCount).toHex(),
         R7: SLong(totalSoldTicket).toHex(),
@@ -641,6 +641,7 @@ export class RaffleBoxFactory {
   createSuccessRaffleBoxMock(
     boxValue: bigint,
     licenseTokenId: string,
+    creatorAddressHash: Uint8Array,
     seed: string,
     selectedWinnersList: bigint[],
     totalSoldTickets: bigint,
@@ -682,7 +683,8 @@ export class RaffleBoxFactory {
             ),
           ),
         ]).toHex(),
-        R6: SLong(step).toHex(),
+        R6: SColl(SByte, Array.from(creatorAddressHash)).toHex(),
+        R7: SLong(step).toHex(),
       },
     });
   }
