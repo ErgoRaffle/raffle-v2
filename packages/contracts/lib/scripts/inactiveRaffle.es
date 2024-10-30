@@ -2,7 +2,7 @@
   // ErgoRaffle V2 Inactive Raffle Contract
   //
   // Registers:
-  //   R4[Coll[Long]]: [CharityPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, Deadline, txFee]
+  //   R4[Coll[Long]]: [WinnersPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, Deadline, txFee]
   //   R5[Coll[Coll[Byte]]]: [ServiceAddressHash, ImplementerAddressHash, CreatorAddressHash]
   //   R6[Coll[Coll[Byte]]]: [Name, Description, Pictures(optional)]
   //   R7[Coll[Coll[Byte]]]: [TicketId, WinnersPercentListHash]
@@ -73,7 +73,7 @@
   // [InactiveRaffle(Self), TicketRepo] --> [ActiveRaffle, RaffleDetails, Winner[]]
   sigmaProp(allOf(Coll(
     // Correct ActiveRaffle format
-    // R4: [ProjectPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, Deadline, TxFee]
+    // R4: [WinnersPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, Deadline, TxFee]
     // R5: [ServiceAddressHash, ImplementerAddressHash, CreatorAddressHash]
     // R6: WinnersCount
     // R7: TotalSoldTicket

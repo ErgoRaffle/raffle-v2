@@ -70,7 +70,7 @@ export const executeCreateRaffleTx = (
         }
       : undefined,
     winnersPercent,
-    undefined,
+    serviceFeePercent,
     undefined,
     serviceR4[2],
     serviceBox.boxId,
@@ -604,7 +604,7 @@ export const executeReturnRaffleLicenseTx = (
   const serviceR4 = SConstant.from(service.additionalRegisters.R4!)
     .data as bigint[];
   const serviceFeePercent = serviceR4[0];
-  const implementerFeePercent = serviceR4[0];
+  const implementerFeePercent = serviceR4[1];
   const serviceOutputBox = boxFactory.createServiceOutputBox(
     serviceFeeAddress,
     BigInt(service.assets[1].amount.toString()) + 1n,
@@ -672,15 +672,12 @@ export const executeRewardTx = (
   const winnersCount = SConstant.from(activeRaffleBox.additionalRegisters.R6!)
     .data as number;
 
-  const ticketPrice = r4[3];
-  const totalRaised = totalSoldTickets * ticketPrice;
-  const totalPrize = (totalRaised * (100n - r4[0] - r4[1] - r4[2])) / 100n;
-
-  const charityFeePercent = r4[0];
+  const winnerPercent = r4[0];
   const serviceFeePercent = r4[1];
   const implementerFeePercent = r4[2];
-  const winnerPercent =
-    100n - charityFeePercent - serviceFeePercent - implementerFeePercent;
+  const ticketPrice = r4[3];
+  const totalRaised = totalSoldTickets * ticketPrice;
+  const totalPrize = (totalRaised * winnerPercent) / 1000n;
 
   const isErgGoal = activeRaffleBox.assets.length <= 2;
 
@@ -689,24 +686,24 @@ export const executeRewardTx = (
     return [
       {
         tokenId: activeRaffleBox.assets[2].tokenId,
-        amount: (totalRaised * percent) / 100n,
+        amount: (totalRaised * percent) / 1000n,
       },
     ];
   };
   const serviceFeeBox = boxFactory.createCustomOutputBox(
-    (isErgGoal ? BigInt((totalRaised * serviceFeePercent) / 100n) : 0n) +
+    (isErgGoal ? BigInt((totalRaised * serviceFeePercent) / 1000n) : 0n) +
       testUtils.FEE,
     createTokenPercent(serviceFeePercent),
     serviceAddress,
   );
   const implementerFeeBox = boxFactory.createCustomOutputBox(
-    (isErgGoal ? BigInt((totalRaised * implementerFeePercent) / 100n) : 0n) +
+    (isErgGoal ? BigInt((totalRaised * implementerFeePercent) / 1000n) : 0n) +
       testUtils.FEE,
     createTokenPercent(serviceFeePercent),
     implementerAddress,
   );
   const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-    (isErgGoal ? BigInt((totalRaised * winnerPercent) / 100n) : 0n) +
+    (isErgGoal ? BigInt((totalRaised * winnerPercent) / 1000n) : 0n) +
       testUtils.FEE,
     activeRaffleBox.assets[0].tokenId,
     oracleBox.boxId.toString(),

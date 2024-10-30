@@ -44,8 +44,8 @@ const createActiveRaffleEndTest = (
           amount: totalRaised + 1n,
         }
       : undefined;
-  const implementerFeePercent = 10n;
-  const serviceFeePercent = 20n;
+  const implementerFeePercent = 100n;
+  const serviceFeePercent = 200n;
 
   const { creator, implementer, someone, donator } = boxFactory.createPartners({
     creator: CREATOR_DEFAULT_BALANCE,
@@ -142,28 +142,28 @@ const createActiveRaffleEndTest = (
   const oracleBox = boxFactory.createMockedOracleUTxO(testUtils.FEE);
   const serviceFeeBox = boxFactory.createCustomOutputBox(
     collectingTokenId === undefined
-      ? BigInt((totalRaised * serviceFeePercent) / 100n) + testUtils.FEE
+      ? BigInt((totalRaised * serviceFeePercent) / 1000n) + testUtils.FEE
       : testUtils.FEE,
     collectingTokenId === undefined
       ? []
       : [
           {
             tokenId: collectingTokenId,
-            amount: (totalRaised * serviceFeePercent) / 100n,
+            amount: (totalRaised * serviceFeePercent) / 1000n,
           },
         ],
     someone.address.toString(),
   );
   const implementerFeeBox = boxFactory.createCustomOutputBox(
     collectingTokenId === undefined
-      ? BigInt((totalRaised * implementerFeePercent) / 100n) + testUtils.FEE
+      ? BigInt((totalRaised * implementerFeePercent) / 1000n) + testUtils.FEE
       : testUtils.FEE,
     collectingTokenId === undefined
       ? []
       : [
           {
             tokenId: collectingTokenId,
-            amount: (totalRaised * implementerFeePercent) / 100n,
+            amount: (totalRaised * implementerFeePercent) / 1000n,
           },
         ],
     implementer.address.toString(),
@@ -212,7 +212,7 @@ describe('ActiveRaffle', () => {
         donatorWallet,
         activeRaffleBoxForDonate,
       }) => {
-        const serviceFeePercent = 20n;
+        const serviceFeePercent = 200n;
 
         const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
           creatorWallet.address.toString(),
@@ -270,7 +270,7 @@ describe('ActiveRaffle', () => {
         donatorWallet,
         activeRaffleBoxForDonate,
       }) => {
-        const serviceFeePercent = 20n;
+        const serviceFeePercent = 200n;
         const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
           creatorWallet.address.toString(),
           implementerWallet.address.toString(),
@@ -327,7 +327,7 @@ describe('ActiveRaffle', () => {
         donatorWallet,
         activeRaffleBoxForDonate,
       }) => {
-        const serviceFeePercent = 20n;
+        const serviceFeePercent = 200n;
         const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
           creatorWallet.address.toString(),
           implementerWallet.address.toString(),
@@ -382,7 +382,7 @@ describe('ActiveRaffle', () => {
         donatorWallet,
         activeRaffleBoxForDonate,
       }) => {
-        const serviceFeePercent = 20n;
+        const serviceFeePercent = 200n;
         const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
           creatorWallet.address.toString(),
           implementerWallet.address.toString(),
@@ -437,7 +437,7 @@ describe('ActiveRaffle', () => {
         donatorWallet,
         activeRaffleBoxForDonate,
       }) => {
-        const serviceFeePercent = 20n;
+        const serviceFeePercent = 200n;
         const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
           creatorWallet.address.toString(),
           implementerWallet.address.toString(),
@@ -491,7 +491,7 @@ describe('ActiveRaffle', () => {
         donatorWallet,
         activeRaffleBoxForDonate,
       }) => {
-        const serviceFeePercent = 20n;
+        const serviceFeePercent = 200n;
         const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
           creatorWallet.address.toString(),
           'invalid implementer address',
@@ -554,7 +554,7 @@ describe('ActiveRaffle', () => {
             },
           ],
         });
-        const serviceFeePercent = 20n;
+        const serviceFeePercent = 200n;
         const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
           creatorWallet.address.toString(),
           implementerWallet.address.toString(),
@@ -610,7 +610,7 @@ describe('ActiveRaffle', () => {
         donatorWallet,
         activeRaffleBoxForDonate,
       }) => {
-        const serviceFeePercent = 20n;
+        const serviceFeePercent = 200n;
         const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
           creatorWallet.address.toString(),
           implementerWallet.address.toString(),
@@ -666,7 +666,7 @@ describe('ActiveRaffle', () => {
         donatorWallet,
         activeRaffleBoxForDonate,
       }) => {
-        const serviceFeePercent = 20n;
+        const serviceFeePercent = 200n;
         const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
           creatorWallet.address.toString(),
           implementerWallet.address.toString(),
@@ -727,7 +727,7 @@ describe('ActiveRaffle', () => {
         donatorWallet,
         activeRaffleBoxForDonate,
       }) => {
-        const serviceFeePercent = 20n;
+        const serviceFeePercent = 200n;
         const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
           creatorWallet.address.toString(),
           implementerWallet.address.toString(),
@@ -783,7 +783,7 @@ describe('ActiveRaffle', () => {
         donatorWallet,
         activeRaffleBoxForDonate,
       }) => {
-        const serviceFeePercent = 20n;
+        const serviceFeePercent = 200n;
         const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
           creatorWallet.address.toString(),
           implementerWallet.address.toString(),
@@ -845,14 +845,14 @@ describe('ActiveRaffle', () => {
       }) => {
         boxFactory.chain.setTip(2001);
 
-        const winnerPercent = 10n;
+        const winnersPercent = 200n;
         const totalRaised = 1_000_000n;
-        const totalPrize = 100_000n;
+        const totalPrize = (winnersPercent * totalRaised) / 1000n;
         const winnersCount = 1;
         const totalSoldTickets = 10n;
 
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-          BigInt((totalRaised * winnerPercent) / 100n) + testUtils.FEE,
+          totalPrize + testUtils.FEE,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           oracleBox.boxId.toString(),
           [],
@@ -918,7 +918,7 @@ describe('ActiveRaffle', () => {
 
         const winnersCount = 1;
         const totalSoldTickets = 10n;
-        const totalPrize = 10n;
+        const totalPrize = 20n;
 
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
           testUtils.FEE,
@@ -984,9 +984,9 @@ describe('ActiveRaffle', () => {
         activeRaffleBoxForSuccessEnd,
       }) => {
         boxFactory.chain.setTip(2001);
-        const winnerPercent = 10n;
+        const winnersPercent = 200n;
         const totalRaised = 1_000_000n;
-        const totalPrize = 100_000n;
+        const totalPrize = (winnersPercent * totalRaised) / 1000n;
 
         const oracleBox = boxFactory.createMockedOracleUTxO(
           testUtils.FEE,
@@ -997,7 +997,7 @@ describe('ActiveRaffle', () => {
         const totalSoldTickets = 10n;
 
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-          BigInt((totalRaised * winnerPercent) / 100n) + testUtils.FEE,
+          totalPrize + testUtils.FEE,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           oracleBox.boxId.toString(),
           [],
@@ -1059,9 +1059,9 @@ describe('ActiveRaffle', () => {
       }) => {
         boxFactory.chain.setTip(2001);
 
-        const winnerPercent = 10n;
+        const winnersPercent = 200n;
         const totalRaised = 1_000_000n;
-        const totalPrize = 100_000n;
+        const totalPrize = (winnersPercent * totalRaised) / 1000n;
 
         const oracleBox = boxFactory.createMockedOracleUTxO(
           testUtils.FEE,
@@ -1073,7 +1073,7 @@ describe('ActiveRaffle', () => {
         const totalSoldTickets = 10n;
 
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-          BigInt((totalRaised * winnerPercent) / 100n) + testUtils.FEE,
+          totalPrize + testUtils.FEE,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           oracleBox.boxId.toString(),
           [],
@@ -1137,14 +1137,14 @@ describe('ActiveRaffle', () => {
       }) => {
         boxFactory.chain.setTip(2001);
 
-        const winnerPercent = 10n;
+        const winnersPercent = 200n;
         const totalRaised = 1_000_000n;
-        const totalPrize = 100_000n;
+        const totalPrize = (winnersPercent * totalRaised) / 1000n;
         const winnersCount = 1;
         const totalSoldTickets = 10n;
 
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-          BigInt((totalRaised * winnerPercent) / 100n) + testUtils.FEE,
+          totalPrize + testUtils.FEE,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           oracleBox.boxId.toString(),
           [],
@@ -1219,14 +1219,14 @@ describe('ActiveRaffle', () => {
       }) => {
         boxFactory.chain.setTip(2001);
 
-        const winnerPercent = 10n;
+        const winnersPercent = 200n;
         const totalRaised = 1_000_000n;
-        const totalPrize = 100_000n;
+        const totalPrize = (winnersPercent * totalRaised) / 1000n;
         const winnersCount = 1;
         const totalSoldTickets = 10n;
 
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-          BigInt((totalRaised * winnerPercent) / 100n) + testUtils.FEE,
+          totalPrize + testUtils.FEE,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           oracleBox.boxId.toString(),
           [],
@@ -1290,18 +1290,18 @@ describe('ActiveRaffle', () => {
       }) => {
         boxFactory.chain.setTip(2001);
 
-        const winnerPercent = 10n;
+        const winnersPercent = 200n;
         const totalRaised = 1_000_000n;
-        const totalPrize = 100_000n;
+        const totalPrize = (winnersPercent * totalRaised) / 1000n;
 
         const winnersCount = 1;
         const totalSoldTickets = 10n;
         // set invalid percents on the output fee boxes
-        const invalidServiceFeePercent = 25n;
-        const invalidImplementerFeePercent = 5n;
+        const invalidServiceFeePercent = 250n;
+        const invalidImplementerFeePercent = 50n;
 
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-          BigInt((totalRaised * winnerPercent) / 100n) + testUtils.FEE,
+          totalPrize + testUtils.FEE,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           oracleBox.boxId.toString(),
           [],
@@ -1316,14 +1316,14 @@ describe('ActiveRaffle', () => {
         );
 
         const serviceFeeBox = boxFactory.createCustomOutputBox(
-          BigInt((totalRaised * invalidServiceFeePercent) / 100n) +
+          BigInt((totalRaised * invalidServiceFeePercent) / 1000n) +
             testUtils.FEE,
           [],
           someoneWallet.address.toString(),
         );
 
         const implementerFeeBox = boxFactory.createCustomOutputBox(
-          BigInt((totalRaised * invalidImplementerFeePercent) / 100n) +
+          BigInt((totalRaised * invalidImplementerFeePercent) / 1000n) +
             testUtils.FEE,
           [],
           implementerWallet.address.toString(),
@@ -1383,15 +1383,15 @@ describe('ActiveRaffle', () => {
         const totalRaised = 100n;
         const totalPrize = 10n;
         // set invalid percents on the output fee boxes
-        const invalidServiceFeePercent = 25n;
-        const invalidImplementerFeePercent = 5n;
+        const invalidServiceFeePercent = 250n;
+        const invalidImplementerFeePercent = 50n;
 
         const serviceFeeBox = boxFactory.createCustomOutputBox(
           testUtils.FEE,
           [
             {
               tokenId: activeRaffleBoxForSuccessEnd.assets[2].tokenId,
-              amount: (totalRaised * invalidServiceFeePercent) / 100n,
+              amount: (totalRaised * invalidServiceFeePercent) / 1000n,
             },
           ],
           someoneWallet.address.toString(),
@@ -1402,7 +1402,7 @@ describe('ActiveRaffle', () => {
           [
             {
               tokenId: activeRaffleBoxForSuccessEnd.assets[2].tokenId,
-              amount: (totalRaised * invalidImplementerFeePercent) / 100n,
+              amount: (totalRaised * invalidImplementerFeePercent) / 1000n,
             },
           ],
           implementerWallet.address.toString(),
@@ -1475,12 +1475,12 @@ describe('ActiveRaffle', () => {
 
         const winnersCount = 1;
         const totalSoldTickets = 10n;
-        const winnerPercent = 10n;
+        const winnersPercent = 200n;
         const totalRaised = 1_000_000n;
-        const totalPrize = 100_000n;
+        const totalPrize = (winnersPercent * totalRaised) / 1000n;
 
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-          BigInt((totalRaised * winnerPercent) / 100n) + testUtils.FEE,
+          totalPrize + testUtils.FEE,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           // set invalid seed
           'invalid seed',
@@ -1546,12 +1546,12 @@ describe('ActiveRaffle', () => {
 
         const winnersCount = 1;
         const totalSoldTickets = 10n;
-        const winnerPercent = 10n;
+        const winnersPercent = 200n;
         const totalRaised = 1_000_000n;
-        const totalPrize = 100_000n;
+        const totalPrize = (winnersPercent * totalRaised) / 1000n;
 
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-          BigInt((totalRaised * winnerPercent) / 100n) + testUtils.FEE,
+          totalPrize + testUtils.FEE,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           oracleBox.boxId.toString(),
           // set invalid selected winner list
@@ -1617,12 +1617,12 @@ describe('ActiveRaffle', () => {
 
         const winnersCount = 1;
         const totalSoldTickets = 10n;
-        const winnerPercent = 10n;
+        const winnersPercent = 200n;
         const totalRaised = 1_000_000n;
-        const totalPrize = 100_000n;
+        const totalPrize = (winnersPercent * totalRaised) / 1000n;
 
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-          BigInt((totalRaised * winnerPercent) / 100n) + testUtils.FEE,
+          totalPrize + testUtils.FEE,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           oracleBox.boxId.toString(),
           [],

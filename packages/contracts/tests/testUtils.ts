@@ -167,8 +167,8 @@ export class RaffleBoxFactory {
   createServiceBoxMock(
     ownerAddress: string,
     licenseTokenCount: bigint = LICENSE_TOKEN_COUNT,
-    serviceFeePercent: bigint = 10n,
-    implementerFeePercent: bigint = 10n,
+    serviceFeePercent: bigint = 100n,
+    implementerFeePercent: bigint = 100n,
     creationFee = CREATION_FEE,
   ) {
     return new ErgoUnsignedInput(
@@ -205,8 +205,8 @@ export class RaffleBoxFactory {
   createServiceOutputBox(
     ownerAddress: string,
     licenseTokenCount: bigint = 999999999n,
-    serviceFeePercent: bigint = 10n,
-    implementerFeePercent: bigint = 10n,
+    serviceFeePercent: bigint = 100n,
+    implementerFeePercent: bigint = 100n,
     creationFee = CREATION_FEE,
   ) {
     return new OutputBuilder(15_000_000n, this.contractsAddresses['service'])
@@ -285,7 +285,7 @@ export class RaffleBoxFactory {
     winnersCount: number = 1,
     collectingToken?: TokenAmount<bigint>,
     winnersPercents?: bigint[],
-    serviceFeePercent: bigint = 10n,
+    serviceFeePercent: bigint = 100n,
     invalidWinnerHash?: string,
     creationFee: bigint = CREATION_FEE,
     ticketTokenId: string = TICKET_TOKEN_ID,
@@ -312,9 +312,9 @@ export class RaffleBoxFactory {
         assets: tokens,
         additionalRegisters: {
           R4: SColl(SLong, [
-            60n, // CharityPercentage,
+            200n, // WinnersPercentage,
             serviceFeePercent, // ServiceFeePercent,
-            10n, // ImplementerFeePercent,
+            100n, // ImplementerFeePercent,
             10n, // TicketPrice,
             1000n, // Goal,
             deadline, // Deadline,
@@ -370,7 +370,7 @@ export class RaffleBoxFactory {
     winnersCount: number = 1,
     collectingToken?: TokenAmount<bigint>,
     winnersPercents?: bigint[],
-    serviceFeePercent: bigint = 10n,
+    serviceFeePercent: bigint = 100n,
     invalidWinnerHash?: string,
     creationFee = CREATION_FEE,
     ticketToken: string = TICKET_TOKEN_ID,
@@ -397,9 +397,9 @@ export class RaffleBoxFactory {
       .addTokens(tokens)
       .setAdditionalRegisters({
         R4: SColl(SLong, [
-          60n, // CharityPercentage,
+          200n, // WinnersPercentage,
           serviceFeePercent, // ServiceFeePercent,
-          10n, // ImplementerFeePercent,
+          100n, // ImplementerFeePercent,
           ticketPrice, // TicketPrice,
           1000n, // Goal,
           deadline, // Deadline,
@@ -451,7 +451,7 @@ export class RaffleBoxFactory {
     implementerPartnerAddress: string,
     creatorPartnerAddress: string,
     winnersCount: number = 1,
-    serviceFeePercent: bigint = 10n,
+    serviceFeePercent: bigint = 100n,
     collectingToken?: TokenAmount<bigint>,
     creationFee: bigint = CREATION_FEE,
     value?: bigint,
@@ -481,9 +481,9 @@ export class RaffleBoxFactory {
       assets: tokens,
       additionalRegisters: {
         R4: SColl(SLong, [
-          60n, // CharityPercentage,
+          200n, // WinnersPercentage,
           serviceFeePercent, // ServiceFeePercent,
-          10n, // ImplementerFeePercent,
+          100n, // ImplementerFeePercent,
           ticketPrice, // TicketPrice,
           goal, // Goal,
           deadline, // Deadline,
@@ -571,7 +571,7 @@ export class RaffleBoxFactory {
     implementerPartnerAddress: string,
     creatorPartnerAddress: string,
     winnersCount: number = 1,
-    serviceFeePercent: bigint = 10n,
+    serviceFeePercent: bigint = 100n,
     collectingToken?: TokenAmount<bigint>,
     creationFee = CREATION_FEE,
     value?: bigint,
@@ -602,9 +602,9 @@ export class RaffleBoxFactory {
       .addTokens(tokens)
       .setAdditionalRegisters({
         R4: SColl(SLong, [
-          60n, // CharityPercentage,
+          200n, // WinnersPercentage,
           serviceFeePercent, // ServiceFeePercent,
-          10n, // ImplementerFeePercent,
+          100n, // ImplementerFeePercent,
           ticketPrice, // TicketPrice,
           goal, // Goal,
           deadline, // Deadline,
