@@ -87,6 +87,7 @@
         blake2b256(inactiveRaffle.propositionBytes) == inactiveRaffleScriptHash,
         inactiveRaffle.tokens(0)._1 == raffleLicense,
         inactiveRaffle.R4[Coll[Long]].get.size == 7,
+        inactiveRaffle.R4[Coll[Long]].get(0) >= 0,
         inactiveRaffle.R4[Coll[Long]].get(1) == serviceFeePercent,
         inactiveRaffle.R4[Coll[Long]].get(2) == implementerFeePercent,
         inactiveRaffle.R4[Coll[Long]].get(0) + serviceFeePercent + implementerFeePercent < 1000L,
