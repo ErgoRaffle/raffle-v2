@@ -48,7 +48,7 @@ export const LICENSE_TOKEN_ID = '2'.repeat(64);
 export const X_TOKEN_ID = '3'.repeat(64);
 export const TICKET_TOKEN_ID = '4'.repeat(64);
 export const GIFT_TOKEN_ID = '5'.repeat(64);
-export const GIFT_TOKEN_COUNT = 2_000;
+export const GIFT_TOKEN_COUNT = 2_000n;
 export const CREATION_FEE = 1_000_000_000n;
 export const raffleNFTToken = { amount: 1n, tokenId: RAFFLE_NFT_ID };
 export const LICENSE_TOKEN_COUNT = 1_000_000_000n;
@@ -106,7 +106,7 @@ export const initialContracts = (
     RAFFLE_LICENSE_B64: defaultLicenseTokenId,
   };
   scriptsVars['inactiveRaffle'] = {
-    GIFT_TOKEN_COUNT: GIFT_TOKEN_COUNT,
+    GIFT_TOKEN_COUNT: GIFT_TOKEN_COUNT.toString() + 'L',
   };
 
   scriptsVars['activeRaffle'] = {
@@ -282,7 +282,7 @@ export class RaffleBoxFactory {
     ownerAddress: string,
     implementerPartnerAddress: string,
     creatorPartnerAddress: string,
-    winnersCount: bigint = 1n,
+    winnersCount: number = 1,
     collectingToken?: TokenAmount<bigint>,
     winnersPercents?: bigint[],
     serviceFeePercent: bigint = 10n,
@@ -302,12 +302,12 @@ export class RaffleBoxFactory {
     winnersPercents = winnersPercents || [];
     if (winnersPercents.length === 0)
       for (let i = 0; i < winnersCount; i++) {
-        winnersPercents.push(1000n / winnersCount);
+        winnersPercents.push(1000n / BigInt(winnersCount));
       }
 
     return new ErgoUnsignedInput(
       mockUTxO({
-        value: 5n * FEE + 4n * FEE * winnersCount + creationFee,
+        value: 5n * FEE + 4n * FEE * BigInt(winnersCount) + creationFee,
         ergoTree: this.contractsAddresses['inactiveRaffle'],
         assets: tokens,
         additionalRegisters: {
@@ -317,8 +317,7 @@ export class RaffleBoxFactory {
             10n, // ImplementerFeePercent,
             10n, // TicketPrice,
             1000n, // Goal,
-            deadline, // DeadlineTimestamp,
-            winnersCount, // WinnersCount,
+            deadline, // Deadline,
             FEE, // TxFee
           ]).toHex(),
           R5: SColl(SColl(SByte), [
@@ -342,6 +341,7 @@ export class RaffleBoxFactory {
                 ),
               ),
             ]).toHex(),
+          R8: SInt(winnersCount).toHex(),
         },
       }),
     );
@@ -367,7 +367,7 @@ export class RaffleBoxFactory {
     ownerAddress: string,
     implementerPartnerAddress: string,
     creatorPartnerAddress: string,
-    winnersCount: bigint = 1n,
+    winnersCount: number = 1,
     collectingToken?: TokenAmount<bigint>,
     winnersPercents?: bigint[],
     serviceFeePercent: bigint = 10n,
@@ -388,10 +388,10 @@ export class RaffleBoxFactory {
     winnersPercents = winnersPercents || [];
     if (winnersPercents.length === 0)
       for (let i = 0; i < winnersCount; i++)
-        winnersPercents.push(1000n / winnersCount);
+        winnersPercents.push(1000n / BigInt(winnersCount));
 
     return new OutputBuilder(
-      5n * FEE + 4n * FEE * winnersCount + creationFee,
+      5n * FEE + 4n * FEE * BigInt(winnersCount) + creationFee,
       this.contractsAddresses['inactiveRaffle'],
     )
       .addTokens(tokens)
@@ -402,8 +402,7 @@ export class RaffleBoxFactory {
           10n, // ImplementerFeePercent,
           ticketPrice, // TicketPrice,
           1000n, // Goal,
-          deadline, // DeadlineTimestamp,
-          winnersCount, // WinnersCount,
+          deadline, // Deadline,
           FEE, // TxFee
         ]),
         R5: SColl(SColl(SByte), [
@@ -427,6 +426,7 @@ export class RaffleBoxFactory {
               ),
             ),
           ]).toHex(),
+        R8: SInt(winnersCount).toHex(),
       });
   }
 
@@ -450,7 +450,7 @@ export class RaffleBoxFactory {
     serviceAddress: string,
     implementerPartnerAddress: string,
     creatorPartnerAddress: string,
-    winnersCount: bigint = 1n,
+    winnersCount: number = 1,
     serviceFeePercent: bigint = 10n,
     collectingToken?: TokenAmount<bigint>,
     creationFee: bigint = CREATION_FEE,
@@ -469,7 +469,7 @@ export class RaffleBoxFactory {
       },
       {
         tokenId: TICKET_TOKEN_ID,
-        amount: 1_000_000_000n - 1n - winnersCount,
+        amount: 1_000_000_000n - 1n - BigInt(winnersCount),
       },
     ];
     if (collectingToken != null) tokens.push(collectingToken);
@@ -486,8 +486,7 @@ export class RaffleBoxFactory {
           10n, // ImplementerFeePercent,
           ticketPrice, // TicketPrice,
           goal, // Goal,
-          deadline, // DeadlineTimestamp,
-          winnersCount, // WinnersCount,
+          deadline, // Deadline,
           FEE, // TxFee
         ]).toHex(),
         R5: SColl(SColl(SByte), [
@@ -495,7 +494,8 @@ export class RaffleBoxFactory {
           Array.from(blake2b256(Buffer.from(implementerPartnerAddress))),
           Array.from(blake2b256(Buffer.from(creatorPartnerAddress))),
         ]).toHex(),
-        R6: SLong(totalSoldTicket).toHex(),
+        R6: SInt(winnersCount).toHex(),
+        R7: SLong(totalSoldTicket).toHex(),
       },
     });
   }
@@ -504,6 +504,7 @@ export class RaffleBoxFactory {
    * Create active raffle box with registers
    * @param r4
    * @param r5
+   * @param winnersCount
    * @param value
    * @param ticketTokenAmount
    * @param ticketTokenId
@@ -514,6 +515,7 @@ export class RaffleBoxFactory {
   createActiveRaffleWithConstantRegisters(
     r4: bigint[],
     r5: Uint8Array[],
+    winnersCount: number = 1,
     value: bigint,
     ticketTokenAmount: bigint,
     ticketTokenId: string = TICKET_TOKEN_ID,
@@ -540,7 +542,8 @@ export class RaffleBoxFactory {
           SColl(SByte),
           r5.map((value) => Array.from(value)),
         ),
-        R6: SLong(totalSoldTicket).toHex(),
+        R6: SInt(winnersCount).toHex(),
+        R7: SLong(totalSoldTicket).toHex(),
       });
   }
 
@@ -567,7 +570,7 @@ export class RaffleBoxFactory {
     serviceAddress: string,
     implementerPartnerAddress: string,
     creatorPartnerAddress: string,
-    winnersCount: bigint = 1n,
+    winnersCount: number = 1,
     serviceFeePercent: bigint = 10n,
     collectingToken?: TokenAmount<bigint>,
     creationFee = CREATION_FEE,
@@ -589,7 +592,7 @@ export class RaffleBoxFactory {
       },
       {
         tokenId: ticketTokenId,
-        amount: ticketTokenAmount || 1_000_000_000n - 1n - winnersCount,
+        amount: ticketTokenAmount || 1_000_000_000n - 1n - BigInt(winnersCount),
       },
       ...extraTokens,
     ];
@@ -604,8 +607,7 @@ export class RaffleBoxFactory {
           10n, // ImplementerFeePercent,
           ticketPrice, // TicketPrice,
           goal, // Goal,
-          deadline, // DeadlineTimestamp,
-          winnersCount, // WinnersCount,
+          deadline, // Deadline,
           FEE, // TxFee
         ]).toHex(),
         R5: SColl(SColl(SByte), [
@@ -613,7 +615,8 @@ export class RaffleBoxFactory {
           Array.from(blake2b256(Buffer.from(implementerPartnerAddress))),
           Array.from(blake2b256(Buffer.from(creatorPartnerAddress))),
         ]),
-        R6: SLong(totalSoldTicket).toHex(),
+        R6: SInt(winnersCount).toHex(),
+        R7: SLong(totalSoldTicket).toHex(),
       });
   }
 
@@ -696,6 +699,7 @@ export class RaffleBoxFactory {
    * @param ticketTokenId
    * @param ticketTokenAmount
    * @param collectingTokenId
+   * @param extraTokens
    * @returns
    */
   createSuccessRaffleBox = (
@@ -704,10 +708,10 @@ export class RaffleBoxFactory {
     seed: string,
     selectedWinnersList: bigint[],
     totalSoldTickets: bigint,
-    winnersCount: bigint = 1n,
+    winnersCount: number = 1,
     totalPrize: bigint = 1n,
     prizeValue: bigint = 0n,
-    step: bigint = 1n,
+    step: number = 1,
     ticketTokenId: string = TICKET_TOKEN_ID,
     ticketTokenAmount: bigint = 1n,
     collectingTokenId?: string,
@@ -731,8 +735,9 @@ export class RaffleBoxFactory {
         ...extraTokens,
       ])
       .setAdditionalRegisters({
-        R4: SColl(SLong, [winnersCount, totalPrize, totalSoldTickets]).toHex(),
-        R5: SColl(SColl(SByte), [
+        R4: SColl(SLong, [totalPrize, totalSoldTickets]).toHex(),
+        R5: SInt(winnersCount),
+        R6: SColl(SColl(SByte), [
           Array.from(Buffer.from(seed, 'hex')),
           Array.from(
             blake2b256(
@@ -742,7 +747,7 @@ export class RaffleBoxFactory {
             ),
           ),
         ]).toHex(),
-        R6: SLong(step),
+        R7: SInt(step),
       });
   };
 
@@ -758,7 +763,7 @@ export class RaffleBoxFactory {
    */
   createWinnerPrizeOutputBox(
     value: bigint,
-    winnerIndex: bigint,
+    winnerIndex: number,
     ticketIndex: bigint,
     giftCount: bigint,
     unwrappedGiftCount: bigint,
@@ -767,13 +772,9 @@ export class RaffleBoxFactory {
     return new OutputBuilder(value, this.contractsAddresses['winnerPrize'])
       .addTokens(tokens)
       .setAdditionalRegisters({
-        R4: SColl(SLong, [
-          BigInt(ticketIndex),
-          winnerIndex,
-          BigInt(giftCount),
-          FEE,
-        ]).toHex(),
-        R5: SLong(unwrappedGiftCount),
+        R4: SColl(SLong, [ticketIndex, giftCount, FEE]),
+        R5: SInt(winnerIndex),
+        R6: SLong(unwrappedGiftCount),
       });
   }
 
@@ -861,7 +862,7 @@ export class RaffleBoxFactory {
    * @returns
    */
   createGiftBoxMock(
-    winnerIndex: bigint,
+    winnerIndex: number,
     giftGiverWalletAddress: string,
     value: bigint = 0n,
     giftTokenId: string,
@@ -875,7 +876,7 @@ export class RaffleBoxFactory {
           SByte,
           Array.from(Buffer.from(giftGiverWalletAddress)),
         ).toHex(),
-        R5: SLong(winnerIndex).toHex(),
+        R5: SInt(winnerIndex).toHex(),
       },
       assets: [
         {
@@ -902,7 +903,7 @@ export class RaffleBoxFactory {
     winnersCount: number,
     step: number = 1,
     value = FEE * BigInt(winnersCount),
-    giftAssetTokenCount = BigInt(winnersCount * GIFT_TOKEN_COUNT),
+    giftAssetTokenCount = BigInt(winnersCount) * GIFT_TOKEN_COUNT,
     ticketId: string = TICKET_TOKEN_ID,
     giftTokenId = GIFT_TOKEN_ID,
   ) {
@@ -915,13 +916,9 @@ export class RaffleBoxFactory {
           R4: SColl(SInt, [1]).toHex(),
           R5: SColl(SInt, [2]).toHex(),
           R6: SColl(SInt, [3]).toHex(),
-          R7: SColl(SInt, [
-            GIFT_TOKEN_COUNT,
-            winnersCount,
-            Number(FEE),
-          ]).toHex(),
+          R7: SColl(SLong, [GIFT_TOKEN_COUNT, FEE]).toHex(),
           R8: SColl(SByte, Array.from(Buffer.from(ticketId, 'hex'))).toHex(),
-          R9: SInt(step).toHex(),
+          R9: SColl(SInt, [winnersCount, step]).toHex(),
         },
         assets: [
           ...(giftAssetTokenCount > 0
@@ -950,11 +947,11 @@ export class RaffleBoxFactory {
    * @returns
    */
   createGiftTokenRepoOutputBox(
-    winnersCount: bigint,
+    winnersCount: number,
     tokenInsertionType: null | 'mint' | 'add' = 'mint',
     step: number = 1,
     value = FEE * BigInt(winnersCount),
-    giftAssetTokenCount = BigInt(GIFT_TOKEN_COUNT) * BigInt(winnersCount),
+    giftAssetTokenCount = GIFT_TOKEN_COUNT * BigInt(winnersCount),
     ticketId: string = TICKET_TOKEN_ID,
     giftTokenId: string = GIFT_TOKEN_ID,
     giftTokenCount = GIFT_TOKEN_COUNT,
@@ -966,13 +963,9 @@ export class RaffleBoxFactory {
       R4: SColl(SInt, [1]).toHex(),
       R5: SColl(SInt, [2]).toHex(),
       R6: SColl(SInt, [3]).toHex(),
-      R7: SColl(SInt, [
-        giftTokenCount,
-        Number(winnersCount),
-        Number(FEE),
-      ]).toHex(),
+      R7: SColl(SLong, [giftTokenCount, FEE]).toHex(),
       R8: SColl(SByte, Array.from(Buffer.from(ticketId, 'hex'))).toHex(),
-      R9: SInt(step).toHex(),
+      R9: SColl(SInt, [winnersCount, step]).toHex(),
     });
     if (tokenInsertionType === 'mint')
       giftBox.mintToken({
@@ -1001,7 +994,7 @@ export class RaffleBoxFactory {
    * @returns
    */
   createWinnersBoxMock(
-    winnersCount: bigint = 1n,
+    winnersCount: number = 1,
     ticketTokenId: string = TICKET_TOKEN_ID,
     ticketTokenAmount: bigint = 1n,
     giftCount: bigint = 0n,
@@ -1017,13 +1010,13 @@ export class RaffleBoxFactory {
           ergoTree: this.contractsAddresses['winner'],
           additionalRegisters: {
             R4: SColl(SLong, [
-              BigInt(i + 1),
-              1000n / winnersCount,
+              1000n / BigInt(winnersCount),
               deadline,
               FEE,
             ]).toHex(),
-            R5: SLong(giftCount).toHex(),
-            R6:
+            R5: SInt(i + 1).toHex(),
+            R6: SLong(giftCount).toHex(),
+            R7:
               giftTokenId !== undefined
                 ? SColl(
                     SByte,
@@ -1056,7 +1049,7 @@ export class RaffleBoxFactory {
    * @returns
    */
   createWinnersOutputBox(
-    winnersCount: bigint = 1n,
+    winnersCount: number = 1,
     giftTokenId: string,
     ticketTokenId: string = TICKET_TOKEN_ID,
     ticketTokenAmount: bigint = 1n,
@@ -1144,7 +1137,7 @@ export class RaffleBoxFactory {
    * @returns
    */
   createGiftOutputBox(
-    winnerIndex: bigint,
+    winnerIndex: number,
     giftGiverWalletAddress: string,
     value: bigint = 0n,
     giftTokenId?: string,
@@ -1155,7 +1148,7 @@ export class RaffleBoxFactory {
       this.contractsAddresses['gift'],
     ).setAdditionalRegisters({
       R4: SColl(SByte, Array.from(Buffer.from(giftGiverWalletAddress))),
-      R5: SLong(winnerIndex),
+      R5: SInt(winnerIndex),
     });
     if (giftTokenId !== undefined) {
       giftForWinnerOutputBox.assets.add({
@@ -1213,8 +1206,8 @@ export class RaffleBoxFactory {
     value: bigint,
     totalSoldTicket: bigint,
     ticketPrice: bigint,
-    winnersCount: bigint,
-    step: bigint,
+    winnersCount: number,
+    step: number,
     ticketTokenId: string,
     ticketTokenCount: bigint,
     collectingToken?: TokenAmount<bigint>,
@@ -1225,11 +1218,9 @@ export class RaffleBoxFactory {
       this.contractsAddresses['giftRedeem'],
     );
     giftRedeemOutputBox.setAdditionalRegisters({
-      R4: SColl(
-        SLong,
-        Array.from([totalSoldTicket, ticketPrice, winnersCount, FEE]),
-      ),
-      R5: SLong(step).toHex(),
+      R4: SColl(SLong, Array.from([totalSoldTicket, ticketPrice, FEE])),
+      R5: SInt(winnersCount).toHex(),
+      R6: SInt(step).toHex(),
     });
     giftRedeemOutputBox.addTokens([
       {
@@ -1302,6 +1293,8 @@ export class RaffleBoxFactory {
    * @param giftTokenId
    * @param giftTokenCount
    * @param giftCount
+   * @param winnerIndex
+   * @param value
    */
   createWinnerOutputBoxWithConstantRegisters(
     r4: bigint[],
@@ -1309,6 +1302,7 @@ export class RaffleBoxFactory {
     giftTokenId: string = GIFT_TOKEN_ID,
     giftTokenCount = BigInt(GIFT_TOKEN_COUNT),
     giftCount = 0n,
+    winnerIndex: number = 1,
     value: bigint = 3n * FEE,
   ) {
     const winnerBox = new OutputBuilder(
@@ -1317,8 +1311,9 @@ export class RaffleBoxFactory {
     )
       .setAdditionalRegisters({
         R4: SColl(SLong, r4),
-        R5: SLong(giftCount),
-        R6: SColl(SByte, Array.from(Buffer.from(giftTokenId, 'hex'))),
+        R5: SInt(winnerIndex),
+        R6: SLong(giftCount),
+        R7: SColl(SByte, Array.from(Buffer.from(giftTokenId, 'hex'))),
       })
       .addTokens({
         tokenId: ticketTokenId,
@@ -1332,7 +1327,7 @@ export class RaffleBoxFactory {
   /**
    * create single winner output box
    * @param winnersCount
-   * @param step
+   * @param winnerIndex
    * @param giftTokenId
    * @param ticketTokenId
    * @param ticketTokenAmount
@@ -1341,8 +1336,8 @@ export class RaffleBoxFactory {
    * @param extraTokens
    */
   createWinnerOutputBox(
-    winnersCount: bigint = 1n,
-    step: number = 1,
+    winnersCount: number = 1,
+    winnerIndex: number = 1,
     giftTokenId: string = GIFT_TOKEN_ID,
     ticketTokenId: string = TICKET_TOKEN_ID,
     ticketTokenAmount: bigint = 1n,
@@ -1355,9 +1350,10 @@ export class RaffleBoxFactory {
       this.contractsAddresses['winner'],
     )
       .setAdditionalRegisters({
-        R4: SColl(SLong, [BigInt(step), 1000n / winnersCount, deadline, FEE]),
-        R5: SLong(giftCount),
-        R6: SColl(SByte, Array.from(Buffer.from(giftTokenId, 'hex'))),
+        R4: SColl(SLong, [1000n / BigInt(winnersCount), deadline, FEE]),
+        R5: SInt(winnerIndex),
+        R6: SLong(giftCount),
+        R7: SColl(SByte, Array.from(Buffer.from(giftTokenId, 'hex'))),
       })
       .addTokens({
         tokenId: ticketTokenId,

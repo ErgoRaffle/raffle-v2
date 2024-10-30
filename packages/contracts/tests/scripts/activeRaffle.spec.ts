@@ -22,7 +22,7 @@ const ARBITRARY_TOKEN_ID = '10'.repeat(32);
  * @returns vitest customized "it" object
  */
 const createActiveRaffleEndTest = (
-  winnersCount: bigint = 1n,
+  winnersCount: number = 1,
   collectingTokenId?: string,
 ) => {
   const boxFactory = new testUtils.RaffleBoxFactory(
@@ -85,7 +85,7 @@ const createActiveRaffleEndTest = (
     creator.address.toString(),
     implementer.address.toString(),
     creator.address.toString(),
-    BigInt(winnersCount),
+    winnersCount,
     serviceFeePercent,
     collectingTokenForSuccess,
     1_000_000n,
@@ -100,7 +100,7 @@ const createActiveRaffleEndTest = (
     creator.address.toString(),
     implementer.address.toString(),
     creator.address.toString(),
-    BigInt(winnersCount),
+    winnersCount,
     serviceFeePercent,
     collectingTokenId !== undefined
       ? {
@@ -127,7 +127,7 @@ const createActiveRaffleEndTest = (
     8n,
     ticketPrice,
     winnersCount,
-    1n,
+    1,
     testUtils.TICKET_TOKEN_ID,
     // added by one token on the raffle-details box
     BigInt(activeRaffleBoxForFailureEnd.assets[1].amount.toString()) + 1n,
@@ -187,9 +187,9 @@ const createActiveRaffleEndTest = (
 };
 
 describe('ActiveRaffle', () => {
-  const activeRaffleTest = createActiveRaffleEndTest(1n);
+  const activeRaffleTest = createActiveRaffleEndTest(1);
   const activeRaffleTokenGoalTest = createActiveRaffleEndTest(
-    1n,
+    1,
     testUtils.X_TOKEN_ID,
   );
 
@@ -218,7 +218,7 @@ describe('ActiveRaffle', () => {
           creatorWallet.address.toString(),
           implementerWallet.address.toString(),
           creatorWallet.address.toString(),
-          1n,
+          1,
           serviceFeePercent,
           undefined,
           1_000_000n,
@@ -275,7 +275,7 @@ describe('ActiveRaffle', () => {
           creatorWallet.address.toString(),
           implementerWallet.address.toString(),
           creatorWallet.address.toString(),
-          1n,
+          1,
           serviceFeePercent,
           {
             tokenId: testUtils.X_TOKEN_ID,
@@ -332,7 +332,7 @@ describe('ActiveRaffle', () => {
           creatorWallet.address.toString(),
           implementerWallet.address.toString(),
           creatorWallet.address.toString(),
-          1n,
+          1,
           serviceFeePercent,
           undefined,
           1_000_000n,
@@ -387,7 +387,7 @@ describe('ActiveRaffle', () => {
           creatorWallet.address.toString(),
           implementerWallet.address.toString(),
           creatorWallet.address.toString(),
-          1n,
+          1,
           serviceFeePercent,
           {
             tokenId: testUtils.X_TOKEN_ID,
@@ -442,7 +442,7 @@ describe('ActiveRaffle', () => {
           creatorWallet.address.toString(),
           implementerWallet.address.toString(),
           creatorWallet.address.toString(),
-          1n,
+          1,
           serviceFeePercent,
           undefined,
           1_000_000n,
@@ -496,7 +496,7 @@ describe('ActiveRaffle', () => {
           creatorWallet.address.toString(),
           'invalid implementer address',
           creatorWallet.address.toString(),
-          1n,
+          1,
           serviceFeePercent,
           undefined,
           1_000_000n,
@@ -559,7 +559,7 @@ describe('ActiveRaffle', () => {
           creatorWallet.address.toString(),
           implementerWallet.address.toString(),
           creatorWallet.address.toString(),
-          1n,
+          1,
           serviceFeePercent,
           undefined,
           1_000_000n,
@@ -615,7 +615,7 @@ describe('ActiveRaffle', () => {
           creatorWallet.address.toString(),
           implementerWallet.address.toString(),
           creatorWallet.address.toString(),
-          1n,
+          1,
           serviceFeePercent,
           {
             tokenId: testUtils.X_TOKEN_ID,
@@ -671,7 +671,7 @@ describe('ActiveRaffle', () => {
           creatorWallet.address.toString(),
           implementerWallet.address.toString(),
           creatorWallet.address.toString(),
-          1n,
+          1,
           serviceFeePercent,
           undefined,
           1_000_000n,
@@ -732,7 +732,7 @@ describe('ActiveRaffle', () => {
           creatorWallet.address.toString(),
           implementerWallet.address.toString(),
           creatorWallet.address.toString(),
-          1n,
+          1,
           serviceFeePercent,
           undefined,
           1_000_000n,
@@ -788,7 +788,7 @@ describe('ActiveRaffle', () => {
           creatorWallet.address.toString(),
           implementerWallet.address.toString(),
           creatorWallet.address.toString(),
-          1n,
+          1,
           serviceFeePercent,
           undefined,
           1_000_000n,
@@ -857,10 +857,10 @@ describe('ActiveRaffle', () => {
           oracleBox.boxId.toString(),
           [],
           totalSoldTickets,
-          BigInt(winnersCount),
+          winnersCount,
           BigInt(totalPrize),
           BigInt(totalPrize) + 1n,
-          1n,
+          1,
           activeRaffleBoxForSuccessEnd.assets[1].tokenId,
           // plus one token that exists on the Raffle-Details box
           BigInt(activeRaffleBoxForSuccessEnd.assets[1].amount) + 1n,
@@ -926,10 +926,10 @@ describe('ActiveRaffle', () => {
           oracleBox.boxId.toString(),
           [],
           totalSoldTickets,
-          BigInt(winnersCount),
+          winnersCount,
           BigInt(totalPrize),
           BigInt(totalPrize) + 1n,
-          1n,
+          1,
           activeRaffleBoxForSuccessEnd.assets[1].tokenId,
           // plus one token that exists on the Raffle-Details box
           BigInt(activeRaffleBoxForSuccessEnd.assets[1].amount) + 1n,
@@ -1002,10 +1002,10 @@ describe('ActiveRaffle', () => {
           oracleBox.boxId.toString(),
           [],
           totalSoldTickets,
-          BigInt(winnersCount),
+          winnersCount,
           BigInt(totalPrize),
           BigInt(totalPrize) + 1n,
-          1n,
+          1,
           activeRaffleBoxForSuccessEnd.assets[1].tokenId,
           // plus one token that exists on the Raffle-Details box
           BigInt(activeRaffleBoxForSuccessEnd.assets[1].amount) + 1n,
@@ -1078,10 +1078,10 @@ describe('ActiveRaffle', () => {
           oracleBox.boxId.toString(),
           [],
           totalSoldTickets,
-          BigInt(winnersCount),
+          winnersCount,
           BigInt(totalPrize),
           BigInt(totalPrize) + 1n,
-          1n,
+          1,
           activeRaffleBoxForSuccessEnd.assets[1].tokenId,
           // plus one token that exists on the Raffle-Details box
           BigInt(activeRaffleBoxForSuccessEnd.assets[1].amount) + 1n,
@@ -1149,10 +1149,10 @@ describe('ActiveRaffle', () => {
           oracleBox.boxId.toString(),
           [],
           totalSoldTickets,
-          BigInt(winnersCount),
+          winnersCount,
           BigInt(totalPrize),
           BigInt(totalPrize) + 1n,
-          1n,
+          1,
           activeRaffleBoxForSuccessEnd.assets[1].tokenId,
           // plus one token that exists on the Raffle-Details box
           BigInt(activeRaffleBoxForSuccessEnd.assets[1].amount) + 1n,
@@ -1231,11 +1231,11 @@ describe('ActiveRaffle', () => {
           oracleBox.boxId.toString(),
           [],
           totalSoldTickets,
-          BigInt(winnersCount),
+          winnersCount,
           // set invalid totalPrize
           totalPrize - 1n,
           BigInt(totalPrize) + 1n,
-          1n,
+          1,
           activeRaffleBoxForSuccessEnd.assets[1].tokenId,
           // plus one token that exists on the Raffle-Details box
           BigInt(activeRaffleBoxForSuccessEnd.assets[1].amount) + 1n,
@@ -1306,10 +1306,10 @@ describe('ActiveRaffle', () => {
           oracleBox.boxId.toString(),
           [],
           totalSoldTickets,
-          BigInt(winnersCount),
+          winnersCount,
           BigInt(totalPrize),
           BigInt(totalPrize) + 1n,
-          1n,
+          1,
           activeRaffleBoxForSuccessEnd.assets[1].tokenId,
           // plus one token that exists on the Raffle-Details box
           BigInt(activeRaffleBoxForSuccessEnd.assets[1].amount) + 1n,
@@ -1414,10 +1414,10 @@ describe('ActiveRaffle', () => {
           oracleBox.boxId.toString(),
           [],
           totalSoldTickets,
-          BigInt(winnersCount),
+          winnersCount,
           BigInt(totalPrize),
           BigInt(totalPrize) + 1n,
-          1n,
+          1,
           activeRaffleBoxForSuccessEnd.assets[1].tokenId,
           // plus one token that exists on the Raffle-Details box
           BigInt(activeRaffleBoxForSuccessEnd.assets[1].amount) + 1n,
@@ -1486,10 +1486,10 @@ describe('ActiveRaffle', () => {
           'invalid seed',
           [],
           totalSoldTickets,
-          BigInt(winnersCount),
+          winnersCount,
           BigInt(totalPrize),
           BigInt(totalPrize) + 1n,
-          1n,
+          1,
           activeRaffleBoxForSuccessEnd.assets[1].tokenId,
           // plus one token that exists on the Raffle-Details box
           BigInt(activeRaffleBoxForSuccessEnd.assets[1].amount) + 1n,
@@ -1557,10 +1557,10 @@ describe('ActiveRaffle', () => {
           // set invalid selected winner list
           [0n],
           totalSoldTickets,
-          BigInt(winnersCount),
+          winnersCount,
           BigInt(totalPrize),
           BigInt(totalPrize) + 1n,
-          1n,
+          1,
           activeRaffleBoxForSuccessEnd.assets[1].tokenId,
           // plus one token that exists on the Raffle-Details box
           BigInt(activeRaffleBoxForSuccessEnd.assets[1].amount) + 1n,
@@ -1627,11 +1627,11 @@ describe('ActiveRaffle', () => {
           oracleBox.boxId.toString(),
           [],
           totalSoldTickets,
-          BigInt(winnersCount),
+          winnersCount,
           BigInt(totalPrize),
           BigInt(totalPrize) + 1n,
           // set invalid step number to the R6
-          2n,
+          2,
           activeRaffleBoxForSuccessEnd.assets[1].tokenId,
           // plus one token that exists on the Raffle-Details box
           BigInt(activeRaffleBoxForSuccessEnd.assets[1].amount) + 1n,
@@ -1751,7 +1751,7 @@ describe('ActiveRaffle', () => {
       }) => {
         boxFactory.chain.setTip(2001);
 
-        const winnersCount = 1n;
+        const winnersCount = 1;
         const totalSoldTickets = 8n;
         const ticketPrice = 10n;
 
@@ -1762,7 +1762,7 @@ describe('ActiveRaffle', () => {
           totalSoldTickets,
           ticketPrice,
           winnersCount,
-          1n,
+          1,
           testUtils.TICKET_TOKEN_ID,
           // added by one token on the raffle-details box
           BigInt(activeRaffleBoxForFailureEnd.assets[1].amount.toString()) + 1n,
@@ -1808,7 +1808,7 @@ describe('ActiveRaffle', () => {
       ({ boxFactory, raffleDetailsBox, activeRaffleBoxForFailureEnd }) => {
         boxFactory.chain.setTip(2001);
 
-        const winnersCount = 1n;
+        const winnersCount = 1;
         const totalSoldTickets = 8n;
         const ticketPrice = 10n;
 
@@ -1820,7 +1820,7 @@ describe('ActiveRaffle', () => {
           totalSoldTickets - 1n,
           ticketPrice,
           winnersCount,
-          1n,
+          1,
           testUtils.TICKET_TOKEN_ID,
           // added by one token on the raffle-details box
           BigInt(activeRaffleBoxForFailureEnd.assets[1].amount.toString()) + 1n,
@@ -1853,7 +1853,7 @@ describe('ActiveRaffle', () => {
       ({ boxFactory, raffleDetailsBox, activeRaffleBoxForFailureEnd }) => {
         boxFactory.chain.setTip(2001);
 
-        const winnersCount = 1n;
+        const winnersCount = 1;
         const totalSoldTickets = 8n;
         const ticketPrice = 10n;
 
@@ -1865,7 +1865,7 @@ describe('ActiveRaffle', () => {
           ticketPrice,
           winnersCount,
           // set invalid step number to the R5
-          2n,
+          2,
           testUtils.TICKET_TOKEN_ID,
           // added by one token on the raffle-details box
           BigInt(activeRaffleBoxForFailureEnd.assets[1].amount.toString()) + 1n,

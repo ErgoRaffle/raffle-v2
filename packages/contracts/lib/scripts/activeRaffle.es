@@ -2,9 +2,10 @@
   // ErgoRaffle V2 Active Raffle Contract
   //
   // Registers:
-  //   R4[Coll[Long]]: [ProjectPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, Deadline, WinnersCount, txFee]
+  //   R4[Coll[Long]]: [ProjectPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, Deadline, txFee]
   //   R5[Coll[Coll[Byte]]]: [ServiceAddressHash, ImplementerAddressHash, CreatorAddressHash]
-  //   R6[Long]: TotalSoldTickets
+  //   R6[Int]: WinnersCount
+  //   R7[Long]: TotalSoldTickets
   // Tokens:
   //   0: RaffleLicense
   //   1: Ticket
@@ -23,13 +24,13 @@
   val giftRedeemScriptHash = fromBase64("GIFT_REDEEM_SCRIPT_HASH_B64")
   val ticketScriptHash = fromBase64("TICKET_SCRIPT_HASH_B64")
 
+  val isErgGoal = (SELF.tokens.size == 2)
   val ticketPrice = SELF.R4[Coll[Long]].get(3)
   val goal = SELF.R4[Coll[Long]].get(4)
   val deadline = SELF.R4[Coll[Long]].get(5)
-  val winnersCount = SELF.R4[Coll[Long]].get(6)
-  val txFee = SELF.R4[Coll[Long]].get(7)
-  val isErgGoal = (SELF.tokens.size == 2)
-  val totalSoldTickets = SELF.R6[Long].get
+  val txFee = SELF.R4[Coll[Long]].get(6)
+  val winnersCount = SELF.R6[Int].get
+  val totalSoldTickets = SELF.R7[Long].get
   val totalRaised = ticketPrice * totalSoldTickets
 
   if(HEIGHT < deadline){
@@ -53,7 +54,8 @@
       outputRaffle.tokens(1)._2 == SELF.tokens(1)._2 - onSaleTickets,
       outputRaffle.R4[Coll[Long]].get == SELF.R4[Coll[Long]].get,
       outputRaffle.R5[Coll[Coll[Byte]]].get == SELF.R5[Coll[Coll[Byte]]].get,
-      outputRaffle.R6[Long].get == totalSoldTickets + onSaleTickets,
+      outputRaffle.R6[Int].get == SELF.R6[Int].get,
+      outputRaffle.R7[Long].get == totalSoldTickets + onSaleTickets,
       outputRaffle.tokens.size == SELF.tokens.size,
       depositTicketPrice,
 
@@ -107,22 +109,23 @@
       oracleBox.creationInfo._1 > deadline,
 
       // Correct SuccessRaffle format
-      // R4: [WinnersCount, TotalPrize]
-      // R5: [Seed, SelectedWinnersListHash]
-      // R6: Step
+      // R4: [TotalPrize, TotalSoldTickets]
+      // R5: WinnersCount
+      // R6: [Seed, SelectedWinnersListHash]
+      // R7: Step
       blake2b256(successRaffle.propositionBytes) == successRaffleScriptHash,
       successRaffle.tokens(0)._1 == SELF.tokens(0)._1,
       successRaffle.tokens(1)._1 == SELF.tokens(1)._1,
       successRaffle.tokens(1)._2 == SELF.tokens(1)._2 + 1,
       successRaffle.tokens.size == SELF.tokens.size,
       successRaffle.R4[Coll[Long]].get == Coll[Long](
-        winnersCount, 
         totalRaised * winnersPercent / 100,
         totalSoldTickets
       ),
-      successRaffle.R5[Coll[Coll[Byte]]].get(0) == oracleBox.id,
-      successRaffle.R5[Coll[Coll[Byte]]].get(1) == blake2b256(Coll[Byte]()),
-      successRaffle.R6[Long].get == 1,
+      successRaffle.R5[Int].get == winnersCount,
+      successRaffle.R6[Coll[Coll[Byte]]].get(0) == oracleBox.id,
+      successRaffle.R6[Coll[Coll[Byte]]].get(1) == blake2b256(Coll[Byte]()),
+      successRaffle.R7[Int].get == 1,
 
       // Transaction constraints
       splittingRaisedFund,
@@ -137,8 +140,9 @@
     }
     sigmaProp(allOf(Coll(
       // Correct GiftRedeem format
-      // R4: [TotalSoldTicket, TicketPrice, WinnersCount, txFee]
-      // R5: Step
+      // R4: [TotalSoldTicket, TicketPrice, txFee]
+      // R5: WinnersCount
+      // R6: Step
       blake2b256(giftRedeem.propositionBytes) == giftRedeemScriptHash,
       giftRedeem.value == SELF.value,
       giftRedeem.tokens(0)._1 == SELF.tokens(0)._1,
@@ -149,10 +153,10 @@
       giftRedeem.R4[Coll[Long]].get == Coll[Long](
         totalSoldTickets, 
         ticketPrice, 
-        winnersCount,
         txFee
       ),
-      giftRedeem.R5[Long].get == 1,
+      giftRedeem.R5[Int].get == winnersCount,
+      giftRedeem.R6[Int].get == 1,
     )))
   }
 }

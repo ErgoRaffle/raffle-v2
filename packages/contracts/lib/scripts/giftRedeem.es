@@ -2,8 +2,9 @@
   // ErgoRaffle V2 Gift Redeem Contract
   //
   // Registers:
-  //   R4[Coll[Long]]: [TotalSoldTicket, TicketPrice, WinnersCount, txFee]
-  //   R5[Long]: Step
+  //   R4[Coll[Long]]: [TotalSoldTicket, TicketPrice, txFee]
+  //   R5[Int]: WinnersCount
+  //   R6[Int]: Step
   // Tokens:
   //   0: RaffleLicense
   //   1: Ticket

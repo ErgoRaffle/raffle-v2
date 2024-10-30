@@ -81,7 +81,7 @@ describe('Service', () => {
             creator.address.toString(),
             someoneWallet.address.toString(),
             creator.address.toString(),
-            1n,
+            1,
             undefined,
             undefined,
             undefined,
@@ -128,7 +128,7 @@ describe('Service', () => {
             creator.address.toString(),
             someoneWallet.address.toString(),
             creator.address.toString(),
-            10n,
+            10,
             undefined,
             undefined,
             undefined,
@@ -176,7 +176,7 @@ describe('Service', () => {
             creator.address.toString(),
             someoneWallet.address.toString(),
             creator.address.toString(),
-            1n,
+            1,
             { tokenId: testUtils.X_TOKEN_ID, amount: 1n },
             undefined,
             undefined,
@@ -222,7 +222,6 @@ describe('Service', () => {
             creator.address.toString(),
             someoneWallet.address.toString(),
             creator.address.toString(),
-            1n,
           );
         inactiveRaffleOutputBox.assets.remove(testUtils.LICENSE_TOKEN_ID);
         // Execute transaction
@@ -263,7 +262,6 @@ describe('Service', () => {
             creator.address.toString(),
             someoneWallet.address.toString(),
             creator.address.toString(),
-            1n,
           );
         inactiveRaffleOutputBox.assets.remove(testUtils.LICENSE_TOKEN_ID);
         // Execute transaction
@@ -302,7 +300,7 @@ describe('Service', () => {
             creator.address.toString(),
             someoneWallet.address.toString(),
             creator.address.toString(),
-            1n,
+            1,
             undefined,
             undefined,
             110n,
@@ -346,7 +344,6 @@ describe('Service', () => {
             creator.address.toString(),
             someoneWallet.address.toString(),
             creator.address.toString(),
-            1n,
           );
         // Execute transaction
         const transaction = new TransactionBuilder(boxFactory.chain.height)
@@ -388,7 +385,7 @@ describe('Service', () => {
             creator.address.toString(),
             someoneWallet.address.toString(),
             creator.address.toString(),
-            2n,
+            2,
             undefined,
             [500n, 600n],
           );
@@ -428,7 +425,7 @@ describe('Service', () => {
             creator.address.toString(),
             someoneWallet.address.toString(),
             creator.address.toString(),
-            1n,
+            1,
             undefined,
             undefined,
             undefined,
@@ -475,7 +472,7 @@ describe('Service', () => {
             creator.address.toString(),
             someoneWallet.address.toString(),
             creator.address.toString(),
-            2n,
+            2,
             undefined,
             [1000n],
           );
@@ -515,7 +512,7 @@ describe('Service', () => {
             creator.address.toString(),
             someoneWallet.address.toString(),
             creator.address.toString(),
-            2n,
+            2,
           );
         // Execute transaction
         const transaction = new TransactionBuilder(boxFactory.chain.height)
@@ -558,7 +555,7 @@ describe('Service', () => {
             creator.address.toString(),
             someoneWallet.address.toString(),
             creator.address.toString(),
-            2n,
+            2,
             undefined,
             [450n, 450n],
           );
@@ -602,7 +599,7 @@ describe('Service', () => {
             creator.address.toString(),
             someoneWallet.address.toString(),
             creator.address.toString(),
-            2n,
+            2,
             undefined,
             undefined,
             undefined,

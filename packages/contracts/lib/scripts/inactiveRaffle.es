@@ -2,10 +2,11 @@
   // ErgoRaffle V2 Inactive Raffle Contract
   //
   // Registers:
-  //   R4[Coll[Long]]: [CharityPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, DeadlineTimestamp, WinnersCount, txFee]
+  //   R4[Coll[Long]]: [CharityPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, Deadline, txFee]
   //   R5[Coll[Coll[Byte]]]: [ServiceAddressHash, ImplementerAddressHash, CreatorAddressHash]
   //   R6[Coll[Coll[Byte]]]: [Name, Description, Pictures(optional)]
   //   R7[Coll[Coll[Byte]]]: [TicketId, WinnersPercentListHash]
+  //   R8[Int]: winnersCount
   // Tokens:
   //   0: RaffleLicense
   //   1: CollectingToken (if token-goal raffle)
@@ -23,35 +24,36 @@
   val activeRaffle = OUTPUTS(0)
   val raffleDetails = OUTPUTS(1)
   val giftTokenRepo = OUTPUTS(2)
-  val deadlineTimestamp = SELF.R4[Coll[Long]].get(5)
-  val winnersCount = SELF.R4[Coll[Long]].get(6).toInt
-  val txFee = SELF.R4[Coll[Long]].get(7).toInt
+  val deadline = SELF.R4[Coll[Long]].get(5)
+  val txFee = SELF.R4[Coll[Long]].get(6)
   val ticketId = SELF.R7[Coll[Coll[Byte]]].get(0)
   val winnersPercentListHash = SELF.R7[Coll[Coll[Byte]]].get(1)
+  val winnersCount = SELF.R8[Int].get
   val winnerBoxes = OUTPUTS.slice(3, winnersCount + 3)
 
   val winnersVerification = winnerBoxes.indices.forall({(i: Int) => {
     val box = winnerBoxes(i)
     allOf(Coll(
       // Correct Winner boxes format
-      // R4: [WinnerIndex, RewardPercent, DeadlineTimestamp, TxFee]
-      // R5: GiftCount
-      // R6: GiftTokenId
+      // R4: [RewardPercent, Deadline, TxFee]
+      // R5: WinnerIndex
+      // R6: GiftCount
+      // R7: GiftTokenId
       blake2b256(box.propositionBytes) == winnerScriptHash,
       box.tokens(0)._1 == ticketId, // Ticket token as identifier
       box.tokens.size == 1,
       box.value == 3 * txFee,
-      box.R4[Coll[Long]].get(0) == i + 1,
-      box.R4[Coll[Long]].get(2) == deadlineTimestamp,
-      box.R4[Coll[Long]].get(3) == txFee,
-      box.R5[Long].get == 0, // No gift at the beginning
-      box.R6[Coll[Byte]].get == SELF.id,
+      box.R4[Coll[Long]].get(1) == deadline,
+      box.R4[Coll[Long]].get(2) == txFee,
+      box.R5[Int].get == i + 1,
+      box.R6[Long].get == 0, // No gift at the beginning
+      box.R7[Coll[Byte]].get == SELF.id,
     ))
   }})
   val winnersPercentBytes = winnerBoxes.fold(
     Coll[Byte](),
     {(res: Coll[Byte], box: Box) => 
-      res ++ longToByteArray(box.R4[Coll[Long]].get(1))}
+      res ++ longToByteArray(box.R4[Coll[Long]].get(0))}
   )
   val isErgGoal = (SELF.tokens.size == 1)
   val activeRaffleExtraTokensVerification = 
@@ -71,9 +73,10 @@
   // [InactiveRaffle(Self), TicketRepo] --> [ActiveRaffle, RaffleDetails, Winner[]]
   sigmaProp(allOf(Coll(
     // Correct ActiveRaffle format
-    // R4: [CharityPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, DeadlineTimestamp, WinnersCount, TxFee]
+    // R4: [ProjectPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, Deadline, TxFee]
     // R5: [ServiceAddressHash, ImplementerAddressHash, CreatorAddressHash]
-    // R6: TotalSoldTicket
+    // R6: WinnersCount
+    // R7: TotalSoldTicket
     blake2b256(activeRaffle.propositionBytes) == activeRaffleScriptHash,
     activeRaffle.tokens(0)._1 == SELF.tokens(0)._1,
     activeRaffle.tokens(1)._1 == ticketId, // Match with TicketRepo
@@ -81,7 +84,8 @@
     activeRaffle.value == SELF.value - (4 * txFee * winnersCount) - txFee,
     activeRaffle.R4[Coll[Long]].get == SELF.R4[Coll[Long]].get,
     activeRaffle.R5[Coll[Coll[Byte]]].get == SELF.R5[Coll[Coll[Byte]]].get,
-    activeRaffle.R6[Long].get == 0L, // No sold ticket at beginning
+    activeRaffle.R6[Int].get == winnersCount,
+    activeRaffle.R7[Long].get == 0L, // No sold ticket at beginning
     activeRaffleExtraTokensVerification,
 
     // Correct RaffleDetails format
@@ -96,14 +100,15 @@
 
     // Correct GiftTokenRepo format
     // R4, R5, R6: GiftToken metadata
-    // R7: [GiftTokenCount, WinnersCount, TxFee]
+    // R7: [GiftTokenCount, TxFee]
     // R8: TicketId
+    // R9: [WinnersCount, Step]
     giftTokenRepo.tokens.size == 1,
     giftTokenRepo.tokens(0)._1 == SELF.id,
     giftTokenRepo.tokens(0)._2 == giftTokenCount * winnersCount,
-    giftTokenRepo.R7[Coll[Int]].get == Coll[Int](giftTokenCount, winnersCount, txFee),
+    giftTokenRepo.R7[Coll[Long]].get == Coll[Long](giftTokenCount, txFee),
     giftTokenRepo.R8[Coll[Byte]].get == ticketId,
-    giftTokenRepo.R9[Int].get == 1,
+    giftTokenRepo.R9[Coll[Int]].get == Coll[Int](winnersCount, 1),
     giftTokenRepo.value == (txFee * winnersCount),
 
     // Transaction constraints

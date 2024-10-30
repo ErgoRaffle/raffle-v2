@@ -2,9 +2,10 @@
   // ErgoRaffle V2 Success Raffle Contract
   //
   // Registers:
-  //   R4[Coll[Long]]: [WinnersCount, TotalPrize, totalSoldTickets]
-  //   R5[Coll[Coll[Byte]]]: [Seed, SelectedWinnersListHash]
-  //   R6[Long]: Step
+  //   R4[Coll[Long]]: [TotalPrize, totalSoldTickets]
+  //   R5[Int]: WinnersCount
+  //   R6[Coll[Coll[Byte]]]: [Seed, SelectedWinnersListHash]
+  //   R7[Int]: Step
   // Tokens:
   //   0: RaffleLicense
   //   1: Ticket
@@ -21,8 +22,8 @@
   // 
   val serviceNft = fromBase64("SERVICE_NFT_B64")
 
-  val winnersCount = SELF.R4[Coll[Long]].get(0)
-  val step = SELF.R6[Long].get
+  val winnersCount = SELF.R5[Int].get
+  val step = SELF.R7[Int].get
   if(step <= winnersCount) {
     // Winner prize creation
     // [SuccessRaffle, Winner] --> [SuccessRaffle, WinnerPrize]
@@ -38,8 +39,8 @@
         {(res: Coll[Byte], p: Long) => res ++ longToByteArray(p)}
       )
     val isErgGoal = SELF.tokens.size == 2
-    val totalPrize = SELF.R4[Coll[Long]].get(1)
-    val rewardPercent = winner.R4[Coll[Long]].get(1)
+    val totalPrize = SELF.R4[Coll[Long]].get(0)
+    val rewardPercent = winner.R4[Coll[Long]].get(0)
     val winnerReward = totalPrize * rewardPercent / 1000
     val checkRemainingPrize = if(isErgGoal){
       outSuccessRaffle.value >= SELF.value - winnerReward
@@ -49,8 +50,8 @@
       outSuccessRaffle.value == SELF.value
     }
     val calculatedWinnerTicketIndex = {
-      val seed = SELF.R5[Coll[Coll[Byte]]].get(0).slice(0, 16)
-      val range = SELF.R4[Coll[Long]].get(2) - step + 1
+      val seed = SELF.R6[Coll[Coll[Byte]]].get(0).slice(0, 16)
+      val range = SELF.R4[Coll[Long]].get(1) - step + 1
       val rawIndex = ((byteArrayToBigInt(seed).toBigInt % range) + range) % range
       val previousWinners = selectedWinners.filter(
         {(winNumber: Long) => { winNumber < winnerTicketIndex }}
@@ -69,19 +70,23 @@
       outSuccessRaffle.tokens.size == SELF.tokens.size,
       checkRemainingPrize,
       outSuccessRaffle.R4[Coll[Long]].get == SELF.R4[Coll[Long]].get,
-      outSuccessRaffle.R5[Coll[Coll[Byte]]].get(0) == 
-        blake2b256(SELF.R5[Coll[Coll[Byte]]].get(0)),
-      outSuccessRaffle.R5[Coll[Coll[Byte]]].get(1) == blake2b256(selectedWinnersBytes),
+      outSuccessRaffle.R5[Int].get == winnersCount,
+      outSuccessRaffle.R6[Coll[Coll[Byte]]].get(0) == 
+        blake2b256(SELF.R6[Coll[Coll[Byte]]].get(0)),
+      outSuccessRaffle.R6[Coll[Coll[Byte]]].get(1) == blake2b256(selectedWinnersBytes),
+      outSuccessRaffle.R7[Int].get == step + 1,
 
       // Correct Winner format
-      // R4: [WinnerIndex, RewardPercent, DeadlineTimestamp, txFee]
-      // R5: GiftCount
+      // R4: [RewardPercent, Deadline, txFee]
+      // R5: WinnerIndex
+      // R6: GiftCount
       winner.tokens(0)._1 == SELF.tokens(1)._1,
-      winner.R4[Coll[Long]].get(0) == step,
+      winner.R5[Int].get == step,
 
       // Correct WinnerPrize format
-      // R4: [WinnerTicketIndex, WinnerIndex, GiftCount]
-      // R5: UnwrappedGiftCount
+      // R4: [WinnerTicketIndex, GiftCount]
+      // R5: WinnerIndex
+      // R6: UnwrappedGiftCount
       winnerPrize.R4[Coll[Long]].get(0) == winnerTicketIndex,
 
       // Transaction constraints

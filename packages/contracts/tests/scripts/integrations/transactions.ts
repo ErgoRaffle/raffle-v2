@@ -29,7 +29,7 @@ export const executeCreateRaffleTx = (
   serviceBox: ErgoUnsignedInput,
   feeBoxes: Box<bigint>[],
   implementerAddress: string,
-  winnersCount: bigint,
+  winnersCount: number,
   deadline: bigint,
   winnersPercent: Array<bigint>,
   boxFactory: testUtils.RaffleBoxFactory,
@@ -103,7 +103,7 @@ export const executeCreateRaffleTx = (
 export const executeMergeTx = (
   inactiveRaffle: testUtils.OutputBox,
   ticketRepo: testUtils.OutputBox,
-  winnersCount: bigint,
+  winnersCount: number,
   deadline: bigint,
   boxFactory: testUtils.RaffleBoxFactory,
 ) => {
@@ -116,10 +116,11 @@ export const executeMergeTx = (
     boxFactory.createActiveRaffleWithConstantRegisters(
       r4,
       r5,
+      winnersCount,
       BigInt(inactiveRaffle.value.toString()) -
-        4n * winnersCount * testUtils.FEE -
+        4n * BigInt(winnersCount) * testUtils.FEE -
         testUtils.FEE,
-      BigInt(ticketRepo.assets[0].amount.toString()) - winnersCount - 1n,
+      BigInt(ticketRepo.assets[0].amount.toString()) - BigInt(winnersCount + 1),
       ticketTokenId,
       0n,
       inactiveRaffle.assets.length > 1
@@ -178,17 +179,22 @@ export const executeGiftTokenReceiptTx = (
   winner: testUtils.OutputBox,
   giftTokenRepo: testUtils.OutputBox,
   step: number,
-  winnersCount: bigint,
+  winnersCount: number,
   boxFactory: testUtils.RaffleBoxFactory,
 ) => {
   const giftTokenId = giftTokenRepo.assets[0].tokenId;
   const ticketTokenId = winner.assets[0].tokenId;
   const winnerR4 = SConstant.from(winner.additionalRegisters.R4!)
     .data as bigint[];
+  const winnerIndex = SConstant.from(winner.additionalRegisters.R5!)
+    .data as number;
   const outWinner = boxFactory.createWinnerOutputBoxWithConstantRegisters(
     winnerR4,
     ticketTokenId,
     giftTokenId,
+    undefined,
+    undefined,
+    winnerIndex,
   );
   const outputs = [outWinner];
   if (step < winnersCount)
@@ -197,8 +203,9 @@ export const executeGiftTokenReceiptTx = (
         winnersCount,
         'add',
         step + 1,
-        testUtils.FEE * (winnersCount - BigInt(step)),
-        BigInt(testUtils.GIFT_TOKEN_COUNT) * (winnersCount - BigInt(step)),
+        BigInt(giftTokenRepo.value) - testUtils.FEE,
+        BigInt(giftTokenRepo.assets[0].amount.toString()) -
+          testUtils.GIFT_TOKEN_COUNT,
         ticketTokenId,
         giftTokenId,
       ),
@@ -231,7 +238,9 @@ export const executeAddGiftTx = (
   const giftTokenId = winner.assets[1].tokenId;
   const winnerR4 = SConstant.from(winner.additionalRegisters.R4!)
     .data as bigint[];
-  const giftCount = SConstant.from(winner.additionalRegisters.R5!)
+  const winnerIndex = SConstant.from(winner.additionalRegisters.R5!)
+    .data as number;
+  const giftCount = SConstant.from(winner.additionalRegisters.R6!)
     .data as bigint;
   const outWinner = boxFactory.createWinnerOutputBoxWithConstantRegisters(
     winnerR4,
@@ -239,9 +248,10 @@ export const executeAddGiftTx = (
     giftTokenId,
     BigInt(winner.assets[1].amount.toString()) - 1n,
     giftCount + 1n,
+    winnerIndex,
   );
   const gift = boxFactory.createGiftOutputBox(
-    winnerR4[0],
+    winnerIndex,
     giftGiver.address.toString(),
     testUtils.FEE * 10n,
     giftTokenId,
@@ -279,8 +289,10 @@ export const executeDonateTx = (
     .data as bigint[];
   const r5 = SConstant.from(activeRaffle.additionalRegisters.R5!)
     .data as Uint8Array[];
+  const winnersCount = SConstant.from(activeRaffle.additionalRegisters.R6!)
+    .data as number;
   const ticketTokenId = activeRaffle.assets[1].tokenId;
-  const totalSoldTickets = SConstant.from(activeRaffle.additionalRegisters.R6!)
+  const totalSoldTickets = SConstant.from(activeRaffle.additionalRegisters.R7!)
     .data as bigint;
 
   const ticketPrice = r4[3];
@@ -300,6 +312,7 @@ export const executeDonateTx = (
     boxFactory.createActiveRaffleWithConstantRegisters(
       r4,
       r5,
+      winnersCount,
       activeRaffleOutputBoxValue,
       BigInt(activeRaffle.assets[1].amount.toString()) - ticketCount,
       ticketTokenId,
@@ -342,8 +355,10 @@ export const executeFailureTx = (
 ) => {
   const r4 = SConstant.from(activeRaffle.additionalRegisters.R4!)
     .data as bigint[];
+  const winnersCount = SConstant.from(activeRaffle.additionalRegisters.R6!)
+    .data as number;
   const ticketTokenId = activeRaffle.assets[1].tokenId;
-  const totalSoldTickets = SConstant.from(activeRaffle.additionalRegisters.R6!)
+  const totalSoldTickets = SConstant.from(activeRaffle.additionalRegisters.R7!)
     .data as bigint;
   const collectingToken =
     activeRaffle.assets.length > 2
@@ -356,8 +371,8 @@ export const executeFailureTx = (
     BigInt(activeRaffle.value) + BigInt(raffleDetails.value) - testUtils.FEE,
     totalSoldTickets,
     r4[3],
-    r4[6],
-    1n,
+    winnersCount,
+    1,
     ticketTokenId,
     // added by one token on the raffle-details box
     BigInt(activeRaffle.assets[1].amount.toString()) + 1n,
@@ -390,7 +405,9 @@ export const executeGiftReturnTx = (
   const giftTokenId = winner.assets[1].tokenId;
   const winnerR4 = SConstant.from(winner.additionalRegisters.R4!)
     .data as bigint[];
-  const giftCount = SConstant.from(winner.additionalRegisters.R5!)
+  const winnerIndex = SConstant.from(winner.additionalRegisters.R5!)
+    .data as number;
+  const giftCount = SConstant.from(winner.additionalRegisters.R6!)
     .data as bigint;
   const outWinner = boxFactory.createWinnerOutputBoxWithConstantRegisters(
     winnerR4,
@@ -398,6 +415,7 @@ export const executeGiftReturnTx = (
     giftTokenId,
     BigInt(winner.assets[1].amount.toString()) + 1n,
     giftCount - 1n,
+    winnerIndex,
   );
 
   const giftGiverAddress = Buffer.from(
@@ -434,15 +452,17 @@ export const executeWinnerRemovalTx = (
 ) => {
   const r4 = SConstant.from(giftRedeem.additionalRegisters.R4!)
     .data as bigint[];
-  const step = SConstant.from(giftRedeem.additionalRegisters.R5!)
-    .data as bigint;
+  const winnersCount = SConstant.from(giftRedeem.additionalRegisters.R5!)
+    .data as number;
+  const step = SConstant.from(giftRedeem.additionalRegisters.R6!)
+    .data as number;
   const ticketTokenId = giftRedeem.assets[1].tokenId;
   const giftRedeemOutputBox = boxFactory.createGiftRedeemOutputBox(
     BigInt(giftRedeem.value.toString()) + 2n * testUtils.FEE,
     r4[0],
     r4[1],
-    r4[2],
-    step + 1n,
+    winnersCount,
+    step + 1,
     ticketTokenId,
     BigInt(giftRedeem.assets[1].amount.toString()) + 1n,
   );
@@ -646,13 +666,13 @@ export const executeRewardTx = (
   const oracleBox = boxFactory.createMockedOracleUTxO(testUtils.FEE);
   const r4 = SConstant.from(activeRaffleBox.additionalRegisters.R4!)
     .data as bigint[];
-  const r6 = SConstant.from(activeRaffleBox.additionalRegisters.R6!)
-    .data as bigint;
-  const winnersCount = Number(r4[6]);
+  const totalSoldTickets = SConstant.from(
+    activeRaffleBox.additionalRegisters.R7!,
+  ).data as bigint;
+  const winnersCount = SConstant.from(activeRaffleBox.additionalRegisters.R6!)
+    .data as number;
 
-  const totalSoldTickets = r6;
   const ticketPrice = r4[3];
-
   const totalRaised = totalSoldTickets * ticketPrice;
   const totalPrize = (totalRaised * (100n - r4[0] - r4[1] - r4[2])) / 100n;
 
@@ -692,10 +712,10 @@ export const executeRewardTx = (
     oracleBox.boxId.toString(),
     [],
     totalSoldTickets,
-    BigInt(winnersCount),
+    winnersCount,
     BigInt(totalPrize),
     BigInt(totalPrize) + 1n,
-    1n,
+    1,
     activeRaffleBox.assets[1].tokenId,
     // plus one token that exists on the Raffle-Details box
     BigInt(activeRaffleBox.assets[1].amount) + 1n,
@@ -760,29 +780,32 @@ export const executePrizeCreationTx = (
   const successRaffleR4 = SConstant.from(
     successRaffleBox.additionalRegisters.R4!,
   ).data as bigint[];
-  const successRaffleR5 = SConstant.from(
-    successRaffleBox.additionalRegisters.R5!,
+  const winnersCount = SConstant.from(successRaffleBox.additionalRegisters.R5!)
+    .data as number;
+  const successRaffleR6 = SConstant.from(
+    successRaffleBox.additionalRegisters.R6!,
   ).data as Uint8Array[];
   const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
     .data as bigint[];
+  const winnerIndex = SConstant.from(winnerBox.additionalRegisters.R5!)
+    .data as number;
 
-  const winnersCount = successRaffleR4[0];
-  const totalPrize = successRaffleR4[1];
-  const totalSoldTickets = successRaffleR4[2];
+  const totalPrize = successRaffleR4[0];
+  const totalSoldTickets = successRaffleR4[1];
   const seed = Buffer.from(
-    blake2b256(Buffer.from(successRaffleR5[0])),
+    blake2b256(Buffer.from(successRaffleR6[0])),
   ).toString('hex');
 
-  const giftCount = SConstant.from(winnerBox.additionalRegisters.R5!)
+  const giftCount = SConstant.from(winnerBox.additionalRegisters.R6!)
     .data as bigint;
 
-  const prizeAmount = (BigInt(totalPrize) * winnerR4[1]) / 1000n;
+  const prizeAmount = (BigInt(totalPrize) * winnerR4[0]) / 1000n;
   const isErgGoal = successRaffleBox.assets.length == 2;
   const prizeBox = boxFactory.createWinnerPrizeOutputBox(
     isErgGoal
-      ? testUtils.FEE * 2n + (totalPrize * winnerR4[1]) / 1000n
+      ? testUtils.FEE * 2n + (totalPrize * winnerR4[0]) / 1000n
       : testUtils.FEE * 2n,
-    winnerR4[0],
+    winnerIndex,
     winnerTicketIndex,
     giftCount,
     0n,
@@ -805,10 +828,10 @@ export const executePrizeCreationTx = (
     seed,
     winnerIndexList,
     totalSoldTickets,
-    BigInt(winnersCount),
+    winnersCount,
     totalPrize,
     isErgGoal ? 0n : successRaffleBox.assets[2].amount - prizeAmount,
-    winnerR4[0] + 1n,
+    winnerIndex + 1,
     successRaffleBox.assets[1].tokenId,
     BigInt(successRaffleBox.assets[1].amount),
     isErgGoal ? undefined : successRaffleBox.assets[2].tokenId,
@@ -851,12 +874,14 @@ export const executeGiftUnwrapTx = (
 ) => {
   const winnerPrizeR4 = SConstant.from(winnerPrizeBox.additionalRegisters.R4!)
     .data as bigint[];
+  const winnerIndex = SConstant.from(winnerPrizeBox.additionalRegisters.R5!)
+    .data as number;
 
   const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
     BigInt(winnerPrizeBox.value),
-    winnerPrizeR4[1],
+    winnerIndex,
     winnerPrizeR4[0],
-    winnerPrizeR4[2],
+    winnerPrizeR4[1],
     prizeNumber,
     winnerPrizeBox.assets,
   );
