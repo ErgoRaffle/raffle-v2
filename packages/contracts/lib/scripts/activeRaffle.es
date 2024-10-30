@@ -4,7 +4,7 @@
   // Registers:
   //   R4[Coll[Long]]: [WinnersPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, Deadline, txFee]
   //   R5[Coll[Coll[Byte]]]: [ServiceAddressHash, ImplementerAddressHash, ProjectAddressHash]
-  //   R6[Int]: winnersCount
+  //   R6[Int]: WinnersCount
   //   R7[Long]: TotalSoldTickets
   // Tokens:
   //   0: RaffleLicense
