@@ -1,4 +1,6 @@
 import { it, describe, expect } from 'vitest';
+import { SConstant } from '@fleet-sdk/serializer';
+import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
 
 import * as testUtils from '../../testUtils';
 import {
@@ -9,8 +11,8 @@ import {
   executeForwardToTicketRedeemTx,
   executeTicketRedeemTx,
   executeReturnRaffleLicenseTx,
+  executeSafeWithdrawTransaction,
 } from './transactions';
-import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
 
 /*
  * create fixtures that contains below steps data:
@@ -174,6 +176,17 @@ describe('Raffle', () => {
           );
           ticketRedeem = ticketRedeemTx.outputs[0];
           expect(ticketRedeemTx.success).true;
+
+          const donatorAddress = Buffer.from(
+            SConstant.from(ticket.additionalRegisters.R4!).data as Uint8Array,
+          ).toString('hex');
+          const donationSafePayBox = ticketRedeemTx.outputs[1];
+          const donationSafeWithdrawTx = executeSafeWithdrawTransaction(
+            donationSafePayBox,
+            donatorAddress,
+            boxFactory,
+          );
+          expect(donationSafeWithdrawTx.success).true;
         }
 
         // Step 7: Return raffle license to service
@@ -185,6 +198,14 @@ describe('Raffle', () => {
           ownerErgoTree,
         );
         expect(returnLicenseTx.success).true;
+
+        const serviceFeeSafePayBox = returnLicenseTx.outputs[1];
+        const serviceFeeSafeWithdrawTx = executeSafeWithdrawTransaction(
+          serviceFeeSafePayBox,
+          ownerErgoTree,
+          boxFactory,
+        );
+        expect(serviceFeeSafeWithdrawTx.success).true;
       },
     );
   });

@@ -40,7 +40,7 @@ export const executeCreateRaffleTx = (
     0: SColl(SLong, winnersPercent),
     1: SColl(SColl(SByte), [
       Array.from(Buffer.from(implementerErgoTree, 'hex')),
-      Array.from(Buffer.from(creator.address.ergoTree, 'hex')),
+      Array.from(Buffer.from(creator.ergoTree, 'hex')),
     ]),
   });
   const serviceFeeErgoTree = Buffer.from(
@@ -61,7 +61,7 @@ export const executeCreateRaffleTx = (
   const inactiveRaffleOutputBox = boxFactory.createInactiveRaffleOutputBox(
     serviceFeeErgoTree,
     implementerErgoTree,
-    creator.address.ergoTree,
+    creator.ergoTree,
     winnersCount,
     collectingTokenId !== undefined
       ? {
@@ -118,7 +118,7 @@ export const executeMergeTx = (
       r5,
       winnersCount,
       BigInt(inactiveRaffle.value.toString()) -
-        4n * BigInt(winnersCount) * testUtils.FEE -
+        5n * BigInt(winnersCount) * testUtils.FEE -
         testUtils.FEE,
       BigInt(ticketRepo.assets[0].amount.toString()) - BigInt(winnersCount + 1),
       ticketTokenId,
@@ -252,7 +252,7 @@ export const executeAddGiftTx = (
   );
   const gift = boxFactory.createGiftOutputBox(
     winnerIndex,
-    giftGiver.address.toString(),
+    giftGiver.ergoTree,
     testUtils.FEE * 10n,
     giftTokenId,
   );
@@ -321,7 +321,7 @@ export const executeDonateTx = (
     );
 
   const ticket = boxFactory.createTicketOutputBox(
-    donator.address.toString(),
+    donator.ergoTree,
     ticketCount,
     ticketTokenId,
     [totalSoldTickets, totalSoldTickets + ticketCount, r4[3]],
@@ -418,13 +418,10 @@ export const executeGiftReturnTx = (
     winnerIndex,
   );
 
-  const giftGiverAddress = Buffer.from(
-    SConstant.from(gift.additionalRegisters.R4!).data as Uint8Array,
-  ).toString();
-  const redeemedGift = boxFactory.createCustomOutputBox(
+  const redeemedGift = boxFactory.createSafePayOutputBox(
     BigInt(gift.value.toString()) - testUtils.FEE,
     gift.assets.slice(1),
-    giftGiverAddress,
+    blake2b256(SConstant.from(gift.additionalRegisters.R4!).data as Uint8Array),
   );
   const giftReturnTx = new TransactionBuilder(boxFactory.chain.height)
     .from([winner, gift])
@@ -458,7 +455,7 @@ export const executeWinnerRemovalTx = (
     .data as number;
   const ticketTokenId = giftRedeem.assets[1].tokenId;
   const giftRedeemOutputBox = boxFactory.createGiftRedeemOutputBox(
-    BigInt(giftRedeem.value.toString()) + 2n * testUtils.FEE,
+    BigInt(giftRedeem.value.toString()) + 3n * testUtils.FEE,
     r4[0],
     r4[1],
     winnersCount,
@@ -537,7 +534,7 @@ export const executeTicketRedeemTx = (
   const ticketCount = BigInt(ticket.assets[0].amount.toString());
   const donatorAddress = Buffer.from(
     SConstant.from(ticket.additionalRegisters.R4!).data as Uint8Array,
-  ).toString();
+  ).toString('hex');
 
   let redeemedDonationValue =
     BigInt(ticket.value.toString()) - testUtils.FEE + ticketPrice * ticketCount;
@@ -569,10 +566,10 @@ export const executeTicketRedeemTx = (
     collectingToken,
   );
 
-  const redeemedDonation = boxFactory.createCustomOutputBox(
+  const redeemedDonation = boxFactory.createSafePayOutputBox(
     redeemedDonationValue,
     redeemedDonationTokens,
-    donatorAddress,
+    blake2b256(Buffer.from(donatorAddress, 'hex')),
   );
 
   const ticketRedeemTx = new TransactionBuilder(boxFactory.chain.height)
@@ -613,10 +610,10 @@ export const executeReturnRaffleLicenseTx = (
     implementerFeePercent,
     serviceR4[2],
   );
-  const changeBox = boxFactory.createCustomOutputBox(
+  const changeBox = boxFactory.createSafePayOutputBox(
     BigInt(endedRaffle.value.toString()) - testUtils.FEE,
     endedRaffle.assets[2] ? [endedRaffle.assets[2]] : [],
-    changeAddress,
+    blake2b256(Buffer.from(changeAddress, 'hex')),
   );
 
   const ticketRedeemTx = new TransactionBuilder(boxFactory.chain.height)
@@ -633,20 +630,15 @@ export const executeReturnRaffleLicenseTx = (
 };
 
 /**
- * Execute reward transaction
+ * Execute fee payment transaction
  * @param activeRaffleBox
  * @param raffleDetailsBox
- * @param creatorAddress
- * @param serviceAddress
- * @param implementerAddress
  * @param boxFactory
  * @returns
  */
-export const executeRewardTx = (
+export const executeFeePaymentTx = (
   activeRaffleBox: testUtils.OutputBox,
   raffleDetailsBox: testUtils.OutputBox,
-  serviceAddress: string,
-  implementerAddress: string,
   boxFactory: testUtils.RaffleBoxFactory,
 ) => {
   const oracleBox = boxFactory.createMockedOracleUTxO(testUtils.FEE);
@@ -659,6 +651,8 @@ export const executeRewardTx = (
     .data as number;
   const r5 = SConstant.from(activeRaffleBox.additionalRegisters.R5!)
     .data as Uint8Array[];
+  const serviceAddressHash = r5[0];
+  const implementerAddressHash = r5[1];
   const projectAddressHash = r5[2];
 
   const winnerPercent = r4[0];
@@ -680,22 +674,22 @@ export const executeRewardTx = (
       },
     ];
   };
-  const serviceFeeBox = boxFactory.createCustomOutputBox(
+  const serviceFeeBox = boxFactory.createSafePayOutputBox(
     (isErgGoal ? BigInt((totalRaised * serviceFeePercent) / 1000n) : 0n) +
-      testUtils.FEE,
+      2n * testUtils.FEE,
     createTokenPercent(serviceFeePercent),
-    serviceAddress,
+    serviceAddressHash,
   );
-  const implementerFeeBox = boxFactory.createCustomOutputBox(
+  const implementerFeeBox = boxFactory.createSafePayOutputBox(
     (isErgGoal ? BigInt((totalRaised * implementerFeePercent) / 1000n) : 0n) +
-      testUtils.FEE,
+      2n * testUtils.FEE,
     createTokenPercent(serviceFeePercent),
-    implementerAddress,
+    implementerAddressHash,
   );
   const activeRaffleValue = BigInt(activeRaffleBox.value.toString());
   const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
     activeRaffleValue -
-      2n * testUtils.FEE -
+      4n * testUtils.FEE -
       (isErgGoal ? (totalFeePercent * totalRaised) / 1000n : 0n),
     activeRaffleBox.assets[0].tokenId,
     oracleBox.boxId.toString(),
@@ -782,12 +776,10 @@ export const executePrizeCreationTx = (
   const giftCount = SConstant.from(winnerBox.additionalRegisters.R6!)
     .data as bigint;
 
-  const prizeAmount = (BigInt(totalPrize) * winnerR4[0]) / 1000n;
+  const prizeAmount = (totalPrize * winnerR4[0]) / 1000n;
   const isErgGoal = successRaffleBox.assets.length == 2;
   const prizeBox = boxFactory.createWinnerPrizeOutputBox(
-    isErgGoal
-      ? testUtils.FEE * 2n + (totalPrize * winnerR4[0]) / 1000n
-      : testUtils.FEE * 2n,
+    isErgGoal ? testUtils.FEE * 3n + prizeAmount : testUtils.FEE * 3n,
     winnerIndex,
     winnerTicketIndex,
     giftCount,
@@ -875,12 +867,12 @@ export const executeGiftUnwrapTx = (
     giftForWinnerBox.assets.length,
   );
 
-  const unwrappedGiftBox = boxFactory.createCustomOutputBox(
+  const unwrappedGiftBox = boxFactory.createSafePayOutputBox(
     BigInt(giftForWinnerBox.value) - testUtils.FEE,
     giftOutputBoxTokens,
-    Buffer.from(
+    blake2b256(
       SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array,
-    ).toString(),
+    ),
   );
 
   const giftUnwrapTx = new TransactionBuilder(boxFactory.chain.height)
@@ -908,12 +900,12 @@ export const executeFinalPrizeTx = (
   ticketBox: testUtils.OutputBox,
   boxFactory: testUtils.RaffleBoxFactory,
 ) => {
-  const finalPrizeSpendingBox = boxFactory.createCustomOutputBox(
+  const finalPrizeSpendingBox = boxFactory.createSafePayOutputBox(
     BigInt(winnerPrizeBox.value) - testUtils.FEE,
     winnerPrizeBox.assets.length > 2 ? [winnerPrizeBox.assets[2]] : [],
-    Buffer.from(
+    blake2b256(
       SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array,
-    ).toString(),
+    ),
   );
 
   const finalPrizeTx = new TransactionBuilder(boxFactory.chain.height)
@@ -928,4 +920,34 @@ export const executeFinalPrizeTx = (
     .build();
 
   return boxFactory.chain.executeAndReturnOutputs(finalPrizeTx);
+};
+
+/**
+ * Execute safe withdraw transaction to send all funds to the receiver address
+ * @param safePayBox
+ * @param receiverAddress
+ * @param boxFactory
+ * @returns
+ */
+export const executeSafeWithdrawTransaction = (
+  safePayBox: testUtils.OutputBox,
+  receiverAddress: string,
+  boxFactory: testUtils.RaffleBoxFactory,
+) => {
+  const safeWithdrawBox = boxFactory.createCustomOutputBox(
+    BigInt(safePayBox.value) - testUtils.FEE,
+    safePayBox.assets,
+    receiverAddress,
+  );
+
+  const safeWithdrawTx = new TransactionBuilder(boxFactory.chain.height)
+    .from([safePayBox])
+    .to([safeWithdrawBox])
+    .configureSelector((selector) => {
+      selector.defineStrategy((inputs) => inputs);
+    })
+    .payFee(testUtils.FEE)
+    .build();
+
+  return boxFactory.chain.executeAndReturnOutputs(safeWithdrawTx);
 };
