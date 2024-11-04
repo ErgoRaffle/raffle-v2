@@ -112,11 +112,12 @@ export function compileAll(
       if (trueScripts.indexOf(scriptName) >= 0) {
         script = `{ sigmaProp(HEIGHT > ${-trueScriptsIndex}) }`;
         trueScriptsIndex += 1;
-      } else
+      } else {
         script = fs.readFileSync(
           path.join(constants.SCRIPT_DIR, `${scriptName}.es`),
           'utf8',
         );
+      }
 
       for (const nameAndValue of Object.entries(scriptVars))
         script = script.replace(nameAndValue[0], nameAndValue[1]);

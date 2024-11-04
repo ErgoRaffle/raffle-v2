@@ -6,7 +6,7 @@ import { program } from 'commander';
 import { logger } from '../lib/logger';
 import { ContextVarsType } from '../lib/types';
 import { compileAll } from '../lib/utils';
-import { defaultScriptsVariables } from '../constants';
+import { defaultScriptsVariables, defaultBuildVariables } from '../constants';
 
 program
   .name('contracts')
@@ -70,16 +70,20 @@ program
 // Create template file of input variables
 program
   .command('make-input-template')
+  .option('-b, --for-build', 'This flag determine purpose config is for build')
   .argument('<destination>', 'Destination address of file')
-  .action((destination) => {
+  .action((destination, options) => {
     logger.info('Create input file template started');
 
+    const variables = options.forBuild
+      ? defaultBuildVariables
+      : defaultScriptsVariables;
     let fileCreatedSuccess = false;
     try {
       fs.writeFileSync(
         destination,
         JSON.stringify(
-          defaultScriptsVariables,
+          variables,
           (key, value) =>
             typeof value === 'bigint' ? value.toString() : value,
           4,
@@ -94,4 +98,4 @@ program
       logger.info('Create input file template command ran successful');
   });
 
-program.parse();
+program.parse(process.argv);
