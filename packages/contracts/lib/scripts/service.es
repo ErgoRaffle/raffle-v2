@@ -90,6 +90,8 @@
         inactiveRaffle.R4[Coll[Long]].get(1) == serviceFeePercent,
         inactiveRaffle.R4[Coll[Long]].get(2) == implementerFeePercent,
         inactiveRaffle.R4[Coll[Long]].get(0) + serviceFeePercent + implementerFeePercent < 1000L,
+        inactiveRaffle.R4[Coll[Long]].get(3) > 0L,
+        inactiveRaffle.R4[Coll[Long]].get(4) >= 1000L,
         inactiveRaffle.R4[Coll[Long]].get(6) == txFee,
         inactiveRaffle.R5[Coll[Coll[Byte]]].get.size == 3,
         inactiveRaffle.R5[Coll[Coll[Byte]]].get(0) == blake2b256(serviceAddress),
@@ -99,7 +101,8 @@
         inactiveRaffle.R7[Coll[Coll[Byte]]].get(0) == SELF.id, // Storing TicketId to match with TicketRepo
         inactiveRaffle.R7[Coll[Coll[Byte]]].get(1) == blake2b256(winnersPercentBytes),
         inactiveRaffle.R8[Int].get == winnersCount,
-        inactiveRaffle.value >= (4 * txFee * winnersCount) + creationFee,
+        inactiveRaffle.value >= (5 * txFee * winnersCount) + (8 * txFee),
+        inactiveRaffle.value >= creationFee,
 
         // Transaction constraints
         winnerPercentsSum == 1000L,
