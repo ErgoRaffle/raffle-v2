@@ -310,7 +310,7 @@ export class RaffleBoxFactory {
 
     return new ErgoUnsignedInput(
       mockUTxO({
-        value: 5n * FEE + 4n * FEE * BigInt(winnersCount) + creationFee,
+        value: 8n * FEE + 5n * FEE * BigInt(winnersCount) + creationFee,
         ergoTree: this.contractsAddresses['inactiveRaffle'],
         assets: tokens,
         additionalRegisters: {
@@ -394,7 +394,7 @@ export class RaffleBoxFactory {
         winnersPercents.push(1000n / BigInt(winnersCount));
 
     return new OutputBuilder(
-      5n * FEE + 4n * FEE * BigInt(winnersCount) + creationFee,
+      8n * FEE + 5n * FEE * BigInt(winnersCount) + creationFee,
       this.contractsAddresses['inactiveRaffle'],
     )
       .addTokens(tokens)
@@ -463,7 +463,7 @@ export class RaffleBoxFactory {
     goal: bigint = 1000n,
     ticketPrice: bigint = 10n,
   ) {
-    value = value || creationFee + 4n * FEE;
+    value = value || creationFee + 7n * FEE;
 
     const tokens = [
       {
@@ -585,7 +585,7 @@ export class RaffleBoxFactory {
     goal: bigint = 1000n,
     ticketPrice: bigint = 10n,
   ) {
-    value = value || creationFee + 4n * FEE;
+    value = value || creationFee + 7n * FEE;
 
     const tokens = [
       {
@@ -1012,7 +1012,7 @@ export class RaffleBoxFactory {
     for (let i = 0; i < winnersCount; i++)
       winnersBoxes.push(
         mockUTxO({
-          value: 3n * FEE,
+          value: 4n * FEE,
           ergoTree: this.contractsAddresses['winner'],
           additionalRegisters: {
             R4: SColl(SLong, [
@@ -1136,7 +1136,7 @@ export class RaffleBoxFactory {
   /**
    * Create gift input box
    * @param winnerIndex
-   * @param giftGiverWalletAddress
+   * @param giftGiverErgoTree
    * @param value
    * @param giftTokenId
    * @param giftTokenAmount
@@ -1144,7 +1144,7 @@ export class RaffleBoxFactory {
    */
   createGiftOutputBox(
     winnerIndex: number,
-    giftGiverWalletAddress: string,
+    giftGiverErgoTree: string,
     value: bigint = 0n,
     giftTokenId?: string,
     giftTokenAmount: bigint = 1n,
@@ -1153,7 +1153,7 @@ export class RaffleBoxFactory {
       value,
       this.contractsAddresses['gift'],
     ).setAdditionalRegisters({
-      R4: SColl(SByte, Array.from(Buffer.from(giftGiverWalletAddress))),
+      R4: SColl(SByte, Array.from(Buffer.from(giftGiverErgoTree, 'hex'))),
       R5: SInt(winnerIndex),
     });
     if (giftTokenId !== undefined) {
@@ -1167,25 +1167,25 @@ export class RaffleBoxFactory {
 
   /**
    * Create ticket box
-   * @param donatorWalletAddress
+   * @param donatorErgoTree
    * @param ticketCount
    * @param ticketTokenId
    * @param r5
    * @returns
    */
   createTicketOutputBox(
-    donatorWalletAddress: string,
+    donatorErgoTree: string,
     ticketCount: bigint,
     ticketTokenId: string,
     r5: bigint[],
   ) {
     const donateTicketOutputBox = new OutputBuilder(
-      FEE * 2n,
+      FEE * 3n,
       this.contractsAddresses['ticket'],
     );
     donateTicketOutputBox
       .setAdditionalRegisters({
-        R4: SColl(SByte, Array.from(Buffer.from(donatorWalletAddress))),
+        R4: SColl(SByte, Array.from(Buffer.from(donatorErgoTree, 'hex'))),
         R5: SColl(SLong, r5).toHex(),
       })
       .addTokens(
@@ -1307,7 +1307,7 @@ export class RaffleBoxFactory {
     giftTokenCount = BigInt(GIFT_TOKEN_COUNT),
     giftCount = 0n,
     winnerIndex: number = 1,
-    value: bigint = 3n * FEE,
+    value: bigint = 4n * FEE,
   ) {
     const winnerBox = new OutputBuilder(
       value,
@@ -1350,7 +1350,7 @@ export class RaffleBoxFactory {
     extraTokens?: TokenAmount<bigint> | TokenAmount<Amount>,
   ) {
     const winnerBox = new OutputBuilder(
-      3n * FEE,
+      4n * FEE,
       this.contractsAddresses['winner'],
     )
       .setAdditionalRegisters({
@@ -1386,6 +1386,30 @@ export class RaffleBoxFactory {
   ) {
     const outputBox = new OutputBuilder(value, address);
     outputBox.setAdditionalRegisters(additionalRegisters!);
+    if (tokens.length > 0) outputBox.addTokens(tokens);
+    return outputBox;
+  }
+
+  /**
+   * Create a safePay output-box
+   * @param value
+   * @param tokens
+   * @param addressHash
+   * @returns
+   */
+  createSafePayOutputBox(
+    value: bigint,
+    tokens: TokenAmount<Amount>[],
+    addressHash: Uint8Array,
+  ) {
+    const outputBox = new OutputBuilder(
+      value,
+      this.contractsAddresses['safePay'],
+    );
+    outputBox.setAdditionalRegisters({
+      R4: SColl(SByte, Array.from(addressHash)),
+      R5: SLong(FEE),
+    });
     if (tokens.length > 0) outputBox.addTokens(tokens);
     return outputBox;
   }
@@ -1483,7 +1507,7 @@ export const makeHashFromString = (content: string) => {
  * customized array class for holding ticket-boxes by special actions
  */
 export class Tickets extends Array {
-  public selectByWinnerIndex = (boxIndex: bigint) => {
+  public selectByWinnerIndex = (boxIndex: bigint): OutputBox => {
     return this.filter((value, index) => {
       const ticketR5 = SConstant.from(this[index].additionalRegisters.R5!)
         .data as bigint[];

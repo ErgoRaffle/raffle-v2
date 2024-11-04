@@ -141,10 +141,10 @@ const createActiveRaffleEndTest = (
   );
 
   const oracleBox = boxFactory.createMockedOracleUTxO(testUtils.FEE);
-  const serviceFeeBox = boxFactory.createCustomOutputBox(
+  const serviceFeeBox = boxFactory.createSafePayOutputBox(
     collectingTokenId === undefined
-      ? BigInt((totalRaised * serviceFeePercent) / 1000n) + testUtils.FEE
-      : testUtils.FEE,
+      ? BigInt((totalRaised * serviceFeePercent) / 1000n) + 2n * testUtils.FEE
+      : 2n * testUtils.FEE,
     collectingTokenId === undefined
       ? []
       : [
@@ -153,12 +153,13 @@ const createActiveRaffleEndTest = (
             amount: (totalRaised * serviceFeePercent) / 1000n,
           },
         ],
-    creator.ergoTree,
+    blake2b256(Buffer.from(creator.ergoTree, 'hex')),
   );
-  const implementerFeeBox = boxFactory.createCustomOutputBox(
+  const implementerFeeBox = boxFactory.createSafePayOutputBox(
     collectingTokenId === undefined
-      ? BigInt((totalRaised * implementerFeePercent) / 1000n) + testUtils.FEE
-      : testUtils.FEE,
+      ? BigInt((totalRaised * implementerFeePercent) / 1000n) +
+          2n * testUtils.FEE
+      : 2n * testUtils.FEE,
     collectingTokenId === undefined
       ? []
       : [
@@ -167,7 +168,7 @@ const createActiveRaffleEndTest = (
             amount: (totalRaised * implementerFeePercent) / 1000n,
           },
         ],
-    implementer.ergoTree,
+    blake2b256(Buffer.from(implementer.ergoTree, 'hex')),
   );
 
   return it.extend({
@@ -856,7 +857,7 @@ describe('ActiveRaffle', () => {
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
           activeRaffleBoxForSuccessEnd.value -
             (totalRaised * totalFeePercent) / 1000n -
-            testUtils.FEE * 2n,
+            testUtils.FEE * 4n,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           oracleBox.boxId.toString(),
           blake2b256(Buffer.from(creatorWallet.ergoTree, 'hex')),
@@ -915,7 +916,7 @@ describe('ActiveRaffle', () => {
 
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
           BigInt(activeRaffleBoxForSuccessEnd.value.toString()) -
-            testUtils.FEE * 2n,
+            testUtils.FEE * 4n,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           oracleBox.boxId.toString(),
           blake2b256(Buffer.from(creatorWallet.ergoTree, 'hex')),
@@ -982,7 +983,7 @@ describe('ActiveRaffle', () => {
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
           activeRaffleBoxForSuccessEnd.value -
             (totalRaised * totalFeePercent) / 1000n -
-            testUtils.FEE * 2n,
+            testUtils.FEE * 4n,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           oracleBox.boxId.toString(),
           blake2b256(Buffer.from(creatorWallet.ergoTree, 'hex')),
@@ -1049,7 +1050,7 @@ describe('ActiveRaffle', () => {
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
           activeRaffleBoxForSuccessEnd.value -
             (totalRaised * totalFeePercent) / 1000n -
-            testUtils.FEE * 2n,
+            testUtils.FEE * 4n,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           oracleBox.boxId.toString(),
           blake2b256(Buffer.from(creatorWallet.ergoTree, 'hex')),
@@ -1111,7 +1112,7 @@ describe('ActiveRaffle', () => {
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
           activeRaffleBoxForSuccessEnd.value -
             (totalRaised * totalFeePercent) / 1000n -
-            testUtils.FEE * 2n,
+            testUtils.FEE * 4n,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           oracleBox.boxId.toString(),
           blake2b256(Buffer.from(creatorWallet.ergoTree, 'hex')),
@@ -1185,7 +1186,7 @@ describe('ActiveRaffle', () => {
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
           activeRaffleBoxForSuccessEnd.value -
             (totalRaised * totalFeePercent) / 1000n -
-            testUtils.FEE * 2n,
+            testUtils.FEE * 4n,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           oracleBox.boxId.toString(),
           blake2b256(Buffer.from(creatorWallet.ergoTree, 'hex')),
@@ -1251,7 +1252,7 @@ describe('ActiveRaffle', () => {
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
           activeRaffleBoxForSuccessEnd.value -
             (totalRaised * totalFeePercent) / 1000n -
-            testUtils.FEE * 2n,
+            testUtils.FEE * 4n,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           oracleBox.boxId.toString(),
           blake2b256(Buffer.from(creatorWallet.ergoTree, 'hex')),
@@ -1266,18 +1267,18 @@ describe('ActiveRaffle', () => {
           BigInt(activeRaffleBoxForSuccessEnd.assets[1].amount) + 1n,
         );
 
-        const serviceFeeBox = boxFactory.createCustomOutputBox(
+        const serviceFeeBox = boxFactory.createSafePayOutputBox(
           BigInt((totalRaised * invalidServiceFeePercent) / 1000n) +
-            testUtils.FEE,
+            testUtils.FEE * 2n,
           [],
-          creatorWallet.ergoTree,
+          blake2b256(Buffer.from(creatorWallet.ergoTree, 'hex')),
         );
 
-        const implementerFeeBox = boxFactory.createCustomOutputBox(
+        const implementerFeeBox = boxFactory.createSafePayOutputBox(
           BigInt((totalRaised * invalidImplementerFeePercent) / 1000n) +
-            testUtils.FEE,
+            testUtils.FEE * 2n,
           [],
-          implementerWallet.ergoTree,
+          blake2b256(Buffer.from(implementerWallet.ergoTree, 'hex')),
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
@@ -1324,31 +1325,31 @@ describe('ActiveRaffle', () => {
         const invalidServiceFeePercent = 250n;
         const invalidImplementerFeePercent = 50n;
 
-        const serviceFeeBox = boxFactory.createCustomOutputBox(
-          testUtils.FEE,
+        const serviceFeeBox = boxFactory.createSafePayOutputBox(
+          2n * testUtils.FEE,
           [
             {
               tokenId: activeRaffleBoxForSuccessEnd.assets[2].tokenId,
               amount: (totalRaised * invalidServiceFeePercent) / 1000n,
             },
           ],
-          creatorWallet.ergoTree,
+          blake2b256(Buffer.from(creatorWallet.ergoTree, 'hex')),
         );
 
-        const implementerFeeBox = boxFactory.createCustomOutputBox(
-          testUtils.FEE,
+        const implementerFeeBox = boxFactory.createSafePayOutputBox(
+          2n * testUtils.FEE,
           [
             {
               tokenId: activeRaffleBoxForSuccessEnd.assets[2].tokenId,
               amount: (totalRaised * invalidImplementerFeePercent) / 1000n,
             },
           ],
-          implementerWallet.ergoTree,
+          blake2b256(Buffer.from(implementerWallet.ergoTree, 'hex')),
         );
 
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
           BigInt(activeRaffleBoxForSuccessEnd.value.toString()) -
-            testUtils.FEE * 2n,
+            testUtils.FEE * 4n,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           oracleBox.boxId.toString(),
           blake2b256(Buffer.from(creatorWallet.ergoTree, 'hex')),
@@ -1410,7 +1411,7 @@ describe('ActiveRaffle', () => {
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
           activeRaffleBoxForSuccessEnd.value -
             (totalRaised * totalFeePercent) / 1000n -
-            testUtils.FEE * 2n,
+            testUtils.FEE * 4n,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           // set invalid seed
           'invalid seed',
@@ -1472,7 +1473,7 @@ describe('ActiveRaffle', () => {
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
           activeRaffleBoxForSuccessEnd.value -
             (totalRaised * totalFeePercent) / 1000n -
-            testUtils.FEE * 2n,
+            testUtils.FEE * 4n,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           oracleBox.boxId.toString(),
           blake2b256(Buffer.from(creatorWallet.ergoTree, 'hex')),
@@ -1534,7 +1535,7 @@ describe('ActiveRaffle', () => {
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
           activeRaffleBoxForSuccessEnd.value -
             (totalRaised * totalFeePercent) / 1000n -
-            testUtils.FEE * 2n,
+            testUtils.FEE * 4n,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           oracleBox.boxId.toString(),
           blake2b256(Buffer.from(creatorWallet.ergoTree, 'hex')),

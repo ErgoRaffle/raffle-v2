@@ -673,7 +673,7 @@ describe('winner', () => {
           1n,
         );
         const prizeBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 2n + BigInt(prizeAmount),
+          testUtils.FEE * 3n + BigInt(prizeAmount),
           1,
           winnerTicketIndex,
           1n,
@@ -788,7 +788,7 @@ describe('winner', () => {
           1n,
         );
         const prizeBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 2n,
+          testUtils.FEE * 3n,
           1,
           winnerTicketIndex,
           1n,
@@ -874,7 +874,7 @@ describe('winner', () => {
           1n,
         );
         const prizeBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 2n + BigInt(incorrectPrizeAmount),
+          testUtils.FEE * 3n + BigInt(incorrectPrizeAmount),
           1,
           winnerTicketIndex,
           1n,
@@ -991,7 +991,7 @@ describe('winner', () => {
           1n,
         );
         const prizeBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 2n,
+          testUtils.FEE * 3n,
           1,
           winnerTicketIndex,
           1n,
@@ -1085,7 +1085,7 @@ describe('winner', () => {
           1n,
         );
         const prizeBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 2n + BigInt(prizeAmount),
+          testUtils.FEE * 3n + BigInt(prizeAmount),
           1,
           winnerTicketIndex,
           1n,
@@ -1176,7 +1176,7 @@ describe('winner', () => {
           1n,
         );
         const prizeBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 2n + BigInt(prizeAmount),
+          testUtils.FEE * 3n + BigInt(prizeAmount),
           0, // put invalid winner-index
           winnerTicketIndex,
           1n,
@@ -1261,7 +1261,7 @@ describe('winner', () => {
           1n,
         );
         const prizeBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 2n + BigInt(prizeAmount),
+          testUtils.FEE * 3n + BigInt(prizeAmount),
           1,
           winnerTicketIndex,
           1n,
@@ -1348,7 +1348,7 @@ describe('winner', () => {
           1n,
         );
         const prizeBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 2n + BigInt(prizeAmount),
+          testUtils.FEE * 3n + BigInt(prizeAmount),
           1,
           winnerTicketIndex,
           1n,
