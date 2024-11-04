@@ -86,6 +86,7 @@
         // R8: WinnersCount
         blake2b256(inactiveRaffle.propositionBytes) == inactiveRaffleScriptHash,
         inactiveRaffle.tokens(0)._1 == raffleLicense,
+        inactiveRaffle.tokens.size <= 2,
         inactiveRaffle.R4[Coll[Long]].get.size == 7,
         inactiveRaffle.R4[Coll[Long]].get(1) == serviceFeePercent,
         inactiveRaffle.R4[Coll[Long]].get(2) == implementerFeePercent,
