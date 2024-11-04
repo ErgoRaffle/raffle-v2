@@ -23,6 +23,7 @@
   val successRaffleScriptHash = fromBase64("SUCCESS_RAFFLE_SCRIPT_HASH_B64")
   val giftRedeemScriptHash = fromBase64("GIFT_REDEEM_SCRIPT_HASH_B64")
   val ticketScriptHash = fromBase64("TICKET_SCRIPT_HASH_B64")
+  val safePayScriptHash = fromBase64("SAFE_PAY_SCRIPT_HASH_B64")
 
   val isErgGoal = (SELF.tokens.size == 2)
   val ticketPrice = SELF.R4[Coll[Long]].get(3)
@@ -63,7 +64,7 @@
       // R4: [DonatorAddress]
       // R5: [RangeStart, RangeEnd, TicketPrice]
       blake2b256(ticket.propositionBytes) == ticketScriptHash,
-      ticket.value >= 2 * txFee,
+      ticket.value >= 3 * txFee,
       ticket.tokens(0)._1 == SELF.tokens(1)._1,
       ticket.R5[Coll[Long]].get == Coll[Long](
         totalSoldTickets, 
@@ -85,8 +86,8 @@
     val implementorAddressHash = SELF.R5[Coll[Coll[Byte]]].get(1)
     val projectAddressHash = SELF.R5[Coll[Coll[Byte]]].get(2)
     val splittingRaisedFund = if(isErgGoal) { 
-      serviceFee.value == (totalRaised * serviceFeePercent) / 1000 + txFee &&
-      implementerFee.value == (totalRaised * implementerFeePercent) / 1000 + txFee &&
+      serviceFee.value == (totalRaised * serviceFeePercent) / 1000 + 2 * txFee &&
+      implementerFee.value == (totalRaised * implementerFeePercent) / 1000 + 2 * txFee &&
       successRaffle.value >= SELF.value - serviceFee.value - implementerFee.value
     } else {
       successRaffle.tokens(2)._1 == SELF.tokens(2)._1 &&
@@ -96,9 +97,9 @@
       implementerFee.tokens(0)._2 == (totalRaised * implementerFeePercent) / 1000 &&
       successRaffle.tokens(2)._2 >= 
         SELF.tokens(2)._2 - serviceFee.tokens(0)._2 - implementerFee.tokens(0)._2 &&
-      successRaffle.value >= SELF.value - 2 * txFee &&
-      serviceFee.value == txFee &&
-      implementerFee.value == txFee
+      successRaffle.value >= SELF.value - 4 * txFee &&
+      serviceFee.value == 2 * txFee &&
+      implementerFee.value == 2 * txFee
     }
     sigmaProp(allOf(Coll(
       // Correct Oracle box
@@ -126,9 +127,15 @@
       successRaffle.R7[Coll[Coll[Byte]]].get(1) == blake2b256(Coll[Byte]()),
       successRaffle.R8[Int].get == 1,
 
+      // Correct Fee Safe Payments
+      blake2b256(serviceFee.propositionBytes) == safePayScriptHash,
+      serviceFee.R4[Coll[Byte]].get == serviceAddressHash,
+      serviceFee.R5[Long].get == txFee,
+      blake2b256(implementerFee.propositionBytes) == safePayScriptHash,
+      implementerFee.R4[Coll[Byte]].get == implementorAddressHash,
+      implementerFee.R5[Long].get == txFee,
+
       // Transaction constraints
-      blake2b256(serviceFee.propositionBytes) == serviceAddressHash,
-      blake2b256(implementerFee.propositionBytes) == implementorAddressHash,
       splittingRaisedFund,
     )))
   } else {

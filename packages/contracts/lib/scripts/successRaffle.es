@@ -22,6 +22,7 @@
   //      [Service, SuccessRaffle] --> [Service, ProjectFund]
   // 
   val serviceNft = fromBase64("SERVICE_NFT_B64")
+  val safePayScriptHash = fromBase64("SAFE_PAY_SCRIPT_HASH_B64")
 
   val winnersCount = SELF.R5[Int].get
   val step = SELF.R8[Int].get
@@ -112,8 +113,10 @@
       service.tokens(1)._1 == SELF.tokens(0)._1,
 
       // Correct ProjectFund format
-      blake2b256(projectFund.propositionBytes) == projectAddressHash,
+      blake2b256(projectFund.propositionBytes) == safePayScriptHash,
       projectFund.value == SELF.value - txFee,
+      projectFund.R4[Coll[Byte]].get == projectAddressHash,
+      projectFund.R5[Long].get == txFee,
       if(!isErgGoal) projectFund.tokens(0) == SELF.tokens(2) else true,
 
       // Transaction constraints

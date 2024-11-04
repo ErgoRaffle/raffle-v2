@@ -10,7 +10,8 @@ export type ScriptNamesType =
   | 'winnerPrize'
   | 'gift'
   | 'giftRedeem'
-  | 'ticketRedeem';
+  | 'ticketRedeem'
+  | 'safePay';
 export type ContextVarsType = Map<
   ScriptNamesType,
   Map<string, string | bigint | null>
