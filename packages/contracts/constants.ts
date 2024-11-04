@@ -5,7 +5,7 @@ import { compile } from '@fleet-sdk/compiler';
 let __dirname;
 
 if (__dirname === undefined) {
-  __dirname = path.dirname(import.meta.url).replace('file:', '');
+  __dirname = import.meta.dirname;
 }
 
 export const TRUE_SCRIPT_HEX = compile('{sigmaProp(true);}').toHex().toString();
