@@ -14,7 +14,7 @@
   // Spent in 3 transactions:
   //   - Owner config update with OwnerNft
   //   - RaffleLicense redeem from SuccessRaffle or TicketRedeem
-  //      [Service, (SuccessRaffle | TicketRedeem)] --> [Service]
+  //      [Service, (SuccessRaffle | TicketRedeem)] --> [Service, (ProjectFund | ServiceFee)]
   //   - New raffle creation
   //      [Service, UserBox] --> [Service, TicketRepo, InactiveRaffle, Change]
   // 
@@ -41,7 +41,7 @@
     ))
     if(outputService.tokens(1)._2 == SELF.tokens(1)._2 + 1L) {
       // RaffleLicense redeem from SuccessRaffle or TicketRedeem
-      // [Service, (SuccessRaffle | TicketRedeem)] --> [Service]
+      // [Service, (SuccessRaffle | TicketRedeem)] --> [Service, (ProjectFund | ServiceFee)]
       sigmaProp(selfReplication)
     } else if (outputService.tokens(1)._2 == SELF.tokens(1)._2 - 1L) {
       // New raffle creation
@@ -87,6 +87,7 @@
         blake2b256(inactiveRaffle.propositionBytes) == inactiveRaffleScriptHash,
         inactiveRaffle.tokens(0)._1 == raffleLicense,
         inactiveRaffle.R4[Coll[Long]].get.size == 7,
+        inactiveRaffle.R4[Coll[Long]].get(0) >= 0,
         inactiveRaffle.R4[Coll[Long]].get(1) == serviceFeePercent,
         inactiveRaffle.R4[Coll[Long]].get(2) == implementerFeePercent,
         inactiveRaffle.R4[Coll[Long]].get(0) + serviceFeePercent + implementerFeePercent < 1000L,
