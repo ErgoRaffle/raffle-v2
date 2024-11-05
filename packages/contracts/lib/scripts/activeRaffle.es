@@ -50,7 +50,7 @@
     sigmaProp(allOf(Coll(
       // Correct ActiveRaffle format
       outputRaffle.propositionBytes == SELF.propositionBytes,
-      outputRaffle.tokens(0)._1 == SELF.tokens(0)._1,
+      outputRaffle.tokens(0) == SELF.tokens(0),
       outputRaffle.tokens(1)._1 == SELF.tokens(1)._1,
       outputRaffle.tokens(1)._2 == SELF.tokens(1)._2 - onSaleTickets,
       outputRaffle.R4[Coll[Long]].get == SELF.R4[Coll[Long]].get,
@@ -112,7 +112,7 @@
       // R6: [Seed, SelectedWinnersListHash]
       // R7: Step
       blake2b256(successRaffle.propositionBytes) == successRaffleScriptHash,
-      successRaffle.tokens(0)._1 == SELF.tokens(0)._1,
+      successRaffle.tokens(0) == SELF.tokens(0),
       successRaffle.tokens(1)._1 == SELF.tokens(1)._1,
       successRaffle.tokens(1)._2 == SELF.tokens(1)._2 + 1,
       successRaffle.tokens.size == SELF.tokens.size,
@@ -142,10 +142,8 @@
     // Failure end
     // [ActiveRaffle, RaffleDetail] --> [GiftRedeem]
     val giftRedeem = OUTPUTS(0)
-    val collectingTokenCheck = if(isErgGoal) { true } else {
-      giftRedeem.tokens(2)._1 == SELF.tokens(2)._1 &&
-      giftRedeem.tokens(2)._2 == SELF.tokens(2)._2
-    }
+    val collectingTokenCheck = 
+      if(!isErgGoal) giftRedeem.tokens(2) == SELF.tokens(2) else true
     sigmaProp(allOf(Coll(
       // Correct GiftRedeem format
       // R4: [TotalSoldTicket, TicketPrice, txFee]
@@ -153,7 +151,7 @@
       // R6: Step
       blake2b256(giftRedeem.propositionBytes) == giftRedeemScriptHash,
       giftRedeem.value == SELF.value,
-      giftRedeem.tokens(0)._1 == SELF.tokens(0)._1,
+      giftRedeem.tokens(0) == SELF.tokens(0),
       giftRedeem.tokens(1)._1 == SELF.tokens(1)._1,
       giftRedeem.tokens(1)._2 == SELF.tokens(1)._2 + 1,
       collectingTokenCheck,

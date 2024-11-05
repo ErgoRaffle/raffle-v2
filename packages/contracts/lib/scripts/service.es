@@ -28,13 +28,12 @@
     sigmaProp(true)
   } else {
     val outputService = OUTPUTS(0)
-    val serviceNft = SELF.tokens(0)._1
     val raffleLicense = SELF.tokens(1)._1
     val selfReplication = allOf(Coll(
       outputService.R4[Coll[Long]].get == SELF.R4[Coll[Long]].get,
       outputService.R5[Coll[Byte]].get == SELF.R5[Coll[Byte]].get,
       outputService.propositionBytes == SELF.propositionBytes,
-      outputService.tokens(0)._1 == serviceNft,
+      outputService.tokens(0) == SELF.tokens(0),
       outputService.tokens(1)._1 == raffleLicense,
       outputService.value >= SELF.value,
       outputService.tokens.size == SELF.tokens.size,

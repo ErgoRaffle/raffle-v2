@@ -66,9 +66,8 @@
     sigmaProp(allOf(Coll(
       // Correct SuccessRaffle format
       outSuccessRaffle.propositionBytes == SELF.propositionBytes,
-      outSuccessRaffle.tokens(0)._1 == SELF.tokens(0)._1,
-      outSuccessRaffle.tokens(1)._1 == SELF.tokens(1)._1,
-      outSuccessRaffle.tokens(1)._2 == SELF.tokens(1)._2,
+      outSuccessRaffle.tokens(0) == SELF.tokens(0),
+      outSuccessRaffle.tokens(1) == SELF.tokens(1),
       outSuccessRaffle.tokens.size == SELF.tokens.size,
       checkRemainingPrize,
       outSuccessRaffle.R4[Coll[Long]].get == SELF.R4[Coll[Long]].get,
