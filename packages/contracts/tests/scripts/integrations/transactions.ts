@@ -35,6 +35,7 @@ export const executeCreateRaffleTx = (
   boxFactory: testUtils.RaffleBoxFactory,
   collectingTokenId?: string,
   ticketPrice: bigint = 100n,
+  winnersSharePercent: bigint = 200n,
 ) => {
   serviceBox.setContextExtension({
     0: SColl(SLong, winnersPercent),
@@ -76,6 +77,7 @@ export const executeCreateRaffleTx = (
     serviceBox.boxId,
     deadline,
     ticketPrice,
+    winnersSharePercent,
   );
   const creationTx = new TransactionBuilder(boxFactory.chain.height)
     .from([serviceBox, ...feeBoxes])
@@ -106,6 +108,7 @@ export const executeMergeTx = (
   winnersCount: number,
   deadline: bigint,
   boxFactory: testUtils.RaffleBoxFactory,
+  winnersSharePercent: bigint[],
 ) => {
   const r4 = SConstant.from(inactiveRaffle.additionalRegisters.R4!)
     .data as bigint[];
@@ -147,6 +150,9 @@ export const executeMergeTx = (
     ticketTokenId,
     undefined,
     deadline,
+    undefined,
+    undefined,
+    winnersSharePercent,
   );
 
   const inactiveRaffleTx = new TransactionBuilder(boxFactory.chain.height)
@@ -784,7 +790,7 @@ export const executePrizeCreationTx = (
     winnerTicketIndex,
     giftCount,
     0n,
-    isErgGoal
+    isErgGoal || prizeAmount == 0n
       ? [winnerBox.assets[0], winnerBox.assets[1]]
       : [
           winnerBox.assets[0],
@@ -821,6 +827,7 @@ export const executePrizeCreationTx = (
     })
     .payFee(testUtils.FEE)
     .build();
+  console.log(JSON.stringify(prizeTx.toEIP12Object()));
 
   const result = boxFactory.chain.executeAndReturnOutputs(prizeTx);
   const unsignedOutputs = [];

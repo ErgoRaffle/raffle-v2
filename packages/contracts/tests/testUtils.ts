@@ -364,6 +364,7 @@ export class RaffleBoxFactory {
    * @param ticketToken
    * @param deadline
    * @param ticketPrice
+   * @param winnersSharePercent
    * @returns InactiveRaffleBox
    */
   createInactiveRaffleOutputBox(
@@ -379,6 +380,7 @@ export class RaffleBoxFactory {
     ticketToken: string = TICKET_TOKEN_ID,
     deadline: bigint = 100n,
     ticketPrice: bigint = 10n,
+    winnersSharePercent: bigint = 200n,
   ) {
     const tokens = [
       {
@@ -400,7 +402,7 @@ export class RaffleBoxFactory {
       .addTokens(tokens)
       .setAdditionalRegisters({
         R4: SColl(SLong, [
-          200n, // WinnersPercentage,
+          winnersSharePercent, // WinnersPercentage,
           serviceFeePercent, // ServiceFeePercent,
           100n, // ImplementerFeePercent,
           ticketPrice, // TicketPrice,
@@ -1062,6 +1064,7 @@ export class RaffleBoxFactory {
     deadline = 100n,
     giftCount = 0n,
     extraTokens?: TokenAmount<bigint> | TokenAmount<Amount>,
+    winnersSharePercent?: bigint[],
   ) {
     const itemsCount = winnersCount || 1;
     const winnersBoxes = [];
@@ -1076,6 +1079,7 @@ export class RaffleBoxFactory {
           deadline,
           giftCount,
           extraTokens,
+          winnersSharePercent?.[i],
         ),
       );
     }
@@ -1348,13 +1352,14 @@ export class RaffleBoxFactory {
     deadline = 100n,
     giftCount = 0n,
     extraTokens?: TokenAmount<bigint> | TokenAmount<Amount>,
+    winnerShare: bigint = 1000n / BigInt(winnersCount),
   ) {
     const winnerBox = new OutputBuilder(
       4n * FEE,
       this.contractsAddresses['winner'],
     )
       .setAdditionalRegisters({
-        R4: SColl(SLong, [1000n / BigInt(winnersCount), deadline, FEE]),
+        R4: SColl(SLong, [winnerShare, deadline, FEE]),
         R5: SInt(winnerIndex),
         R6: SLong(giftCount),
         R7: SColl(SByte, Array.from(Buffer.from(giftTokenId, 'hex'))),
