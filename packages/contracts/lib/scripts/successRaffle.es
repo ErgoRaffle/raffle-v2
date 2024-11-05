@@ -110,7 +110,10 @@
       // Correct ProjectFund format
       blake2b256(projectFund.propositionBytes) == projectAddressHash,
       projectFund.value == SELF.value - txFee,
-      if(!isErgGoal) projectFund.tokens(0) == SELF.tokens(2) else true
+      if(!isErgGoal) projectFund.tokens(0) == SELF.tokens(2) else true,
+
+      // Transaction constraints
+      SELF.id == INPUTS(1).id,
     )))
   }
 }
