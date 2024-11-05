@@ -1,0 +1,24 @@
+{
+  "service": {
+    "OWNER_NFT_B64": "MQo="
+  },
+  "ticketRepo": {
+    "RAFFLE_LICENSE_B64": "Mbo="
+  },
+  "inactiveRaffle": {
+    "GIFT_TOKEN_COUNT": 1000
+  },
+  "activeRaffle": {
+    "ORACLE_TOKEN_ID_B64": "Mgo="
+  },
+  "winner": {
+    "RAFFLE_LICENSE_B64": "Mwo="
+  },
+  "successRaffle": {
+    "SERVICE_NFT_B64": "NAo="
+  },
+  "tokens": {
+    "ServiceNft": "0000000000000000000000000000000000000000000000000000000000000004",
+    "RaffleLicense": "0000000000000000000000000000000000000000000000000000000000000005"
+  }
+}

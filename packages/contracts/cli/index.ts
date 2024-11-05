@@ -98,4 +98,44 @@ program
       logger.info('Create input file template command ran successful');
   });
 
+// build final release index.js file
+program
+  .command('build')
+  .argument(
+    '-c, --config <config file path>',
+    'Address of input file that contains JSON contract name and variables',
+  )
+  .action((config) => {
+    let configs;
+    let contracts;
+
+    try {
+      configs = new Map(
+        Object.entries(JSON.parse(fs.readFileSync(config).toString())),
+      );
+    } catch (err) {
+      logger.error(`The config file is not valid: \n${err}`);
+      process.exit(1);
+    }
+
+    try {
+      contracts = compileAll(configs as ContextVarsType);
+    } catch (err) {
+      logger.error(`Compile Error: \n${err}`);
+      process.exit(1);
+    }
+
+    const RaffleAddressesAndTokens = {
+      addresses: contracts,
+      tokens: configs.get('tokens'),
+    };
+
+    fs.writeFileSync(
+      './dist/index.js',
+      `\
+export const raffleInfo = ${JSON.stringify(RaffleAddressesAndTokens, null, 4)};
+`,
+    );
+  });
+
 program.parse(process.argv);

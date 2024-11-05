@@ -70,6 +70,9 @@ export const defaultScriptsVariables: {
   service: {
     OWNER_NFT_B64: '',
   },
+  ticketRepo: {
+    RAFFLE_LICENSE_B64: '',
+  },
   inactiveRaffle: {
     GIFT_TOKEN_COUNT: 1000,
   },
@@ -85,9 +88,11 @@ export const defaultScriptsVariables: {
 };
 
 export const defaultBuildVariables = {
-  defaults: {},
   service: {
     OWNER_NFT_B64: '',
+  },
+  ticketRepo: {
+    RAFFLE_LICENSE_B64: '',
   },
   inactiveRaffle: {
     GIFT_TOKEN_COUNT: 1000,
@@ -104,6 +109,5 @@ export const defaultBuildVariables = {
   tokens: {
     ServiceNft: '',
     RaffleLicense: '',
-    CollectingToken: null,
   },
 };
