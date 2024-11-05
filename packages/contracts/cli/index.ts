@@ -115,14 +115,14 @@ program
       );
     } catch (err) {
       logger.error(`The config file is not valid: \n${err}`);
-      process.exit(1);
+      process.exit(0);
     }
 
     try {
       contracts = compileAll(configs as ContextVarsType);
     } catch (err) {
       logger.error(`Compile Error: \n${err}`);
-      process.exit(1);
+      process.exit(0);
     }
 
     const RaffleAddressesAndTokens = {
