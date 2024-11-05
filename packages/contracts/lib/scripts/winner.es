@@ -72,15 +72,16 @@
       val winnerPrize = OUTPUTS(1)
       val rewardPercent = SELF.R4[Coll[Long]].get(0)
       val totalPrize = successRaffle.R4[Coll[Long]].get(0)
-      val isErgGoal = (successRaffle.tokens.size == 2)
-      val prizeValidation = if(isErgGoal) {
-        winnerPrize.value == totalPrize * rewardPercent / 1000 + 3 * txFee
-      } else {
+      val prizeAmount = totalPrize * rewardPercent / 1000 
+      val hasTokenPrize = (successRaffle.tokens.size == 3 && prizeAmount > 0)
+      val prizeValidation = if(hasTokenPrize) {
         allOf(Coll(
           winnerPrize.tokens(2)._1 == successRaffle.tokens(2)._1,
-          winnerPrize.tokens(2)._2 == totalPrize * rewardPercent / 1000,
+          winnerPrize.tokens(2)._2 == prizeAmount,
           winnerPrize.value == 3 * txFee
         ))
+      } else {
+        winnerPrize.value == prizeAmount + 3 * txFee
       }
       sigmaProp(allOf(Coll(
         // Correct WinnerPrize format

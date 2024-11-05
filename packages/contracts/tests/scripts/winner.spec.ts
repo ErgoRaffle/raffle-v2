@@ -826,6 +826,107 @@ describe('winner', () => {
     );
 
     /**
+     * @target should successfully create the prize for a token-goal raffle when the prize amount is 0
+     * @scenario
+     * - create winner input box
+     * - create successRaffle input box
+     * - create prize output box
+     * - create successRaffle output box
+     * - execute transaction
+     * - result of execution must be success
+     * @expected
+     * - transaction must done successfully
+     */
+    winnerTest(
+      'should successfully create the prize for a token-goal raffle when the prize amount is 0',
+      ({ boxFactory, creator }) => {
+        const totalPrize = 0;
+        const successRaffleBox = boxFactory.createSuccessRaffleBoxMock(
+          testUtils.CREATION_FEE + 4n * testUtils.FEE,
+          testUtils.LICENSE_TOKEN_ID,
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+          '0123456789012345',
+          [],
+          0n,
+          1n,
+          BigInt(totalPrize),
+          BigInt(totalPrize) + 1n,
+          1n,
+          testUtils.TICKET_TOKEN_ID,
+          999_999_998n,
+          testUtils.X_TOKEN_ID,
+        );
+
+        const winnerBox = (
+          boxFactory.createWinnersBoxMock(
+            1,
+            testUtils.TICKET_TOKEN_ID,
+            undefined,
+            1n,
+            10000n,
+            undefined,
+            [
+              {
+                tokenId: testUtils.GIFT_TOKEN_ID,
+                amount: 100n,
+              },
+            ],
+          ) as Box[]
+        )[0];
+        const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
+          .data as bigint[];
+
+        const prizeAmount = (BigInt(totalPrize) * BigInt(winnerR4[0])) / 1000n;
+        const prizeBoxTokens = winnerBox.assets;
+
+        const winnerTicketIndex = testUtils.generateNextWinnerIndex(
+          [],
+          1,
+          (
+            SConstant.from(successRaffleBox.additionalRegisters.R5!)
+              .data as Uint8Array[]
+          )[0],
+          1n,
+        );
+        const prizeBox = boxFactory.createWinnerPrizeOutputBox(
+          testUtils.FEE * 3n,
+          1,
+          winnerTicketIndex,
+          1n,
+          0n,
+          prizeBoxTokens,
+        );
+
+        const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
+          BigInt(successRaffleBox.value),
+          testUtils.LICENSE_TOKEN_ID,
+          'test seed',
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+          [winnerTicketIndex],
+          0n,
+          1,
+          BigInt(totalPrize),
+          BigInt(successRaffleBox.assets[2]!.amount) - BigInt(prizeAmount),
+          2,
+          testUtils.TICKET_TOKEN_ID,
+          successRaffleBox.assets[1].amount,
+          testUtils.X_TOKEN_ID,
+        );
+
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
+          .from([successRaffleBox, winnerBox])
+          .to([successRaffleOutputBox, prizeBox])
+          .configureSelector((selector) => {
+            selector.defineStrategy((inputs) => inputs);
+          })
+          .payFee(testUtils.FEE)
+          .build();
+
+        expect(boxFactory.chain.execute(transaction)).true;
+      },
+    );
+
+    /**
      * @target fail when incorrect prize amount puts on the erg-goal prize box
      * @scenario
      * - create winner input box
