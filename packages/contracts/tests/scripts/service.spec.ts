@@ -1,6 +1,7 @@
 import { it, describe, expect } from 'vitest';
 import { SColl, SByte, SLong } from '@fleet-sdk/serializer';
 import { Box, TransactionBuilder, OutputBuilder } from '@fleet-sdk/core';
+import { blake2b256 } from '@fleet-sdk/crypto';
 
 import * as testUtils from '../testUtils';
 import {
@@ -32,17 +33,15 @@ const createRaffleServiceTest = (winnersCount: bigint = 1n) => {
   });
   creator.addBalance({ tokens: [{ tokenId: X_TOKEN_ID, amount: 100n }] });
   // Created input service-box
-  const serviceBox = boxFactory.createServiceBoxMock(
-    creator.address.toString(),
-  );
+  const serviceBox = boxFactory.createServiceBoxMock(creator.ergoTree);
   const winnersPercent = [];
   for (let i = 0; i < winnersCount; i++)
     winnersPercent.push(1000n / winnersCount);
   serviceBox.setContextExtension({
     0: SColl(SLong, winnersPercent),
     1: SColl(SColl(SByte), [
-      Array.from(Buffer.from(someone.address.toString())),
-      Array.from(Buffer.from(creator.address.toString())),
+      Array.from(Buffer.from(someone.ergoTree, 'hex')),
+      Array.from(Buffer.from(creator.ergoTree, 'hex')),
     ]),
   });
 
@@ -73,14 +72,14 @@ describe('Service', () => {
       'should create raffle by 1 winner and by erg-goal successfully',
       ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
         const serviceOutputBox = boxFactory.createServiceOutputBox(
-          creator.address.toString(),
+          creator.ergoTree,
         );
         const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox =
           boxFactory.createInactiveRaffleOutputBox(
-            creator.address.toString(),
-            someoneWallet.address.toString(),
-            creator.address.toString(),
+            creator.ergoTree,
+            someoneWallet.ergoTree,
+            creator.ergoTree,
             1,
             undefined,
             undefined,
@@ -120,14 +119,14 @@ describe('Service', () => {
       ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
         // Create output boxes
         const serviceOutputBox = boxFactory.createServiceOutputBox(
-          creator.address.toString(),
+          creator.ergoTree,
         );
         const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox =
           boxFactory.createInactiveRaffleOutputBox(
-            creator.address.toString(),
-            someoneWallet.address.toString(),
-            creator.address.toString(),
+            creator.ergoTree,
+            someoneWallet.ergoTree,
+            creator.ergoTree,
             10,
             undefined,
             undefined,
@@ -168,14 +167,14 @@ describe('Service', () => {
       ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
         // Create output boxes
         const serviceOutputBox = boxFactory.createServiceOutputBox(
-          creator.address.toString(),
+          creator.ergoTree,
         );
         const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox =
           boxFactory.createInactiveRaffleOutputBox(
-            creator.address.toString(),
-            someoneWallet.address.toString(),
-            creator.address.toString(),
+            creator.ergoTree,
+            someoneWallet.ergoTree,
+            creator.ergoTree,
             1,
             { tokenId: testUtils.X_TOKEN_ID, amount: 1n },
             undefined,
@@ -214,14 +213,14 @@ describe('Service', () => {
       ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
         // Create output boxes
         const serviceOutputBox = boxFactory.createServiceOutputBox(
-          creator.address.toString(),
+          creator.ergoTree,
         );
         const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox =
           boxFactory.createInactiveRaffleOutputBox(
-            creator.address.toString(),
-            someoneWallet.address.toString(),
-            creator.address.toString(),
+            creator.ergoTree,
+            someoneWallet.ergoTree,
+            creator.ergoTree,
           );
         inactiveRaffleOutputBox.assets.remove(testUtils.LICENSE_TOKEN_ID);
         // Execute transaction
@@ -253,15 +252,15 @@ describe('Service', () => {
       ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
         // Create output boxes
         const serviceOutputBox = boxFactory.createServiceOutputBox(
-          creator.address.toString(),
+          creator.ergoTree,
           1000000000n,
         );
         const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox =
           boxFactory.createInactiveRaffleOutputBox(
-            creator.address.toString(),
-            someoneWallet.address.toString(),
-            creator.address.toString(),
+            creator.ergoTree,
+            someoneWallet.ergoTree,
+            creator.ergoTree,
           );
         inactiveRaffleOutputBox.assets.remove(testUtils.LICENSE_TOKEN_ID);
         // Execute transaction
@@ -292,14 +291,14 @@ describe('Service', () => {
       ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
         // Create output boxes
         const serviceOutputBox = boxFactory.createServiceOutputBox(
-          creator.address.toString(),
+          creator.ergoTree,
         );
         const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox =
           boxFactory.createInactiveRaffleOutputBox(
-            creator.address.toString(),
-            someoneWallet.address.toString(),
-            creator.address.toString(),
+            creator.ergoTree,
+            someoneWallet.ergoTree,
+            creator.ergoTree,
             1,
             undefined,
             undefined,
@@ -333,7 +332,7 @@ describe('Service', () => {
       ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
         // Create output boxes
         const serviceOutputBox = boxFactory.createServiceOutputBox(
-          creator.address.toString(),
+          creator.ergoTree,
           20n,
           10n,
           110n,
@@ -341,9 +340,9 @@ describe('Service', () => {
         const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox =
           boxFactory.createInactiveRaffleOutputBox(
-            creator.address.toString(),
-            someoneWallet.address.toString(),
-            creator.address.toString(),
+            creator.ergoTree,
+            someoneWallet.ergoTree,
+            creator.ergoTree,
           );
         // Execute transaction
         const transaction = new TransactionBuilder(boxFactory.chain.height)
@@ -377,14 +376,14 @@ describe('Service', () => {
         });
         // Create output boxes
         const serviceOutputBox = boxFactory.createServiceOutputBox(
-          creator.address.toString(),
+          creator.ergoTree,
         );
         const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox =
           boxFactory.createInactiveRaffleOutputBox(
-            creator.address.toString(),
-            someoneWallet.address.toString(),
-            creator.address.toString(),
+            creator.ergoTree,
+            someoneWallet.ergoTree,
+            creator.ergoTree,
             2,
             undefined,
             [500n, 600n],
@@ -417,14 +416,14 @@ describe('Service', () => {
       ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
         // Create output boxes
         const serviceOutputBox = boxFactory.createServiceOutputBox(
-          creator.address.toString(),
+          creator.ergoTree,
         );
         const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox =
           boxFactory.createInactiveRaffleOutputBox(
-            creator.address.toString(),
-            someoneWallet.address.toString(),
-            creator.address.toString(),
+            creator.ergoTree,
+            someoneWallet.ergoTree,
+            creator.ergoTree,
             1,
             undefined,
             undefined,
@@ -464,14 +463,14 @@ describe('Service', () => {
         });
         // Create output boxes
         const serviceOutputBox = boxFactory.createServiceOutputBox(
-          creator.address.toString(),
+          creator.ergoTree,
         );
         const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox =
           boxFactory.createInactiveRaffleOutputBox(
-            creator.address.toString(),
-            someoneWallet.address.toString(),
-            creator.address.toString(),
+            creator.ergoTree,
+            someoneWallet.ergoTree,
+            creator.ergoTree,
             2,
             undefined,
             [1000n],
@@ -504,14 +503,14 @@ describe('Service', () => {
       ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
         // Create output boxes
         const serviceOutputBox = boxFactory.createServiceOutputBox(
-          creator.address.toString(),
+          creator.ergoTree,
         );
         const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox =
           boxFactory.createInactiveRaffleOutputBox(
-            creator.address.toString(),
-            someoneWallet.address.toString(),
-            creator.address.toString(),
+            creator.ergoTree,
+            someoneWallet.ergoTree,
+            creator.ergoTree,
             2,
           );
         // Execute transaction
@@ -547,14 +546,14 @@ describe('Service', () => {
         });
         // Create output boxes
         const serviceOutputBox = boxFactory.createServiceOutputBox(
-          creator.address.toString(),
+          creator.ergoTree,
         );
         const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox =
           boxFactory.createInactiveRaffleOutputBox(
-            creator.address.toString(),
-            someoneWallet.address.toString(),
-            creator.address.toString(),
+            creator.ergoTree,
+            someoneWallet.ergoTree,
+            creator.ergoTree,
             2,
             undefined,
             [450n, 450n],
@@ -591,14 +590,14 @@ describe('Service', () => {
         });
         // Create output boxes
         const serviceOutputBox = boxFactory.createServiceOutputBox(
-          creator.address.toString(),
+          creator.ergoTree,
         );
         const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
         const inactiveRaffleOutputBox =
           boxFactory.createInactiveRaffleOutputBox(
-            creator.address.toString(),
-            someoneWallet.address.toString(),
-            creator.address.toString(),
+            creator.ergoTree,
+            someoneWallet.ergoTree,
+            creator.ergoTree,
             2,
             undefined,
             undefined,
@@ -684,12 +683,13 @@ describe('Service', () => {
       ({ boxFactory, creator, someoneWallet }) => {
         // Mock Required Things
         const serviceBox = boxFactory.createServiceBoxMock(
-          creator.address.toString(),
+          creator.ergoTree,
           999_999_999n,
         );
         const successRaffleInputBox = boxFactory.createSuccessRaffleBoxMock(
           testUtils.CREATION_FEE + 4n * testUtils.FEE,
           testUtils.LICENSE_TOKEN_ID,
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           '0123456789012345',
           [],
           60n,
@@ -704,7 +704,7 @@ describe('Service', () => {
 
         // Create output boxes
         const serviceOutputBox = boxFactory.createServiceOutputBox(
-          creator.address.toString(),
+          creator.ergoTree,
           1_000_000_000n,
         );
         const inputBoxes: Box<bigint>[] = [

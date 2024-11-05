@@ -28,9 +28,9 @@ function createInactiveRaffleTest(winnersCount: number = 1) {
 
   const ticketRepoInputBox = boxFactory.createTicketRepoBoxMock();
   const inactiveRaffleInputBox = boxFactory.createInactiveRaffleBoxMock(
-    creator.address.toString(),
-    someone.address.toString(),
-    creator.address.toString(),
+    creator.ergoTree,
+    someone.ergoTree,
+    creator.ergoTree,
     winnersCount,
     undefined,
     undefined,
@@ -74,9 +74,9 @@ describe('ticketRepo', () => {
         inactiveRaffleInputBox,
       }) => {
         const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
-          creator.address.toString(),
-          creator.address.toString(),
-          someoneWallet.address.toString(),
+          creator.ergoTree,
+          creator.ergoTree,
+          someoneWallet.ergoTree,
         );
         const raffleDetailsOutputBox =
           boxFactory.createRaffleDetailsOutputBox();
@@ -127,9 +127,9 @@ describe('ticketRepo', () => {
         inactiveRaffleInputBox,
       }) => {
         const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
-          creator.address.toString(),
-          creator.address.toString(),
-          someoneWallet.address.toString(),
+          creator.ergoTree,
+          creator.ergoTree,
+          someoneWallet.ergoTree,
           5,
         );
         const raffleDetailsOutputBox =
@@ -178,9 +178,9 @@ describe('ticketRepo', () => {
         inactiveRaffleInputBox,
       }) => {
         const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
-          creator.address.toString(),
-          creator.address.toString(),
-          someoneWallet.address.toString(),
+          creator.ergoTree,
+          creator.ergoTree,
+          someoneWallet.ergoTree,
         );
         const raffleDetailsOutputBox =
           boxFactory.createRaffleDetailsOutputBox();
@@ -245,9 +245,9 @@ describe('ticketRepo', () => {
         inactiveRaffleInputBox,
       }) => {
         const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
-          creator.address.toString(),
-          creator.address.toString(),
-          someoneWallet.address.toString(),
+          creator.ergoTree,
+          creator.ergoTree,
+          someoneWallet.ergoTree,
           1,
           undefined,
           undefined,
@@ -302,13 +302,13 @@ describe('ticketRepo', () => {
       ({ boxFactory, someoneWallet, creator, ticketRepoInputBox }) => {
         // Replace Ticket-Token id with invalid id
         const inactiveRaffleInputBox = boxFactory.createInactiveRaffleBoxMock(
-          creator.address.toString(),
-          someoneWallet.address.toString(),
-          creator.address.toString(),
+          creator.ergoTree,
+          someoneWallet.ergoTree,
+          creator.ergoTree,
           1,
           undefined,
           undefined,
-          10n,
+          undefined,
           undefined,
           1_000_000_000n,
           '1234'.repeat(16),
@@ -326,9 +326,9 @@ describe('ticketRepo', () => {
         });
 
         const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
-          creator.address.toString(),
-          creator.address.toString(),
-          someoneWallet.address.toString(),
+          creator.ergoTree,
+          creator.ergoTree,
+          someoneWallet.ergoTree,
         );
         const raffleDetailsOutputBox =
           boxFactory.createRaffleDetailsOutputBox();
@@ -377,9 +377,9 @@ describe('ticketRepo', () => {
       inactiveRaffleInputBox,
     }) => {
       const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
-        creator.address.toString(),
-        creator.address.toString(),
-        someoneWallet.address.toString(),
+        creator.ergoTree,
+        creator.ergoTree,
+        someoneWallet.ergoTree,
       );
 
       const raffleDetailsOutputBox = boxFactory.createRaffleDetailsOutputBox();

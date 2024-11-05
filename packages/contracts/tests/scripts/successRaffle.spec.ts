@@ -3,6 +3,7 @@ import { Box, ErgoUnsignedInput, TransactionBuilder } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
 import { SColl, SLong } from '@fleet-sdk/serializer';
 
+import * as utils from '../../lib/utils';
 import * as testUtils from '../testUtils';
 import * as constants from '../../constants';
 import { ScriptNamesType } from '../../lib/types';
@@ -46,6 +47,7 @@ const createSuccessRaffleTest = (
   const successRaffleBox = boxFactory.createSuccessRaffleBoxMock(
     testUtils.FEE,
     testUtils.LICENSE_TOKEN_ID,
+    blake2b256(Buffer.from(creator.ergoTree, 'hex')),
     TEST_INITIAL_SEED,
     [],
     5n,
@@ -87,7 +89,7 @@ describe('successRaffle', () => {
 
   describe('winner prize creation', () => {
     /**
-     * @target should done winner prize creation transaction successfully
+     * @target should successfully create winner prize for an erg-goal raffle
      * @scenario
      * - create two output boxes by values
      * - execute transaction
@@ -96,8 +98,8 @@ describe('successRaffle', () => {
      * - transaction result must be true
      */
     successRaffleTest(
-      'should done winner prize creation transaction successfully',
-      ({ boxFactory, winnersBoxes, successRaffleBox }) => {
+      'should successfully create winner prize for an erg-goal raffle',
+      ({ boxFactory, creator, winnersBoxes, successRaffleBox }) => {
         const winnersCount = 5n;
         const totalPrize = 5n;
         const rewardPercent = 5n;
@@ -119,23 +121,104 @@ describe('successRaffle', () => {
         );
 
         const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 2n + (totalPrize * rewardPercent) / 1000n,
+          testUtils.FEE * 3n + (totalPrize * rewardPercent) / 1000n,
           1,
           newWinnerTicketIndex,
           1n,
           0n,
           [(winnersBoxes as Box[])[0].assets[0]],
         );
+        const successRaffleOutputValue =
+          BigInt((winnersBoxes as Box[])[0].value) +
+          successRaffleBox.value -
+          prizeOutputBox.value -
+          testUtils.FEE;
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-          testUtils.FEE,
+          successRaffleOutputValue,
           testUtils.LICENSE_TOKEN_ID,
           nextSeed,
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           [newWinnerTicketIndex],
           totalSoldTickets,
           Number(winnersCount),
           totalPrize,
           undefined,
           2,
+        );
+
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
+          .from([(winnersBoxes as Box[])[0], successRaffleBox])
+          .to([successRaffleOutputBox, prizeOutputBox])
+          .payFee(testUtils.FEE)
+          .build();
+
+        const res = boxFactory.chain.execute(transaction);
+
+        expect(res).true;
+      },
+    );
+
+    /**
+     * @target should successfully create winner prize for an token-goal raffle
+     * @scenario
+     * - create three output boxes by values
+     * - execute transaction
+     * - result of execution must be fail
+     * @expected
+     * - transaction result must throw error
+     */
+    successRaffleTokenGoalTest(
+      'should successfully create winner prize for an token-goal raffle',
+      ({ boxFactory, creator, winnersBoxes, successRaffleBox }) => {
+        const winnersCount = 5n;
+        const totalPrize = 5n;
+        const rewardPercent = 200n;
+        const totalSoldTickets = totalPrize;
+        const newWinnerTicketIndex = testUtils.generateNextWinnerIndex(
+          [],
+          1,
+          Uint8Array.from(Array.from(Buffer.from(TEST_INITIAL_SEED, 'hex'))),
+          totalSoldTickets,
+        );
+
+        successRaffleBox.setContextExtension({
+          0: SColl(SLong, []),
+          1: SLong(newWinnerTicketIndex),
+        });
+
+        const nextSeed = Buffer.from(blake2b256(TEST_INITIAL_SEED)).toString(
+          'hex',
+        );
+
+        const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
+          testUtils.FEE * 3n,
+          1,
+          newWinnerTicketIndex,
+          1n,
+          0n,
+          [
+            (winnersBoxes as Box[])[0].assets[0],
+            {
+              tokenId: testUtils.X_TOKEN_ID,
+              amount: (totalPrize * rewardPercent) / 1000n,
+            },
+          ],
+        );
+        const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
+          successRaffleBox.value,
+          testUtils.LICENSE_TOKEN_ID,
+          nextSeed,
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+          [newWinnerTicketIndex],
+          totalSoldTickets,
+          Number(winnersCount),
+          totalPrize,
+          successRaffleBox.assets[2].amount -
+            (totalPrize * rewardPercent) / 1000n,
+          2,
+          undefined,
+          undefined,
+          testUtils.X_TOKEN_ID,
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
@@ -160,41 +243,73 @@ describe('successRaffle', () => {
      * - transaction result must throw error
      */
     successRaffleTest(
-      'should fail with wrong calculated winner ticket index ',
-      ({ boxFactory, winnersBoxes, successRaffleBox }) => {
+      'should fail with wrong calculated winner ticket index',
+      ({ boxFactory, creator, winnersBoxes, successRaffleBox }) => {
         const winnersCount = 5n;
         const totalPrize = 5n;
         const rewardPercent = 5n;
         const totalSoldTickets = totalPrize;
-        const newWinnerTicketIndex = 0n;
-
-        successRaffleBox.setContextExtension({
-          0: SColl(SLong, [0n]),
-          1: SLong(newWinnerTicketIndex),
-        });
-
+        // set invalid winner ticket index
+        const realNewWinnerTicketIndexStep1 = testUtils.generateNextWinnerIndex(
+          [],
+          1,
+          Uint8Array.from(Array.from(Buffer.from(TEST_INITIAL_SEED, 'hex'))),
+          totalSoldTickets,
+        );
         const nextSeed = Buffer.from(blake2b256(TEST_INITIAL_SEED)).toString(
           'hex',
         );
+        const realNewWinnerTicketIndexStep2 = testUtils.generateNextWinnerIndex(
+          [realNewWinnerTicketIndexStep1],
+          2,
+          Uint8Array.from(Array.from(Buffer.from(nextSeed, 'hex'))),
+          totalSoldTickets,
+        );
+        const invalidNewWinnerTicketIndex =
+          (realNewWinnerTicketIndexStep2 + 1n) % 5n;
+
+        successRaffleBox.setContextExtension({
+          0: SColl(SLong, [realNewWinnerTicketIndexStep1]),
+          1: SLong(realNewWinnerTicketIndexStep2),
+        });
 
         const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 2n + (totalPrize * rewardPercent) / 1000n,
+          testUtils.FEE * 3n + (totalPrize * rewardPercent) / 1000n,
           2,
-          newWinnerTicketIndex,
+          realNewWinnerTicketIndexStep2,
           1n,
           0n,
           [(winnersBoxes as Box[])[0].assets[0]],
         );
+        const successRaffleOutputValue =
+          BigInt((winnersBoxes as Box[])[0].value) +
+          successRaffleBox.value -
+          prizeOutputBox.value -
+          testUtils.FEE;
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-          testUtils.FEE,
+          successRaffleOutputValue,
           testUtils.LICENSE_TOKEN_ID,
           nextSeed,
-          [newWinnerTicketIndex],
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+          // append invalid newWinnerTicketIndex instead of realNewWinnerTicketIndexStep2
+          [realNewWinnerTicketIndexStep1, invalidNewWinnerTicketIndex],
           totalSoldTickets,
           Number(winnersCount),
           totalPrize,
           undefined,
           2,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          blake2b256(
+            Buffer.concat(
+              [
+                realNewWinnerTicketIndexStep1,
+                realNewWinnerTicketIndexStep2,
+              ].map((n) => utils.bigIntToUint8Array(n)),
+            ),
+          ),
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
@@ -218,7 +333,7 @@ describe('successRaffle', () => {
      */
     successRaffleTest(
       'should fail with duplicated winner ticket index',
-      ({ boxFactory, winnersBoxes }) => {
+      ({ boxFactory, creator, winnersBoxes }) => {
         const winnersCount = 5;
         const rewardPercent = 5n;
         const totalSoldTickets = 5n;
@@ -231,6 +346,7 @@ describe('successRaffle', () => {
         const successRaffleBox = boxFactory.createSuccessRaffleBoxMock(
           testUtils.FEE,
           testUtils.LICENSE_TOKEN_ID,
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           TEST_INITIAL_SEED,
           [newWinnerTicketIndex],
           5n,
@@ -250,17 +366,23 @@ describe('successRaffle', () => {
         );
 
         const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 2n + (totalPrize * rewardPercent) / 1000n,
+          testUtils.FEE * 3n + (totalPrize * rewardPercent) / 1000n,
           2,
           newWinnerTicketIndex,
           1n,
           0n,
           [(winnersBoxes as Box[])[1].assets[0]],
         );
+        const successRaffleOutputValue =
+          BigInt((winnersBoxes as Box[])[0].value) +
+          successRaffleBox.value -
+          prizeOutputBox.value -
+          testUtils.FEE;
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-          testUtils.FEE,
+          successRaffleOutputValue,
           testUtils.LICENSE_TOKEN_ID,
           nextSeed,
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           [newWinnerTicketIndex, newWinnerTicketIndex],
           totalSoldTickets,
           Number(winnersCount),
@@ -290,7 +412,7 @@ describe('successRaffle', () => {
      */
     successRaffleTest(
       'should fail if wrong winner ticket index is set on winner prize box',
-      ({ boxFactory, winnersBoxes, successRaffleBox }) => {
+      ({ boxFactory, creator, winnersBoxes, successRaffleBox }) => {
         const winnersCount = 5n;
         const totalPrize = 5n;
         const rewardPercent = 5n;
@@ -312,7 +434,7 @@ describe('successRaffle', () => {
         );
 
         const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 2n + (totalPrize * rewardPercent) / 1000n,
+          testUtils.FEE * 3n + (totalPrize * rewardPercent) / 1000n,
           1,
           // set invalid winner ticket index
           newWinnerTicketIndex + 1n,
@@ -320,11 +442,16 @@ describe('successRaffle', () => {
           0n,
           [(winnersBoxes as Box[])[0].assets[0]],
         );
-
+        const successRaffleOutputValue =
+          BigInt((winnersBoxes as Box[])[0].value) +
+          successRaffleBox.value -
+          prizeOutputBox.value -
+          testUtils.FEE;
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-          testUtils.FEE,
+          successRaffleOutputValue,
           testUtils.LICENSE_TOKEN_ID,
           nextSeed,
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           [newWinnerTicketIndex],
           totalSoldTickets,
           Number(winnersCount),
@@ -354,7 +481,7 @@ describe('successRaffle', () => {
      */
     successRaffleTest(
       'should fail if input winner box belongs to another raffle',
-      ({ boxFactory, successRaffleBox }) => {
+      ({ boxFactory, creator, successRaffleBox }) => {
         const winnersCount = 5n;
         const totalPrize = 5n;
         const anotherRaffleTicketId = '0'.repeat(64);
@@ -387,18 +514,23 @@ describe('successRaffle', () => {
         );
 
         const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 2n + (totalPrize * rewardPercent) / 1000n,
+          testUtils.FEE * 3n + (totalPrize * rewardPercent) / 1000n,
           1,
           newWinnerTicketIndex,
           1n,
           0n,
           [(winnersBoxes as Box[])[0].assets[0]],
         );
-
+        const successRaffleOutputValue =
+          BigInt((winnersBoxes as Box[])[0].value) +
+          successRaffleBox.value -
+          prizeOutputBox.value -
+          testUtils.FEE;
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-          testUtils.FEE,
+          successRaffleOutputValue,
           testUtils.LICENSE_TOKEN_ID,
           nextSeed,
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           [newWinnerTicketIndex],
           totalSoldTickets,
           Number(winnersCount),
@@ -428,7 +560,7 @@ describe('successRaffle', () => {
      */
     successRaffleTest(
       'should fail if input winner box does not match with step on success raffle',
-      ({ boxFactory, winnersBoxes, successRaffleBox }) => {
+      ({ boxFactory, creator, winnersBoxes, successRaffleBox }) => {
         const winnersCount = 5n;
         const totalPrize = 5n;
         const rewardPercent = 5n;
@@ -450,18 +582,23 @@ describe('successRaffle', () => {
         );
 
         const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 2n + (totalPrize * rewardPercent) / 1000n,
+          testUtils.FEE * 3n + (totalPrize * rewardPercent) / 1000n,
           1,
           newWinnerTicketIndex,
           1n,
           0n,
           [(winnersBoxes as Box[])[0].assets[0]],
         );
-
+        const successRaffleOutputValue =
+          BigInt((winnersBoxes as Box[])[0].value) +
+          successRaffleBox.value -
+          prizeOutputBox.value -
+          testUtils.FEE;
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-          testUtils.FEE,
+          successRaffleOutputValue,
           testUtils.LICENSE_TOKEN_ID,
           nextSeed,
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           [newWinnerTicketIndex],
           totalSoldTickets,
           Number(winnersCount),
@@ -492,7 +629,7 @@ describe('successRaffle', () => {
      */
     successRaffleTest(
       'should fail with wrong selected winner list in success raffle output box',
-      ({ boxFactory, winnersBoxes, successRaffleBox }) => {
+      ({ boxFactory, creator, winnersBoxes, successRaffleBox }) => {
         const winnersCount = 5n;
         const totalPrize = 5n;
         const rewardPercent = 5n;
@@ -514,18 +651,23 @@ describe('successRaffle', () => {
         );
 
         const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 2n + (totalPrize * rewardPercent) / 1000n,
+          testUtils.FEE * 3n + (totalPrize * rewardPercent) / 1000n,
           1,
           newWinnerTicketIndex,
           1n,
           0n,
           [(winnersBoxes as Box[])[0].assets[0]],
         );
-
+        const successRaffleOutputValue =
+          BigInt((winnersBoxes as Box[])[0].value) +
+          successRaffleBox.value -
+          prizeOutputBox.value -
+          testUtils.FEE;
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-          testUtils.FEE,
+          successRaffleOutputValue,
           testUtils.LICENSE_TOKEN_ID,
           nextSeed,
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           // set invalid selectedWinnersList
           [newWinnerTicketIndex + 1n],
           totalSoldTickets,
@@ -556,7 +698,7 @@ describe('successRaffle', () => {
      */
     successRaffleTest(
       'should fail with wrong seed in success raffle output box',
-      ({ boxFactory, winnersBoxes, successRaffleBox }) => {
+      ({ boxFactory, creator, winnersBoxes, successRaffleBox }) => {
         const winnersCount = 5n;
         const totalPrize = 5n;
         const rewardPercent = 5n;
@@ -574,19 +716,24 @@ describe('successRaffle', () => {
         });
 
         const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 2n + (totalPrize * rewardPercent) / 1000n,
+          testUtils.FEE * 3n + (totalPrize * rewardPercent) / 1000n,
           1,
           newWinnerTicketIndex,
           1n,
           0n,
           [(winnersBoxes as Box[])[0].assets[0]],
         );
-
+        const successRaffleOutputValue =
+          BigInt((winnersBoxes as Box[])[0].value) +
+          successRaffleBox.value -
+          prizeOutputBox.value -
+          testUtils.FEE;
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-          testUtils.FEE,
+          successRaffleOutputValue,
           testUtils.LICENSE_TOKEN_ID,
           // set invalid seed
           'invalid seed',
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           [newWinnerTicketIndex],
           totalSoldTickets,
           Number(winnersCount),
@@ -616,7 +763,7 @@ describe('successRaffle', () => {
      */
     successRaffleTest(
       'should fail if in a erg-goal raffle funds are deducted more than required prize of the selected winner',
-      ({ boxFactory, winnersBoxes, successRaffleBox }) => {
+      ({ boxFactory, creator, winnersBoxes, successRaffleBox }) => {
         const winnersCount = 5n;
         const totalPrize = 5n;
         const rewardPercent = 5n;
@@ -639,18 +786,23 @@ describe('successRaffle', () => {
 
         const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
           // put 100 more nano-ergs to this box
-          testUtils.FEE * 2n + (totalPrize * rewardPercent) / 1000n + 100n,
+          testUtils.FEE * 3n + (totalPrize * rewardPercent) / 1000n + 100n,
           1,
           newWinnerTicketIndex,
           1n,
           0n,
           [(winnersBoxes as Box[])[0].assets[0]],
         );
-
+        const successRaffleOutputValue =
+          BigInt((winnersBoxes as Box[])[0].value) +
+          successRaffleBox.value -
+          prizeOutputBox.value -
+          testUtils.FEE;
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-          testUtils.FEE - 100n,
+          successRaffleOutputValue,
           testUtils.LICENSE_TOKEN_ID,
           nextSeed,
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           [newWinnerTicketIndex],
           totalSoldTickets,
           Number(winnersCount),
@@ -680,7 +832,7 @@ describe('successRaffle', () => {
      */
     successRaffleTokenGoalTest(
       'should fail if in a token-goal raffle funds are deducted more than required prize of the selected winner',
-      ({ boxFactory, winnersBoxes, successRaffleBox }) => {
+      ({ boxFactory, creator, winnersBoxes, successRaffleBox }) => {
         const winnersCount = 5n;
         const totalPrize = 5n;
         const rewardPercent = 200n;
@@ -702,7 +854,7 @@ describe('successRaffle', () => {
         );
 
         const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 2n,
+          testUtils.FEE * 3n,
           1,
           newWinnerTicketIndex,
           1n,
@@ -711,16 +863,16 @@ describe('successRaffle', () => {
             (winnersBoxes as Box[])[0].assets[0],
             {
               tokenId: testUtils.X_TOKEN_ID,
-              // put 100 more nano-ergs to this box
+              // put 1 more token to this box
               amount: (totalPrize * rewardPercent) / 1000n + 1n,
             },
           ],
         );
-
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-          testUtils.FEE,
+          successRaffleBox.value,
           testUtils.LICENSE_TOKEN_ID,
           nextSeed,
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           [newWinnerTicketIndex],
           totalSoldTickets,
           Number(winnersCount),
@@ -755,7 +907,13 @@ describe('successRaffle', () => {
      */
     successRaffleTest(
       'should fail if an arbitrary token is added to erg-goal success raffle',
-      ({ boxFactory, someoneWallet, winnersBoxes, successRaffleBox }) => {
+      ({
+        boxFactory,
+        creator,
+        someoneWallet,
+        winnersBoxes,
+        successRaffleBox,
+      }) => {
         const winnersCount = 5n;
         const totalPrize = 5n;
         const rewardPercent = 5n;
@@ -777,18 +935,23 @@ describe('successRaffle', () => {
         );
 
         const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 2n + (totalPrize * rewardPercent) / 1000n,
+          testUtils.FEE * 3n + (totalPrize * rewardPercent) / 1000n,
           1,
           newWinnerTicketIndex,
           1n,
           0n,
           [(winnersBoxes as Box[])[0].assets[0]],
         );
-
+        const successRaffleOutputValue =
+          BigInt((winnersBoxes as Box[])[0].value) +
+          successRaffleBox.value -
+          prizeOutputBox.value -
+          testUtils.FEE;
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-          testUtils.FEE,
+          successRaffleOutputValue,
           testUtils.LICENSE_TOKEN_ID,
           nextSeed,
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           [newWinnerTicketIndex],
           totalSoldTickets,
           Number(winnersCount),

@@ -5,7 +5,7 @@
   //   R4[Coll[Long]]: [RewardPercent, Deadline, txFee]
   //   R5[Int]: WinnerIndex
   //   R6[Long]: GiftCount
-  //   R7[Coll[Byte]]: GiftTokenId
+  //   R7[Coll[Byte]]: GiftTokenId (Exists only before the gift token receipt)
   // Tokens:
   //   0: Ticket
   //   1: GiftToken
@@ -37,7 +37,7 @@
   val selfReplication = allOf(Coll(
     outWinner.R4[Coll[Long]].get == SELF.R4[Coll[Long]].get,
     outWinner.R5[Int].get == SELF.R5[Int].get,
-    outWinner.tokens(0)._1 == SELF.tokens(0)._1,
+    outWinner.tokens(0) == SELF.tokens(0),
     outWinner.value == SELF.value
   ))
   
@@ -72,15 +72,16 @@
       val winnerPrize = OUTPUTS(1)
       val rewardPercent = SELF.R4[Coll[Long]].get(0)
       val totalPrize = successRaffle.R4[Coll[Long]].get(0)
-      val isErgGoal = (successRaffle.tokens.size == 2)
-      val prizeValidation = if(isErgGoal) {
-        winnerPrize.value == totalPrize * rewardPercent / 1000 + 2 * txFee
-      } else {
+      val prizeAmount = totalPrize * rewardPercent / 1000 
+      val hasTokenPrize = (successRaffle.tokens.size == 3 && prizeAmount > 0)
+      val prizeValidation = if(hasTokenPrize) {
         allOf(Coll(
           winnerPrize.tokens(2)._1 == successRaffle.tokens(2)._1,
-          winnerPrize.tokens(2)._2 == totalPrize * rewardPercent / 1000,
-          winnerPrize.value == 2 * txFee
+          winnerPrize.tokens(2)._2 == prizeAmount,
+          winnerPrize.value == 3 * txFee
         ))
+      } else {
+        winnerPrize.value == prizeAmount + 3 * txFee
       }
       sigmaProp(allOf(Coll(
         // Correct WinnerPrize format
@@ -89,9 +90,8 @@
         // R6: UnwrappedGiftCount
         prizeValidation,
         blake2b256(winnerPrize.propositionBytes) == winnerPrizeScriptHash,
-        winnerPrize.tokens(0)._1 == SELF.tokens(0)._1,
-        winnerPrize.tokens(1)._1 == SELF.tokens(1)._1,
-        winnerPrize.tokens(1)._2 == SELF.tokens(1)._2,
+        winnerPrize.tokens(0) == SELF.tokens(0),
+        winnerPrize.tokens(1) == SELF.tokens(1),
         winnerPrize.R4[Coll[Long]].get(1) == giftCount,
         winnerPrize.R4[Coll[Long]].get(2) == txFee,
         winnerPrize.R5[Int].get == winnerIndex,

@@ -2,7 +2,7 @@
   // ErgoRaffle V2 Inactive Raffle Contract
   //
   // Registers:
-  //   R4[Coll[Long]]: [CharityPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, Deadline, txFee]
+  //   R4[Coll[Long]]: [WinnersPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, Deadline, txFee]
   //   R5[Coll[Coll[Byte]]]: [ServiceAddressHash, ImplementerAddressHash, CreatorAddressHash]
   //   R6[Coll[Coll[Byte]]]: [Name, Description, Pictures(optional)]
   //   R7[Coll[Coll[Byte]]]: [TicketId, WinnersPercentListHash]
@@ -42,7 +42,7 @@
       blake2b256(box.propositionBytes) == winnerScriptHash,
       box.tokens(0)._1 == ticketId, // Ticket token as identifier
       box.tokens.size == 1,
-      box.value == 3 * txFee,
+      box.value == 4 * txFee,
       box.R4[Coll[Long]].get(1) == deadline,
       box.R4[Coll[Long]].get(2) == txFee,
       box.R5[Int].get == i + 1,
@@ -56,13 +56,8 @@
       res ++ longToByteArray(box.R4[Coll[Long]].get(0))}
   )
   val isErgGoal = (SELF.tokens.size == 1)
-  val activeRaffleExtraTokensVerification = 
-    if(isErgGoal) { true } else {
-    allOf(Coll(
-      activeRaffle.tokens(2)._1 == SELF.tokens(1)._1,
-      activeRaffle.tokens(2)._2 == SELF.tokens(1)._2
-    ))
-  }
+  val activeRaffleCollectingTokenVerification = 
+    if(!isErgGoal) activeRaffle.tokens(2) == SELF.tokens(1) else true
   val hasStolenGiftTokens = OUTPUTS.exists{
     (box: Box) => 
       box.id != giftTokenRepo.id &&
@@ -73,7 +68,7 @@
   // [InactiveRaffle(Self), TicketRepo] --> [ActiveRaffle, RaffleDetails, Winner[]]
   sigmaProp(allOf(Coll(
     // Correct ActiveRaffle format
-    // R4: [CharityPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, Deadline, WinnersCount, TxFee]
+    // R4: [WinnersPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, Deadline, WinnersCount, TxFee]
     // R5: [ServiceAddressHash, ImplementerAddressHash, CreatorAddressHash]
     // R6: WinnersCount
     // R7: TotalSoldTicket
@@ -81,12 +76,12 @@
     activeRaffle.tokens(0)._1 == SELF.tokens(0)._1,
     activeRaffle.tokens(1)._1 == ticketId, // Match with TicketRepo
     activeRaffle.tokens.size == SELF.tokens.size + 1,
-    activeRaffle.value == SELF.value - (4 * txFee * winnersCount) - txFee,
+    activeRaffle.value == SELF.value - (5 * txFee * winnersCount) - txFee,
     activeRaffle.R4[Coll[Long]].get == SELF.R4[Coll[Long]].get,
     activeRaffle.R5[Coll[Coll[Byte]]].get == SELF.R5[Coll[Coll[Byte]]].get,
     activeRaffle.R6[Int].get == winnersCount,
     activeRaffle.R7[Long].get == 0L, // No sold ticket at beginning
-    activeRaffleExtraTokensVerification,
+    activeRaffleCollectingTokenVerification,
 
     // Correct RaffleDetails format
     // R4: [Name, Description, Pictures(optional)]
