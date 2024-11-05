@@ -1,6 +1,7 @@
 import { it, describe, expect } from 'vitest';
 import { SConstant } from '@fleet-sdk/serializer';
 import { TransactionBuilder, Box } from '@fleet-sdk/core';
+import { blake2b256 } from '@fleet-sdk/crypto';
 
 import * as testUtils from '../testUtils';
 import {
@@ -48,6 +49,7 @@ const createWinnerTest = (winnersCount: number = 1) => {
   const successRaffleBox = boxFactory.createSuccessRaffleBoxMock(
     testUtils.CREATION_FEE + 4n * testUtils.FEE,
     testUtils.LICENSE_TOKEN_ID,
+    blake2b256(Buffer.from(creator.ergoTree, 'hex')),
     '0123456789012345',
     [],
     0n,
@@ -636,7 +638,7 @@ describe('winner', () => {
      */
     winnerTest(
       'should success erg-goal based winner-prize creation',
-      ({ boxFactory, successRaffleBox }) => {
+      ({ boxFactory, successRaffleBox, creator }) => {
         const totalPrize = 60;
 
         const winnerBox = (
@@ -683,6 +685,7 @@ describe('winner', () => {
           BigInt(successRaffleBox.value) - BigInt(prizeAmount),
           testUtils.LICENSE_TOKEN_ID,
           'test seed',
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           [winnerTicketIndex],
           0n,
           1,
@@ -720,11 +723,12 @@ describe('winner', () => {
      */
     winnerTest(
       'should success token-goal based winner-prize creation',
-      ({ boxFactory }) => {
+      ({ boxFactory, creator }) => {
         const totalPrize = 60;
         const successRaffleBox = boxFactory.createSuccessRaffleBoxMock(
           testUtils.CREATION_FEE + 4n * testUtils.FEE,
           testUtils.LICENSE_TOKEN_ID,
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           '0123456789012345',
           [],
           0n,
@@ -796,6 +800,7 @@ describe('winner', () => {
           BigInt(successRaffleBox.value),
           testUtils.LICENSE_TOKEN_ID,
           'test seed',
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           [winnerTicketIndex],
           0n,
           1,
@@ -834,7 +839,7 @@ describe('winner', () => {
      */
     winnerTest(
       'should fail when incorrect prize amount puts on the erg-goal prize box',
-      ({ boxFactory, successRaffleBox }) => {
+      ({ boxFactory, successRaffleBox, creator }) => {
         const totalPrize = 60;
         const winnerBox = (
           boxFactory.createWinnersBoxMock(
@@ -881,6 +886,7 @@ describe('winner', () => {
           BigInt(successRaffleBox.value) - BigInt(incorrectPrizeAmount),
           testUtils.LICENSE_TOKEN_ID,
           'test seed',
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           [winnerTicketIndex],
           0n,
           1,
@@ -919,11 +925,12 @@ describe('winner', () => {
      */
     winnerTest(
       'should fail when incorrect prize amount puts on the token-goal prize box',
-      ({ boxFactory, someoneWallet }) => {
+      ({ boxFactory, someoneWallet, creator }) => {
         const totalPrize = 60;
         const successRaffleBox = boxFactory.createSuccessRaffleBoxMock(
           testUtils.CREATION_FEE + 4n * testUtils.FEE,
           testUtils.LICENSE_TOKEN_ID,
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           '0123456789012345',
           [],
           0n,
@@ -996,6 +1003,7 @@ describe('winner', () => {
           BigInt(successRaffleBox.value),
           testUtils.LICENSE_TOKEN_ID,
           'test seed',
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           [winnerTicketIndex],
           0n,
           1,
@@ -1035,7 +1043,7 @@ describe('winner', () => {
      */
     winnerTest(
       "should fails when the total assets aren't transferred from the winner's box to the prize box",
-      ({ boxFactory, successRaffleBox }) => {
+      ({ boxFactory, successRaffleBox, creator }) => {
         const totalPrize = 60;
 
         const winnerBox = (
@@ -1089,6 +1097,7 @@ describe('winner', () => {
           BigInt(successRaffleBox.value) - BigInt(prizeAmount),
           testUtils.LICENSE_TOKEN_ID,
           'test seed',
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           [winnerTicketIndex],
           0n,
           1,
@@ -1132,7 +1141,7 @@ describe('winner', () => {
      */
     winnerTest(
       'should fail when an invalid winner box index is placed in the prize box',
-      ({ boxFactory, successRaffleBox }) => {
+      ({ boxFactory, successRaffleBox, creator }) => {
         const totalPrize = 60;
 
         const winnerBox = (
@@ -1179,6 +1188,7 @@ describe('winner', () => {
           BigInt(successRaffleBox.value) - BigInt(prizeAmount),
           testUtils.LICENSE_TOKEN_ID,
           'test seed',
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           [winnerTicketIndex],
           0n,
           1,
@@ -1217,7 +1227,7 @@ describe('winner', () => {
      */
     winnerTest(
       'should fail when an invalid token is placed in the successRaffle box',
-      ({ boxFactory, someoneWallet, successRaffleBox }) => {
+      ({ boxFactory, someoneWallet, successRaffleBox, creator }) => {
         const totalPrize = 60;
         const winnerBox = (
           boxFactory.createWinnersBoxMock(
@@ -1263,6 +1273,7 @@ describe('winner', () => {
           BigInt(successRaffleBox.value) - BigInt(prizeAmount),
           testUtils.LICENSE_TOKEN_ID,
           'test seed',
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           [winnerTicketIndex],
           0n,
           1,
@@ -1303,7 +1314,7 @@ describe('winner', () => {
      */
     winnerTest(
       'should fails when two duplicate winner boxes are used as input',
-      ({ boxFactory, someoneWallet, successRaffleBox }) => {
+      ({ boxFactory, someoneWallet, successRaffleBox, creator }) => {
         const totalPrize = 60;
         const inputWinnerBoxes = boxFactory.createWinnersBoxMock(
           2,
@@ -1349,6 +1360,7 @@ describe('winner', () => {
           BigInt(successRaffleBox.value) - BigInt(prizeAmount),
           testUtils.LICENSE_TOKEN_ID,
           'test seed',
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           [winnerTicketIndex],
           0n,
           1,

@@ -25,19 +25,27 @@ import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
  */
 const createRaffleTest = () => {
   const boxFactory = new testUtils.RaffleBoxFactory({ height: 1000 });
-  const { creator, implementer, giftgiver1, giftgiver2, donator1, donator2 } =
-    boxFactory.createPartners({
-      Creator: testUtils.CREATOR_DEFAULT_BALANCE,
-      implementer: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
-      giftGiver1: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
-      giftGiver2: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
-      donator1: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
-      donator2: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
-    });
+  const {
+    owner,
+    creator,
+    implementer,
+    giftgiver1,
+    giftgiver2,
+    donator1,
+    donator2,
+  } = boxFactory.createPartners({
+    owner: testUtils.CREATOR_DEFAULT_BALANCE,
+    Creator: testUtils.CREATOR_DEFAULT_BALANCE,
+    implementer: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    giftGiver1: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    giftGiver2: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    donator1: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    donator2: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
+  });
 
   // Created input service-box
   const serviceBox = boxFactory.createServiceBoxMock(
-    creator.address.toString(),
+    owner.ergoTree,
     testUtils.LICENSE_TOKEN_COUNT,
     105n,
     100n,
@@ -51,7 +59,8 @@ const createRaffleTest = () => {
     boxFactory: boxFactory,
     creator: creator,
     serviceBox: serviceBox,
-    implementerAddress: implementer.address.toString(),
+    implementerErgoTree: implementer.ergoTree,
+    ownerErgoTree: owner.ergoTree,
     giftGiverWallets: giftGiverWallets as KeyedMockChainParty[],
     donatorWallets: donatorWallets as KeyedMockChainParty[],
   });
@@ -84,7 +93,8 @@ describe('Raffle', () => {
         boxFactory,
         creator,
         serviceBox,
-        implementerAddress,
+        implementerErgoTree,
+        ownerErgoTree,
         giftGiverWallets,
         donatorWallets,
       }) => {
@@ -99,7 +109,7 @@ describe('Raffle', () => {
           creator,
           serviceBox,
           creator.utxos.toArray(),
-          implementerAddress,
+          implementerErgoTree,
           winnersCount,
           deadline,
           winnersPercent,
@@ -237,6 +247,7 @@ describe('Raffle', () => {
           ticketRedeem,
           service,
           boxFactory,
+          ownerErgoTree,
         );
         expect(returnLicenseTx.success).true;
       },
