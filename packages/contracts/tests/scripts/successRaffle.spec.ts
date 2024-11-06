@@ -1,7 +1,7 @@
 import { it, describe, expect } from 'vitest';
 import { Box, ErgoUnsignedInput, TransactionBuilder } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
-import { SColl, SLong } from '@fleet-sdk/serializer';
+import { SColl, SLong, SConstant } from '@fleet-sdk/serializer';
 
 import * as utils from '../../lib/utils';
 import * as testUtils from '../testUtils';
@@ -31,8 +31,9 @@ const createSuccessRaffleTest = (
   );
   boxFactory.chain.setTip(100);
 
-  const { creator, someone } = boxFactory.createPartners({
-    Creator: testUtils.CREATOR_DEFAULT_BALANCE,
+  const { owner, creator, someone } = boxFactory.createPartners({
+    owner: testUtils.CREATOR_DEFAULT_BALANCE,
+    creator: testUtils.CREATOR_DEFAULT_BALANCE,
     someone: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
   });
   creator.addBalance({
@@ -42,10 +43,19 @@ const createSuccessRaffleTest = (
     tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 100n }],
   });
 
+  // create service-box
+  const serviceBox = boxFactory.createServiceBoxMock(
+    owner.ergoTree,
+    testUtils.LICENSE_TOKEN_COUNT,
+    100n,
+    100n,
+    testUtils.CREATION_FEE,
+  );
+
   // Created input successRaffle-box
   const prizeValue = 10n * totalPrize;
   const successRaffleBox = boxFactory.createSuccessRaffleBoxMock(
-    testUtils.FEE,
+    testUtils.FEE * 3n + testUtils.CREATION_FEE,
     testUtils.LICENSE_TOKEN_ID,
     blake2b256(Buffer.from(creator.ergoTree, 'hex')),
     TEST_INITIAL_SEED,
@@ -59,6 +69,23 @@ const createSuccessRaffleTest = (
     undefined,
     collectingTokenId,
   ) as ErgoUnsignedInput;
+
+  const successRaffleForLicenseRedeemBox =
+    boxFactory.createSuccessRaffleBoxMock(
+      testUtils.FEE * 3n + testUtils.CREATION_FEE,
+      testUtils.LICENSE_TOKEN_ID,
+      blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+      TEST_INITIAL_SEED,
+      [],
+      5n,
+      winnersCount,
+      totalPrize,
+      prizeValue,
+      6,
+      undefined,
+      undefined,
+      collectingTokenId,
+    ) as ErgoUnsignedInput;
 
   const winnersBoxes = boxFactory.createWinnersBoxMock(
     Number(winnersCount),
@@ -74,8 +101,11 @@ const createSuccessRaffleTest = (
     winnersCount: winnersCount,
     totalPrize: totalPrize,
     someoneWallet: someone,
+    ownerWallet: owner,
     creator: creator,
+    serviceBox: serviceBox,
     successRaffleBox: successRaffleBox,
+    successRaffleForLicenseRedeemBox: successRaffleForLicenseRedeemBox,
     winnersBoxes: winnersBoxes as Box[],
   });
 };
@@ -100,6 +130,8 @@ describe('successRaffle', () => {
     successRaffleTest(
       'should successfully create winner prize for an erg-goal raffle',
       ({ boxFactory, creator, winnersBoxes, successRaffleBox }) => {
+        boxFactory.chain.setTip(2000);
+
         const winnersCount = 5n;
         const totalPrize = 5n;
         const rewardPercent = 5n;
@@ -159,16 +191,16 @@ describe('successRaffle', () => {
     );
 
     /**
-     * @target should successfully create winner prize for an token-goal raffle
+     * @target should successfully create winner prize for a token-goal raffle
      * @scenario
-     * - create three output boxes by values
+     * - create three output boxes
      * - execute transaction
      * - result of execution must be fail
      * @expected
      * - transaction result must throw error
      */
     successRaffleTokenGoalTest(
-      'should successfully create winner prize for an token-goal raffle',
+      'should successfully create winner prize for a token-goal raffle',
       ({ boxFactory, creator, winnersBoxes, successRaffleBox }) => {
         const winnersCount = 5n;
         const totalPrize = 5n;
@@ -236,7 +268,7 @@ describe('successRaffle', () => {
     /**
      * @target should fail with wrong calculated winner ticket index
      * @scenario
-     * - create three output boxes by values
+     * - create three output boxes
      * - execute transaction
      * - result of execution must be fail
      * @expected
@@ -325,7 +357,7 @@ describe('successRaffle', () => {
     /**
      * @target should fail with duplicated winner ticket index
      * @scenario
-     * - create three output boxes by values
+     * - create three output boxes
      * - execute transaction
      * - result of execution must be fail
      * @expected
@@ -404,7 +436,7 @@ describe('successRaffle', () => {
     /**
      * @target should fail if wrong winner ticket index is set on winner prize box
      * @scenario
-     * - create three output boxes by values
+     * - create three output boxes
      * - execute transaction
      * - result of execution must be fail
      * @expected
@@ -473,7 +505,7 @@ describe('successRaffle', () => {
     /**
      * @target should fail if input winner box belongs to another raffle
      * @scenario
-     * - create three output boxes by values
+     * - create three output boxes
      * - execute transaction
      * - result of execution must be fail
      * @expected
@@ -552,7 +584,7 @@ describe('successRaffle', () => {
     /**
      * @target should fail if input winner box does not match with step on success raffle
      * @scenario
-     * - create three output boxes by values
+     * - create three output boxes
      * - execute transaction
      * - result of execution must be fail
      * @expected
@@ -621,7 +653,7 @@ describe('successRaffle', () => {
     /**
      * @target should fail with wrong selected winner list in success raffle output box
      * @scenario
-     * - create three output boxes by values
+     * - create three output boxes
      * - execute transaction
      * - result of execution must be fail
      * @expected
@@ -690,7 +722,7 @@ describe('successRaffle', () => {
     /**
      * @target should fail with wrong seed in success raffle output box
      * @scenario
-     * - create three output boxes by values
+     * - create three output boxes
      * - execute transaction
      * - result of execution must be fail
      * @expected
@@ -755,7 +787,7 @@ describe('successRaffle', () => {
     /**
      * @target should fail if in a erg-goal raffle funds are deducted more than required prize of the selected winner
      * @scenario
-     * - create three output boxes by values
+     * - create three output boxes
      * - execute transaction
      * - result of execution must be fail
      * @expected
@@ -824,7 +856,7 @@ describe('successRaffle', () => {
     /**
      * @target should fail if in a token-goal raffle funds are deducted more than required prize of the selected winner
      * @scenario
-     * - create three output boxes by values
+     * - create three output boxes
      * - execute transaction
      * - result of execution must be fail
      * @expected
@@ -899,7 +931,7 @@ describe('successRaffle', () => {
     /**
      * @target should fail if an arbitrary token is added to erg-goal success raffle
      * @scenario
-     * - create three output boxes by values
+     * - create three output boxes
      * - execute transaction
      * - result of execution must be fail
      * @expected
@@ -979,6 +1011,444 @@ describe('successRaffle', () => {
           .to([successRaffleOutputBox, prizeOutputBox])
           .payFee(testUtils.FEE)
           .sendChangeTo(someoneWallet.address)
+          .build();
+
+        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
+      },
+    );
+  });
+
+  describe('license redeem', () => {
+    /**
+     * @target should successfully return license token and pay the project fund for an erg-goal raffle
+     * @scenario
+     * - create two output boxes by values
+     * - execute transaction
+     * - check execution done successfully
+     * @expected
+     * - transaction result must be true
+     */
+    successRaffleTest(
+      'should successfully return license token and pay the project fund for an erg-goal raffle',
+      ({
+        boxFactory,
+        creator,
+        serviceBox,
+        successRaffleForLicenseRedeemBox,
+      }) => {
+        const serviceR4 = SConstant.from(serviceBox.additionalRegisters.R4!)
+          .data as bigint[];
+        const serviceFeePercent = serviceR4[0];
+        const implementerFeePercent = serviceR4[1];
+        const serviceOutputBox = boxFactory.createServiceOutputBox(
+          serviceBox.ergoTree,
+          BigInt(serviceBox.assets[1].amount.toString()) + 1n,
+          serviceFeePercent,
+          implementerFeePercent,
+          serviceR4[2],
+        );
+
+        const creatorFund = boxFactory.createSafePayOutputBox(
+          BigInt(successRaffleForLicenseRedeemBox.value.toString()) -
+            testUtils.FEE,
+          [],
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+        );
+
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
+          .from([serviceBox, successRaffleForLicenseRedeemBox])
+          .to([serviceOutputBox, creatorFund])
+          .configureSelector((selector) => {
+            selector.defineStrategy((inputs) => inputs);
+          })
+          // burn ticket tokens
+          .burnTokens(successRaffleForLicenseRedeemBox.assets[1])
+          .payFee(testUtils.FEE)
+          .build();
+
+        const res = boxFactory.chain.execute(transaction);
+
+        expect(res).true;
+      },
+    );
+
+    /**
+     * @target should successfully return license token and pay the project fund for a token-goal raffle
+     * @scenario
+     * - create two output boxes by values
+     * - execute transaction
+     * - check execution done successfully
+     * @expected
+     * - transaction result must be true
+     */
+    successRaffleTokenGoalTest(
+      'should successfully return license token and pay the project fund for a token-goal raffle',
+      ({
+        boxFactory,
+        creator,
+        serviceBox,
+        successRaffleForLicenseRedeemBox,
+      }) => {
+        const serviceR4 = SConstant.from(serviceBox.additionalRegisters.R4!)
+          .data as bigint[];
+        const serviceFeePercent = serviceR4[0];
+        const implementerFeePercent = serviceR4[1];
+        const serviceOutputBox = boxFactory.createServiceOutputBox(
+          serviceBox.ergoTree,
+          BigInt(serviceBox.assets[1].amount.toString()) + 1n,
+          serviceFeePercent,
+          implementerFeePercent,
+          serviceR4[2],
+        );
+
+        const creatorFund = boxFactory.createSafePayOutputBox(
+          BigInt(successRaffleForLicenseRedeemBox.value.toString()) -
+            testUtils.FEE,
+          [successRaffleForLicenseRedeemBox.assets[2]],
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+        );
+
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
+          .from([serviceBox, successRaffleForLicenseRedeemBox])
+          .to([serviceOutputBox, creatorFund])
+          .configureSelector((selector) => {
+            selector.defineStrategy((inputs) => inputs);
+          })
+          // burn ticket tokens
+          .burnTokens(successRaffleForLicenseRedeemBox.assets[1])
+          .payFee(testUtils.FEE)
+          .build();
+
+        const res = boxFactory.chain.execute(transaction);
+
+        expect(res).true;
+      },
+    );
+
+    /**
+     * @target should fail if service box has a different service nft
+     * @scenario
+     * - create three output boxes
+     * - execute transaction
+     * - result of execution must be fail
+     * @expected
+     * - transaction result must throw error
+     */
+    successRaffleTest(
+      'should fail if service box has a different service nft',
+      ({
+        boxFactory,
+        creator,
+        someoneWallet,
+        ownerWallet,
+        successRaffleForLicenseRedeemBox,
+      }) => {
+        const serviceBox = boxFactory.createServiceBoxMock(
+          ownerWallet.ergoTree,
+          testUtils.LICENSE_TOKEN_COUNT,
+          100n,
+          100n,
+          testUtils.CREATION_FEE,
+          testUtils.X_TOKEN_ID,
+        );
+
+        const serviceR4 = SConstant.from(serviceBox.additionalRegisters.R4!)
+          .data as bigint[];
+        const serviceFeePercent = serviceR4[0];
+        const implementerFeePercent = serviceR4[1];
+        const serviceOutputBox = boxFactory.createServiceOutputBox(
+          serviceBox.ergoTree,
+          BigInt(serviceBox.assets[1].amount.toString()) + 1n,
+          serviceFeePercent,
+          implementerFeePercent,
+          serviceR4[2],
+          testUtils.X_TOKEN_ID,
+        );
+
+        const creatorFund = boxFactory.createSafePayOutputBox(
+          BigInt(successRaffleForLicenseRedeemBox.value.toString()) -
+            testUtils.FEE,
+          [],
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+        );
+
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
+          .from([
+            serviceBox,
+            successRaffleForLicenseRedeemBox,
+            ...someoneWallet.utxos,
+          ])
+          .to([serviceOutputBox, creatorFund])
+          .configureSelector((selector) => {
+            selector.defineStrategy((inputs) => inputs);
+          })
+          // burn ticket tokens
+          .burnTokens(successRaffleForLicenseRedeemBox.assets[1])
+          .payFee(testUtils.FEE)
+          .sendChangeTo(someoneWallet.address)
+          .build();
+
+        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
+      },
+    );
+
+    /**
+     * @target should fail if project fund withdrawal is incorrect for an erg-goal raffle
+     * @scenario
+     * - create three output boxes
+     * - execute transaction
+     * - result of execution must be fail
+     * @expected
+     * - transaction result must throw error
+     */
+    successRaffleTest(
+      'should fail if project fund withdrawal is incorrect for an erg-goal raffle',
+      ({
+        boxFactory,
+        creator,
+        serviceBox,
+        successRaffleForLicenseRedeemBox,
+      }) => {
+        const serviceR4 = SConstant.from(serviceBox.additionalRegisters.R4!)
+          .data as bigint[];
+        const serviceFeePercent = serviceR4[0];
+        const implementerFeePercent = serviceR4[1];
+
+        const serviceOutputBox = boxFactory.createServiceOutputBox(
+          serviceBox.ergoTree,
+          BigInt(serviceBox.assets[1].amount.toString()) + 1n,
+          serviceFeePercent,
+          implementerFeePercent,
+          serviceR4[2],
+        );
+
+        const creatorFund = boxFactory.createSafePayOutputBox(
+          // invalid value: minus one extra fee value
+          BigInt(successRaffleForLicenseRedeemBox.value.toString()) -
+            testUtils.FEE -
+            testUtils.FEE,
+          [],
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+        );
+
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
+          .from([serviceBox, successRaffleForLicenseRedeemBox])
+          .to([serviceOutputBox, creatorFund])
+          .configureSelector((selector) => {
+            selector.defineStrategy((inputs) => inputs);
+          })
+          // burn ticket tokens
+          .burnTokens(successRaffleForLicenseRedeemBox.assets[1])
+          .payFee(testUtils.FEE)
+          .sendChangeTo(creator.address)
+          .build();
+
+        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
+      },
+    );
+
+    /**
+     * @target should fail if project fund withdrawal is incorrect for a token-goal raffle
+     * @scenario
+     * - create three output boxes
+     * - execute transaction
+     * - result of execution must be fail
+     * @expected
+     * - transaction result must throw error
+     */
+    successRaffleTokenGoalTest(
+      'should fail if project fund withdrawal is incorrect for a token-goal raffle',
+      ({
+        boxFactory,
+        creator,
+        serviceBox,
+        successRaffleForLicenseRedeemBox,
+      }) => {
+        const serviceR4 = SConstant.from(serviceBox.additionalRegisters.R4!)
+          .data as bigint[];
+        const serviceFeePercent = serviceR4[0];
+        const implementerFeePercent = serviceR4[1];
+        const serviceOutputBox = boxFactory.createServiceOutputBox(
+          serviceBox.ergoTree,
+          BigInt(serviceBox.assets[1].amount.toString()) + 1n,
+          serviceFeePercent,
+          implementerFeePercent,
+          serviceR4[2],
+        );
+
+        const creatorFund = boxFactory.createSafePayOutputBox(
+          BigInt(successRaffleForLicenseRedeemBox.value.toString()) -
+            testUtils.FEE,
+          [
+            {
+              tokenId: successRaffleForLicenseRedeemBox.assets[2].tokenId,
+              // invalid value: minus one extra collecting token
+              amount:
+                BigInt(successRaffleForLicenseRedeemBox.assets[2].amount) - 1n,
+            },
+          ],
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+        );
+
+        testUtils.prettyPrintJson([
+          [serviceBox, successRaffleForLicenseRedeemBox],
+          [serviceOutputBox, creatorFund],
+        ]);
+
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
+          .from([serviceBox, successRaffleForLicenseRedeemBox])
+          .to([serviceOutputBox, creatorFund])
+          .configureSelector((selector) => {
+            selector.defineStrategy((inputs) => inputs);
+          })
+          // burn ticket tokens
+          .burnTokens([
+            successRaffleForLicenseRedeemBox.assets[1],
+            {
+              tokenId: successRaffleForLicenseRedeemBox.assets[2].tokenId,
+              amount: 1n,
+            },
+          ])
+          .payFee(testUtils.FEE)
+          .build();
+
+        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
+      },
+    );
+
+    /**
+     * @target should fail if a ticket token is stolen
+     * @scenario
+     * - create three output boxes
+     * - execute transaction
+     * - result of execution must be fail
+     * @expected
+     * - transaction result must throw error
+     */
+    successRaffleTest(
+      'should fail if a ticket token is stolen',
+      ({
+        boxFactory,
+        creator,
+        serviceBox,
+        successRaffleForLicenseRedeemBox,
+      }) => {
+        const serviceR4 = SConstant.from(serviceBox.additionalRegisters.R4!)
+          .data as bigint[];
+        const serviceFeePercent = serviceR4[0];
+        const implementerFeePercent = serviceR4[1];
+
+        const serviceOutputBox = boxFactory.createServiceOutputBox(
+          serviceBox.ergoTree,
+          BigInt(serviceBox.assets[1].amount.toString()) + 1n,
+          serviceFeePercent,
+          implementerFeePercent,
+          serviceR4[2],
+        );
+
+        const creatorFund = boxFactory.createSafePayOutputBox(
+          BigInt(successRaffleForLicenseRedeemBox.value.toString()) -
+            testUtils.FEE,
+          [
+            {
+              tokenId: successRaffleForLicenseRedeemBox.assets[1].tokenId,
+              amount: 1n,
+            },
+          ],
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+        );
+
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
+          .from([serviceBox, successRaffleForLicenseRedeemBox])
+          .to([serviceOutputBox, creatorFund])
+          .configureSelector((selector) => {
+            selector.defineStrategy((inputs) => inputs);
+          })
+          // burn ticket tokens
+          .burnTokens([
+            {
+              tokenId: successRaffleForLicenseRedeemBox.assets[1].tokenId,
+              amount:
+                BigInt(successRaffleForLicenseRedeemBox.assets[1].amount) - 1n,
+            },
+          ])
+          .payFee(testUtils.FEE)
+          .build();
+
+        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
+      },
+    );
+
+    /**
+     * @target should fail if a raffle license is stolen with spending two similar success raffles
+     * @scenario
+     * - create three output boxes
+     * - execute transaction
+     * - result of execution must be fail
+     * @expected
+     * - transaction result must throw error
+     */
+    successRaffleTest(
+      'should fail if a raffle license is stolen with spending two similar success raffles',
+      ({
+        boxFactory,
+        creator,
+        someoneWallet,
+        serviceBox,
+        successRaffleForLicenseRedeemBox,
+      }) => {
+        const serviceR4 = SConstant.from(serviceBox.additionalRegisters.R4!)
+          .data as bigint[];
+        const serviceFeePercent = serviceR4[0];
+        const implementerFeePercent = serviceR4[1];
+
+        const successRaffleForLicenseRedeemBox2 =
+          boxFactory.createSuccessRaffleBoxMock(
+            testUtils.FEE * 3n + testUtils.CREATION_FEE,
+            testUtils.LICENSE_TOKEN_ID,
+            blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+            TEST_INITIAL_SEED,
+            [],
+            5n,
+            5,
+            5n,
+            50n,
+            6,
+            testUtils.X_TOKEN_ID,
+            undefined,
+            undefined,
+          ) as ErgoUnsignedInput;
+
+        const serviceOutputBox = boxFactory.createServiceOutputBox(
+          serviceBox.ergoTree,
+          BigInt(serviceBox.assets[1].amount.toString()) + 1n,
+          serviceFeePercent,
+          implementerFeePercent,
+          serviceR4[2],
+        );
+
+        const creatorFund = boxFactory.createSafePayOutputBox(
+          BigInt(successRaffleForLicenseRedeemBox.value.toString()) -
+            testUtils.FEE,
+          [],
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+        );
+
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
+          .from([
+            serviceBox,
+            successRaffleForLicenseRedeemBox,
+            successRaffleForLicenseRedeemBox2,
+            ...someoneWallet.utxos,
+          ])
+          .to([serviceOutputBox, creatorFund])
+          .configureSelector((selector) => {
+            selector.defineStrategy((inputs) => inputs);
+          })
+          // burn ticket tokens
+          .burnTokens(successRaffleForLicenseRedeemBox.assets[1])
+          .sendChangeTo(someoneWallet.address)
+          .payFee(testUtils.FEE)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();

@@ -162,6 +162,7 @@ export class RaffleBoxFactory {
    * @param serviceFeePercent
    * @param implementerFeePercent
    * @param creationFee
+   * @param licenseTokenId
    * @returns Service Box
    */
   createServiceBoxMock(
@@ -170,15 +171,16 @@ export class RaffleBoxFactory {
     serviceFeePercent: bigint = 100n,
     implementerFeePercent: bigint = 100n,
     creationFee = CREATION_FEE,
+    licenseTokenId = LICENSE_TOKEN_ID,
   ) {
     return new ErgoUnsignedInput(
       mockUTxO({
         ergoTree: this.contractsAddresses['service'],
-        value: 11_000_000n,
+        value: FEE,
         creationHeight: 4,
         assets: [
           raffleNFTToken,
-          { tokenId: LICENSE_TOKEN_ID, amount: licenseTokenCount },
+          { tokenId: licenseTokenId, amount: licenseTokenCount },
         ],
         additionalRegisters: {
           R4: SColl(SLong, [
@@ -203,6 +205,7 @@ export class RaffleBoxFactory {
    * @param serviceFeePercent
    * @param implementerFeePercent
    * @param creationFee
+   * @param licenseTokenId
    * @returns ServiceBox
    */
   createServiceOutputBox(
@@ -211,12 +214,13 @@ export class RaffleBoxFactory {
     serviceFeePercent: bigint = 100n,
     implementerFeePercent: bigint = 100n,
     creationFee = CREATION_FEE,
+    licenseTokenId = LICENSE_TOKEN_ID,
   ) {
-    return new OutputBuilder(15_000_000n, this.contractsAddresses['service'])
+    return new OutputBuilder(FEE, this.contractsAddresses['service'])
       .addTokens([
         raffleNFTToken,
         {
-          tokenId: LICENSE_TOKEN_ID,
+          tokenId: licenseTokenId,
           amount: licenseTokenCount,
         },
       ])
