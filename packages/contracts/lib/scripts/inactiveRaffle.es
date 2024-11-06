@@ -68,7 +68,7 @@
   // [InactiveRaffle(Self), TicketRepo] --> [ActiveRaffle, RaffleDetails, Winner[]]
   sigmaProp(allOf(Coll(
     // Correct ActiveRaffle format
-    // R4: [WinnersPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, Deadline, WinnersCount, TxFee]
+    // R4: [WinnersPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, Deadline, TxFee]
     // R5: [ServiceAddressHash, ImplementerAddressHash, CreatorAddressHash]
     // R6: WinnersCount
     // R7: TotalSoldTicket

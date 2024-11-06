@@ -509,6 +509,7 @@ export class RaffleBoxFactory {
    * Create active raffle box with registers
    * @param r4
    * @param r5
+   * @param winnersCount
    * @param value
    * @param ticketTokenAmount
    * @param ticketTokenId
@@ -1309,6 +1310,8 @@ export class RaffleBoxFactory {
    * @param giftTokenId
    * @param giftTokenCount
    * @param giftCount
+   * @param winnerIndex
+   * @param value
    */
   createWinnerOutputBoxWithConstantRegisters(
     r4: bigint[],
@@ -1341,7 +1344,7 @@ export class RaffleBoxFactory {
   /**
    * create single winner output box
    * @param winnersCount
-   * @param step
+   * @param winnerIndex
    * @param giftTokenId
    * @param ticketTokenId
    * @param ticketTokenAmount

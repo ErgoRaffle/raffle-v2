@@ -14,7 +14,7 @@
   // Spent in 3 transactions:
   //   - Owner config update with OwnerNft
   //   - RaffleLicense redeem from SuccessRaffle or TicketRedeem
-  //      [Service, (SuccessRaffle | TicketRedeem)] --> [Service]
+  //      [Service, (SuccessRaffle | TicketRedeem)] --> [Service, (ProjectFund | ServiceFee)]
   //   - New raffle creation
   //      [Service, UserBox] --> [Service, TicketRepo, InactiveRaffle, Change]
   // 
@@ -40,7 +40,7 @@
     ))
     if(outputService.tokens(1)._2 == SELF.tokens(1)._2 + 1L) {
       // RaffleLicense redeem from SuccessRaffle or TicketRedeem
-      // [Service, (SuccessRaffle | TicketRedeem)] --> [Service]
+      // [Service, (SuccessRaffle | TicketRedeem)] --> [Service, (ProjectFund | ServiceFee)]
       sigmaProp(selfReplication)
     } else if (outputService.tokens(1)._2 == SELF.tokens(1)._2 - 1L) {
       // New raffle creation
