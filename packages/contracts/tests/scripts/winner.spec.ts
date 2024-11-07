@@ -1448,11 +1448,11 @@ describe('winner', () => {
 
         const giftGiverAddress = Buffer.from(
           SConstant.from(gift.additionalRegisters.R4!).data as Uint8Array,
-        ).toString();
-        const redeemedGift = boxFactory.createCustomOutputBox(
+        ).toString('hex');
+        const redeemedGift = boxFactory.createSafePayOutputBox(
           BigInt(gift.value.toString()) - testUtils.FEE,
           gift.assets.slice(1),
-          giftGiverAddress,
+          blake2b256(Buffer.from(giftGiverAddress, 'hex')),
         );
         const giftReturnTx = new TransactionBuilder(boxFactory.chain.height)
           .from([winner, gift])
@@ -1528,11 +1528,11 @@ describe('winner', () => {
 
         const giftGiverAddress = Buffer.from(
           SConstant.from(gift.additionalRegisters.R4!).data as Uint8Array,
-        ).toString();
-        const redeemedGift = boxFactory.createCustomOutputBox(
+        ).toString('hex');
+        const redeemedGift = boxFactory.createSafePayOutputBox(
           BigInt(gift.value.toString()) - testUtils.FEE,
           gift.assets.slice(1),
-          giftGiverAddress,
+          blake2b256(Buffer.from(giftGiverAddress, 'hex')),
         );
         const giftReturnTx = new TransactionBuilder(boxFactory.chain.height)
           .from([winner, gift])
@@ -1610,11 +1610,11 @@ describe('winner', () => {
 
         const giftGiverAddress = Buffer.from(
           SConstant.from(gift.additionalRegisters.R4!).data as Uint8Array,
-        ).toString();
-        const redeemedGift = boxFactory.createCustomOutputBox(
+        ).toString('hex');
+        const redeemedGift = boxFactory.createSafePayOutputBox(
           BigInt(gift.value.toString()) - testUtils.FEE,
           gift.assets.slice(1),
-          giftGiverAddress,
+          blake2b256(Buffer.from(giftGiverAddress, 'hex')),
         );
         const giftReturnTx = new TransactionBuilder(boxFactory.chain.height)
           .from([winner, gift])
@@ -1694,11 +1694,11 @@ describe('winner', () => {
 
         const giftGiverAddress = Buffer.from(
           SConstant.from(gift.additionalRegisters.R4!).data as Uint8Array,
-        ).toString();
-        const redeemedGift = boxFactory.createCustomOutputBox(
+        ).toString('hex');
+        const redeemedGift = boxFactory.createSafePayOutputBox(
           BigInt(gift.value.toString()) - testUtils.FEE,
           gift.assets.slice(1),
-          giftGiverAddress,
+          blake2b256(Buffer.from(giftGiverAddress, 'hex')),
         );
         const giftReturnTx = new TransactionBuilder(boxFactory.chain.height)
           .from([winner, gift])
@@ -1777,11 +1777,11 @@ describe('winner', () => {
 
         const giftGiverAddress = Buffer.from(
           SConstant.from(gift.additionalRegisters.R4!).data as Uint8Array,
-        ).toString();
-        const redeemedGift = boxFactory.createCustomOutputBox(
+        ).toString('hex');
+        const redeemedGift = boxFactory.createSafePayOutputBox(
           BigInt(gift.value.toString()) - testUtils.FEE,
           gift.assets.slice(1),
-          giftGiverAddress,
+          blake2b256(Buffer.from(giftGiverAddress, 'hex')),
         );
         const giftReturnTx = new TransactionBuilder(boxFactory.chain.height)
           .from([winner, gift])
@@ -1868,10 +1868,10 @@ describe('winner', () => {
         const giftGiverAddress = Buffer.from(
           SConstant.from(gift1.additionalRegisters.R4!).data as Uint8Array,
         ).toString();
-        const redeemedGift = boxFactory.createCustomOutputBox(
+        const redeemedGift = boxFactory.createSafePayOutputBox(
           BigInt(gift1.value.toString()) + gift2.value - testUtils.FEE,
           [...gift1.assets.slice(1), ...gift2.assets],
-          giftGiverAddress,
+          blake2b256(Buffer.from(giftGiverAddress, 'hex')),
         );
         const giftReturnTx = new TransactionBuilder(boxFactory.chain.height)
           .from([winner, gift1, gift2])
