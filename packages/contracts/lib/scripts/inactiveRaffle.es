@@ -42,7 +42,7 @@
       blake2b256(box.propositionBytes) == winnerScriptHash,
       box.tokens(0)._1 == ticketId, // Ticket token as identifier
       box.tokens.size == 1,
-      box.value == 3 * txFee,
+      box.value == 4 * txFee,
       box.R4[Coll[Long]].get(1) == deadline,
       box.R4[Coll[Long]].get(2) == txFee,
       box.R5[Int].get == i + 1,
@@ -81,7 +81,7 @@
     activeRaffle.tokens(0)._1 == SELF.tokens(0)._1,
     activeRaffle.tokens(1)._1 == ticketId, // Match with TicketRepo
     activeRaffle.tokens.size == SELF.tokens.size + 1,
-    activeRaffle.value == SELF.value - (4 * txFee * winnersCount) - txFee,
+    activeRaffle.value == SELF.value - (5 * txFee * winnersCount) - txFee,
     activeRaffle.R4[Coll[Long]].get == SELF.R4[Coll[Long]].get,
     activeRaffle.R5[Coll[Coll[Byte]]].get == SELF.R5[Coll[Coll[Byte]]].get,
     activeRaffle.R6[Int].get == winnersCount,
