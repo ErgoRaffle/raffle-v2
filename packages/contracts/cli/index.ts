@@ -4,7 +4,7 @@ import { exit } from 'process';
 import { program } from 'commander';
 
 import { logger } from '../lib/logger';
-import { ContextVarsType } from '../lib/types';
+import { ContextVarsType, RaffleContextVarsInterface } from '../lib/types';
 import { compileAll } from '../lib/utils';
 import { defaultScriptsVariables, defaultBuildVariables } from '../constants';
 
@@ -98,7 +98,7 @@ program
       logger.info('Create input file template command ran successful');
   });
 
-// build final release index.js file
+// build final release index.js & index.d.ts files
 program
   .command('build')
   .argument(
@@ -106,20 +106,53 @@ program
     'Address of input file that contains JSON contract name and variables',
   )
   .action((config) => {
-    let configs;
+    let rawConfigs;
     let contracts;
 
     try {
-      configs = new Map(
-        Object.entries(JSON.parse(fs.readFileSync(config).toString())),
-      );
+      rawConfigs = JSON.parse(
+        fs.readFileSync(config).toString(),
+      ) as RaffleContextVarsInterface as unknown as {
+        [key: string]: string | number | object;
+      };
     } catch (err) {
       logger.error(`The config file is not valid: \n${err}`);
       process.exit(0);
     }
 
+    const tokens = rawConfigs['serviceTokens'];
+    const configs = new Map(
+      Object.entries({
+        defaults: {
+          SERVICE_NFT_B64: Buffer.from(
+            rawConfigs['SERVICE_NFT'].toString(),
+            'hex',
+          ).toString('base64'),
+          OWNER_NFT_B64: Buffer.from(
+            rawConfigs['OWNER_NFT'].toString(),
+            'hex',
+          ).toString('base64'),
+          RAFFLE_LICENSE_B64: Buffer.from(
+            rawConfigs['RAFFLE_LICENSE'].toString(),
+            'hex',
+          ).toString('base64'),
+          ORACLE_TOKEN_ID_B64: Buffer.from(
+            rawConfigs['ORACLE_TOKEN_ID'].toString(),
+            'hex',
+          ).toString('base64'),
+          GIFT_TOKEN_COUNT: rawConfigs['GIFT_TOKEN_COUNT'],
+        },
+        service: {},
+        ticketRepo: {},
+        inactiveRaffle: {},
+        activeRaffle: {},
+        winner: {},
+        successRaffle: {},
+      }),
+    );
+
     try {
-      contracts = compileAll(configs as ContextVarsType);
+      contracts = compileAll(configs as unknown as ContextVarsType);
     } catch (err) {
       logger.error(`Compile Error: \n${err}`);
       process.exit(0);
@@ -127,13 +160,40 @@ program
 
     const RaffleAddressesAndTokens = {
       addresses: contracts,
-      tokens: configs.get('tokens'),
+      tokens: tokens,
     };
 
     fs.writeFileSync(
       './dist/index.js',
       `\
 export const raffleInfo = ${JSON.stringify(RaffleAddressesAndTokens, null, 4)};
+`,
+    );
+
+    fs.writeFileSync(
+      './dist/index.d.ts',
+      `\
+export const raffleInfo: {
+  "addresses": {
+        "ticketRepo": string,
+        "ticket": string,
+        "successRaffle": string,
+        "winnerPrize": string,
+        "gift": string,
+        "giftRedeem": string,
+        "giftTokenRepo": string,
+        "ticketRedeem": string,
+        "activeRaffle": string,
+        "winner": string,
+        "raffleDetails": string,
+        "inactiveRaffle": string,
+        "service": string
+    },
+    "tokens": {
+        "ServiceNft": string,
+        "RaffleLicense": string
+    }
+};
 `,
     );
   });

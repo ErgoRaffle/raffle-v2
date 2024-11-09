@@ -2,15 +2,9 @@ import * as path from 'node:path';
 
 import { compile } from '@fleet-sdk/compiler';
 
-let __dirname;
-
-if (__dirname === undefined) {
-  __dirname = import.meta.dirname;
-}
-
 export const TRUE_SCRIPT_HEX = compile('{sigmaProp(true);}').toHex().toString();
 export const DEFAULT_FEE = 15_000_000n;
-export const SCRIPT_DIR = path.join(__dirname, `lib/scripts/`);
+export const SCRIPT_DIR = path.join(import.meta.dirname, `lib/scripts/`);
 export const scriptList = [
   'service',
   'inactiveRaffle',
@@ -88,22 +82,11 @@ export const defaultScriptsVariables: {
 };
 
 export const defaultBuildVariables = {
-  service: {
+  defaults: {
     OWNER_NFT_B64: '',
-  },
-  ticketRepo: {
     RAFFLE_LICENSE_B64: '',
-  },
-  inactiveRaffle: {
     GIFT_TOKEN_COUNT: 1000,
-  },
-  activeRaffle: {
     ORACLE_TOKEN_ID_B64: '',
-  },
-  winner: {
-    RAFFLE_LICENSE_B64: '',
-  },
-  successRaffle: {
     SERVICE_NFT_B64: '',
   },
   tokens: {
