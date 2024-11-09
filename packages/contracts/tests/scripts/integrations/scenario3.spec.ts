@@ -142,6 +142,7 @@ describe('Raffle', () => {
           serviceBox,
           creator.utxos.toArray(),
           implementerErgoTree,
+          ownerErgoTree,
           winnersCount,
           deadline,
           winnersPercent,
@@ -344,6 +345,7 @@ describe('Raffle', () => {
           finalServiceBox,
           boxFactory,
           creator.ergoTree,
+          ownerErgoTree,
         );
         expect(returnLicenseTx.success).true;
 

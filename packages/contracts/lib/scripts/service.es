@@ -3,7 +3,7 @@
   //
   // Registers:
   //   R4[Coll[Long]]: [ServiceFeePercent, ImplementerFeePercent, CreationFee, TxFee]
-  //   R5[Coll[Byte]]: ServiceFeeAddress
+  //   R5[Coll[Byte]]: ServiceFeeAddressHash
   // Tokens:
   //   0: ServiceNft
   //   1: RaffleLicense
@@ -63,7 +63,7 @@
       val implementerFeePercent = SELF.R4[Coll[Long]].get(1)
       val creationFee = SELF.R4[Coll[Long]].get(2)
       val txFee = SELF.R4[Coll[Long]].get(3)
-      val serviceAddress = SELF.R5[Coll[Byte]].get
+      val serviceFeeAddressHash = SELF.R5[Coll[Byte]].get
       val implementerAddress = getVar[Coll[Coll[Byte]]](1).get(0)
       val creatorAddress = getVar[Coll[Coll[Byte]]](1).get(1)
       val raffleGoal = inactiveRaffle.R4[Coll[Long]].get(4)
@@ -97,7 +97,7 @@
         inactiveRaffle.R4[Coll[Long]].get(3) > 0L,
         inactiveRaffle.R4[Coll[Long]].get(6) == txFee,
         inactiveRaffle.R5[Coll[Coll[Byte]]].get.size == 3,
-        inactiveRaffle.R5[Coll[Coll[Byte]]].get(0) == blake2b256(serviceAddress),
+        inactiveRaffle.R5[Coll[Coll[Byte]]].get(0) == serviceFeeAddressHash,
         inactiveRaffle.R5[Coll[Coll[Byte]]].get(1) == blake2b256(implementerAddress),
         inactiveRaffle.R5[Coll[Coll[Byte]]].get(2) == blake2b256(creatorAddress),
         inactiveRaffle.R6[Coll[Coll[Byte]]].get.size >= 2,

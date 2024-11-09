@@ -189,7 +189,7 @@ export class RaffleBoxFactory {
           ]).toHex(),
           R5: SColl(
             SByte,
-            Array.from(Buffer.from(ownerErgoTree, 'hex')),
+            Array.from(blake2b256(Buffer.from(ownerErgoTree, 'hex'))),
           ).toHex(),
         },
       }),
@@ -227,7 +227,10 @@ export class RaffleBoxFactory {
           creationFee,
           FEE,
         ]).toHex(),
-        R5: SColl(SByte, Array.from(Buffer.from(ownerErgoTree, 'hex'))).toHex(),
+        R5: SColl(
+          SByte,
+          Array.from(blake2b256(Buffer.from(ownerErgoTree, 'hex'))),
+        ).toHex(),
       });
   }
 

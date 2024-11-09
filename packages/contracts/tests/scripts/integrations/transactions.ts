@@ -16,6 +16,7 @@ import * as testUtils from '../../testUtils';
  * @param serviceBox : current service box
  * @param feeBoxes
  * @param implementerErgoTree
+ * @param serviceFeeErgoTree
  * @param winnersCount
  * @param deadline
  * @param winnersPercent
@@ -29,6 +30,7 @@ export const executeCreateRaffleTx = (
   serviceBox: ErgoUnsignedInput,
   feeBoxes: Box<bigint>[],
   implementerErgoTree: string,
+  serviceFeeErgoTree: string,
   winnersCount: number,
   deadline: bigint,
   winnersPercent: Array<bigint>,
@@ -44,9 +46,6 @@ export const executeCreateRaffleTx = (
       Array.from(Buffer.from(creator.ergoTree, 'hex')),
     ]),
   });
-  const serviceFeeErgoTree = Buffer.from(
-    SConstant.from(serviceBox.additionalRegisters.R5!).data as Uint8Array,
-  ).toString('hex');
   const serviceR4 = SConstant.from(serviceBox.additionalRegisters.R4!)
     .data as bigint[];
   const serviceFeePercent = serviceR4[0];
@@ -595,16 +594,15 @@ export const executeTicketRedeemTx = (
  * @param endedRaffle
  * @param service
  * @param boxFactory
+ * @param serviceFeeErgoTree
  */
 export const executeReturnRaffleLicenseTx = (
   endedRaffle: testUtils.OutputBox,
   service: testUtils.OutputBox,
   boxFactory: testUtils.RaffleBoxFactory,
   changeAddress: string,
+  serviceFeeErgoTree: string,
 ) => {
-  const serviceFeeErgoTree = Buffer.from(
-    SConstant.from(service.additionalRegisters.R5!).data as Uint8Array,
-  ).toString('hex');
   const serviceR4 = SConstant.from(service.additionalRegisters.R4!)
     .data as bigint[];
   const serviceFeePercent = serviceR4[0];
