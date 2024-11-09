@@ -87,8 +87,7 @@
     val projectAddressHash = SELF.R5[Coll[Coll[Byte]]].get(2)
     val splittingRaisedFund = if(isErgGoal) { 
       serviceFee.value == (totalRaised * serviceFeePercent) / 1000 + 2 * txFee &&
-      implementerFee.value == (totalRaised * implementerFeePercent) / 1000 + 2 * txFee &&
-      successRaffle.value >= SELF.value - serviceFee.value - implementerFee.value
+      implementerFee.value == (totalRaised * implementerFeePercent) / 1000 + 2 * txFee
     } else {
       successRaffle.tokens(2)._1 == SELF.tokens(2)._1 &&
       serviceFee.tokens(0)._1 == SELF.tokens(2)._1 &&
@@ -97,7 +96,6 @@
       implementerFee.tokens(0)._2 == (totalRaised * implementerFeePercent) / 1000 &&
       successRaffle.tokens(2)._2 >= 
         SELF.tokens(2)._2 - serviceFee.tokens(0)._2 - implementerFee.tokens(0)._2 &&
-      successRaffle.value >= SELF.value - 4 * txFee &&
       serviceFee.value == 2 * txFee &&
       implementerFee.value == 2 * txFee
     }
@@ -112,6 +110,7 @@
       // R6: [Seed, SelectedWinnersListHash]
       // R7: Step
       blake2b256(successRaffle.propositionBytes) == successRaffleScriptHash,
+      successRaffle.value >= SELF.value - serviceFee.value - implementerFee.value,
       successRaffle.tokens(0)._1 == SELF.tokens(0)._1,
       successRaffle.tokens(1)._1 == SELF.tokens(1)._1,
       successRaffle.tokens(1)._2 == SELF.tokens(1)._2 + 1,
