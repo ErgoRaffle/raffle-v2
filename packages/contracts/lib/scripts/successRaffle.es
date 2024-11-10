@@ -120,6 +120,7 @@
 
       // Transaction constraints
       hasStolenTickets == false,
+      SELF.id == INPUTS(1).id,
     )))
   }
 }
