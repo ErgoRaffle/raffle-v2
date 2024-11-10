@@ -828,9 +828,9 @@ describe('winner', () => {
     /**
      * @target should successfully create the prize for a token-goal raffle when the prize amount is 0
      * @scenario
-     * - create winner input box
-     * - create successRaffle input box
-     * - create prize output box
+     * - create winner input box (raffle has one winner)
+     * - create successRaffle input box with 0 amount for total prize (winners share percent is 0)
+     * - create prize output box that token prize amount is 0
      * - create successRaffle output box
      * - execute transaction
      * - result of execution must be success

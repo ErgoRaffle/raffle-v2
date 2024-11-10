@@ -827,7 +827,6 @@ export const executePrizeCreationTx = (
     })
     .payFee(testUtils.FEE)
     .build();
-  console.log(JSON.stringify(prizeTx.toEIP12Object()));
 
   const result = boxFactory.chain.executeAndReturnOutputs(prizeTx);
   const unsignedOutputs = [];
