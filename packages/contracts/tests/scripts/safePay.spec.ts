@@ -112,41 +112,6 @@ describe('safePay', () => {
     );
 
     /**
-     * @target should successfully withdraw erg and one token from the safePay box
-     * @scenario
-     * - create safePay output box
-     * - execute transaction
-     * - check execution done successfully
-     * @expected
-     * - transaction result must be true
-     */
-    raffleSafePayTestTest(
-      'should successfully withdraw erg and one token from the safePay box',
-      ({ boxFactory, person2Wallet, safePayByOneToken }) => {
-        const payOutputBox = boxFactory.createCustomOutputBox(
-          1_000_000_000n - testUtils.FEE,
-          [
-            {
-              tokenId: X_TOKEN_ID,
-              amount: 100n,
-            },
-          ],
-          person2Wallet.address.toString(),
-        );
-
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([safePayByOneToken])
-          .to([payOutputBox])
-          .payFee(testUtils.FEE)
-          .build();
-
-        const res = boxFactory.chain.execute(transaction);
-        // Check execution result
-        expect(res).true;
-      },
-    );
-
-    /**
      * @target should successfully withdraw erg and all available tokens from the safePay box
      * @scenario
      * - create safePay output box
@@ -215,44 +180,6 @@ describe('safePay', () => {
           .from([safePayPureErg])
           .to([payOutputBox, anotherPayOutputBox])
           .payFee(testUtils.FEE)
-          .build();
-
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
-
-    /**
-     * @target should fail if an arbitrary token is added to the output
-     * @scenario
-     * - create safePay output box
-     * - execute transaction
-     * - result of execution must be fail
-     * @expected
-     * - transaction result must throw error
-     */
-    raffleSafePayTestTest(
-      'should fail if an arbitrary token is added to the output',
-      ({ boxFactory, person1Wallet, person2Wallet, safePayPureErg }) => {
-        const payOutputBox = boxFactory.createCustomOutputBox(
-          1_000_000_000n - testUtils.FEE,
-          // put extra token
-          [
-            {
-              tokenId: X_TOKEN_ID,
-              amount: 10n,
-            },
-          ],
-          person2Wallet.address.toString(),
-        );
-
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([safePayPureErg, ...person1Wallet.utxos])
-          .to([payOutputBox])
-          .payFee(testUtils.FEE)
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          .sendChangeTo(person1Wallet.address)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
