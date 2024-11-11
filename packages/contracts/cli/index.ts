@@ -120,12 +120,12 @@ program
       process.exit(0);
     }
 
-    const tokens = rawConfigs['serviceTokens'];
+    const tokens = rawConfigs['tokens'] as { [key: string]: string };
     const configs = new Map(
       Object.entries({
         defaults: {
           SERVICE_NFT_B64: Buffer.from(
-            rawConfigs['SERVICE_NFT'].toString(),
+            tokens['serviceNft'].toString(),
             'hex',
           ).toString('base64'),
           OWNER_NFT_B64: Buffer.from(
@@ -133,11 +133,11 @@ program
             'hex',
           ).toString('base64'),
           RAFFLE_LICENSE_B64: Buffer.from(
-            rawConfigs['RAFFLE_LICENSE'].toString(),
+            tokens['raffleLicense'].toString(),
             'hex',
           ).toString('base64'),
           ORACLE_TOKEN_ID_B64: Buffer.from(
-            rawConfigs['ORACLE_TOKEN_ID'].toString(),
+            tokens['oracleTokenId'].toString(),
             'hex',
           ).toString('base64'),
           GIFT_TOKEN_COUNT: rawConfigs['GIFT_TOKEN_COUNT'],
@@ -190,6 +190,7 @@ export const raffleInfo: {
         "service": string
     },
     "tokens": {
+        "oracleTokenId": string,
         "ServiceNft": string,
         "RaffleLicense": string
     }
