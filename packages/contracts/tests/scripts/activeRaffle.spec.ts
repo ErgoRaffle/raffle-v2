@@ -1,5 +1,6 @@
 import { it, describe, expect } from 'vitest';
 import { TransactionBuilder } from '@fleet-sdk/core';
+import { blake2b256 } from '@fleet-sdk/crypto';
 import * as testUtils from '../testUtils';
 
 import {
@@ -33,7 +34,7 @@ const createActiveRaffleEndTest = (
   );
   boxFactory.chain.setTip(11);
 
-  const totalSuccessSoldTickets = 10n;
+  const totalSuccessSoldTickets = 1000n;
   const ticketPrice = collectingTokenId === undefined ? 100_000n : 10n;
   const totalRaised = totalSuccessSoldTickets * ticketPrice;
   const goal = totalSuccessSoldTickets * ticketPrice;
@@ -62,9 +63,9 @@ const createActiveRaffleEndTest = (
 
   // Created activeRaffle & raffleDetails input boxes
   const activeRaffleBoxForDonate = boxFactory.createActiveRaffleBoxMock(
-    creator.address.toString(),
-    implementer.address.toString(),
-    creator.address.toString(),
+    creator.ergoTree,
+    implementer.ergoTree,
+    creator.ergoTree,
     winnersCount,
     serviceFeePercent,
     collectingTokenId !== undefined
@@ -82,9 +83,9 @@ const createActiveRaffleEndTest = (
   );
 
   const activeRaffleBoxForSuccessEnd = boxFactory.createActiveRaffleBoxMock(
-    creator.address.toString(),
-    implementer.address.toString(),
-    creator.address.toString(),
+    creator.ergoTree,
+    implementer.ergoTree,
+    creator.ergoTree,
     winnersCount,
     serviceFeePercent,
     collectingTokenForSuccess,
@@ -97,9 +98,9 @@ const createActiveRaffleEndTest = (
   );
 
   const activeRaffleBoxForFailureEnd = boxFactory.createActiveRaffleBoxMock(
-    creator.address.toString(),
-    implementer.address.toString(),
-    creator.address.toString(),
+    creator.ergoTree,
+    implementer.ergoTree,
+    creator.ergoTree,
     winnersCount,
     serviceFeePercent,
     collectingTokenId !== undefined
@@ -140,10 +141,10 @@ const createActiveRaffleEndTest = (
   );
 
   const oracleBox = boxFactory.createMockedOracleUTxO(testUtils.FEE);
-  const serviceFeeBox = boxFactory.createCustomOutputBox(
+  const serviceFeeBox = boxFactory.createSafePayOutputBox(
     collectingTokenId === undefined
-      ? BigInt((totalRaised * serviceFeePercent) / 1000n) + testUtils.FEE
-      : testUtils.FEE,
+      ? BigInt((totalRaised * serviceFeePercent) / 1000n) + 2n * testUtils.FEE
+      : 2n * testUtils.FEE,
     collectingTokenId === undefined
       ? []
       : [
@@ -152,12 +153,13 @@ const createActiveRaffleEndTest = (
             amount: (totalRaised * serviceFeePercent) / 1000n,
           },
         ],
-    someone.address.toString(),
+    blake2b256(Buffer.from(creator.ergoTree, 'hex')),
   );
-  const implementerFeeBox = boxFactory.createCustomOutputBox(
+  const implementerFeeBox = boxFactory.createSafePayOutputBox(
     collectingTokenId === undefined
-      ? BigInt((totalRaised * implementerFeePercent) / 1000n) + testUtils.FEE
-      : testUtils.FEE,
+      ? BigInt((totalRaised * implementerFeePercent) / 1000n) +
+          2n * testUtils.FEE
+      : 2n * testUtils.FEE,
     collectingTokenId === undefined
       ? []
       : [
@@ -166,7 +168,7 @@ const createActiveRaffleEndTest = (
             amount: (totalRaised * implementerFeePercent) / 1000n,
           },
         ],
-    implementer.address.toString(),
+    blake2b256(Buffer.from(implementer.ergoTree, 'hex')),
   );
 
   return it.extend({
@@ -215,9 +217,9 @@ describe('ActiveRaffle', () => {
         const serviceFeePercent = 200n;
 
         const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
-          creatorWallet.address.toString(),
-          implementerWallet.address.toString(),
-          creatorWallet.address.toString(),
+          creatorWallet.ergoTree,
+          implementerWallet.ergoTree,
+          creatorWallet.ergoTree,
           1,
           serviceFeePercent,
           undefined,
@@ -233,7 +235,7 @@ describe('ActiveRaffle', () => {
           100_000n,
         );
         const ticketOutputBox = boxFactory.createTicketOutputBox(
-          donatorWallet.address.toString(),
+          donatorWallet.ergoTree,
           5n,
           testUtils.TICKET_TOKEN_ID,
           [0n, 5n, 100_000n], // from-ticket-range, to-ticket-range, ticket-price
@@ -243,7 +245,7 @@ describe('ActiveRaffle', () => {
           .from([activeRaffleBoxForDonate, ...donatorWallet.utxos])
           .to([activeRaffleOutputBox, ticketOutputBox])
           .payFee(testUtils.FEE)
-          .sendChangeTo(donatorWallet.address.toString())
+          .sendChangeTo(donatorWallet.ergoTree)
           .build();
 
         const result = boxFactory.chain.execute(transaction);
@@ -272,9 +274,9 @@ describe('ActiveRaffle', () => {
       }) => {
         const serviceFeePercent = 200n;
         const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
-          creatorWallet.address.toString(),
-          implementerWallet.address.toString(),
-          creatorWallet.address.toString(),
+          creatorWallet.ergoTree,
+          implementerWallet.ergoTree,
+          creatorWallet.ergoTree,
           1,
           serviceFeePercent,
           {
@@ -290,7 +292,7 @@ describe('ActiveRaffle', () => {
           1000n,
         );
         const ticketOutputBox = boxFactory.createTicketOutputBox(
-          donatorWallet.address.toString(),
+          donatorWallet.ergoTree,
           5n,
           testUtils.TICKET_TOKEN_ID,
           [0n, 5n, 10n], // from-ticket-range, to-ticket-range, ticket-price
@@ -300,7 +302,7 @@ describe('ActiveRaffle', () => {
           .from([activeRaffleBoxForDonate, ...donatorWallet.utxos])
           .to([activeRaffleOutputBox, ticketOutputBox])
           .payFee(testUtils.FEE)
-          .sendChangeTo(donatorWallet.address.toString())
+          .sendChangeTo(donatorWallet.ergoTree)
           .build();
 
         const result = boxFactory.chain.execute(transaction);
@@ -329,9 +331,9 @@ describe('ActiveRaffle', () => {
       }) => {
         const serviceFeePercent = 200n;
         const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
-          creatorWallet.address.toString(),
-          implementerWallet.address.toString(),
-          creatorWallet.address.toString(),
+          creatorWallet.ergoTree,
+          implementerWallet.ergoTree,
+          creatorWallet.ergoTree,
           1,
           serviceFeePercent,
           undefined,
@@ -346,7 +348,7 @@ describe('ActiveRaffle', () => {
           100_000n,
         );
         const ticketOutputBox = boxFactory.createTicketOutputBox(
-          donatorWallet.address.toString(),
+          donatorWallet.ergoTree,
           14n,
           testUtils.TICKET_TOKEN_ID,
           // put extra range to the output ticket box
@@ -357,7 +359,7 @@ describe('ActiveRaffle', () => {
           .from([activeRaffleBoxForDonate, ...donatorWallet.utxos])
           .to([activeRaffleOutputBox, ticketOutputBox])
           .payFee(testUtils.FEE)
-          .sendChangeTo(donatorWallet.address.toString())
+          .sendChangeTo(donatorWallet.ergoTree)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -384,9 +386,9 @@ describe('ActiveRaffle', () => {
       }) => {
         const serviceFeePercent = 200n;
         const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
-          creatorWallet.address.toString(),
-          implementerWallet.address.toString(),
-          creatorWallet.address.toString(),
+          creatorWallet.ergoTree,
+          implementerWallet.ergoTree,
+          creatorWallet.ergoTree,
           1,
           serviceFeePercent,
           {
@@ -401,7 +403,7 @@ describe('ActiveRaffle', () => {
           1000n,
         );
         const ticketOutputBox = boxFactory.createTicketOutputBox(
-          donatorWallet.address.toString(),
+          donatorWallet.ergoTree,
           14n,
           testUtils.TICKET_TOKEN_ID,
           // put extra range to the output ticket box
@@ -412,7 +414,7 @@ describe('ActiveRaffle', () => {
           .from([activeRaffleBoxForDonate, ...donatorWallet.utxos])
           .to([activeRaffleOutputBox, ticketOutputBox])
           .payFee(testUtils.FEE)
-          .sendChangeTo(donatorWallet.address.toString())
+          .sendChangeTo(donatorWallet.ergoTree)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -439,9 +441,9 @@ describe('ActiveRaffle', () => {
       }) => {
         const serviceFeePercent = 200n;
         const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
-          creatorWallet.address.toString(),
-          implementerWallet.address.toString(),
-          creatorWallet.address.toString(),
+          creatorWallet.ergoTree,
+          implementerWallet.ergoTree,
+          creatorWallet.ergoTree,
           1,
           serviceFeePercent,
           undefined,
@@ -457,7 +459,7 @@ describe('ActiveRaffle', () => {
           100_000n,
         );
         const ticketOutputBox = boxFactory.createTicketOutputBox(
-          donatorWallet.address.toString(),
+          donatorWallet.ergoTree,
           1n,
           testUtils.TICKET_TOKEN_ID,
           [0n, 1n, 100_000n], // from-ticket-range, to-ticket-range, ticket-price
@@ -467,7 +469,7 @@ describe('ActiveRaffle', () => {
           .from([activeRaffleBoxForDonate, ...donatorWallet.utxos])
           .to([activeRaffleOutputBox, ticketOutputBox])
           .payFee(testUtils.FEE)
-          .sendChangeTo(donatorWallet.address.toString())
+          .sendChangeTo(donatorWallet.ergoTree)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -493,9 +495,9 @@ describe('ActiveRaffle', () => {
       }) => {
         const serviceFeePercent = 200n;
         const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
-          creatorWallet.address.toString(),
+          creatorWallet.ergoTree,
           'invalid implementer address',
-          creatorWallet.address.toString(),
+          creatorWallet.ergoTree,
           1,
           serviceFeePercent,
           undefined,
@@ -511,7 +513,7 @@ describe('ActiveRaffle', () => {
           100_000n,
         );
         const ticketOutputBox = boxFactory.createTicketOutputBox(
-          donatorWallet.address.toString(),
+          donatorWallet.ergoTree,
           1n,
           testUtils.TICKET_TOKEN_ID,
           [0n, 1n, 100_000n], // from-ticket-range, to-ticket-range, ticket-price
@@ -521,7 +523,7 @@ describe('ActiveRaffle', () => {
           .from([activeRaffleBoxForDonate, ...donatorWallet.utxos])
           .to([activeRaffleOutputBox, ticketOutputBox])
           .payFee(testUtils.FEE)
-          .sendChangeTo(donatorWallet.address.toString())
+          .sendChangeTo(donatorWallet.ergoTree)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -556,9 +558,9 @@ describe('ActiveRaffle', () => {
         });
         const serviceFeePercent = 200n;
         const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
-          creatorWallet.address.toString(),
-          implementerWallet.address.toString(),
-          creatorWallet.address.toString(),
+          creatorWallet.ergoTree,
+          implementerWallet.ergoTree,
+          creatorWallet.ergoTree,
           1,
           serviceFeePercent,
           undefined,
@@ -575,7 +577,7 @@ describe('ActiveRaffle', () => {
           100_000n,
         );
         const ticketOutputBox = boxFactory.createTicketOutputBox(
-          donatorWallet.address.toString(),
+          donatorWallet.ergoTree,
           1n,
           testUtils.TICKET_TOKEN_ID,
           [0n, 1n, 100_000n], // from-ticket-range, to-ticket-range, ticket-price
@@ -585,7 +587,7 @@ describe('ActiveRaffle', () => {
           .from([activeRaffleBoxForDonate, ...donatorWallet.utxos])
           .to([activeRaffleOutputBox, ticketOutputBox])
           .payFee(testUtils.FEE)
-          .sendChangeTo(donatorWallet.address.toString())
+          .sendChangeTo(donatorWallet.ergoTree)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -612,9 +614,9 @@ describe('ActiveRaffle', () => {
       }) => {
         const serviceFeePercent = 200n;
         const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
-          creatorWallet.address.toString(),
-          implementerWallet.address.toString(),
-          creatorWallet.address.toString(),
+          creatorWallet.ergoTree,
+          implementerWallet.ergoTree,
+          creatorWallet.ergoTree,
           1,
           serviceFeePercent,
           {
@@ -631,7 +633,7 @@ describe('ActiveRaffle', () => {
           1000n,
         );
         const ticketOutputBox = boxFactory.createTicketOutputBox(
-          donatorWallet.address.toString(),
+          donatorWallet.ergoTree,
           2n,
           testUtils.TICKET_TOKEN_ID,
           [0n, 2n, 10n], // from-ticket-range, to-ticket-range, ticket-price
@@ -641,7 +643,7 @@ describe('ActiveRaffle', () => {
           .from([activeRaffleBoxForDonate, ...donatorWallet.utxos])
           .to([activeRaffleOutputBox, ticketOutputBox])
           .payFee(testUtils.FEE)
-          .sendChangeTo(donatorWallet.address.toString())
+          .sendChangeTo(donatorWallet.ergoTree)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -668,9 +670,9 @@ describe('ActiveRaffle', () => {
       }) => {
         const serviceFeePercent = 200n;
         const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
-          creatorWallet.address.toString(),
-          implementerWallet.address.toString(),
-          creatorWallet.address.toString(),
+          creatorWallet.ergoTree,
+          implementerWallet.ergoTree,
+          creatorWallet.ergoTree,
           1,
           serviceFeePercent,
           undefined,
@@ -692,7 +694,7 @@ describe('ActiveRaffle', () => {
           100_000n,
         );
         const ticketOutputBox = boxFactory.createTicketOutputBox(
-          donatorWallet.address.toString(),
+          donatorWallet.ergoTree,
           1n,
           testUtils.TICKET_TOKEN_ID,
           [0n, 1n, 100_000n], // from-ticket-range, to-ticket-range, ticket-price
@@ -702,7 +704,7 @@ describe('ActiveRaffle', () => {
           .from([activeRaffleBoxForDonate, ...donatorWallet.utxos])
           .to([activeRaffleOutputBox, ticketOutputBox])
           .payFee(testUtils.FEE)
-          .sendChangeTo(donatorWallet.address.toString())
+          .sendChangeTo(donatorWallet.ergoTree)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -729,9 +731,9 @@ describe('ActiveRaffle', () => {
       }) => {
         const serviceFeePercent = 200n;
         const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
-          creatorWallet.address.toString(),
-          implementerWallet.address.toString(),
-          creatorWallet.address.toString(),
+          creatorWallet.ergoTree,
+          implementerWallet.ergoTree,
+          creatorWallet.ergoTree,
           1,
           serviceFeePercent,
           undefined,
@@ -747,7 +749,7 @@ describe('ActiveRaffle', () => {
           100_000n,
         );
         const ticketOutputBox = boxFactory.createTicketOutputBox(
-          donatorWallet.address.toString(),
+          donatorWallet.ergoTree,
           1n,
           // put invalid ticket token id
           testUtils.X_TOKEN_ID,
@@ -758,7 +760,7 @@ describe('ActiveRaffle', () => {
           .from([activeRaffleBoxForDonate, ...donatorWallet.utxos])
           .to([activeRaffleOutputBox, ticketOutputBox])
           .payFee(testUtils.FEE)
-          .sendChangeTo(donatorWallet.address.toString())
+          .sendChangeTo(donatorWallet.ergoTree)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -785,9 +787,9 @@ describe('ActiveRaffle', () => {
       }) => {
         const serviceFeePercent = 200n;
         const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
-          creatorWallet.address.toString(),
-          implementerWallet.address.toString(),
-          creatorWallet.address.toString(),
+          creatorWallet.ergoTree,
+          implementerWallet.ergoTree,
+          creatorWallet.ergoTree,
           1,
           serviceFeePercent,
           undefined,
@@ -803,7 +805,7 @@ describe('ActiveRaffle', () => {
           100_000n,
         );
         const ticketOutputBox = boxFactory.createTicketOutputBox(
-          donatorWallet.address.toString(),
+          donatorWallet.ergoTree,
           1n,
           testUtils.TICKET_TOKEN_ID,
           // set invalid tickets range
@@ -814,7 +816,7 @@ describe('ActiveRaffle', () => {
           .from([activeRaffleBoxForDonate, ...donatorWallet.utxos])
           .to([activeRaffleOutputBox, ticketOutputBox])
           .payFee(testUtils.FEE)
-          .sendChangeTo(donatorWallet.address.toString())
+          .sendChangeTo(donatorWallet.ergoTree)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -846,46 +848,37 @@ describe('ActiveRaffle', () => {
         boxFactory.chain.setTip(2001);
 
         const winnersPercent = 200n;
-        const totalRaised = 1_000_000n;
+        const totalRaised = 100_000_000n;
         const totalPrize = (winnersPercent * totalRaised) / 1000n;
         const winnersCount = 1;
-        const totalSoldTickets = 10n;
+        const totalSoldTickets = 1000n;
+        const totalFeePercent = 300n;
 
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-          totalPrize + testUtils.FEE,
+          activeRaffleBoxForSuccessEnd.value -
+            (totalRaised * totalFeePercent) / 1000n -
+            testUtils.FEE * 4n,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           oracleBox.boxId.toString(),
+          blake2b256(Buffer.from(creatorWallet.ergoTree, 'hex')),
           [],
           totalSoldTickets,
           winnersCount,
-          BigInt(totalPrize),
-          BigInt(totalPrize) + 1n,
+          totalPrize,
+          undefined,
           1,
           activeRaffleBoxForSuccessEnd.assets[1].tokenId,
           // plus one token that exists on the Raffle-Details box
           BigInt(activeRaffleBoxForSuccessEnd.assets[1].amount) + 1n,
         );
 
-        const creatorFundBox = testUtils.createChangeBox(
-          [activeRaffleBoxForSuccessEnd, raffleDetailsBox],
-          [successRaffleOutputBox, serviceFeeBox, implementerFeeBox],
-          testUtils.FEE,
-          creatorWallet.address.toString(),
-        );
-
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([activeRaffleBoxForSuccessEnd, raffleDetailsBox])
-          .to([
-            successRaffleOutputBox,
-            creatorFundBox,
-            serviceFeeBox,
-            implementerFeeBox,
-          ])
+          .to([successRaffleOutputBox, serviceFeeBox, implementerFeeBox])
           .withDataFrom([oracleBox])
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
           })
-          .sendChangeTo(creatorWallet.address.toString())
           .payFee(testUtils.FEE)
           .build();
 
@@ -917,18 +910,21 @@ describe('ActiveRaffle', () => {
         boxFactory.chain.setTip(2001);
 
         const winnersCount = 1;
-        const totalSoldTickets = 10n;
-        const totalPrize = 20n;
+        const totalSoldTickets = 1000n;
+        const totalPrize = 2000n;
+        const remainingFund = 7000n;
 
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-          testUtils.FEE,
+          BigInt(activeRaffleBoxForSuccessEnd.value.toString()) -
+            testUtils.FEE * 4n,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           oracleBox.boxId.toString(),
+          blake2b256(Buffer.from(creatorWallet.ergoTree, 'hex')),
           [],
           totalSoldTickets,
           winnersCount,
-          BigInt(totalPrize),
-          BigInt(totalPrize) + 1n,
+          totalPrize,
+          remainingFund + 1n,
           1,
           activeRaffleBoxForSuccessEnd.assets[1].tokenId,
           // plus one token that exists on the Raffle-Details box
@@ -936,26 +932,13 @@ describe('ActiveRaffle', () => {
           testUtils.X_TOKEN_ID,
         );
 
-        const creatorFundBox = testUtils.createChangeBox(
-          [activeRaffleBoxForSuccessEnd, raffleDetailsBox],
-          [successRaffleOutputBox, serviceFeeBox, implementerFeeBox],
-          testUtils.FEE,
-          creatorWallet.address.toString(),
-        );
-
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([activeRaffleBoxForSuccessEnd, raffleDetailsBox])
-          .to([
-            successRaffleOutputBox,
-            creatorFundBox,
-            serviceFeeBox,
-            implementerFeeBox,
-          ])
+          .to([successRaffleOutputBox, serviceFeeBox, implementerFeeBox])
           .withDataFrom([oracleBox])
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
           })
-          .sendChangeTo(creatorWallet.address.toString())
           .payFee(testUtils.FEE)
           .build();
 
@@ -985,8 +968,9 @@ describe('ActiveRaffle', () => {
       }) => {
         boxFactory.chain.setTip(2001);
         const winnersPercent = 200n;
-        const totalRaised = 1_000_000n;
+        const totalRaised = 100_000_000n;
         const totalPrize = (winnersPercent * totalRaised) / 1000n;
+        const totalFeePercent = 300n;
 
         const oracleBox = boxFactory.createMockedOracleUTxO(
           testUtils.FEE,
@@ -994,43 +978,33 @@ describe('ActiveRaffle', () => {
           testUtils.X_TOKEN_ID,
         );
         const winnersCount = 1;
-        const totalSoldTickets = 10n;
+        const totalSoldTickets = 1000n;
 
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-          totalPrize + testUtils.FEE,
+          activeRaffleBoxForSuccessEnd.value -
+            (totalRaised * totalFeePercent) / 1000n -
+            testUtils.FEE * 4n,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           oracleBox.boxId.toString(),
+          blake2b256(Buffer.from(creatorWallet.ergoTree, 'hex')),
           [],
           totalSoldTickets,
           winnersCount,
-          BigInt(totalPrize),
-          BigInt(totalPrize) + 1n,
+          totalPrize,
+          undefined,
           1,
           activeRaffleBoxForSuccessEnd.assets[1].tokenId,
           // plus one token that exists on the Raffle-Details box
           BigInt(activeRaffleBoxForSuccessEnd.assets[1].amount) + 1n,
         );
 
-        const creatorFundBox = testUtils.createChangeBox(
-          [activeRaffleBoxForSuccessEnd, raffleDetailsBox],
-          [successRaffleOutputBox, serviceFeeBox, implementerFeeBox],
-          testUtils.FEE,
-          creatorWallet.address.toString(),
-        );
-
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([activeRaffleBoxForSuccessEnd, raffleDetailsBox])
-          .to([
-            successRaffleOutputBox,
-            creatorFundBox,
-            serviceFeeBox,
-            implementerFeeBox,
-          ])
+          .to([successRaffleOutputBox, serviceFeeBox, implementerFeeBox])
           .withDataFrom([oracleBox])
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
           })
-          .sendChangeTo(creatorWallet.address.toString())
           .payFee(testUtils.FEE)
           .build();
 
@@ -1060,8 +1034,9 @@ describe('ActiveRaffle', () => {
         boxFactory.chain.setTip(2001);
 
         const winnersPercent = 200n;
-        const totalRaised = 1_000_000n;
+        const totalRaised = 100_000_000n;
         const totalPrize = (winnersPercent * totalRaised) / 1000n;
+        const totalFeePercent = 300n;
 
         const oracleBox = boxFactory.createMockedOracleUTxO(
           testUtils.FEE,
@@ -1070,43 +1045,33 @@ describe('ActiveRaffle', () => {
           50,
         );
         const winnersCount = 1;
-        const totalSoldTickets = 10n;
+        const totalSoldTickets = 1000n;
 
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-          totalPrize + testUtils.FEE,
+          activeRaffleBoxForSuccessEnd.value -
+            (totalRaised * totalFeePercent) / 1000n -
+            testUtils.FEE * 4n,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           oracleBox.boxId.toString(),
+          blake2b256(Buffer.from(creatorWallet.ergoTree, 'hex')),
           [],
           totalSoldTickets,
           winnersCount,
-          BigInt(totalPrize),
-          BigInt(totalPrize) + 1n,
+          totalPrize,
+          undefined,
           1,
           activeRaffleBoxForSuccessEnd.assets[1].tokenId,
           // plus one token that exists on the Raffle-Details box
           BigInt(activeRaffleBoxForSuccessEnd.assets[1].amount) + 1n,
         );
 
-        const creatorFundBox = testUtils.createChangeBox(
-          [activeRaffleBoxForSuccessEnd, raffleDetailsBox],
-          [successRaffleOutputBox, serviceFeeBox, implementerFeeBox],
-          testUtils.FEE,
-          creatorWallet.address.toString(),
-        );
-
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([activeRaffleBoxForSuccessEnd, raffleDetailsBox])
-          .to([
-            successRaffleOutputBox,
-            creatorFundBox,
-            serviceFeeBox,
-            implementerFeeBox,
-          ])
+          .to([successRaffleOutputBox, serviceFeeBox, implementerFeeBox])
           .withDataFrom([oracleBox])
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
           })
-          .sendChangeTo(creatorWallet.address.toString())
           .payFee(testUtils.FEE)
           .build();
 
@@ -1138,20 +1103,24 @@ describe('ActiveRaffle', () => {
         boxFactory.chain.setTip(2001);
 
         const winnersPercent = 200n;
-        const totalRaised = 1_000_000n;
+        const totalRaised = 100_000_000n;
         const totalPrize = (winnersPercent * totalRaised) / 1000n;
         const winnersCount = 1;
-        const totalSoldTickets = 10n;
+        const totalSoldTickets = 1000n;
+        const totalFeePercent = 300n;
 
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-          totalPrize + testUtils.FEE,
+          activeRaffleBoxForSuccessEnd.value -
+            (totalRaised * totalFeePercent) / 1000n -
+            testUtils.FEE * 4n,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           oracleBox.boxId.toString(),
+          blake2b256(Buffer.from(creatorWallet.ergoTree, 'hex')),
           [],
           totalSoldTickets,
           winnersCount,
-          BigInt(totalPrize),
-          BigInt(totalPrize) + 1n,
+          totalPrize,
+          undefined,
           1,
           activeRaffleBoxForSuccessEnd.assets[1].tokenId,
           // plus one token that exists on the Raffle-Details box
@@ -1166,25 +1135,13 @@ describe('ActiveRaffle', () => {
           ],
         );
 
-        const creatorFundBox = testUtils.createChangeBox(
-          [activeRaffleBoxForSuccessEnd, raffleDetailsBox],
-          [successRaffleOutputBox, serviceFeeBox, implementerFeeBox],
-          testUtils.FEE,
-          creatorWallet.address.toString(),
-        );
-
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([
             activeRaffleBoxForSuccessEnd,
             raffleDetailsBox,
             ...someoneWallet.utxos,
           ])
-          .to([
-            successRaffleOutputBox,
-            creatorFundBox,
-            serviceFeeBox,
-            implementerFeeBox,
-          ])
+          .to([successRaffleOutputBox, serviceFeeBox, implementerFeeBox])
           .withDataFrom([oracleBox])
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
@@ -1220,47 +1177,38 @@ describe('ActiveRaffle', () => {
         boxFactory.chain.setTip(2001);
 
         const winnersPercent = 200n;
-        const totalRaised = 1_000_000n;
+        const totalRaised = 100_000_000n;
         const totalPrize = (winnersPercent * totalRaised) / 1000n;
         const winnersCount = 1;
-        const totalSoldTickets = 10n;
+        const totalSoldTickets = 1000n;
+        const totalFeePercent = 300n;
 
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-          totalPrize + testUtils.FEE,
+          activeRaffleBoxForSuccessEnd.value -
+            (totalRaised * totalFeePercent) / 1000n -
+            testUtils.FEE * 4n,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           oracleBox.boxId.toString(),
+          blake2b256(Buffer.from(creatorWallet.ergoTree, 'hex')),
           [],
           totalSoldTickets,
           winnersCount,
           // set invalid totalPrize
           totalPrize - 1n,
-          BigInt(totalPrize) + 1n,
+          undefined,
           1,
           activeRaffleBoxForSuccessEnd.assets[1].tokenId,
           // plus one token that exists on the Raffle-Details box
           BigInt(activeRaffleBoxForSuccessEnd.assets[1].amount) + 1n,
         );
 
-        const creatorFundBox = testUtils.createChangeBox(
-          [activeRaffleBoxForSuccessEnd, raffleDetailsBox],
-          [successRaffleOutputBox, serviceFeeBox, implementerFeeBox],
-          testUtils.FEE,
-          creatorWallet.address.toString(),
-        );
-
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([activeRaffleBoxForSuccessEnd, raffleDetailsBox])
-          .to([
-            successRaffleOutputBox,
-            creatorFundBox,
-            serviceFeeBox,
-            implementerFeeBox,
-          ])
+          .to([successRaffleOutputBox, serviceFeeBox, implementerFeeBox])
           .withDataFrom([oracleBox])
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
           })
-          .sendChangeTo(creatorWallet.address.toString())
           .payFee(testUtils.FEE)
           .build();
 
@@ -1283,7 +1231,6 @@ describe('ActiveRaffle', () => {
         boxFactory,
         creatorWallet,
         implementerWallet,
-        someoneWallet,
         raffleDetailsBox,
         oracleBox,
         activeRaffleBoxForSuccessEnd,
@@ -1291,64 +1238,56 @@ describe('ActiveRaffle', () => {
         boxFactory.chain.setTip(2001);
 
         const winnersPercent = 200n;
-        const totalRaised = 1_000_000n;
+        const totalRaised = 100_000_000n;
         const totalPrize = (winnersPercent * totalRaised) / 1000n;
 
         const winnersCount = 1;
-        const totalSoldTickets = 10n;
+        const totalSoldTickets = 1000n;
         // set invalid percents on the output fee boxes
         const invalidServiceFeePercent = 250n;
         const invalidImplementerFeePercent = 50n;
+        const totalFeePercent =
+          invalidImplementerFeePercent + invalidServiceFeePercent;
 
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-          totalPrize + testUtils.FEE,
+          activeRaffleBoxForSuccessEnd.value -
+            (totalRaised * totalFeePercent) / 1000n -
+            testUtils.FEE * 4n,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           oracleBox.boxId.toString(),
+          blake2b256(Buffer.from(creatorWallet.ergoTree, 'hex')),
           [],
           totalSoldTickets,
           winnersCount,
-          BigInt(totalPrize),
-          BigInt(totalPrize) + 1n,
+          totalPrize,
+          undefined,
           1,
           activeRaffleBoxForSuccessEnd.assets[1].tokenId,
           // plus one token that exists on the Raffle-Details box
           BigInt(activeRaffleBoxForSuccessEnd.assets[1].amount) + 1n,
         );
 
-        const serviceFeeBox = boxFactory.createCustomOutputBox(
+        const serviceFeeBox = boxFactory.createSafePayOutputBox(
           BigInt((totalRaised * invalidServiceFeePercent) / 1000n) +
-            testUtils.FEE,
+            testUtils.FEE * 2n,
           [],
-          someoneWallet.address.toString(),
+          blake2b256(Buffer.from(creatorWallet.ergoTree, 'hex')),
         );
 
-        const implementerFeeBox = boxFactory.createCustomOutputBox(
+        const implementerFeeBox = boxFactory.createSafePayOutputBox(
           BigInt((totalRaised * invalidImplementerFeePercent) / 1000n) +
-            testUtils.FEE,
+            testUtils.FEE * 2n,
           [],
-          implementerWallet.address.toString(),
-        );
-
-        const creatorFundBox = testUtils.createChangeBox(
-          [activeRaffleBoxForSuccessEnd, raffleDetailsBox],
-          [successRaffleOutputBox, serviceFeeBox, implementerFeeBox],
-          testUtils.FEE,
-          creatorWallet.address.toString(),
+          blake2b256(Buffer.from(implementerWallet.ergoTree, 'hex')),
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([activeRaffleBoxForSuccessEnd, raffleDetailsBox])
-          .to([
-            successRaffleOutputBox,
-            creatorFundBox,
-            serviceFeeBox,
-            implementerFeeBox,
-          ])
+          .to([successRaffleOutputBox, serviceFeeBox, implementerFeeBox])
           .withDataFrom([oracleBox])
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
           })
-          .sendChangeTo(creatorWallet.address.toString())
           .payFee(testUtils.FEE)
           .build();
 
@@ -1371,7 +1310,6 @@ describe('ActiveRaffle', () => {
         boxFactory,
         creatorWallet,
         implementerWallet,
-        someoneWallet,
         raffleDetailsBox,
         oracleBox,
         activeRaffleBoxForSuccessEnd,
@@ -1379,44 +1317,47 @@ describe('ActiveRaffle', () => {
         boxFactory.chain.setTip(2001);
 
         const winnersCount = 1;
-        const totalSoldTickets = 10n;
-        const totalRaised = 100n;
-        const totalPrize = 10n;
+        const totalSoldTickets = 1000n;
+        const totalRaised = 10_000n;
+        const totalPrize = 2000n;
+        const remainingFund = 7000n;
         // set invalid percents on the output fee boxes
         const invalidServiceFeePercent = 250n;
         const invalidImplementerFeePercent = 50n;
 
-        const serviceFeeBox = boxFactory.createCustomOutputBox(
-          testUtils.FEE,
+        const serviceFeeBox = boxFactory.createSafePayOutputBox(
+          2n * testUtils.FEE,
           [
             {
               tokenId: activeRaffleBoxForSuccessEnd.assets[2].tokenId,
               amount: (totalRaised * invalidServiceFeePercent) / 1000n,
             },
           ],
-          someoneWallet.address.toString(),
+          blake2b256(Buffer.from(creatorWallet.ergoTree, 'hex')),
         );
 
-        const implementerFeeBox = boxFactory.createCustomOutputBox(
-          testUtils.FEE,
+        const implementerFeeBox = boxFactory.createSafePayOutputBox(
+          2n * testUtils.FEE,
           [
             {
               tokenId: activeRaffleBoxForSuccessEnd.assets[2].tokenId,
               amount: (totalRaised * invalidImplementerFeePercent) / 1000n,
             },
           ],
-          implementerWallet.address.toString(),
+          blake2b256(Buffer.from(implementerWallet.ergoTree, 'hex')),
         );
 
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-          testUtils.FEE,
+          BigInt(activeRaffleBoxForSuccessEnd.value.toString()) -
+            testUtils.FEE * 4n,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           oracleBox.boxId.toString(),
+          blake2b256(Buffer.from(creatorWallet.ergoTree, 'hex')),
           [],
           totalSoldTickets,
           winnersCount,
-          BigInt(totalPrize),
-          BigInt(totalPrize) + 1n,
+          totalPrize,
+          remainingFund + 1n,
           1,
           activeRaffleBoxForSuccessEnd.assets[1].tokenId,
           // plus one token that exists on the Raffle-Details box
@@ -1424,26 +1365,13 @@ describe('ActiveRaffle', () => {
           testUtils.X_TOKEN_ID,
         );
 
-        const creatorFundBox = testUtils.createChangeBox(
-          [activeRaffleBoxForSuccessEnd, raffleDetailsBox],
-          [successRaffleOutputBox, serviceFeeBox, implementerFeeBox],
-          testUtils.FEE,
-          creatorWallet.address.toString(),
-        );
-
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([activeRaffleBoxForSuccessEnd, raffleDetailsBox])
-          .to([
-            successRaffleOutputBox,
-            creatorFundBox,
-            serviceFeeBox,
-            implementerFeeBox,
-          ])
+          .to([successRaffleOutputBox, serviceFeeBox, implementerFeeBox])
           .withDataFrom([oracleBox])
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
           })
-          .sendChangeTo(creatorWallet.address.toString())
           .payFee(testUtils.FEE)
           .build();
 
@@ -1474,47 +1402,38 @@ describe('ActiveRaffle', () => {
         boxFactory.chain.setTip(2001);
 
         const winnersCount = 1;
-        const totalSoldTickets = 10n;
+        const totalSoldTickets = 1000n;
         const winnersPercent = 200n;
-        const totalRaised = 1_000_000n;
+        const totalRaised = 100_000_000n;
         const totalPrize = (winnersPercent * totalRaised) / 1000n;
+        const totalFeePercent = 300n;
 
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-          totalPrize + testUtils.FEE,
+          activeRaffleBoxForSuccessEnd.value -
+            (totalRaised * totalFeePercent) / 1000n -
+            testUtils.FEE * 4n,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           // set invalid seed
           'invalid seed',
+          blake2b256(Buffer.from(creatorWallet.ergoTree, 'hex')),
           [],
           totalSoldTickets,
           winnersCount,
-          BigInt(totalPrize),
-          BigInt(totalPrize) + 1n,
+          totalPrize,
+          undefined,
           1,
           activeRaffleBoxForSuccessEnd.assets[1].tokenId,
           // plus one token that exists on the Raffle-Details box
           BigInt(activeRaffleBoxForSuccessEnd.assets[1].amount) + 1n,
         );
 
-        const creatorFundBox = testUtils.createChangeBox(
-          [activeRaffleBoxForSuccessEnd, raffleDetailsBox],
-          [successRaffleOutputBox, serviceFeeBox, implementerFeeBox],
-          testUtils.FEE,
-          creatorWallet.address.toString(),
-        );
-
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([activeRaffleBoxForSuccessEnd, raffleDetailsBox])
-          .to([
-            successRaffleOutputBox,
-            creatorFundBox,
-            serviceFeeBox,
-            implementerFeeBox,
-          ])
+          .to([successRaffleOutputBox, serviceFeeBox, implementerFeeBox])
           .withDataFrom([oracleBox])
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
           })
-          .sendChangeTo(creatorWallet.address.toString())
           .payFee(testUtils.FEE)
           .build();
 
@@ -1545,47 +1464,38 @@ describe('ActiveRaffle', () => {
         boxFactory.chain.setTip(2001);
 
         const winnersCount = 1;
-        const totalSoldTickets = 10n;
+        const totalSoldTickets = 1000n;
         const winnersPercent = 200n;
-        const totalRaised = 1_000_000n;
+        const totalRaised = 100_000_000n;
         const totalPrize = (winnersPercent * totalRaised) / 1000n;
+        const totalFeePercent = 300n;
 
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-          totalPrize + testUtils.FEE,
+          activeRaffleBoxForSuccessEnd.value -
+            (totalRaised * totalFeePercent) / 1000n -
+            testUtils.FEE * 4n,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           oracleBox.boxId.toString(),
+          blake2b256(Buffer.from(creatorWallet.ergoTree, 'hex')),
           // set invalid selected winner list
           [0n],
           totalSoldTickets,
           winnersCount,
-          BigInt(totalPrize),
-          BigInt(totalPrize) + 1n,
+          totalPrize,
+          undefined,
           1,
           activeRaffleBoxForSuccessEnd.assets[1].tokenId,
           // plus one token that exists on the Raffle-Details box
           BigInt(activeRaffleBoxForSuccessEnd.assets[1].amount) + 1n,
         );
 
-        const creatorFundBox = testUtils.createChangeBox(
-          [activeRaffleBoxForSuccessEnd, raffleDetailsBox],
-          [successRaffleOutputBox, serviceFeeBox, implementerFeeBox],
-          testUtils.FEE,
-          creatorWallet.address.toString(),
-        );
-
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([activeRaffleBoxForSuccessEnd, raffleDetailsBox])
-          .to([
-            successRaffleOutputBox,
-            creatorFundBox,
-            serviceFeeBox,
-            implementerFeeBox,
-          ])
+          .to([successRaffleOutputBox, serviceFeeBox, implementerFeeBox])
           .withDataFrom([oracleBox])
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
           })
-          .sendChangeTo(creatorWallet.address.toString())
           .payFee(testUtils.FEE)
           .build();
 
@@ -1616,20 +1526,24 @@ describe('ActiveRaffle', () => {
         boxFactory.chain.setTip(2001);
 
         const winnersCount = 1;
-        const totalSoldTickets = 10n;
+        const totalSoldTickets = 1000n;
         const winnersPercent = 200n;
-        const totalRaised = 1_000_000n;
+        const totalRaised = 100_000_000n;
         const totalPrize = (winnersPercent * totalRaised) / 1000n;
+        const totalFeePercent = 300n;
 
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-          totalPrize + testUtils.FEE,
+          activeRaffleBoxForSuccessEnd.value -
+            (totalRaised * totalFeePercent) / 1000n -
+            testUtils.FEE * 4n,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           oracleBox.boxId.toString(),
+          blake2b256(Buffer.from(creatorWallet.ergoTree, 'hex')),
           [],
           totalSoldTickets,
           winnersCount,
-          BigInt(totalPrize),
-          BigInt(totalPrize) + 1n,
+          totalPrize,
+          undefined,
           // set invalid step number to the R6
           2,
           activeRaffleBoxForSuccessEnd.assets[1].tokenId,
@@ -1637,26 +1551,13 @@ describe('ActiveRaffle', () => {
           BigInt(activeRaffleBoxForSuccessEnd.assets[1].amount) + 1n,
         );
 
-        const creatorFundBox = testUtils.createChangeBox(
-          [activeRaffleBoxForSuccessEnd, raffleDetailsBox],
-          [successRaffleOutputBox, serviceFeeBox, implementerFeeBox],
-          testUtils.FEE,
-          creatorWallet.address.toString(),
-        );
-
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([activeRaffleBoxForSuccessEnd, raffleDetailsBox])
-          .to([
-            successRaffleOutputBox,
-            creatorFundBox,
-            serviceFeeBox,
-            implementerFeeBox,
-          ])
+          .to([successRaffleOutputBox, serviceFeeBox, implementerFeeBox])
           .withDataFrom([oracleBox])
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
           })
-          .sendChangeTo(creatorWallet.address.toString())
           .payFee(testUtils.FEE)
           .build();
 

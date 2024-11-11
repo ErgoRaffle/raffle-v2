@@ -19,6 +19,7 @@ export const scriptList = [
   'giftTokenRepo',
   'ticketRedeem',
   'raffleDetails',
+  'safePay',
 ];
 
 export const scriptsRequireAddresses: {
@@ -38,6 +39,7 @@ export const scriptsRequireAddresses: {
     successRaffle: 'SUCCESS_RAFFLE_SCRIPT_HASH_B64',
     giftRedeem: 'GIFT_REDEEM_SCRIPT_HASH_B64',
     ticket: 'TICKET_SCRIPT_HASH_B64',
+    safePay: 'SAFE_PAY_SCRIPT_HASH_B64',
   },
   winner: {
     gift: 'GIFT_SCRIPT_HASH_B64',
@@ -46,7 +48,9 @@ export const scriptsRequireAddresses: {
     giftRedeem: 'GIFT_REDEEM_SCRIPT_HASH_B64',
   },
   ticket: {},
-  successRaffle: {},
+  successRaffle: {
+    safePay: 'SAFE_PAY_SCRIPT_HASH_B64',
+  },
   winnerPrize: {},
   gift: {},
   giftRedeem: {},
@@ -55,6 +59,7 @@ export const scriptsRequireAddresses: {
   raffleDetails: {
     activeRaffle: 'ACTIVE_RAFFLE_SCRIPT_HASH_B64',
   },
+  safePay: {},
 };
 
 export const defaultScriptsVariables: {
@@ -93,4 +98,5 @@ export const defaultBuildVariables = {
     ServiceNft: '',
     RaffleLicense: '',
   },
+  safePay: {},
 };

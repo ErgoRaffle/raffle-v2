@@ -1,6 +1,7 @@
 import { it, describe, expect } from 'vitest';
 import { SConstant } from '@fleet-sdk/serializer';
 import { TransactionBuilder, Box } from '@fleet-sdk/core';
+import { blake2b256 } from '@fleet-sdk/crypto';
 
 import * as testUtils from '../testUtils';
 import {
@@ -48,6 +49,7 @@ const createWinnerTest = (winnersCount: number = 1) => {
   const successRaffleBox = boxFactory.createSuccessRaffleBoxMock(
     testUtils.CREATION_FEE + 4n * testUtils.FEE,
     testUtils.LICENSE_TOKEN_ID,
+    blake2b256(Buffer.from(creator.ergoTree, 'hex')),
     '0123456789012345',
     [],
     0n,
@@ -636,7 +638,7 @@ describe('winner', () => {
      */
     winnerTest(
       'should success erg-goal based winner-prize creation',
-      ({ boxFactory, successRaffleBox }) => {
+      ({ boxFactory, successRaffleBox, creator }) => {
         const totalPrize = 60;
 
         const winnerBox = (
@@ -671,7 +673,7 @@ describe('winner', () => {
           1n,
         );
         const prizeBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 2n + BigInt(prizeAmount),
+          testUtils.FEE * 3n + BigInt(prizeAmount),
           1,
           winnerTicketIndex,
           1n,
@@ -683,6 +685,7 @@ describe('winner', () => {
           BigInt(successRaffleBox.value) - BigInt(prizeAmount),
           testUtils.LICENSE_TOKEN_ID,
           'test seed',
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           [winnerTicketIndex],
           0n,
           1,
@@ -720,11 +723,12 @@ describe('winner', () => {
      */
     winnerTest(
       'should success token-goal based winner-prize creation',
-      ({ boxFactory }) => {
+      ({ boxFactory, creator }) => {
         const totalPrize = 60;
         const successRaffleBox = boxFactory.createSuccessRaffleBoxMock(
           testUtils.CREATION_FEE + 4n * testUtils.FEE,
           testUtils.LICENSE_TOKEN_ID,
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           '0123456789012345',
           [],
           0n,
@@ -784,7 +788,7 @@ describe('winner', () => {
           1n,
         );
         const prizeBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 2n,
+          testUtils.FEE * 3n,
           1,
           winnerTicketIndex,
           1n,
@@ -796,6 +800,7 @@ describe('winner', () => {
           BigInt(successRaffleBox.value),
           testUtils.LICENSE_TOKEN_ID,
           'test seed',
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           [winnerTicketIndex],
           0n,
           1,
@@ -834,7 +839,7 @@ describe('winner', () => {
      */
     winnerTest(
       'should fail when incorrect prize amount puts on the erg-goal prize box',
-      ({ boxFactory, successRaffleBox }) => {
+      ({ boxFactory, successRaffleBox, creator }) => {
         const totalPrize = 60;
         const winnerBox = (
           boxFactory.createWinnersBoxMock(
@@ -869,7 +874,7 @@ describe('winner', () => {
           1n,
         );
         const prizeBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 2n + BigInt(incorrectPrizeAmount),
+          testUtils.FEE * 3n + BigInt(incorrectPrizeAmount),
           1,
           winnerTicketIndex,
           1n,
@@ -881,6 +886,7 @@ describe('winner', () => {
           BigInt(successRaffleBox.value) - BigInt(incorrectPrizeAmount),
           testUtils.LICENSE_TOKEN_ID,
           'test seed',
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           [winnerTicketIndex],
           0n,
           1,
@@ -919,11 +925,12 @@ describe('winner', () => {
      */
     winnerTest(
       'should fail when incorrect prize amount puts on the token-goal prize box',
-      ({ boxFactory, someoneWallet }) => {
+      ({ boxFactory, someoneWallet, creator }) => {
         const totalPrize = 60;
         const successRaffleBox = boxFactory.createSuccessRaffleBoxMock(
           testUtils.CREATION_FEE + 4n * testUtils.FEE,
           testUtils.LICENSE_TOKEN_ID,
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           '0123456789012345',
           [],
           0n,
@@ -984,7 +991,7 @@ describe('winner', () => {
           1n,
         );
         const prizeBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 2n,
+          testUtils.FEE * 3n,
           1,
           winnerTicketIndex,
           1n,
@@ -996,6 +1003,7 @@ describe('winner', () => {
           BigInt(successRaffleBox.value),
           testUtils.LICENSE_TOKEN_ID,
           'test seed',
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           [winnerTicketIndex],
           0n,
           1,
@@ -1035,7 +1043,7 @@ describe('winner', () => {
      */
     winnerTest(
       "should fails when the total assets aren't transferred from the winner's box to the prize box",
-      ({ boxFactory, successRaffleBox }) => {
+      ({ boxFactory, successRaffleBox, creator }) => {
         const totalPrize = 60;
 
         const winnerBox = (
@@ -1077,7 +1085,7 @@ describe('winner', () => {
           1n,
         );
         const prizeBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 2n + BigInt(prizeAmount),
+          testUtils.FEE * 3n + BigInt(prizeAmount),
           1,
           winnerTicketIndex,
           1n,
@@ -1089,6 +1097,7 @@ describe('winner', () => {
           BigInt(successRaffleBox.value) - BigInt(prizeAmount),
           testUtils.LICENSE_TOKEN_ID,
           'test seed',
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           [winnerTicketIndex],
           0n,
           1,
@@ -1132,7 +1141,7 @@ describe('winner', () => {
      */
     winnerTest(
       'should fail when an invalid winner box index is placed in the prize box',
-      ({ boxFactory, successRaffleBox }) => {
+      ({ boxFactory, successRaffleBox, creator }) => {
         const totalPrize = 60;
 
         const winnerBox = (
@@ -1167,7 +1176,7 @@ describe('winner', () => {
           1n,
         );
         const prizeBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 2n + BigInt(prizeAmount),
+          testUtils.FEE * 3n + BigInt(prizeAmount),
           0, // put invalid winner-index
           winnerTicketIndex,
           1n,
@@ -1179,6 +1188,7 @@ describe('winner', () => {
           BigInt(successRaffleBox.value) - BigInt(prizeAmount),
           testUtils.LICENSE_TOKEN_ID,
           'test seed',
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           [winnerTicketIndex],
           0n,
           1,
@@ -1217,7 +1227,7 @@ describe('winner', () => {
      */
     winnerTest(
       'should fail when an invalid token is placed in the successRaffle box',
-      ({ boxFactory, someoneWallet, successRaffleBox }) => {
+      ({ boxFactory, someoneWallet, successRaffleBox, creator }) => {
         const totalPrize = 60;
         const winnerBox = (
           boxFactory.createWinnersBoxMock(
@@ -1251,7 +1261,7 @@ describe('winner', () => {
           1n,
         );
         const prizeBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 2n + BigInt(prizeAmount),
+          testUtils.FEE * 3n + BigInt(prizeAmount),
           1,
           winnerTicketIndex,
           1n,
@@ -1263,6 +1273,7 @@ describe('winner', () => {
           BigInt(successRaffleBox.value) - BigInt(prizeAmount),
           testUtils.LICENSE_TOKEN_ID,
           'test seed',
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           [winnerTicketIndex],
           0n,
           1,
@@ -1303,7 +1314,7 @@ describe('winner', () => {
      */
     winnerTest(
       'should fails when two duplicate winner boxes are used as input',
-      ({ boxFactory, someoneWallet, successRaffleBox }) => {
+      ({ boxFactory, someoneWallet, successRaffleBox, creator }) => {
         const totalPrize = 60;
         const inputWinnerBoxes = boxFactory.createWinnersBoxMock(
           2,
@@ -1337,7 +1348,7 @@ describe('winner', () => {
           1n,
         );
         const prizeBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 2n + BigInt(prizeAmount),
+          testUtils.FEE * 3n + BigInt(prizeAmount),
           1,
           winnerTicketIndex,
           1n,
@@ -1349,6 +1360,7 @@ describe('winner', () => {
           BigInt(successRaffleBox.value) - BigInt(prizeAmount),
           testUtils.LICENSE_TOKEN_ID,
           'test seed',
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           [winnerTicketIndex],
           0n,
           1,
@@ -1436,11 +1448,11 @@ describe('winner', () => {
 
         const giftGiverAddress = Buffer.from(
           SConstant.from(gift.additionalRegisters.R4!).data as Uint8Array,
-        ).toString();
-        const redeemedGift = boxFactory.createCustomOutputBox(
+        ).toString('hex');
+        const redeemedGift = boxFactory.createSafePayOutputBox(
           BigInt(gift.value.toString()) - testUtils.FEE,
           gift.assets.slice(1),
-          giftGiverAddress,
+          blake2b256(Buffer.from(giftGiverAddress, 'hex')),
         );
         const giftReturnTx = new TransactionBuilder(boxFactory.chain.height)
           .from([winner, gift])
@@ -1516,11 +1528,11 @@ describe('winner', () => {
 
         const giftGiverAddress = Buffer.from(
           SConstant.from(gift.additionalRegisters.R4!).data as Uint8Array,
-        ).toString();
-        const redeemedGift = boxFactory.createCustomOutputBox(
+        ).toString('hex');
+        const redeemedGift = boxFactory.createSafePayOutputBox(
           BigInt(gift.value.toString()) - testUtils.FEE,
           gift.assets.slice(1),
-          giftGiverAddress,
+          blake2b256(Buffer.from(giftGiverAddress, 'hex')),
         );
         const giftReturnTx = new TransactionBuilder(boxFactory.chain.height)
           .from([winner, gift])
@@ -1598,11 +1610,11 @@ describe('winner', () => {
 
         const giftGiverAddress = Buffer.from(
           SConstant.from(gift.additionalRegisters.R4!).data as Uint8Array,
-        ).toString();
-        const redeemedGift = boxFactory.createCustomOutputBox(
+        ).toString('hex');
+        const redeemedGift = boxFactory.createSafePayOutputBox(
           BigInt(gift.value.toString()) - testUtils.FEE,
           gift.assets.slice(1),
-          giftGiverAddress,
+          blake2b256(Buffer.from(giftGiverAddress, 'hex')),
         );
         const giftReturnTx = new TransactionBuilder(boxFactory.chain.height)
           .from([winner, gift])
@@ -1682,11 +1694,11 @@ describe('winner', () => {
 
         const giftGiverAddress = Buffer.from(
           SConstant.from(gift.additionalRegisters.R4!).data as Uint8Array,
-        ).toString();
-        const redeemedGift = boxFactory.createCustomOutputBox(
+        ).toString('hex');
+        const redeemedGift = boxFactory.createSafePayOutputBox(
           BigInt(gift.value.toString()) - testUtils.FEE,
           gift.assets.slice(1),
-          giftGiverAddress,
+          blake2b256(Buffer.from(giftGiverAddress, 'hex')),
         );
         const giftReturnTx = new TransactionBuilder(boxFactory.chain.height)
           .from([winner, gift])
@@ -1765,11 +1777,11 @@ describe('winner', () => {
 
         const giftGiverAddress = Buffer.from(
           SConstant.from(gift.additionalRegisters.R4!).data as Uint8Array,
-        ).toString();
-        const redeemedGift = boxFactory.createCustomOutputBox(
+        ).toString('hex');
+        const redeemedGift = boxFactory.createSafePayOutputBox(
           BigInt(gift.value.toString()) - testUtils.FEE,
           gift.assets.slice(1),
-          giftGiverAddress,
+          blake2b256(Buffer.from(giftGiverAddress, 'hex')),
         );
         const giftReturnTx = new TransactionBuilder(boxFactory.chain.height)
           .from([winner, gift])
@@ -1856,10 +1868,10 @@ describe('winner', () => {
         const giftGiverAddress = Buffer.from(
           SConstant.from(gift1.additionalRegisters.R4!).data as Uint8Array,
         ).toString();
-        const redeemedGift = boxFactory.createCustomOutputBox(
+        const redeemedGift = boxFactory.createSafePayOutputBox(
           BigInt(gift1.value.toString()) + gift2.value - testUtils.FEE,
           [...gift1.assets.slice(1), ...gift2.assets],
-          giftGiverAddress,
+          blake2b256(Buffer.from(giftGiverAddress, 'hex')),
         );
         const giftReturnTx = new TransactionBuilder(boxFactory.chain.height)
           .from([winner, gift1, gift2])

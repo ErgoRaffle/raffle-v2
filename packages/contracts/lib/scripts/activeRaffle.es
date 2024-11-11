@@ -3,7 +3,7 @@
   //
   // Registers:
   //   R4[Coll[Long]]: [WinnersPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, Deadline, txFee]
-  //   R5[Coll[Coll[Byte]]]: [ServiceAddressHash, ImplementerAddressHash, CreatorAddressHash]
+  //   R5[Coll[Coll[Byte]]]: [ServiceAddressHash, ImplementerAddressHash, ProjectAddressHash]
   //   R6[Int]: WinnersCount
   //   R7[Long]: TotalSoldTickets
   // Tokens:
@@ -15,7 +15,7 @@
   //   - Donation
   //      [ActiveRaffle, UserBox] --> [ActiveRaffle, Ticket]
   //   - Successful end
-  //      [ActiveRaffle, RaffleDetail] + [(DataInput)Oracle] --> [SuccessRaffle, ProjectFund, ServiceFee, ImplementerFee]
+  //      [ActiveRaffle, RaffleDetail] + [(DataInput)Oracle] --> [SuccessRaffle, ServiceFee, ImplementerFee]
   //   - Failure end
   //      [ActiveRaffle, RaffleDetail] --> [GiftRedeem]
   // 
@@ -23,6 +23,7 @@
   val successRaffleScriptHash = fromBase64("SUCCESS_RAFFLE_SCRIPT_HASH_B64")
   val giftRedeemScriptHash = fromBase64("GIFT_REDEEM_SCRIPT_HASH_B64")
   val ticketScriptHash = fromBase64("TICKET_SCRIPT_HASH_B64")
+  val safePayScriptHash = fromBase64("SAFE_PAY_SCRIPT_HASH_B64")
 
   val isErgGoal = (SELF.tokens.size == 2)
   val ticketPrice = SELF.R4[Coll[Long]].get(3)
@@ -63,7 +64,7 @@
       // R4: [DonatorAddress]
       // R5: [RangeStart, RangeEnd, TicketPrice]
       blake2b256(ticket.propositionBytes) == ticketScriptHash,
-      ticket.value >= 2 * txFee,
+      ticket.value >= 3 * txFee,
       ticket.tokens(0)._1 == SELF.tokens(1)._1,
       ticket.R5[Coll[Long]].get == Coll[Long](
         totalSoldTickets, 
@@ -73,35 +74,30 @@
     )))
   } else if (totalRaised >= goal) {
     // Successful end
-    // [ActiveRaffle, RaffleDetail] + [(DataInput)Oracle] --> [SuccessRaffle, ProjectFund, ServiceFee, ImplementerFee]
+    // [ActiveRaffle, RaffleDetail] + [(DataInput)Oracle] --> [SuccessRaffle, ServiceFee, ImplementerFee]
     val successRaffle = OUTPUTS(0)
-    val projectFund = OUTPUTS(1)
-    val serviceFee = OUTPUTS(2)
-    val implementerFee = OUTPUTS(3)
+    val serviceFee = OUTPUTS(1)
+    val implementerFee = OUTPUTS(2)
     val oracleBox = CONTEXT.dataInputs(0)
     val winnersPercent = SELF.R4[Coll[Long]].get(0)
     val serviceFeePercent = SELF.R4[Coll[Long]].get(1)
     val implementerFeePercent = SELF.R4[Coll[Long]].get(2)
+    val serviceAddressHash = SELF.R5[Coll[Coll[Byte]]].get(0)
+    val implementorAddressHash = SELF.R5[Coll[Coll[Byte]]].get(1)
+    val projectAddressHash = SELF.R5[Coll[Coll[Byte]]].get(2)
     val splittingRaisedFund = if(isErgGoal) { 
-      successRaffle.value == (totalRaised * winnersPercent) / 1000 + txFee &&
-      serviceFee.value == (totalRaised * serviceFeePercent) / 1000 + txFee &&
-      implementerFee.value == (totalRaised * implementerFeePercent) / 1000 + txFee &&
-      projectFund.value >= 
-        SELF.value - successRaffle.value - serviceFee.value - implementerFee.value
+      serviceFee.value == (totalRaised * serviceFeePercent) / 1000 + 2 * txFee &&
+      implementerFee.value == (totalRaised * implementerFeePercent) / 1000 + 2 * txFee
     } else {
       successRaffle.tokens(2)._1 == SELF.tokens(2)._1 &&
-      projectFund.tokens(0)._1 == SELF.tokens(2)._1 &&
       serviceFee.tokens(0)._1 == SELF.tokens(2)._1 &&
       implementerFee.tokens(0)._1 == SELF.tokens(2)._1 &&
-      successRaffle.tokens(2)._2 == (totalRaised * winnersPercent) / 1000 + 1 &&
       serviceFee.tokens(0)._2 == (totalRaised * serviceFeePercent) / 1000 &&
       implementerFee.tokens(0)._2 == (totalRaised * implementerFeePercent) / 1000 &&
-      projectFund.tokens(0)._2 >= 
-        SELF.tokens(2)._2 - successRaffle.tokens(2)._2 - serviceFee.tokens(0)._2 - implementerFee.tokens(0)._2 &&
-      successRaffle.value == txFee &&
-      projectFund.value == SELF.value - 3 * txFee &&
-      serviceFee.value == txFee &&
-      implementerFee.value == txFee
+      successRaffle.tokens(2)._2 >= 
+        SELF.tokens(2)._2 - serviceFee.tokens(0)._2 - implementerFee.tokens(0)._2 &&
+      serviceFee.value == 2 * txFee &&
+      implementerFee.value == 2 * txFee
     }
     sigmaProp(allOf(Coll(
       // Correct Oracle box
@@ -114,18 +110,29 @@
       // R6: [Seed, SelectedWinnersListHash]
       // R7: Step
       blake2b256(successRaffle.propositionBytes) == successRaffleScriptHash,
+      successRaffle.value >= SELF.value - serviceFee.value - implementerFee.value,
       successRaffle.tokens(0)._1 == SELF.tokens(0)._1,
       successRaffle.tokens(1)._1 == SELF.tokens(1)._1,
       successRaffle.tokens(1)._2 == SELF.tokens(1)._2 + 1,
       successRaffle.tokens.size == SELF.tokens.size,
       successRaffle.R4[Coll[Long]].get == Coll[Long](
         totalRaised * winnersPercent / 1000,
-        totalSoldTickets
+        totalSoldTickets,
+        txFee
       ),
       successRaffle.R5[Int].get == winnersCount,
-      successRaffle.R6[Coll[Coll[Byte]]].get(0) == oracleBox.id,
-      successRaffle.R6[Coll[Coll[Byte]]].get(1) == blake2b256(Coll[Byte]()),
-      successRaffle.R7[Int].get == 1,
+      successRaffle.R6[Coll[Byte]].get == projectAddressHash,
+      successRaffle.R7[Coll[Coll[Byte]]].get(0) == oracleBox.id,
+      successRaffle.R7[Coll[Coll[Byte]]].get(1) == blake2b256(Coll[Byte]()),
+      successRaffle.R8[Int].get == 1,
+
+      // Correct Fee Safe Payments
+      blake2b256(serviceFee.propositionBytes) == safePayScriptHash,
+      serviceFee.R4[Coll[Byte]].get == serviceAddressHash,
+      serviceFee.R5[Long].get == txFee,
+      blake2b256(implementerFee.propositionBytes) == safePayScriptHash,
+      implementerFee.R4[Coll[Byte]].get == implementorAddressHash,
+      implementerFee.R5[Long].get == txFee,
 
       // Transaction constraints
       splittingRaisedFund,

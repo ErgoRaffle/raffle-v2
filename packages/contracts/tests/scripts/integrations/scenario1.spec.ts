@@ -1,4 +1,6 @@
 import { it, describe, expect } from 'vitest';
+import { SConstant } from '@fleet-sdk/serializer';
+import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
 
 import * as testUtils from '../../testUtils';
 import {
@@ -13,8 +15,8 @@ import {
   executeForwardToTicketRedeemTx,
   executeTicketRedeemTx,
   executeReturnRaffleLicenseTx,
+  executeSafeWithdrawTransaction,
 } from './transactions';
-import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
 
 /*
  * create fixtures that contains below steps data:
@@ -25,19 +27,27 @@ import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
  */
 const createRaffleTest = () => {
   const boxFactory = new testUtils.RaffleBoxFactory({ height: 1000 });
-  const { creator, implementer, giftgiver1, giftgiver2, donator1, donator2 } =
-    boxFactory.createPartners({
-      Creator: testUtils.CREATOR_DEFAULT_BALANCE,
-      implementer: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
-      giftGiver1: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
-      giftGiver2: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
-      donator1: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
-      donator2: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
-    });
+  const {
+    owner,
+    creator,
+    implementer,
+    giftgiver1,
+    giftgiver2,
+    donator1,
+    donator2,
+  } = boxFactory.createPartners({
+    owner: testUtils.CREATOR_DEFAULT_BALANCE,
+    Creator: testUtils.CREATOR_DEFAULT_BALANCE,
+    implementer: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    giftGiver1: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    giftGiver2: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    donator1: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    donator2: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
+  });
 
   // Created input service-box
   const serviceBox = boxFactory.createServiceBoxMock(
-    creator.address.toString(),
+    owner.ergoTree,
     testUtils.LICENSE_TOKEN_COUNT,
     105n,
     100n,
@@ -51,7 +61,8 @@ const createRaffleTest = () => {
     boxFactory: boxFactory,
     creator: creator,
     serviceBox: serviceBox,
-    implementerAddress: implementer.address.toString(),
+    implementerErgoTree: implementer.ergoTree,
+    ownerErgoTree: owner.ergoTree,
     giftGiverWallets: giftGiverWallets as KeyedMockChainParty[],
     donatorWallets: donatorWallets as KeyedMockChainParty[],
   });
@@ -84,7 +95,8 @@ describe('Raffle', () => {
         boxFactory,
         creator,
         serviceBox,
-        implementerAddress,
+        implementerErgoTree,
+        ownerErgoTree,
         giftGiverWallets,
         donatorWallets,
       }) => {
@@ -99,7 +111,7 @@ describe('Raffle', () => {
           creator,
           serviceBox,
           creator.utxos.toArray(),
-          implementerAddress,
+          implementerErgoTree,
           winnersCount,
           deadline,
           winnersPercent,
@@ -199,6 +211,18 @@ describe('Raffle', () => {
           );
           expect(giftRedeemTx.success).true;
           winner1 = giftRedeemTx.outputs[0];
+
+          const donatorAddress = Buffer.from(
+            SConstant.from(winner1Gifts[i].additionalRegisters.R4!)
+              .data as Uint8Array,
+          ).toString('hex');
+          const giftSafePayBox = giftRedeemTx.outputs[1];
+          const giftSafeWithdrawTx = executeSafeWithdrawTransaction(
+            giftSafePayBox,
+            donatorAddress,
+            boxFactory,
+          );
+          expect(giftSafeWithdrawTx.success).true;
         }
 
         // Step 8: Winner removal transaction
@@ -229,6 +253,17 @@ describe('Raffle', () => {
           );
           ticketRedeem = ticketRedeemTx.outputs[0];
           expect(ticketRedeemTx.success).true;
+
+          const donatorAddress = Buffer.from(
+            SConstant.from(ticket.additionalRegisters.R4!).data as Uint8Array,
+          ).toString('hex');
+          const donationSafePayBox = ticketRedeemTx.outputs[1];
+          const donationSafeWithdrawTx = executeSafeWithdrawTransaction(
+            donationSafePayBox,
+            donatorAddress,
+            boxFactory,
+          );
+          expect(donationSafeWithdrawTx.success).true;
         }
 
         // Step 11: Return raffle license to service
@@ -237,8 +272,17 @@ describe('Raffle', () => {
           ticketRedeem,
           service,
           boxFactory,
+          ownerErgoTree,
         );
         expect(returnLicenseTx.success).true;
+
+        const serviceFeeSafePayBox = returnLicenseTx.outputs[1];
+        const serviceFeeSafeWithdrawTx = executeSafeWithdrawTransaction(
+          serviceFeeSafePayBox,
+          ownerErgoTree,
+          boxFactory,
+        );
+        expect(serviceFeeSafeWithdrawTx.success).true;
       },
     );
   });
