@@ -129,7 +129,7 @@ program
             'hex',
           ).toString('base64'),
           OWNER_NFT_B64: Buffer.from(
-            rawConfigs['OWNER_NFT'].toString(),
+            tokens['ownerNft'].toString(),
             'hex',
           ).toString('base64'),
           RAFFLE_LICENSE_B64: Buffer.from(
@@ -140,7 +140,7 @@ program
             tokens['oracleTokenId'].toString(),
             'hex',
           ).toString('base64'),
-          GIFT_TOKEN_COUNT: rawConfigs['GIFT_TOKEN_COUNT'],
+          GIFT_TOKEN_COUNT: rawConfigs['giftTokenCount'],
         },
         service: {},
         ticketRepo: {},

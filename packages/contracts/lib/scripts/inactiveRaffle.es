@@ -19,7 +19,7 @@
   val activeRaffleScriptHash = fromBase64("ACTIVE_RAFFLE_SCRIPT_HASH_B64")
   val raffleDetailsScriptHash = fromBase64("RAFFLE_DETAILS_SCRIPT_HASH_B64")
   val winnerScriptHash = fromBase64("WINNER_SCRIPT_HASH_B64")
-  val giftTokenCount = GIFT_TOKEN_COUNT.toLong
+  val giftTokenCount = GIFT_TOKEN_COUNT
 
   val activeRaffle = OUTPUTS(0)
   val raffleDetails = OUTPUTS(1)
