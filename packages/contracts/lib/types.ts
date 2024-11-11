@@ -18,13 +18,11 @@ export type ContextVarsType = Map<
 >;
 
 export interface RaffleContextVarsInterface {
-  OWNER_NFT: string;
-  RAFFLE_LICENSE: string;
-  GIFT_TOKEN_COUNT: number;
-  ORACLE_TOKEN_ID: string;
-  SERVICE_NFT: string;
+  giftTokenCount: string;
   tokens: {
-    ServiceNft: string;
-    RaffleLicense: string;
+    oracleTokenId: string;
+    serviceNft: string;
+    raffleLicense: string;
+    ownerNft: string;
   };
 }
