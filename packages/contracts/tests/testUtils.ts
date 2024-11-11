@@ -1401,6 +1401,33 @@ export class RaffleBoxFactory {
    * @param addressHash
    * @returns
    */
+  createSafePayBoxMock(
+    value: bigint,
+    tokens: TokenAmount<bigint>[],
+    addressHash: Uint8Array,
+  ) {
+    const outputBox = new ErgoUnsignedInput(
+      mockUTxO({
+        value: value,
+        ergoTree: this.contractsAddresses['safePay'],
+        additionalRegisters: {
+          R4: SColl(SByte, Array.from(addressHash)).toHex(),
+          R5: SLong(FEE).toHex(),
+        },
+        assets: tokens,
+      }),
+    );
+
+    return outputBox;
+  }
+
+  /**
+   * Create a safePay output-box
+   * @param value
+   * @param tokens
+   * @param addressHash
+   * @returns
+   */
   createSafePayOutputBox(
     value: bigint,
     tokens: TokenAmount<Amount>[],
