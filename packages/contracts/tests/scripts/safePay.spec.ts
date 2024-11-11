@@ -342,5 +342,36 @@ describe('safePay', () => {
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
       },
     );
+
+    /**
+     * @target should fail if receiver address is different
+     * @scenario
+     * - create safePay output box
+     * - execute transaction
+     * - result of execution must be fail
+     * @expected
+     * - transaction result must throw error
+     */
+    raffleSafePayTestTest(
+      'should fail if receiver address is different',
+      ({ boxFactory, person1Wallet, safePayPureErg }) => {
+        const payOutputBox = boxFactory.createCustomOutputBox(
+          1_000_000_000n - testUtils.FEE,
+          [],
+          person1Wallet.address.toString(),
+        );
+
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
+          .from([safePayPureErg])
+          .to([payOutputBox])
+          .payFee(testUtils.FEE)
+          .configureSelector((selector) => {
+            selector.defineStrategy((inputs) => inputs);
+          })
+          .build();
+
+        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
+      },
+    );
   });
 });
