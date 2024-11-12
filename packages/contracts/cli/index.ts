@@ -110,9 +110,7 @@ program
     let contracts;
 
     try {
-      rawConfigs = JSON.parse(
-        fs.readFileSync(config).toString(),
-      ) as types.RaffleContextVarsInterface as unknown as {
+      rawConfigs = JSON.parse(fs.readFileSync(config).toString()) as {
         [key: string]: string | number | object;
       };
     } catch (err) {
