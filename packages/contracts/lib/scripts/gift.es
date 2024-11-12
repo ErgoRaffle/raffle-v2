@@ -2,7 +2,7 @@
   // ErgoRaffle V2 Gift Contract
   //
   // Registers:
-  //   R4[Coll[Byte]]: [DonatorAddress]
+  //   R4[Coll[Byte]]: [DonatorAddressHash]
   //   R5[Int]: WinnerIndex
   // Tokens:
   //   0: GiftToken

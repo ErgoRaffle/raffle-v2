@@ -141,7 +141,7 @@
       outWinner.R6[Long].get == giftCount + 1,
 
       // Correct Gift format
-      // R4: [DonatorAddress]
+      // R4: [DonatorAddressHash]
       // R5: WinnerIndex
       blake2b256(gift.propositionBytes) == giftScriptHash,
       gift.tokens(0)._1 == SELF.tokens(1)._1,

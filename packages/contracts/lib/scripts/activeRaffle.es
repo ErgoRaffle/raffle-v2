@@ -63,7 +63,7 @@
       depositTicketPrice,
 
       // Correct Ticket format
-      // R4: [DonatorAddress]
+      // R4: [DonatorAddressHash]
       // R5: [RangeStart, RangeEnd, TicketPrice]
       blake2b256(ticket.propositionBytes) == ticketScriptHash,
       ticket.value >= 3 * txFee,
