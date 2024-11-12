@@ -21,29 +21,28 @@ type NamedConstantsMap = {
  * @param contextVars
  * @returns JSON Object
  */
-function mergeContextVarsAndRequiredAddress(contextVars?: ContextVarsType) {
+function mergeContextVarsAndRequiredAddress(
+  contextVars?: Map<string, Map<string, string | bigint | null>>,
+) {
   const finalVars: { [s: string]: { [key: string]: string } } = {};
-  const defaults = (contextVars?.get('defaults') || {}) as {
-    [k: string]: string | bigint | null;
-  };
+  const defaults = contextVars?.get('defaults') || new Map();
   for (const scriptName of constants.scriptList) {
     finalVars[scriptName] = {};
-    const scriptVars =
-      contextVars !== undefined
-        ? contextVars.get(scriptName as ScriptNamesType) || {}
-        : {};
+    const scriptVars = contextVars?.has(scriptName)
+      ? contextVars.get(scriptName) || new Map()
+      : new Map();
 
     // Update values by defaults JSON
-    for (const defaultKey of Object.keys(contextVars?.get('defaults') || {}))
+    for (const defaultKey of contextVars?.get('defaults')?.keys() || []) {
       if (Object.keys(scriptVars).indexOf(defaultKey) < 0)
         finalVars[scriptName][defaultKey] = (
-          defaults[defaultKey] || ''
+          defaults?.get(defaultKey) || ''
         ).toString();
+    }
+
     // Update values by script-name specific config JSON
-    for (const nameAndValue of Object.entries(scriptVars))
-      finalVars[scriptName][nameAndValue[0]] = (
-        nameAndValue[1] || ''
-      ).toString();
+    for (const name of scriptVars.keys())
+      finalVars[scriptName][name] = (scriptVars.get(name) || '').toString();
     // Add only script hash keys by NotSet values
     for (const key of Object.keys(
       constants.scriptsRequireAddresses[scriptName],
@@ -105,21 +104,22 @@ export function compileAll(
 
       const scriptVars =
         compiledDependenciesStatus !== undefined
-          ? compiledDependenciesStatus[scriptName as ScriptNamesType] ||
-            new Map<string, string>()
+          ? compiledDependenciesStatus[scriptName as ScriptNamesType]
           : new Map<string, string>();
       let script: string;
       if (trueScripts.indexOf(scriptName) >= 0) {
         script = `{ sigmaProp(HEIGHT > ${-trueScriptsIndex}) }`;
         trueScriptsIndex += 1;
-      } else
+      } else {
         script = fs.readFileSync(
           path.join(constants.SCRIPT_DIR, `${scriptName}.es`),
           'utf8',
         );
+      }
 
-      for (const nameAndValue of Object.entries(scriptVars))
+      for (const nameAndValue of Object.entries(scriptVars)) {
         script = script.replace(nameAndValue[0], nameAndValue[1]);
+      }
 
       const vars: NamedConstantsMap = {};
       let contract;
@@ -131,7 +131,9 @@ export function compileAll(
           contracts[scriptName] = contract.toAddress().toString();
         }
       } catch (err) {
-        logger.error(`The compileAll function raised error: ${err}`);
+        logger.error(
+          `The compileAll function raised error for ${scriptName} script: ${err}`,
+        );
         throw err;
       }
 
@@ -142,7 +144,7 @@ export function compileAll(
           constants.scriptsRequireAddresses[script_][scriptName];
         if (updateScriptKey !== undefined) {
           compiledDependenciesStatus[script_][updateScriptKey] = Buffer.from(
-            blake2b256(contract?.toHex()),
+            blake2b256(contract?.toHex() || ''),
           ).toString('base64');
         }
       }
