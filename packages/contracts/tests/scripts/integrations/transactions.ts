@@ -617,7 +617,7 @@ export const executeReturnRaffleLicenseTx = (
     serviceR4[2],
   );
   const changeBox = boxFactory.createSafePayOutputBox(
-    BigInt(endedRaffle.value) - testUtils.FEE,
+    BigInt(endedRaffle.value.toString()) - testUtils.FEE,
     endedRaffle.assets[2] ? [endedRaffle.assets[2]] : [],
     blake2b256(Buffer.from(changeAddress, 'hex')),
   );
