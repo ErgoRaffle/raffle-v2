@@ -3,8 +3,8 @@ import { exit } from 'process';
 
 import { program } from 'commander';
 
+import * as types from '../lib/types';
 import { logger } from '../lib/logger';
-import { ContextVarsType, RaffleContextVarsInterface } from '../lib/types';
 import { compileAll } from '../lib/utils';
 import { defaultScriptsVariables, defaultBuildVariables } from '../constants';
 
@@ -26,7 +26,7 @@ program
   .action((input, options) => {
     logger.info('compile-all command started');
 
-    let inputs: ContextVarsType = new Map();
+    let inputs: types.ContextVarsType = new Map();
 
     let inputContent = '';
     try {
@@ -39,7 +39,7 @@ program
     try {
       inputs = new Map(
         Object.entries(JSON.parse(inputContent)),
-      ) as ContextVarsType;
+      ) as types.ContextVarsType;
     } catch (err) {
       logger.error(`The compile-all command failed: Input file is not json`);
       exit(1);
@@ -112,7 +112,7 @@ program
     try {
       rawConfigs = JSON.parse(
         fs.readFileSync(config).toString(),
-      ) as RaffleContextVarsInterface as unknown as {
+      ) as types.RaffleContextVarsInterface as unknown as {
         [key: string]: string | number | object;
       };
     } catch (err) {
@@ -121,38 +121,29 @@ program
     }
 
     const tokens = rawConfigs['tokens'] as { [key: string]: string };
-    const configs = new Map(
-      Object.entries({
-        defaults: {
-          SERVICE_NFT_B64: Buffer.from(
-            tokens['serviceNft'].toString(),
-            'hex',
-          ).toString('base64'),
-          OWNER_NFT_B64: Buffer.from(
-            tokens['ownerNft'].toString(),
-            'hex',
-          ).toString('base64'),
-          RAFFLE_LICENSE_B64: Buffer.from(
-            tokens['raffleLicense'].toString(),
-            'hex',
-          ).toString('base64'),
-          ORACLE_TOKEN_ID_B64: Buffer.from(
-            tokens['oracleTokenId'].toString(),
-            'hex',
-          ).toString('base64'),
-          GIFT_TOKEN_COUNT: rawConfigs['giftTokenCount'],
-        },
-        service: {},
-        ticketRepo: {},
-        inactiveRaffle: {},
-        activeRaffle: {},
-        winner: {},
-        successRaffle: {},
-      }),
+    const defaults = new Map<string, string>();
+    defaults.set(
+      'SERVICE_NFT_B64',
+      Buffer.from(tokens['serviceNft'].toString(), 'hex').toString('base64'),
     );
+    defaults.set(
+      'OWNER_NFT_B64',
+      Buffer.from(tokens['ownerNft'].toString(), 'hex').toString('base64'),
+    );
+    defaults.set(
+      'RAFFLE_LICENSE_B64',
+      Buffer.from(tokens['raffleLicense'].toString(), 'hex').toString('base64'),
+    );
+    defaults.set(
+      'ORACLE_TOKEN_ID_B64',
+      Buffer.from(tokens['oracleTokenId'].toString(), 'hex').toString('base64'),
+    );
+    defaults.set('GIFT_TOKEN_COUNT', rawConfigs['giftTokenCount'].toString());
+    const configs = new Map<'defaults', Map<string, string>>();
+    configs.set('defaults', defaults);
 
     try {
-      contracts = compileAll(configs as unknown as ContextVarsType);
+      contracts = compileAll(configs as types.ContextVarsType);
     } catch (err) {
       logger.error(`Compile Error: \n${err}`);
       process.exit(0);
@@ -170,29 +161,29 @@ export const raffleInfo = ${JSON.stringify(RaffleAddressesAndTokens, null, 4)};
 `,
     );
 
+    let addressesTypeString = '\n';
+    const addressKeys = Object.keys(contracts);
+    for (const contractName of addressKeys) {
+      addressesTypeString += `        "${contractName}": string`;
+      addressesTypeString +=
+        contractName == addressKeys[addressKeys.length - 1] ? '' : ',\n';
+    }
+
+    let tokensTypeString = '\n';
+    const tokenKeys = Object.keys(tokens);
+    for (const tokenName of tokenKeys) {
+      tokensTypeString += `        "${tokenName}": string`;
+      tokensTypeString +=
+        tokenName == tokenKeys[tokenKeys.length - 1] ? '' : ',\n';
+    }
+
     fs.writeFileSync(
       './dist/index.d.ts',
       `\
 export const raffleInfo: {
-  "addresses": {
-        "ticketRepo": string,
-        "ticket": string,
-        "successRaffle": string,
-        "winnerPrize": string,
-        "gift": string,
-        "giftRedeem": string,
-        "giftTokenRepo": string,
-        "ticketRedeem": string,
-        "activeRaffle": string,
-        "winner": string,
-        "raffleDetails": string,
-        "inactiveRaffle": string,
-        "service": string
+  "addresses": {${addressesTypeString}
     },
-    "tokens": {
-        "oracleTokenId": string,
-        "ServiceNft": string,
-        "RaffleLicense": string
+    "tokens": {${tokensTypeString}
     }
 };
 `,

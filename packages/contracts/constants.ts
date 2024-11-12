@@ -63,7 +63,7 @@ export const scriptsRequireAddresses: {
 };
 
 export const defaultScriptsVariables: {
-  [key1: string]: { [key2: string]: string | bigint | number | undefined };
+  [key1: string]: { [key2: string]: string | number };
 } = {
   defaults: {},
   service: {
@@ -73,7 +73,7 @@ export const defaultScriptsVariables: {
     RAFFLE_LICENSE_B64: '',
   },
   inactiveRaffle: {
-    GIFT_TOKEN_COUNT: 1000,
+    GIFT_TOKEN_COUNT: '1000L',
   },
   activeRaffle: {
     ORACLE_TOKEN_ID_B64: '',
@@ -87,16 +87,15 @@ export const defaultScriptsVariables: {
 };
 
 export const defaultBuildVariables = {
-  defaults: {
-    OWNER_NFT_B64: '',
-    RAFFLE_LICENSE_B64: '',
-    GIFT_TOKEN_COUNT: 1000,
-    ORACLE_TOKEN_ID_B64: '',
-    SERVICE_NFT_B64: '',
-  },
+  giftTokenCount: '1000L',
   tokens: {
-    ServiceNft: '',
-    RaffleLicense: '',
+    oracleTokenId:
+      '0000000000000000000000000000000000000000000000000000000000000000',
+    serviceNft:
+      '0000000000000000000000000000000000000000000000000000000000000001',
+    raffleLicense:
+      '0000000000000000000000000000000000000000000000000000000000000002',
+    ownerNft:
+      '0000000000000000000000000000000000000000000000000000000000000003',
   },
-  safePay: {},
 };

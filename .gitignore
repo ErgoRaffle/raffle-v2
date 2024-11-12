@@ -136,5 +136,5 @@ dist
 # Sqlite databases
 *.sqlite
 
-# VSCode project files
+# jetbrains IDEs project files
 .idea/
