@@ -83,7 +83,17 @@ type executeAndReturnOutputsResult = {
 export const initialContracts = (
   trueScripts: ScriptNamesType[] = [],
 ): { [key: string]: string } => {
-  const scriptsVars = { ...constants.defaultScriptsVariables };
+  const scriptsVars = new Map<
+    string,
+    Map<string, string | number | bigint | null | undefined>
+  >();
+
+  for (const key of Object.keys(constants.defaultScriptsVariables))
+    scriptsVars.set(
+      key,
+      new Map(Object.entries(constants.defaultScriptsVariables[key])),
+    );
+
   const defaultLicenseTokenId = Buffer.from(LICENSE_TOKEN_ID, 'hex').toString(
     'base64',
   );
@@ -94,35 +104,42 @@ export const initialContracts = (
     'base64',
   );
 
-  scriptsVars['service'] = {
-    OWNER_NFT_B64: Buffer.from(OWNER_NFT_ID, 'hex').toString('base64'),
-    FEE: constants.DEFAULT_FEE,
-    MIN_BOX_VALUE: SAFE_MIN_BOX_VALUE,
-  };
-  scriptsVars['ticketRepo'] = {
-    RAFFLE_LICENSE_B64: defaultLicenseTokenId,
-  };
-  scriptsVars['winner'] = {
-    RAFFLE_LICENSE_B64: defaultLicenseTokenId,
-  };
-  scriptsVars['inactiveRaffle'] = {
-    GIFT_TOKEN_COUNT: GIFT_TOKEN_COUNT.toString() + 'L',
-  };
-
-  scriptsVars['activeRaffle'] = {
-    ORACLE_TOKEN_ID_B64: defaultOracleTokenId,
-  };
-  scriptsVars['successRaffle'] = {
-    SERVICE_NFT_B64: defaultRaffleNftId,
-  };
-  scriptsVars['raffleDetails'] = {
-    RAFFLE_LICENSE_B64: defaultLicenseTokenId,
-  };
-  return compileAll(
-    new Map(Object.entries(scriptsVars)) as unknown as ContextVarsType,
-    true,
-    trueScripts,
+  scriptsVars.set(
+    'service',
+    new Map(
+      Object.entries({
+        OWNER_NFT_B64: Buffer.from(OWNER_NFT_ID, 'hex').toString('base64'),
+        FEE: constants.DEFAULT_FEE,
+        MIN_BOX_VALUE: SAFE_MIN_BOX_VALUE,
+      }),
+    ),
   );
+
+  const ticketRepo = scriptsVars.get('ticketRepo') || new Map();
+  ticketRepo.set('RAFFLE_LICENSE_B64', defaultLicenseTokenId);
+  scriptsVars.set('ticketRepo', ticketRepo);
+
+  const winner = scriptsVars.get('winner') || new Map();
+  winner.set('RAFFLE_LICENSE_B64', defaultLicenseTokenId);
+  scriptsVars.set('winner', winner);
+
+  const inactiveRaffle = scriptsVars.get('inactiveRaffle') || new Map();
+  inactiveRaffle.set('GIFT_TOKEN_COUNT', GIFT_TOKEN_COUNT.toString() + 'L');
+  scriptsVars.set('inactiveRaffle', inactiveRaffle);
+
+  const activeRaffle = scriptsVars.get('activeRaffle') || new Map();
+  activeRaffle.set('ORACLE_TOKEN_ID_B64', defaultOracleTokenId);
+  scriptsVars.set('activeRaffle', activeRaffle);
+
+  const successRaffle = scriptsVars.get('successRaffle') || new Map();
+  successRaffle.set('SERVICE_NFT_B64', defaultRaffleNftId);
+  scriptsVars.set('successRaffle', successRaffle);
+
+  const raffleDetails = scriptsVars.get('raffleDetails') || new Map();
+  raffleDetails.set('RAFFLE_LICENSE_B64', defaultLicenseTokenId);
+  scriptsVars.set('raffleDetails', raffleDetails);
+
+  return compileAll(scriptsVars as ContextVarsType, true, trueScripts);
 };
 
 export class RaffleBoxFactory {

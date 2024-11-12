@@ -1,13 +1,10 @@
 import * as path from 'node:path';
 
 import { compile } from '@fleet-sdk/compiler';
-import { SAFE_MIN_BOX_VALUE } from '@fleet-sdk/core';
-
-import * as constants from './constants';
 
 export const TRUE_SCRIPT_HEX = compile('{sigmaProp(true);}').toHex().toString();
 export const DEFAULT_FEE = 15_000_000n;
-export const SCRIPT_DIR = path.join(__dirname, `lib/scripts/`);
+export const SCRIPT_DIR = path.join(import.meta.dirname, `lib/scripts/`);
 export const scriptList = [
   'service',
   'inactiveRaffle',
@@ -66,37 +63,39 @@ export const scriptsRequireAddresses: {
 };
 
 export const defaultScriptsVariables: {
-  [key1: string]: { [key2: string]: string | bigint | number | undefined };
+  [key1: string]: { [key2: string]: string | number };
 } = {
   defaults: {},
   service: {
     OWNER_NFT_B64: '',
-    FEE: constants.DEFAULT_FEE,
-    MIN_BOX_VALUE: SAFE_MIN_BOX_VALUE,
+  },
+  ticketRepo: {
+    RAFFLE_LICENSE_B64: '',
   },
   inactiveRaffle: {
     GIFT_TOKEN_COUNT: '1000L',
-    FEE: constants.DEFAULT_FEE,
-    MIN_BOX_VALUE: SAFE_MIN_BOX_VALUE,
   },
-  ticketRepo: {},
   activeRaffle: {
     ORACLE_TOKEN_ID_B64: '',
   },
   winner: {
     RAFFLE_LICENSE_B64: '',
   },
-  ticket: {},
   successRaffle: {
     SERVICE_NFT_B64: '',
   },
-  winnerPrize: {},
-  gift: {},
-  giftRedeem: {},
-  giftTokenRepo: {},
-  ticketRedeem: {},
-  raffleDetails: {
-    RAFFLE_LICENSE_B64: '',
+};
+
+export const defaultBuildVariables = {
+  giftTokenCount: '1000L',
+  tokens: {
+    oracleTokenId:
+      '0000000000000000000000000000000000000000000000000000000000000000',
+    serviceNft:
+      '0000000000000000000000000000000000000000000000000000000000000001',
+    raffleLicense:
+      '0000000000000000000000000000000000000000000000000000000000000002',
+    ownerNft:
+      '0000000000000000000000000000000000000000000000000000000000000003',
   },
-  safePay: {},
 };
