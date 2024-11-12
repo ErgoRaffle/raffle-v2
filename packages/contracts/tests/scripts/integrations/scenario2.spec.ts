@@ -119,6 +119,7 @@ describe('Raffle', () => {
           winnersCount,
           deadline,
           boxFactory,
+          winnersPercent,
         );
         expect(mergeTx.success).true;
 

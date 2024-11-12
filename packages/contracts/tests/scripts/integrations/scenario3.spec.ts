@@ -104,7 +104,7 @@ describe('Raffle', () => {
 
   describe('Create raffle', () => {
     /**
-     * @target token-goal raffle with 2 winners done successful
+     * @target success token-goal raffle with 3 winners
      * @scenario
      * 1. Raffle creation phase 1 (create inactive raffle and ticketRepo with special collecting token)
      * 2. Raffle creation phase 2 (merge inactive and ticket repo and create active raffle and winners)
@@ -120,7 +120,7 @@ describe('Raffle', () => {
      * - To sign all transactions successfully and complete the scenario
      */
     raffleTest(
-      'should token-goal raffle with 2 winners done successful',
+      'success token-goal raffle with 2 winners',
       ({
         boxFactory,
         creator,
@@ -132,11 +132,10 @@ describe('Raffle', () => {
       }) => {
         boxFactory.chain.setTip(100);
 
-        const winnersCount = 2;
+        const winnersCount = 3;
         const deadline = 2000n;
-        const winnersPercent: bigint[] = [];
-        for (let i = 0; i < winnersCount; i++)
-          winnersPercent.push(1000n / BigInt(winnersCount));
+        const winnersPercent: bigint[] = [999n, 1n, 0n];
+
         // Step 1: Raffle creation phase 1 (create inactive raffle and ticketRepo)
         const createRaffleTx = executeCreateRaffleTx(
           creator,
@@ -161,12 +160,13 @@ describe('Raffle', () => {
           winnersCount,
           deadline,
           boxFactory,
+          winnersPercent,
         );
         expect(mergeTx.success).true;
 
         // Step 3: Gift token receipt transaction (move gift tokens to winner boxes)
         let giftTokenRepo = mergeTx.outputs[2];
-        const emptyWinnerBoxes = mergeTx.outputs.slice(3, 5);
+        const emptyWinnerBoxes = mergeTx.outputs.slice(3, 3 + winnersCount);
         let step = 1;
         const winnerBoxes = [];
         for (const winnerBox of emptyWinnerBoxes) {
@@ -206,7 +206,7 @@ describe('Raffle', () => {
           const donateTx = executeDonateTx(
             activeRaffle,
             (donatorWallets as KeyedMockChainParty[])[donateCount],
-            100n,
+            9n,
             boxFactory,
           );
           expect(donateTx.success).true;
@@ -258,7 +258,7 @@ describe('Raffle', () => {
           successRaffleBox.additionalRegisters.R4!,
         ).data as bigint[];
         const totalSoldTickets = successRaffleR4[1];
-        for (let i = 0; i < 2; i++) {
+        for (let i = 0; i < winnersCount; i++) {
           const successRaffleR7 = SConstant.from(
             successRaffleBox.additionalRegisters.R7!,
           ).data as Uint8Array[];

@@ -28,13 +28,12 @@
     sigmaProp(true)
   } else {
     val outputService = OUTPUTS(0)
-    val serviceNft = SELF.tokens(0)._1
     val raffleLicense = SELF.tokens(1)._1
     val selfReplication = allOf(Coll(
       outputService.R4[Coll[Long]].get == SELF.R4[Coll[Long]].get,
       outputService.R5[Coll[Byte]].get == SELF.R5[Coll[Byte]].get,
       outputService.propositionBytes == SELF.propositionBytes,
-      outputService.tokens(0)._1 == serviceNft,
+      outputService.tokens(0) == SELF.tokens(0),
       outputService.tokens(1)._1 == raffleLicense,
       outputService.value >= SELF.value,
       outputService.tokens.size == SELF.tokens.size,
@@ -46,13 +45,13 @@
     } else if (outputService.tokens(1)._2 == SELF.tokens(1)._2 - 1L) {
       // New raffle creation
       // [Service, UserBox] --> [Service, TicketRepo, InactiveRaffle, Change]
-      val winnersPercent = getVar[Coll[Long]](0).get
-      val winnersPercentBytes = winnersPercent.fold(
+      val winnersPercentList = getVar[Coll[Long]](0).get
+      val winnersPercentBytes = winnersPercentList.fold(
         Coll[Byte](), 
         {(res: Coll[Byte], p: Long) => res ++ longToByteArray(p)}
       )
-      val winnerPercentsSum = winnersPercent.fold(0L, {(x: Long, y: Long) => x + y})
-      val winnersCount = winnersPercent.size
+      val winnerPercentsSum = winnersPercentList.fold(0L, {(x: Long, y: Long) => x + y})
+      val winnersCount = winnersPercentList.size
       val hasStolenTickets = OUTPUTS.slice(2, OUTPUTS.size)
         .exists{
           (box: Box) => 
@@ -67,6 +66,9 @@
       val serviceAddress = SELF.R5[Coll[Byte]].get
       val implementerAddress = getVar[Coll[Coll[Byte]]](1).get(0)
       val creatorAddress = getVar[Coll[Coll[Byte]]](1).get(1)
+      val raffleGoal = inactiveRaffle.R4[Coll[Long]].get(4)
+      val winnersSharePercent = inactiveRaffle.R4[Coll[Long]].get(0)
+      val projectPercent = 1000L - (winnersSharePercent + serviceFeePercent + implementerFeePercent)
 
       sigmaProp(allOf(Coll(
         // Correct Service format
@@ -79,18 +81,20 @@
         ticketRepo.value == txFee,
 
         // Correct InactiveRaffle format
-        // R4: [WinnersPercentage, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, Deadline, TxFee]
+        // R4: [WinnersPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, Deadline, TxFee]
         // R5: [ServiceAddressHash, ImplementerAddressHash, CreatorAddressHash]
         // R6: [Name, Description, Pictures(optional)]
         // R7: [TicketId, WinnersPercentListHash]
         // R8: WinnersCount
         blake2b256(inactiveRaffle.propositionBytes) == inactiveRaffleScriptHash,
         inactiveRaffle.tokens(0)._1 == raffleLicense,
+        inactiveRaffle.tokens.size <= 2,
         inactiveRaffle.R4[Coll[Long]].get.size == 7,
         inactiveRaffle.R4[Coll[Long]].get(0) >= 0,
         inactiveRaffle.R4[Coll[Long]].get(1) == serviceFeePercent,
         inactiveRaffle.R4[Coll[Long]].get(2) == implementerFeePercent,
         inactiveRaffle.R4[Coll[Long]].get(0) + serviceFeePercent + implementerFeePercent < 1000L,
+        inactiveRaffle.R4[Coll[Long]].get(3) > 0L,
         inactiveRaffle.R4[Coll[Long]].get(6) == txFee,
         inactiveRaffle.R5[Coll[Coll[Byte]]].get.size == 3,
         inactiveRaffle.R5[Coll[Coll[Byte]]].get(0) == blake2b256(serviceAddress),
@@ -100,11 +104,15 @@
         inactiveRaffle.R7[Coll[Coll[Byte]]].get(0) == SELF.id, // Storing TicketId to match with TicketRepo
         inactiveRaffle.R7[Coll[Coll[Byte]]].get(1) == blake2b256(winnersPercentBytes),
         inactiveRaffle.R8[Int].get == winnersCount,
-        inactiveRaffle.value >= (4 * txFee * winnersCount) + creationFee,
+        inactiveRaffle.value >= (5 * txFee * winnersCount) + (8 * txFee),
+        inactiveRaffle.value >= creationFee,
 
         // Transaction constraints
         winnerPercentsSum == 1000L,
         hasStolenTickets == false,
+        raffleGoal * serviceFeePercent > 0L,
+        raffleGoal * implementerFeePercent > 0L,
+        raffleGoal * projectPercent > 0L,
       )))
     } else {
       sigmaProp(false)

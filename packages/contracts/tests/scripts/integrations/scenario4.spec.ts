@@ -101,12 +101,12 @@ describe('Raffle', () => {
 
   describe('Create raffle', () => {
     /**
-     * @target Success Erg-goal raffle with 1 winners and 5 donators
+     * @target Success Erg-goal raffle with 1 winner
      * @scenario
      * 1. Raffle creation phase 1 (create inactive raffle and ticketRepo with special collecting token)
      * 2. Raffle creation phase 2 (merge inactive and ticket repo and create active raffle and winners)
      * 3. Gift token receipt transaction
-     * 4. Add two gifts to one of the winners
+     * 4. Add two gifts to the winner
      * 5. Donate twice by two different donators
      * 6. Success transaction and fee payment after passing the deadline
      * 7. Create prize-boxes for winners
@@ -117,7 +117,7 @@ describe('Raffle', () => {
      * - To sign all transactions successfully and complete the scenario
      */
     raffleTest(
-      'success Erg-goal raffle with 1 winners',
+      'success Erg-goal raffle with 1 winner',
       ({
         boxFactory,
         creator,
@@ -159,6 +159,7 @@ describe('Raffle', () => {
           winnersCount,
           deadline,
           boxFactory,
+          winnersPercent,
         );
         expect(mergeTx.success).true;
 

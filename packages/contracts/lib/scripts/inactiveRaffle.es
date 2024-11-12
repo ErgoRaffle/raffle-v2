@@ -56,13 +56,8 @@
       res ++ longToByteArray(box.R4[Coll[Long]].get(0))}
   )
   val isErgGoal = (SELF.tokens.size == 1)
-  val activeRaffleExtraTokensVerification = 
-    if(isErgGoal) { true } else {
-    allOf(Coll(
-      activeRaffle.tokens(2)._1 == SELF.tokens(1)._1,
-      activeRaffle.tokens(2)._2 == SELF.tokens(1)._2
-    ))
-  }
+  val activeRaffleCollectingTokenVerification = 
+    if(!isErgGoal) activeRaffle.tokens(2) == SELF.tokens(1) else true
   val hasStolenGiftTokens = OUTPUTS.exists{
     (box: Box) => 
       box.id != giftTokenRepo.id &&
@@ -86,7 +81,7 @@
     activeRaffle.R5[Coll[Coll[Byte]]].get == SELF.R5[Coll[Coll[Byte]]].get,
     activeRaffle.R6[Int].get == winnersCount,
     activeRaffle.R7[Long].get == 0L, // No sold ticket at beginning
-    activeRaffleExtraTokensVerification,
+    activeRaffleCollectingTokenVerification,
 
     // Correct RaffleDetails format
     // R4: [Name, Description, Pictures(optional)]
