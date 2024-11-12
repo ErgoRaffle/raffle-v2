@@ -1,5 +1,4 @@
 import { it, describe, expect } from 'vitest';
-import { SConstant } from '@fleet-sdk/serializer';
 import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
 
 import * as testUtils from '../../testUtils';
@@ -214,14 +213,10 @@ describe('Raffle', () => {
           expect(giftRedeemTx.success).true;
           winner1 = giftRedeemTx.outputs[0];
 
-          const donatorAddress = Buffer.from(
-            SConstant.from(winner1Gifts[i].additionalRegisters.R4!)
-              .data as Uint8Array,
-          ).toString('hex');
           const giftSafePayBox = giftRedeemTx.outputs[1];
           const giftSafeWithdrawTx = executeSafeWithdrawTransaction(
             giftSafePayBox,
-            donatorAddress,
+            (giftGiverWallets as KeyedMockChainParty[])[i].ergoTree,
             boxFactory,
           );
           expect(giftSafeWithdrawTx.success).true;

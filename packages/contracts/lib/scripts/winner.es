@@ -9,6 +9,8 @@
   // Tokens:
   //   0: Ticket
   //   1: GiftToken
+  // Context:
+  //   C0: Coll[Byte]: [DonatorAddress] (only exists in new gift creation tx)
   //
   // Spent in 5 transactions:
   //   - Winner box gift token receipt
@@ -144,6 +146,7 @@
       blake2b256(gift.propositionBytes) == giftScriptHash,
       gift.tokens(0)._1 == SELF.tokens(1)._1,
       gift.value >= 2 * txFee,
+      gift.R4[Coll[Byte]].get == blake2b256(getVar[Coll[Byte]](0).get),
       gift.R5[Int].get == winnerIndex,
     )))
   }

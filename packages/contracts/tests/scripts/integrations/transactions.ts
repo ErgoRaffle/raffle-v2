@@ -239,6 +239,10 @@ export const executeAddGiftTx = (
   giftGiver: KeyedMockChainParty,
   boxFactory: testUtils.RaffleBoxFactory,
 ) => {
+  const inputWinner = new ErgoUnsignedInput(winner);
+  inputWinner.setContextExtension({
+    0: SColl(SByte, Array.from(Buffer.from(giftGiver.ergoTree, 'hex'))),
+  });
   const ticketTokenId = winner.assets[0].tokenId;
   const giftTokenId = winner.assets[1].tokenId;
   const winnerR4 = SConstant.from(winner.additionalRegisters.R4!)
@@ -263,7 +267,7 @@ export const executeAddGiftTx = (
   );
 
   const addGiftTx = new TransactionBuilder(boxFactory.chain.height)
-    .from([winner, ...giftGiver.utxos.toArray()])
+    .from([inputWinner, ...giftGiver.utxos.toArray()])
     .to([outWinner, gift])
     .configureSelector((selector) => {
       selector.defineStrategy((inputs) => inputs);
@@ -430,7 +434,7 @@ export const executeGiftReturnTx = (
   const redeemedGift = boxFactory.createSafePayOutputBox(
     BigInt(gift.value.toString()) - testUtils.FEE,
     gift.assets.slice(1),
-    blake2b256(SConstant.from(gift.additionalRegisters.R4!).data as Uint8Array),
+    SConstant.from(gift.additionalRegisters.R4!).data as Uint8Array,
   );
   const giftReturnTx = new TransactionBuilder(boxFactory.chain.height)
     .from([winner, gift])
