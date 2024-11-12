@@ -290,6 +290,10 @@ export const executeDonateTx = (
   ticketCount: bigint,
   boxFactory: testUtils.RaffleBoxFactory,
 ) => {
+  const inputActiveRaffle = new ErgoUnsignedInput(activeRaffle);
+  inputActiveRaffle.setContextExtension({
+    0: SColl(SByte, Array.from(Buffer.from(donator.ergoTree, 'hex'))),
+  });
   const r4 = SConstant.from(activeRaffle.additionalRegisters.R4!)
     .data as bigint[];
   const r5 = SConstant.from(activeRaffle.additionalRegisters.R5!)
@@ -333,7 +337,7 @@ export const executeDonateTx = (
   );
 
   const donateTx = new TransactionBuilder(boxFactory.chain.height)
-    .from([activeRaffle, ...donator.utxos.toArray()])
+    .from([inputActiveRaffle, ...donator.utxos.toArray()])
     .to([activeRaffleOutputBox, ticket])
     .configureSelector((selector) => {
       selector.defineStrategy((inputs) => inputs);
@@ -537,9 +541,6 @@ export const executeTicketRedeemTx = (
     .data as bigint;
   const ticketPrice = r4[1];
   const ticketCount = BigInt(ticket.assets[0].amount.toString());
-  const donatorAddress = Buffer.from(
-    SConstant.from(ticket.additionalRegisters.R4!).data as Uint8Array,
-  ).toString('hex');
 
   let redeemedDonationValue =
     BigInt(ticket.value.toString()) - testUtils.FEE + ticketPrice * ticketCount;
@@ -574,7 +575,7 @@ export const executeTicketRedeemTx = (
   const redeemedDonation = boxFactory.createSafePayOutputBox(
     redeemedDonationValue,
     redeemedDonationTokens,
-    blake2b256(Buffer.from(donatorAddress, 'hex')),
+    SConstant.from(ticket.additionalRegisters.R4!).data as Uint8Array,
   );
 
   const ticketRedeemTx = new TransactionBuilder(boxFactory.chain.height)
@@ -874,9 +875,7 @@ export const executeGiftUnwrapTx = (
   const unwrappedGiftBox = boxFactory.createSafePayOutputBox(
     BigInt(giftForWinnerBox.value) - testUtils.FEE,
     giftOutputBoxTokens,
-    blake2b256(
-      SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array,
-    ),
+    SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array,
   );
 
   const giftUnwrapTx = new TransactionBuilder(boxFactory.chain.height)
@@ -907,9 +906,7 @@ export const executeFinalPrizeTx = (
   const finalPrizeSpendingBox = boxFactory.createSafePayOutputBox(
     BigInt(winnerPrizeBox.value) - testUtils.FEE,
     winnerPrizeBox.assets.length > 2 ? [winnerPrizeBox.assets[2]] : [],
-    blake2b256(
-      SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array,
-    ),
+    SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array,
   );
 
   const finalPrizeTx = new TransactionBuilder(boxFactory.chain.height)

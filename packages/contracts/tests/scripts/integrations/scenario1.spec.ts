@@ -247,6 +247,7 @@ describe('Raffle', () => {
 
         // Step 10: Redeem two tickets to donators
         let ticketRedeem = forwardToTicketRedeemTx.outputs[0];
+        let i = 0;
         for (const ticket of tickets) {
           const ticketRedeemTx = executeTicketRedeemTx(
             ticketRedeem,
@@ -256,13 +257,10 @@ describe('Raffle', () => {
           ticketRedeem = ticketRedeemTx.outputs[0];
           expect(ticketRedeemTx.success).true;
 
-          const donatorAddress = Buffer.from(
-            SConstant.from(ticket.additionalRegisters.R4!).data as Uint8Array,
-          ).toString('hex');
           const donationSafePayBox = ticketRedeemTx.outputs[1];
           const donationSafeWithdrawTx = executeSafeWithdrawTransaction(
             donationSafePayBox,
-            donatorAddress,
+            (donatorWallets as KeyedMockChainParty[])[i++].ergoTree,
             boxFactory,
           );
           expect(donationSafeWithdrawTx.success).true;
