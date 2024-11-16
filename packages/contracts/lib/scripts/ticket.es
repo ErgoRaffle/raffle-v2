@@ -2,7 +2,7 @@
   // ErgoRaffle V2 Ticket Contract
   //
   // Registers:
-  //   R4[Coll[Byte]]: [DonatorAddressHash]
+  //   R4[Coll[Byte]]: [DonatorErgoTreeHash]
   //   R5[Coll[Long]]: [RangeStart, RangeEnd, TicketPrice]
   // Tokens:
   //   0: Ticket

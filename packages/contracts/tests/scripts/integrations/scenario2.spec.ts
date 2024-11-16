@@ -169,11 +169,10 @@ describe('Raffle', () => {
 
         // Step 6: Redeem two tickets to donators
         let ticketRedeem = forwardToTicketRedeemTx.outputs[0];
-        let i = 0;
-        for (const ticket of tickets) {
+        for (let i = 0; i < tickets.length; i++) {
           const ticketRedeemTx = executeTicketRedeemTx(
             ticketRedeem,
-            ticket,
+            tickets[i],
             boxFactory,
           );
           ticketRedeem = ticketRedeemTx.outputs[0];

@@ -10,7 +10,7 @@
   //   0: Ticket
   //   1: GiftToken
   // Context:
-  //   C0: Coll[Byte]: [DonatorAddress] (only exists in new gift creation tx)
+  //   C0: Coll[Byte]: [DonatorErgoTree] (only exists in new gift creation tx)
   //
   // Spent in 5 transactions:
   //   - Winner box gift token receipt
@@ -141,7 +141,7 @@
       outWinner.R6[Long].get == giftCount + 1,
 
       // Correct Gift format
-      // R4: [DonatorAddressHash]
+      // R4: [DonatorErgoTreeHash]
       // R5: WinnerIndex
       blake2b256(gift.propositionBytes) == giftScriptHash,
       gift.tokens(0)._1 == SELF.tokens(1)._1,
