@@ -1,5 +1,4 @@
 import { it, describe, expect } from 'vitest';
-import { SConstant } from '@fleet-sdk/serializer';
 import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
 
 import * as testUtils from '../../testUtils';
@@ -101,6 +100,7 @@ describe('Raffle', () => {
           serviceBox,
           creator.utxos.toArray(),
           implementerErgoTree,
+          ownerErgoTree,
           winnersCount,
           deadline,
           winnersPercent,
@@ -169,22 +169,19 @@ describe('Raffle', () => {
 
         // Step 6: Redeem two tickets to donators
         let ticketRedeem = forwardToTicketRedeemTx.outputs[0];
-        for (const ticket of tickets) {
+        for (let i = 0; i < tickets.length; i++) {
           const ticketRedeemTx = executeTicketRedeemTx(
             ticketRedeem,
-            ticket,
+            tickets[i],
             boxFactory,
           );
           ticketRedeem = ticketRedeemTx.outputs[0];
           expect(ticketRedeemTx.success).true;
 
-          const donatorAddress = Buffer.from(
-            SConstant.from(ticket.additionalRegisters.R4!).data as Uint8Array,
-          ).toString('hex');
           const donationSafePayBox = ticketRedeemTx.outputs[1];
           const donationSafeWithdrawTx = executeSafeWithdrawTransaction(
             donationSafePayBox,
-            donatorAddress,
+            (donatorWallets as KeyedMockChainParty[])[i++].ergoTree,
             boxFactory,
           );
           expect(donationSafeWithdrawTx.success).true;
@@ -196,6 +193,7 @@ describe('Raffle', () => {
           ticketRedeem,
           service,
           boxFactory,
+          ownerErgoTree,
           ownerErgoTree,
         );
         expect(returnLicenseTx.success).true;

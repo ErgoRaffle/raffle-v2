@@ -206,7 +206,7 @@ export class RaffleBoxFactory {
           ]).toHex(),
           R5: SColl(
             SByte,
-            Array.from(Buffer.from(ownerErgoTree, 'hex')),
+            Array.from(blake2b256(Buffer.from(ownerErgoTree, 'hex'))),
           ).toHex(),
         },
       }),
@@ -244,7 +244,10 @@ export class RaffleBoxFactory {
           creationFee,
           FEE,
         ]).toHex(),
-        R5: SColl(SByte, Array.from(Buffer.from(ownerErgoTree, 'hex'))).toHex(),
+        R5: SColl(
+          SByte,
+          Array.from(blake2b256(Buffer.from(ownerErgoTree, 'hex'))),
+        ).toHex(),
       });
   }
 
@@ -496,30 +499,32 @@ export class RaffleBoxFactory {
     ];
     if (collectingToken != null) tokens.push(collectingToken);
 
-    return mockUTxO({
-      value: value,
-      ergoTree: this.contractsAddresses['activeRaffle'],
-      creationHeight: 5,
-      assets: tokens,
-      additionalRegisters: {
-        R4: SColl(SLong, [
-          200n, // WinnersPercentage,
-          serviceFeePercent, // ServiceFeePercent,
-          100n, // ImplementerFeePercent,
-          ticketPrice, // TicketPrice,
-          goal, // Goal,
-          deadline, // Deadline,
-          FEE, // TxFee
-        ]).toHex(),
-        R5: SColl(SColl(SByte), [
-          Array.from(blake2b256(Buffer.from(serviceFeeErgoTree, 'hex'))),
-          Array.from(blake2b256(Buffer.from(implementerFeeErgoTree, 'hex'))),
-          Array.from(blake2b256(Buffer.from(creatorErgoTree, 'hex'))),
-        ]).toHex(),
-        R6: SInt(winnersCount).toHex(),
-        R7: SLong(totalSoldTicket).toHex(),
-      },
-    });
+    return new ErgoUnsignedInput(
+      mockUTxO({
+        value: value,
+        ergoTree: this.contractsAddresses['activeRaffle'],
+        creationHeight: 5,
+        assets: tokens,
+        additionalRegisters: {
+          R4: SColl(SLong, [
+            200n, // WinnersPercentage,
+            serviceFeePercent, // ServiceFeePercent,
+            100n, // ImplementerFeePercent,
+            ticketPrice, // TicketPrice,
+            goal, // Goal,
+            deadline, // Deadline,
+            FEE, // TxFee
+          ]).toHex(),
+          R5: SColl(SColl(SByte), [
+            Array.from(blake2b256(Buffer.from(serviceFeeErgoTree, 'hex'))),
+            Array.from(blake2b256(Buffer.from(implementerFeeErgoTree, 'hex'))),
+            Array.from(blake2b256(Buffer.from(creatorErgoTree, 'hex'))),
+          ]).toHex(),
+          R6: SInt(winnersCount).toHex(),
+          R7: SLong(totalSoldTicket).toHex(),
+        },
+      }),
+    );
   }
 
   /**
@@ -1028,37 +1033,39 @@ export class RaffleBoxFactory {
     deadline: bigint = 100n,
     giftTokenId?: string,
     extraTokens?: TokenAmount<bigint>[],
-  ): Box[] {
-    const winnersBoxes: Box[] = [];
+  ): ErgoUnsignedInput[] {
+    const winnersBoxes: ErgoUnsignedInput[] = [];
     for (let i = 0; i < winnersCount; i++)
       winnersBoxes.push(
-        mockUTxO({
-          value: 4n * FEE,
-          ergoTree: this.contractsAddresses['winner'],
-          additionalRegisters: {
-            R4: SColl(SLong, [
-              1000n / BigInt(winnersCount),
-              deadline,
-              FEE,
-            ]).toHex(),
-            R5: SInt(i + 1).toHex(),
-            R6: SLong(giftCount).toHex(),
-            R7:
-              giftTokenId !== undefined
-                ? SColl(
-                    SByte,
-                    Array.from(Buffer.from(giftTokenId, 'hex')),
-                  ).toHex()
-                : undefined,
-          },
-          assets: [
-            {
-              tokenId: ticketTokenId,
-              amount: ticketTokenAmount,
+        new ErgoUnsignedInput(
+          mockUTxO({
+            value: 4n * FEE,
+            ergoTree: this.contractsAddresses['winner'],
+            additionalRegisters: {
+              R4: SColl(SLong, [
+                1000n / BigInt(winnersCount),
+                deadline,
+                FEE,
+              ]).toHex(),
+              R5: SInt(i + 1).toHex(),
+              R6: SLong(giftCount).toHex(),
+              R7:
+                giftTokenId !== undefined
+                  ? SColl(
+                      SByte,
+                      Array.from(Buffer.from(giftTokenId, 'hex')),
+                    ).toHex()
+                  : undefined,
             },
-            ...(extraTokens || []),
-          ],
-        }),
+            assets: [
+              {
+                tokenId: ticketTokenId,
+                amount: ticketTokenAmount,
+              },
+              ...(extraTokens || []),
+            ],
+          }),
+        ),
       );
 
     return winnersBoxes;
@@ -1176,7 +1183,10 @@ export class RaffleBoxFactory {
       value,
       this.contractsAddresses['gift'],
     ).setAdditionalRegisters({
-      R4: SColl(SByte, Array.from(Buffer.from(giftGiverErgoTree, 'hex'))),
+      R4: SColl(
+        SByte,
+        Array.from(blake2b256(Buffer.from(giftGiverErgoTree, 'hex'))),
+      ),
       R5: SInt(winnerIndex),
     });
     if (giftTokenId !== undefined) {
@@ -1208,7 +1218,10 @@ export class RaffleBoxFactory {
     );
     donateTicketOutputBox
       .setAdditionalRegisters({
-        R4: SColl(SByte, Array.from(Buffer.from(donatorErgoTree, 'hex'))),
+        R4: SColl(
+          SByte,
+          Array.from(blake2b256(Buffer.from(donatorErgoTree, 'hex'))),
+        ),
         R5: SColl(SLong, r5).toHex(),
       })
       .addTokens(

@@ -1,5 +1,5 @@
 import { it, describe, expect } from 'vitest';
-import { SConstant } from '@fleet-sdk/serializer';
+import { SColl, SByte, SConstant } from '@fleet-sdk/serializer';
 import { TransactionBuilder, Box } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
 
@@ -325,22 +325,23 @@ describe('winner', () => {
     winnerTest(
       'should success erg-goal based new gift creation',
       ({ boxFactory, someoneWallet }) => {
-        const winnerBox = (
-          boxFactory.createWinnersBoxMock(
-            1,
-            testUtils.TICKET_TOKEN_ID,
-            undefined,
-            undefined,
-            10000n,
-            undefined,
-            [
-              {
-                tokenId: testUtils.GIFT_TOKEN_ID,
-                amount: 100n,
-              },
-            ],
-          ) as Box[]
+        const winnerBox = boxFactory.createWinnersBoxMock(
+          1,
+          testUtils.TICKET_TOKEN_ID,
+          undefined,
+          undefined,
+          10000n,
+          undefined,
+          [
+            {
+              tokenId: testUtils.GIFT_TOKEN_ID,
+              amount: 100n,
+            },
+          ],
         )[0];
+        winnerBox.setContextExtension({
+          0: SColl(SByte, someoneWallet.ergoTree),
+        });
         const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
           .data as bigint[];
         const outWinner = boxFactory.createWinnerOutputBoxWithConstantRegisters(
@@ -352,7 +353,7 @@ describe('winner', () => {
         );
         const gift = boxFactory.createGiftOutputBox(
           1,
-          someoneWallet.address.toString(),
+          someoneWallet.ergoTree,
           testUtils.FEE * 10n,
           testUtils.GIFT_TOKEN_ID,
         );
@@ -389,22 +390,24 @@ describe('winner', () => {
     winnerTest(
       'should fail when two gift-tokens move to the output gift box',
       ({ boxFactory, someoneWallet }) => {
-        const winnerBox = (
-          boxFactory.createWinnersBoxMock(
-            1,
-            testUtils.TICKET_TOKEN_ID,
-            undefined,
-            1n,
-            10000n,
-            undefined,
-            [
-              {
-                tokenId: testUtils.GIFT_TOKEN_ID,
-                amount: 100n,
-              },
-            ],
-          ) as Box[]
+        const winnerBox = boxFactory.createWinnersBoxMock(
+          1,
+          testUtils.TICKET_TOKEN_ID,
+          undefined,
+          1n,
+          10000n,
+          undefined,
+          [
+            {
+              tokenId: testUtils.GIFT_TOKEN_ID,
+              amount: 100n,
+            },
+          ],
         )[0];
+        winnerBox.setContextExtension({
+          0: SColl(SByte, someoneWallet.ergoTree),
+        });
+
         // put extra gift-token to the winnerOutputBox
         const outWinner = boxFactory.createWinnerOutputBoxWithConstantRegisters(
           SConstant.from(winnerBox.additionalRegisters.R4!).data as bigint[],
@@ -416,7 +419,7 @@ describe('winner', () => {
 
         const gift = boxFactory.createGiftOutputBox(
           1,
-          someoneWallet.address.toString(),
+          someoneWallet.ergoTree,
           testUtils.FEE * 10n,
           testUtils.GIFT_TOKEN_ID,
           2n,
@@ -452,22 +455,23 @@ describe('winner', () => {
     winnerTest(
       'should fail when value of input and output winner boxes is different',
       ({ boxFactory, someoneWallet }) => {
-        const winnerBox = (
-          boxFactory.createWinnersBoxMock(
-            1,
-            testUtils.TICKET_TOKEN_ID,
-            undefined,
-            undefined,
-            10000n,
-            undefined,
-            [
-              {
-                tokenId: testUtils.GIFT_TOKEN_ID,
-                amount: 100n,
-              },
-            ],
-          ) as Box[]
+        const winnerBox = boxFactory.createWinnersBoxMock(
+          1,
+          testUtils.TICKET_TOKEN_ID,
+          undefined,
+          undefined,
+          10000n,
+          undefined,
+          [
+            {
+              tokenId: testUtils.GIFT_TOKEN_ID,
+              amount: 100n,
+            },
+          ],
         )[0];
+        winnerBox.setContextExtension({
+          0: SColl(SByte, someoneWallet.ergoTree),
+        });
         const outWinner = boxFactory.createWinnerOutputBoxWithConstantRegisters(
           SConstant.from(winnerBox.additionalRegisters.R4!).data as bigint[],
           testUtils.TICKET_TOKEN_ID,
@@ -480,7 +484,7 @@ describe('winner', () => {
         );
         const gift = boxFactory.createGiftOutputBox(
           1,
-          someoneWallet.address.toString(),
+          someoneWallet.ergoTree,
           // increase value of output gift-box
           testUtils.FEE * 11n,
           testUtils.GIFT_TOKEN_ID,
@@ -515,22 +519,23 @@ describe('winner', () => {
     winnerTest(
       'should fail when winner-index on the register of gift box is incorrect',
       ({ boxFactory, someoneWallet }) => {
-        const winnerBox = (
-          boxFactory.createWinnersBoxMock(
-            1,
-            testUtils.TICKET_TOKEN_ID,
-            undefined,
-            undefined,
-            10000n,
-            undefined,
-            [
-              {
-                tokenId: testUtils.GIFT_TOKEN_ID,
-                amount: 100n,
-              },
-            ],
-          ) as Box[]
+        const winnerBox = boxFactory.createWinnersBoxMock(
+          1,
+          testUtils.TICKET_TOKEN_ID,
+          undefined,
+          undefined,
+          10000n,
+          undefined,
+          [
+            {
+              tokenId: testUtils.GIFT_TOKEN_ID,
+              amount: 100n,
+            },
+          ],
         )[0];
+        winnerBox.setContextExtension({
+          0: SColl(SByte, someoneWallet.ergoTree),
+        });
         const outWinner = boxFactory.createWinnerOutputBoxWithConstantRegisters(
           SConstant.from(winnerBox.additionalRegisters.R4!).data as bigint[],
           testUtils.TICKET_TOKEN_ID,
@@ -541,7 +546,7 @@ describe('winner', () => {
         const gift = boxFactory.createGiftOutputBox(
           // put incorrect index on the gift box
           2,
-          someoneWallet.address.toString(),
+          someoneWallet.ergoTree,
           testUtils.FEE * 10n,
           testUtils.GIFT_TOKEN_ID,
         );
@@ -575,22 +580,23 @@ describe('winner', () => {
     winnerTest(
       'fail when amount of erg on the gift box is not enough',
       ({ boxFactory, someoneWallet }) => {
-        const winnerBox = (
-          boxFactory.createWinnersBoxMock(
-            1,
-            testUtils.TICKET_TOKEN_ID,
-            undefined,
-            undefined,
-            10000n,
-            undefined,
-            [
-              {
-                tokenId: testUtils.GIFT_TOKEN_ID,
-                amount: 100n,
-              },
-            ],
-          ) as Box[]
+        const winnerBox = boxFactory.createWinnersBoxMock(
+          1,
+          testUtils.TICKET_TOKEN_ID,
+          undefined,
+          undefined,
+          10000n,
+          undefined,
+          [
+            {
+              tokenId: testUtils.GIFT_TOKEN_ID,
+              amount: 100n,
+            },
+          ],
         )[0];
+        winnerBox.setContextExtension({
+          0: SColl(SByte, someoneWallet.ergoTree),
+        });
         const outWinner = boxFactory.createWinnerOutputBoxWithConstantRegisters(
           SConstant.from(winnerBox.additionalRegisters.R4!).data as bigint[],
           testUtils.TICKET_TOKEN_ID,
@@ -600,7 +606,7 @@ describe('winner', () => {
         );
         const gift = boxFactory.createGiftOutputBox(
           1,
-          someoneWallet.address.toString(),
+          someoneWallet.ergoTree,
           // sets lower erg amount than is required
           testUtils.FEE * 1n,
           testUtils.GIFT_TOKEN_ID,
@@ -641,21 +647,19 @@ describe('winner', () => {
       ({ boxFactory, successRaffleBox, creator }) => {
         const totalPrize = 60;
 
-        const winnerBox = (
-          boxFactory.createWinnersBoxMock(
-            1,
-            testUtils.TICKET_TOKEN_ID,
-            undefined,
-            1n,
-            10000n,
-            undefined,
-            [
-              {
-                tokenId: testUtils.GIFT_TOKEN_ID,
-                amount: BigInt(totalPrize),
-              },
-            ],
-          ) as Box[]
+        const winnerBox = boxFactory.createWinnersBoxMock(
+          1,
+          testUtils.TICKET_TOKEN_ID,
+          undefined,
+          1n,
+          10000n,
+          undefined,
+          [
+            {
+              tokenId: testUtils.GIFT_TOKEN_ID,
+              amount: BigInt(totalPrize),
+            },
+          ],
         )[0];
 
         const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
@@ -741,21 +745,19 @@ describe('winner', () => {
           testUtils.X_TOKEN_ID,
         );
 
-        const winnerBox = (
-          boxFactory.createWinnersBoxMock(
-            1,
-            testUtils.TICKET_TOKEN_ID,
-            undefined,
-            1n,
-            10000n,
-            undefined,
-            [
-              {
-                tokenId: testUtils.GIFT_TOKEN_ID,
-                amount: 100n,
-              },
-            ],
-          ) as Box[]
+        const winnerBox = boxFactory.createWinnersBoxMock(
+          1,
+          testUtils.TICKET_TOKEN_ID,
+          undefined,
+          1n,
+          10000n,
+          undefined,
+          [
+            {
+              tokenId: testUtils.GIFT_TOKEN_ID,
+              amount: 100n,
+            },
+          ],
         )[0];
         const successRaffleOutputBoxTokens = [
           successRaffleBox.assets[0],
@@ -857,21 +859,19 @@ describe('winner', () => {
           testUtils.X_TOKEN_ID,
         );
 
-        const winnerBox = (
-          boxFactory.createWinnersBoxMock(
-            1,
-            testUtils.TICKET_TOKEN_ID,
-            undefined,
-            1n,
-            10000n,
-            undefined,
-            [
-              {
-                tokenId: testUtils.GIFT_TOKEN_ID,
-                amount: 100n,
-              },
-            ],
-          ) as Box[]
+        const winnerBox = boxFactory.createWinnersBoxMock(
+          1,
+          testUtils.TICKET_TOKEN_ID,
+          undefined,
+          1n,
+          10000n,
+          undefined,
+          [
+            {
+              tokenId: testUtils.GIFT_TOKEN_ID,
+              amount: 100n,
+            },
+          ],
         )[0];
         const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
           .data as bigint[];
@@ -942,21 +942,19 @@ describe('winner', () => {
       'should fail when incorrect prize amount puts on the erg-goal prize box',
       ({ boxFactory, successRaffleBox, creator }) => {
         const totalPrize = 60;
-        const winnerBox = (
-          boxFactory.createWinnersBoxMock(
-            1,
-            testUtils.TICKET_TOKEN_ID,
-            undefined,
-            1n,
-            10000n,
-            undefined,
-            [
-              {
-                tokenId: testUtils.GIFT_TOKEN_ID,
-                amount: BigInt(totalPrize),
-              },
-            ],
-          ) as Box[]
+        const winnerBox = boxFactory.createWinnersBoxMock(
+          1,
+          testUtils.TICKET_TOKEN_ID,
+          undefined,
+          1n,
+          10000n,
+          undefined,
+          [
+            {
+              tokenId: testUtils.GIFT_TOKEN_ID,
+              amount: BigInt(totalPrize),
+            },
+          ],
         )[0];
 
         const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
@@ -1044,21 +1042,19 @@ describe('winner', () => {
           testUtils.X_TOKEN_ID,
         );
 
-        const winnerBox = (
-          boxFactory.createWinnersBoxMock(
-            1,
-            testUtils.TICKET_TOKEN_ID,
-            undefined,
-            1n,
-            10000n,
-            undefined,
-            [
-              {
-                tokenId: testUtils.GIFT_TOKEN_ID,
-                amount: 100n,
-              },
-            ],
-          ) as Box[]
+        const winnerBox = boxFactory.createWinnersBoxMock(
+          1,
+          testUtils.TICKET_TOKEN_ID,
+          undefined,
+          1n,
+          10000n,
+          undefined,
+          [
+            {
+              tokenId: testUtils.GIFT_TOKEN_ID,
+              amount: 100n,
+            },
+          ],
         )[0];
         const successRaffleOutputBoxTokens = [
           successRaffleBox.assets[0],
@@ -1147,21 +1143,19 @@ describe('winner', () => {
       ({ boxFactory, successRaffleBox, creator }) => {
         const totalPrize = 60;
 
-        const winnerBox = (
-          boxFactory.createWinnersBoxMock(
-            1,
-            testUtils.TICKET_TOKEN_ID,
-            undefined,
-            1n,
-            10000n,
-            undefined,
-            [
-              {
-                tokenId: testUtils.GIFT_TOKEN_ID,
-                amount: BigInt(totalPrize),
-              },
-            ],
-          ) as Box[]
+        const winnerBox = boxFactory.createWinnersBoxMock(
+          1,
+          testUtils.TICKET_TOKEN_ID,
+          undefined,
+          1n,
+          10000n,
+          undefined,
+          [
+            {
+              tokenId: testUtils.GIFT_TOKEN_ID,
+              amount: BigInt(totalPrize),
+            },
+          ],
         )[0];
 
         const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
@@ -1245,21 +1239,19 @@ describe('winner', () => {
       ({ boxFactory, successRaffleBox, creator }) => {
         const totalPrize = 60;
 
-        const winnerBox = (
-          boxFactory.createWinnersBoxMock(
-            1,
-            testUtils.TICKET_TOKEN_ID,
-            undefined,
-            1n,
-            10000n,
-            undefined,
-            [
-              {
-                tokenId: testUtils.GIFT_TOKEN_ID,
-                amount: BigInt(totalPrize),
-              },
-            ],
-          ) as Box[]
+        const winnerBox = boxFactory.createWinnersBoxMock(
+          1,
+          testUtils.TICKET_TOKEN_ID,
+          undefined,
+          1n,
+          10000n,
+          undefined,
+          [
+            {
+              tokenId: testUtils.GIFT_TOKEN_ID,
+              amount: BigInt(totalPrize),
+            },
+          ],
         )[0];
 
         const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
@@ -1330,21 +1322,19 @@ describe('winner', () => {
       'should fail when an invalid token is placed in the successRaffle box',
       ({ boxFactory, someoneWallet, successRaffleBox, creator }) => {
         const totalPrize = 60;
-        const winnerBox = (
-          boxFactory.createWinnersBoxMock(
-            1,
-            testUtils.TICKET_TOKEN_ID,
-            undefined,
-            1n,
-            10000n,
-            undefined,
-            [
-              {
-                tokenId: testUtils.GIFT_TOKEN_ID,
-                amount: 100n,
-              },
-            ],
-          ) as Box[]
+        const winnerBox = boxFactory.createWinnersBoxMock(
+          1,
+          testUtils.TICKET_TOKEN_ID,
+          undefined,
+          1n,
+          10000n,
+          undefined,
+          [
+            {
+              tokenId: testUtils.GIFT_TOKEN_ID,
+              amount: 100n,
+            },
+          ],
         )[0];
 
         const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
@@ -1430,7 +1420,7 @@ describe('winner', () => {
               amount: BigInt(totalPrize),
             },
           ],
-        ) as Box[];
+        );
         const winnerBox1 = inputWinnerBoxes[0];
         const winnerBox2 = inputWinnerBoxes[1];
 
@@ -1505,25 +1495,23 @@ describe('winner', () => {
         boxFactory.chain.setTip(2001);
         const giftCount = 3n;
         // Create input boxes
-        const winner = (
-          boxFactory.createWinnersBoxMock(
-            1,
-            testUtils.TICKET_TOKEN_ID,
-            undefined,
-            3n,
-            0n,
-            testUtils.GIFT_TOKEN_ID,
-            [
-              {
-                tokenId: testUtils.GIFT_TOKEN_ID,
-                amount: 1n,
-              },
-            ],
-          ) as Box[]
+        const winner = boxFactory.createWinnersBoxMock(
+          1,
+          testUtils.TICKET_TOKEN_ID,
+          undefined,
+          3n,
+          0n,
+          testUtils.GIFT_TOKEN_ID,
+          [
+            {
+              tokenId: testUtils.GIFT_TOKEN_ID,
+              amount: 1n,
+            },
+          ],
         )[0];
         const gift = boxFactory.createGiftBoxMock(
           1,
-          someoneWallet.address.toString(),
+          someoneWallet.ergoTree,
           testUtils.FEE * 2n,
           testUtils.GIFT_TOKEN_ID,
           1n,
@@ -1585,25 +1573,23 @@ describe('winner', () => {
         boxFactory.chain.setTip(2001);
         const giftCount = 3n;
         // Create input boxes
-        const winner = (
-          boxFactory.createWinnersBoxMock(
-            1,
-            testUtils.TICKET_TOKEN_ID,
-            undefined,
-            3n,
-            0n,
-            undefined,
-            [
-              {
-                tokenId: testUtils.GIFT_TOKEN_ID,
-                amount: 1n,
-              },
-            ],
-          ) as Box[]
+        const winner = boxFactory.createWinnersBoxMock(
+          1,
+          testUtils.TICKET_TOKEN_ID,
+          undefined,
+          3n,
+          0n,
+          undefined,
+          [
+            {
+              tokenId: testUtils.GIFT_TOKEN_ID,
+              amount: 1n,
+            },
+          ],
         )[0];
         const gift = boxFactory.createGiftBoxMock(
           1,
-          someoneWallet.address.toString(),
+          someoneWallet.ergoTree,
           testUtils.FEE * 2n,
           testUtils.GIFT_TOKEN_ID,
           1n,
@@ -1664,25 +1650,23 @@ describe('winner', () => {
       ({ boxFactory, someoneWallet }) => {
         boxFactory.chain.setTip(2001);
         // Create input boxes
-        const winner = (
-          boxFactory.createWinnersBoxMock(
-            1,
-            testUtils.TICKET_TOKEN_ID,
-            undefined,
-            2n,
-            1000n,
-            undefined,
-            [
-              {
-                tokenId: testUtils.GIFT_TOKEN_ID,
-                amount: 1n,
-              },
-            ],
-          ) as Box[]
+        const winner = boxFactory.createWinnersBoxMock(
+          1,
+          testUtils.TICKET_TOKEN_ID,
+          undefined,
+          2n,
+          1000n,
+          undefined,
+          [
+            {
+              tokenId: testUtils.GIFT_TOKEN_ID,
+              amount: 1n,
+            },
+          ],
         )[0];
         const gift = boxFactory.createGiftBoxMock(
           1,
-          someoneWallet.address.toString(),
+          someoneWallet.ergoTree,
           testUtils.FEE * 2n,
           testUtils.GIFT_TOKEN_ID,
           1n,
@@ -1750,25 +1734,23 @@ describe('winner', () => {
       ({ boxFactory, someoneWallet }) => {
         boxFactory.chain.setTip(2001);
         // Create input boxes
-        const winner = (
-          boxFactory.createWinnersBoxMock(
-            1,
-            testUtils.TICKET_TOKEN_ID,
-            undefined,
-            3n,
-            0n,
-            testUtils.GIFT_TOKEN_ID,
-            [
-              {
-                tokenId: testUtils.GIFT_TOKEN_ID,
-                amount: 1n,
-              },
-            ],
-          ) as Box[]
+        const winner = boxFactory.createWinnersBoxMock(
+          1,
+          testUtils.TICKET_TOKEN_ID,
+          undefined,
+          3n,
+          0n,
+          testUtils.GIFT_TOKEN_ID,
+          [
+            {
+              tokenId: testUtils.GIFT_TOKEN_ID,
+              amount: 1n,
+            },
+          ],
         )[0];
         const gift = boxFactory.createGiftBoxMock(
           1,
-          someoneWallet.address.toString(),
+          someoneWallet.ergoTree,
           testUtils.FEE * 2n,
           testUtils.GIFT_TOKEN_ID,
           1n,
@@ -1832,26 +1814,24 @@ describe('winner', () => {
         boxFactory.chain.setTip(2001);
         const giftCount = 3n;
         // Create input boxes
-        const winner = (
-          boxFactory.createWinnersBoxMock(
-            10,
-            testUtils.TICKET_TOKEN_ID,
-            undefined,
-            3n,
-            0n,
-            undefined,
-            [
-              {
-                tokenId: testUtils.GIFT_TOKEN_ID,
-                amount: 1n,
-              },
-            ],
-          ) as Box[]
+        const winner = boxFactory.createWinnersBoxMock(
+          10,
+          testUtils.TICKET_TOKEN_ID,
+          undefined,
+          3n,
+          0n,
+          undefined,
+          [
+            {
+              tokenId: testUtils.GIFT_TOKEN_ID,
+              amount: 1n,
+            },
+          ],
         )[0];
         const gift = boxFactory.createGiftBoxMock(
           // set invalid winner-index to this box
           7,
-          someoneWallet.address.toString(),
+          someoneWallet.ergoTree,
           testUtils.FEE * 2n,
           testUtils.GIFT_TOKEN_ID,
           1n,
@@ -1915,25 +1895,23 @@ describe('winner', () => {
         boxFactory.chain.setTip(2001);
         const giftCount = 3n;
         // Create input boxes
-        const winner = (
-          boxFactory.createWinnersBoxMock(
-            1,
-            testUtils.TICKET_TOKEN_ID,
-            undefined,
-            3n,
-            0n,
-            undefined,
-            [
-              {
-                tokenId: testUtils.GIFT_TOKEN_ID,
-                amount: 1n,
-              },
-            ],
-          ) as Box[]
+        const winner = boxFactory.createWinnersBoxMock(
+          1,
+          testUtils.TICKET_TOKEN_ID,
+          undefined,
+          3n,
+          0n,
+          undefined,
+          [
+            {
+              tokenId: testUtils.GIFT_TOKEN_ID,
+              amount: 1n,
+            },
+          ],
         )[0];
         const gift1 = boxFactory.createGiftBoxMock(
           1,
-          someoneWallet.address.toString(),
+          someoneWallet.ergoTree,
           testUtils.FEE * 2n,
           testUtils.GIFT_TOKEN_ID,
           1n,
@@ -1941,7 +1919,7 @@ describe('winner', () => {
 
         const gift2 = boxFactory.createGiftBoxMock(
           1,
-          someoneWallet.address.toString(),
+          someoneWallet.ergoTree,
           testUtils.FEE * 2n,
           testUtils.GIFT_TOKEN_ID,
           1n,
@@ -2005,21 +1983,19 @@ describe('winner', () => {
       'should success erg-goal winner removal transaction',
       ({ boxFactory }) => {
         // Create input boxes
-        const winner = (
-          boxFactory.createWinnersBoxMock(
-            1,
-            testUtils.TICKET_TOKEN_ID,
-            undefined,
-            0n,
-            0n,
-            undefined,
-            [
-              {
-                tokenId: testUtils.GIFT_TOKEN_ID,
-                amount: 10n,
-              },
-            ],
-          ) as Box[]
+        const winner = boxFactory.createWinnersBoxMock(
+          1,
+          testUtils.TICKET_TOKEN_ID,
+          undefined,
+          0n,
+          0n,
+          undefined,
+          [
+            {
+              tokenId: testUtils.GIFT_TOKEN_ID,
+              amount: 10n,
+            },
+          ],
         )[0];
         const redeemedGift = boxFactory.createGiftRedeemBoxMock(
           testUtils.FEE,
@@ -2073,21 +2049,19 @@ describe('winner', () => {
       'should fail erg-goal based winner removal transaction by redeemGift box of another raffle',
       ({ boxFactory }) => {
         // Create input boxes
-        const winner = (
-          boxFactory.createWinnersBoxMock(
-            1,
-            testUtils.TICKET_TOKEN_ID,
-            undefined,
-            0n,
-            0n,
-            undefined,
-            [
-              {
-                tokenId: testUtils.GIFT_TOKEN_ID,
-                amount: 1n,
-              },
-            ],
-          ) as Box[]
+        const winner = boxFactory.createWinnersBoxMock(
+          1,
+          testUtils.TICKET_TOKEN_ID,
+          undefined,
+          0n,
+          0n,
+          undefined,
+          [
+            {
+              tokenId: testUtils.GIFT_TOKEN_ID,
+              amount: 1n,
+            },
+          ],
         )[0];
         const redeemGift = boxFactory.createGiftRedeemBoxMock(
           testUtils.FEE,
@@ -2142,22 +2116,20 @@ describe('winner', () => {
       'should fail erg-goal based winner removal when gift-count is greater than zero',
       ({ boxFactory }) => {
         // Create input boxes
-        const winner = (
-          boxFactory.createWinnersBoxMock(
-            1,
-            testUtils.TICKET_TOKEN_ID,
-            undefined,
-            // set gift count greater than zero
-            2n,
-            0n,
-            undefined,
-            [
-              {
-                tokenId: testUtils.GIFT_TOKEN_ID,
-                amount: 1n,
-              },
-            ],
-          ) as Box[]
+        const winner = boxFactory.createWinnersBoxMock(
+          1,
+          testUtils.TICKET_TOKEN_ID,
+          undefined,
+          // set gift count greater than zero
+          2n,
+          0n,
+          undefined,
+          [
+            {
+              tokenId: testUtils.GIFT_TOKEN_ID,
+              amount: 1n,
+            },
+          ],
         )[0];
         const redeemedGift = boxFactory.createGiftRedeemBoxMock(
           testUtils.FEE,
@@ -2212,21 +2184,19 @@ describe('winner', () => {
       'should fail erg-goal based winner removal when some gift-tokens move to another box',
       ({ boxFactory, someoneWallet }) => {
         // Create input boxes
-        const winner = (
-          boxFactory.createWinnersBoxMock(
-            1,
-            testUtils.TICKET_TOKEN_ID,
-            undefined,
-            0n,
-            0n,
-            undefined,
-            [
-              {
-                tokenId: testUtils.GIFT_TOKEN_ID,
-                amount: 1n,
-              },
-            ],
-          ) as Box[]
+        const winner = boxFactory.createWinnersBoxMock(
+          1,
+          testUtils.TICKET_TOKEN_ID,
+          undefined,
+          0n,
+          0n,
+          undefined,
+          [
+            {
+              tokenId: testUtils.GIFT_TOKEN_ID,
+              amount: 1n,
+            },
+          ],
         )[0];
         const redeemedGift = boxFactory.createGiftRedeemBoxMock(
           testUtils.FEE,
@@ -2258,7 +2228,7 @@ describe('winner', () => {
               amount: 1n,
             },
           ],
-          someoneWallet.address.toString(),
+          someoneWallet.ergoTree,
         );
 
         const giftReturnTx = new TransactionBuilder(boxFactory.chain.height)
