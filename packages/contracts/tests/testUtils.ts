@@ -1073,6 +1073,38 @@ export class RaffleBoxFactory {
     return winnersBoxes;
   }
 
+  createWinnerSingleBoxMock(
+    step: number,
+    winnersCount: number = 1,
+    ticketTokenId: string = TICKET_TOKEN_ID,
+    ticketTokenAmount: bigint = 1n,
+    giftCount: bigint = 0n,
+    deadline: bigint = 100n,
+    giftTokenId?: string,
+    extraTokens?: TokenAmount<bigint>[],
+  ): Box {
+    return mockUTxO({
+      value: 4n * FEE,
+      ergoTree: this.contractsAddresses['winner'],
+      additionalRegisters: {
+        R4: SColl(SLong, [1000n / BigInt(winnersCount), deadline, FEE]).toHex(),
+        R5: SInt(step).toHex(),
+        R6: SLong(giftCount).toHex(),
+        R7:
+          giftTokenId !== undefined
+            ? SColl(SByte, Array.from(Buffer.from(giftTokenId, 'hex'))).toHex()
+            : undefined,
+      },
+      assets: [
+        {
+          tokenId: ticketTokenId,
+          amount: ticketTokenAmount,
+        },
+        ...(extraTokens || []),
+      ],
+    });
+  }
+
   /**
    * create winners output boxes
    * @param winnersCount
