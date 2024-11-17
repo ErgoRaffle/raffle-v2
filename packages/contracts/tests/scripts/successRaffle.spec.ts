@@ -3,7 +3,6 @@ import { Box, ErgoUnsignedInput, TransactionBuilder } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
 import { SColl, SLong, SConstant } from '@fleet-sdk/serializer';
 
-import * as utils from '../../lib/utils';
 import * as testUtils from '../testUtils';
 import * as constants from '../../constants';
 import { ScriptNamesType } from '../../lib/types';
@@ -349,59 +348,42 @@ describe('successRaffle', () => {
      */
     successRaffleTest(
       'should fail with wrong calculated winner ticket index',
-      ({ boxFactory, creator, nextSeed, winnersBoxes }) => {
+      ({ boxFactory, creator, nextSeed, winnersBoxes, successRaffleBox }) => {
+        boxFactory.chain.setTip(2000);
+
         const winnersCount = 5;
         const totalPrize = 5n;
         const rewardPercent = 200n;
         const totalSoldTickets = totalPrize;
-        // Created input successRaffle-box
-        const prizeValue = 10n * totalPrize;
-        const successRaffleBox = boxFactory.createSuccessRaffleBoxMock(
-          testUtils.FEE * 3n + testUtils.CREATION_FEE,
-          testUtils.LICENSE_TOKEN_ID,
-          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
-          TEST_INITIAL_SEED,
-          [],
-          5n,
-          5,
-          totalPrize,
-          prizeValue,
-          2,
-        ) as ErgoUnsignedInput;
-        const realNewWinnerTicketIndexStep1 = testUtils.generateNextWinnerIndex(
-          [],
-          1,
-          Uint8Array.from(Array.from(Buffer.from(TEST_INITIAL_SEED, 'hex'))),
-          totalSoldTickets,
-        );
-        const realNewWinnerTicketIndexStep2 = testUtils.generateNextWinnerIndex(
-          [realNewWinnerTicketIndexStep1],
-          2,
-          Uint8Array.from(Array.from(Buffer.from(nextSeed, 'hex'))),
-          totalSoldTickets,
-        );
-        // set invalid winner ticket index
-        const invalidNewWinnerTicketIndex =
-          (realNewWinnerTicketIndexStep2 + 1n) % 5n;
+        // calculate invalid ticket-index
+        const invalidWinnerTicketIndex =
+          (testUtils.generateNextWinnerIndex(
+            [],
+            1,
+            Uint8Array.from(Array.from(Buffer.from(TEST_INITIAL_SEED, 'hex'))),
+            totalSoldTickets,
+          ) +
+            1n) %
+          BigInt(winnersCount);
 
         successRaffleBox.setContextExtension({
-          0: SColl(SLong, [realNewWinnerTicketIndexStep1]),
-          1: SLong(realNewWinnerTicketIndexStep2),
+          0: SColl(SLong, []),
+          1: SLong(invalidWinnerTicketIndex),
         });
 
         const winnerIndex = SConstant.from(
-          (winnersBoxes as Box[])[1].additionalRegisters.R5!,
+          (winnersBoxes as Box[])[0].additionalRegisters.R5!,
         ).data as number;
         const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 3n + (totalPrize * rewardPercent) / 1000n,
           winnerIndex,
-          realNewWinnerTicketIndexStep2,
+          invalidWinnerTicketIndex,
           1n,
           0n,
-          [(winnersBoxes as Box[])[1].assets[0]],
+          [(winnersBoxes as Box[])[0].assets[0]],
         );
         const successRaffleOutputValue =
-          BigInt((winnersBoxes as Box[])[1].value) +
+          BigInt((winnersBoxes as Box[])[0].value) +
           successRaffleBox.value -
           prizeOutputBox.value -
           testUtils.FEE;
@@ -410,29 +392,16 @@ describe('successRaffle', () => {
           testUtils.LICENSE_TOKEN_ID,
           nextSeed,
           blake2b256(Buffer.from(creator.ergoTree, 'hex')),
-          // append invalid newWinnerTicketIndex instead of realNewWinnerTicketIndexStep2
-          [realNewWinnerTicketIndexStep1, invalidNewWinnerTicketIndex],
+          [invalidWinnerTicketIndex],
           totalSoldTickets,
           winnersCount,
           totalPrize,
           undefined,
-          3,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          blake2b256(
-            Buffer.concat(
-              [
-                realNewWinnerTicketIndexStep1,
-                realNewWinnerTicketIndexStep2,
-              ].map((n) => utils.bigIntToUint8Array(n)),
-            ),
-          ),
+          2,
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([successRaffleBox, (winnersBoxes as Box[])[1]])
+          .from([successRaffleBox, (winnersBoxes as Box[])[0]])
           .to([successRaffleOutputBox, prizeOutputBox])
           .payFee(testUtils.FEE)
           .build();
