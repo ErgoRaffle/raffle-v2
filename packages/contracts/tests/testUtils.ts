@@ -671,7 +671,7 @@ export class RaffleBoxFactory {
     totalSoldTickets: bigint,
     winnersCount: number = 1,
     totalPrize: bigint = 1n,
-    prizeValue: bigint = 0n,
+    collectingTokenAmount: bigint = 0n,
     step: number = 0,
     ticketTokenId: string = TICKET_TOKEN_ID,
     ticketTokenAmount: bigint = 1n,
@@ -691,7 +691,7 @@ export class RaffleBoxFactory {
             ? [
                 {
                   tokenId: collectingTokenId,
-                  amount: prizeValue,
+                  amount: collectingTokenAmount,
                 },
               ]
             : []),
@@ -731,6 +731,7 @@ export class RaffleBoxFactory {
    * @param ticketTokenId
    * @param ticketTokenAmount
    * @param collectingTokenId
+   * @param extraTokens
    * @param SelectedWinnersListHash
    * @returns
    */
@@ -1571,7 +1572,7 @@ export const generateNextWinnerIndex = (
  * @param buffer
  * @returns signed bigint
  */
-export const uint8ArrayToSignedBigInt = (buffer: Uint8Array): bigint => {
+const uint8ArrayToSignedBigInt = (buffer: Uint8Array): bigint => {
   const hexStr = Buffer.from(buffer).toString('hex');
   const bigIntValue = BigInt('0x' + hexStr);
   const bitLength = BigInt(hexStr.length * 4); // Each hex digit represents 4 bits

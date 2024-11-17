@@ -18,10 +18,8 @@ const TEST_INITIAL_SEED = '0123456789012345';
  *   - create winners input boxes
  * @returns vitest customized "it" object
  */
-const createSuccessRaffleTest = (
-  winnersCount: number = 5,
-  collectingTokenId?: string,
-) => {
+const createSuccessRaffleTest = (collectingTokenId?: string) => {
+  const winnersCount = 5;
   const totalPrize = 5n;
   const boxFactory = new testUtils.RaffleBoxFactory(
     { height: 1000 },
@@ -53,7 +51,7 @@ const createSuccessRaffleTest = (
   );
 
   // Created input successRaffle-box
-  const prizeValue = 10n * totalPrize;
+  const collectingTokenAmount = 10n * totalPrize;
   const successRaffleBox = boxFactory.createSuccessRaffleBoxMock(
     testUtils.FEE * 3n + testUtils.CREATION_FEE,
     testUtils.LICENSE_TOKEN_ID,
@@ -63,7 +61,7 @@ const createSuccessRaffleTest = (
     5n,
     winnersCount,
     totalPrize,
-    prizeValue,
+    collectingTokenAmount,
     1,
     undefined,
     undefined,
@@ -80,7 +78,7 @@ const createSuccessRaffleTest = (
       5n,
       winnersCount,
       totalPrize,
-      prizeValue,
+      collectingTokenAmount,
       6,
       undefined,
       undefined,
@@ -96,13 +94,14 @@ const createSuccessRaffleTest = (
     testUtils.GIFT_TOKEN_ID,
   );
 
+  const nextSeed = Buffer.from(blake2b256(TEST_INITIAL_SEED)).toString('hex');
+
   return it.extend({
     boxFactory: boxFactory,
-    winnersCount: winnersCount,
-    totalPrize: totalPrize,
     someoneWallet: someone,
     ownerWallet: owner,
     creator: creator,
+    nextSeed: nextSeed,
     serviceBox: serviceBox,
     successRaffleBox: successRaffleBox,
     successRaffleForLicenseRedeemBox: successRaffleForLicenseRedeemBox,
@@ -113,7 +112,6 @@ const createSuccessRaffleTest = (
 describe('successRaffle', () => {
   const successRaffleTest = createSuccessRaffleTest();
   const successRaffleTokenGoalTest = createSuccessRaffleTest(
-    undefined,
     testUtils.X_TOKEN_ID,
   );
 
@@ -129,12 +127,12 @@ describe('successRaffle', () => {
      */
     successRaffleTest(
       'should successfully create winner prize for an erg-goal raffle',
-      ({ boxFactory, creator, winnersBoxes, successRaffleBox }) => {
+      ({ boxFactory, creator, nextSeed, winnersBoxes, successRaffleBox }) => {
         boxFactory.chain.setTip(2000);
 
         const winnersCount = 5;
         const totalPrize = 5n;
-        const rewardPercent = 5n;
+        const rewardPercent = 200n;
         const totalSoldTickets = totalPrize;
         const newWinnerTicketIndex = testUtils.generateNextWinnerIndex(
           [],
@@ -148,9 +146,6 @@ describe('successRaffle', () => {
           1: SLong(newWinnerTicketIndex),
         });
 
-        const nextSeed = Buffer.from(blake2b256(TEST_INITIAL_SEED)).toString(
-          'hex',
-        );
         const winnerIndex = SConstant.from(
           (winnersBoxes as Box[])[0].additionalRegisters.R5!,
         ).data as number;
@@ -203,7 +198,7 @@ describe('successRaffle', () => {
      */
     successRaffleTokenGoalTest(
       'should successfully create winner prize for a token-goal raffle',
-      ({ boxFactory, creator, winnersBoxes, successRaffleBox }) => {
+      ({ boxFactory, creator, nextSeed, winnersBoxes, successRaffleBox }) => {
         const winnersCount = 5;
         const totalPrize = 5n;
         const rewardPercent = 200n;
@@ -219,10 +214,6 @@ describe('successRaffle', () => {
           0: SColl(SLong, []),
           1: SLong(newWinnerTicketIndex),
         });
-
-        const nextSeed = Buffer.from(blake2b256(TEST_INITIAL_SEED)).toString(
-          'hex',
-        );
 
         const winnerIndex = SConstant.from(
           (winnersBoxes as Box[])[0].additionalRegisters.R5!,
@@ -281,7 +272,7 @@ describe('successRaffle', () => {
      */
     successRaffleTokenGoalTest(
       'should successfully create winner prize for a token-goal raffle by zero reward percent',
-      ({ boxFactory, creator, successRaffleBox }) => {
+      ({ boxFactory, creator, nextSeed, successRaffleBox }) => {
         const winnersCount = 5;
         const totalPrize = 5n;
         const rewardPercent = 0n;
@@ -307,10 +298,6 @@ describe('successRaffle', () => {
           0: SColl(SLong, []),
           1: SLong(newWinnerTicketIndex),
         });
-
-        const nextSeed = Buffer.from(blake2b256(TEST_INITIAL_SEED)).toString(
-          'hex',
-        );
 
         const winnerIndex = SConstant.from(winnerBox.additionalRegisters.R5!)
           .data as number;
@@ -362,10 +349,10 @@ describe('successRaffle', () => {
      */
     successRaffleTest(
       'should fail with wrong calculated winner ticket index',
-      ({ boxFactory, creator, winnersBoxes }) => {
+      ({ boxFactory, creator, nextSeed, winnersBoxes }) => {
         const winnersCount = 5;
         const totalPrize = 5n;
-        const rewardPercent = 5n;
+        const rewardPercent = 200n;
         const totalSoldTickets = totalPrize;
         // Created input successRaffle-box
         const prizeValue = 10n * totalPrize;
@@ -386,9 +373,6 @@ describe('successRaffle', () => {
           1,
           Uint8Array.from(Array.from(Buffer.from(TEST_INITIAL_SEED, 'hex'))),
           totalSoldTickets,
-        );
-        const nextSeed = Buffer.from(blake2b256(TEST_INITIAL_SEED)).toString(
-          'hex',
         );
         const realNewWinnerTicketIndexStep2 = testUtils.generateNextWinnerIndex(
           [realNewWinnerTicketIndexStep1],
@@ -468,9 +452,9 @@ describe('successRaffle', () => {
      */
     successRaffleTest(
       'should fail with duplicated winner ticket index',
-      ({ boxFactory, creator, winnersBoxes }) => {
+      ({ boxFactory, creator, nextSeed, winnersBoxes }) => {
         const winnersCount = 5;
-        const rewardPercent = 5n;
+        const rewardPercent = 200n;
         const totalSoldTickets = 5n;
         const totalPrize = 5n;
         const prizeValue = 10n * totalPrize;
@@ -496,13 +480,10 @@ describe('successRaffle', () => {
           1: SLong(newWinnerTicketIndex),
         });
 
-        const nextSeed = Buffer.from(blake2b256(TEST_INITIAL_SEED)).toString(
-          'hex',
-        );
-
         const winnerIndex = SConstant.from(
           (winnersBoxes as Box[])[1].additionalRegisters.R5!,
         ).data as number;
+
         const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 3n + (totalPrize * rewardPercent) / 1000n,
           winnerIndex,
@@ -550,10 +531,10 @@ describe('successRaffle', () => {
      */
     successRaffleTest(
       'should fail if wrong winner ticket index is set on winner prize box',
-      ({ boxFactory, creator, winnersBoxes, successRaffleBox }) => {
+      ({ boxFactory, creator, nextSeed, winnersBoxes, successRaffleBox }) => {
         const winnersCount = 5;
         const totalPrize = 5n;
-        const rewardPercent = 5n;
+        const rewardPercent = 200n;
         const totalSoldTickets = totalPrize;
         const newWinnerTicketIndex = testUtils.generateNextWinnerIndex(
           [],
@@ -566,10 +547,6 @@ describe('successRaffle', () => {
           0: SColl(SLong, []),
           1: SLong(newWinnerTicketIndex),
         });
-
-        const nextSeed = Buffer.from(blake2b256(TEST_INITIAL_SEED)).toString(
-          'hex',
-        );
 
         const winnerIndex = SConstant.from(
           (winnersBoxes as Box[])[0].additionalRegisters.R5!,
@@ -622,11 +599,11 @@ describe('successRaffle', () => {
      */
     successRaffleTest(
       'should fail if input winner box belongs to another raffle',
-      ({ boxFactory, creator, successRaffleBox }) => {
+      ({ boxFactory, creator, nextSeed, successRaffleBox }) => {
         const winnersCount = 5;
         const totalPrize = 5n;
         const anotherRaffleTicketId = '0'.repeat(64);
-        const rewardPercent = 5n;
+        const rewardPercent = 200n;
         const totalSoldTickets = totalPrize;
         const newWinnerTicketIndex = testUtils.generateNextWinnerIndex(
           [],
@@ -650,10 +627,6 @@ describe('successRaffle', () => {
           0: SColl(SLong, []),
           1: SLong(newWinnerTicketIndex),
         });
-
-        const nextSeed = Buffer.from(blake2b256(TEST_INITIAL_SEED)).toString(
-          'hex',
-        );
 
         const winnerIndex = SConstant.from(winnerBox.additionalRegisters.R5!)
           .data as number;
@@ -704,10 +677,10 @@ describe('successRaffle', () => {
      */
     successRaffleTest(
       'should fail if input winner box does not match with step on success raffle',
-      ({ boxFactory, creator, winnersBoxes, successRaffleBox }) => {
+      ({ boxFactory, creator, nextSeed, winnersBoxes, successRaffleBox }) => {
         const winnersCount = 5;
         const totalPrize = 5n;
-        const rewardPercent = 5n;
+        const rewardPercent = 200n;
         const totalSoldTickets = totalPrize;
         const newWinnerTicketIndex = testUtils.generateNextWinnerIndex(
           [],
@@ -720,10 +693,6 @@ describe('successRaffle', () => {
           0: SColl(SLong, []),
           1: SLong(newWinnerTicketIndex),
         });
-
-        const nextSeed = Buffer.from(blake2b256(TEST_INITIAL_SEED)).toString(
-          'hex',
-        );
 
         const winnerIndex = SConstant.from(
           (winnersBoxes as Box[])[0].additionalRegisters.R5!,
@@ -776,10 +745,10 @@ describe('successRaffle', () => {
      */
     successRaffleTest(
       'should fail with wrong selected winner list in success raffle output box',
-      ({ boxFactory, creator, winnersBoxes, successRaffleBox }) => {
+      ({ boxFactory, creator, nextSeed, winnersBoxes, successRaffleBox }) => {
         const winnersCount = 5;
         const totalPrize = 5n;
-        const rewardPercent = 5n;
+        const rewardPercent = 200n;
         const totalSoldTickets = totalPrize;
         const newWinnerTicketIndex = testUtils.generateNextWinnerIndex(
           [],
@@ -792,10 +761,6 @@ describe('successRaffle', () => {
           0: SColl(SLong, []),
           1: SLong(newWinnerTicketIndex),
         });
-
-        const nextSeed = Buffer.from(blake2b256(TEST_INITIAL_SEED)).toString(
-          'hex',
-        );
 
         const winnerIndex = SConstant.from(
           (winnersBoxes as Box[])[0].additionalRegisters.R5!,
@@ -851,7 +816,7 @@ describe('successRaffle', () => {
       ({ boxFactory, creator, winnersBoxes, successRaffleBox }) => {
         const winnersCount = 5;
         const totalPrize = 5n;
-        const rewardPercent = 5n;
+        const rewardPercent = 200n;
         const totalSoldTickets = totalPrize;
         const newWinnerTicketIndex = testUtils.generateNextWinnerIndex(
           [],
@@ -916,10 +881,10 @@ describe('successRaffle', () => {
      */
     successRaffleTest(
       'should fail if in a erg-goal raffle funds are deducted more than required prize of the selected winner',
-      ({ boxFactory, creator, winnersBoxes, successRaffleBox }) => {
+      ({ boxFactory, creator, nextSeed, winnersBoxes, successRaffleBox }) => {
         const winnersCount = 5;
         const totalPrize = 5n;
-        const rewardPercent = 5n;
+        const rewardPercent = 200n;
         const totalSoldTickets = totalPrize;
         const newWinnerTicketIndex = testUtils.generateNextWinnerIndex(
           [],
@@ -932,10 +897,6 @@ describe('successRaffle', () => {
           0: SColl(SLong, []),
           1: SLong(newWinnerTicketIndex),
         });
-
-        const nextSeed = Buffer.from(blake2b256(TEST_INITIAL_SEED)).toString(
-          'hex',
-        );
 
         const winnerIndex = SConstant.from(
           (winnersBoxes as Box[])[0].additionalRegisters.R5!,
@@ -988,7 +949,7 @@ describe('successRaffle', () => {
      */
     successRaffleTokenGoalTest(
       'should fail if in a token-goal raffle funds are deducted more than required prize of the selected winner',
-      ({ boxFactory, creator, winnersBoxes, successRaffleBox }) => {
+      ({ boxFactory, creator, nextSeed, winnersBoxes, successRaffleBox }) => {
         const winnersCount = 5;
         const totalPrize = 5n;
         const rewardPercent = 200n;
@@ -1004,10 +965,6 @@ describe('successRaffle', () => {
           0: SColl(SLong, []),
           1: SLong(newWinnerTicketIndex),
         });
-
-        const nextSeed = Buffer.from(blake2b256(TEST_INITIAL_SEED)).toString(
-          'hex',
-        );
 
         const winnerIndex = SConstant.from(
           (winnersBoxes as Box[])[0].additionalRegisters.R5!,
@@ -1069,13 +1026,14 @@ describe('successRaffle', () => {
       ({
         boxFactory,
         creator,
+        nextSeed,
         someoneWallet,
         winnersBoxes,
         successRaffleBox,
       }) => {
         const winnersCount = 5;
         const totalPrize = 5n;
-        const rewardPercent = 5n;
+        const rewardPercent = 200n;
         const totalSoldTickets = totalPrize;
         const newWinnerTicketIndex = testUtils.generateNextWinnerIndex(
           [],
@@ -1088,10 +1046,6 @@ describe('successRaffle', () => {
           0: SColl(SLong, []),
           1: SLong(newWinnerTicketIndex),
         });
-
-        const nextSeed = Buffer.from(blake2b256(TEST_INITIAL_SEED)).toString(
-          'hex',
-        );
 
         const winnerIndex = SConstant.from(
           (winnersBoxes as Box[])[0].additionalRegisters.R5!,
