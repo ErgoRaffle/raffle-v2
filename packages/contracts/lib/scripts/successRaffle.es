@@ -95,7 +95,7 @@
       winnerPrize.R4[Coll[Long]].get(0) == winnerTicketIndex,
 
       // Transaction constraints
-      // calculatedWinnerTicketIndex == winnerTicketIndex,
+      calculatedWinnerTicketIndex == winnerTicketIndex,
       sameSelectedWinners.size == 0,
     )))
   } else {
