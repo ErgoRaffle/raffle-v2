@@ -197,6 +197,7 @@ describe('Raffle', () => {
           winner1 = addGiftTx.outputs[0];
           winnersGifts.push(addGiftTx.outputs[1]);
         }
+        winnerBoxes[0] = winner1;
 
         // Step 5: Donate fifth by five different donators
         let activeRaffle = mergeTx.outputs[0];
@@ -294,7 +295,6 @@ describe('Raffle', () => {
             prizeBoxes[0],
             winnersGifts[i],
             winnerTicket,
-            BigInt(i + 1),
             boxFactory,
           );
           expect(giftUnwrappedTx.success).true;

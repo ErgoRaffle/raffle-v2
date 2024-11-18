@@ -666,7 +666,6 @@ describe('winner', () => {
           .data as bigint[];
 
         const prizeAmount = (BigInt(totalPrize) * BigInt(winnerR4[0])) / 1000n;
-        const prizeBoxTokens = [winnerBox.assets[0], winnerBox.assets[1]];
         const winnerTicketIndex = testUtils.generateNextWinnerIndex(
           [],
           1,
@@ -682,7 +681,7 @@ describe('winner', () => {
           winnerTicketIndex,
           1n,
           0n,
-          prizeBoxTokens,
+          winnerBox.assets[1].amount,
         );
 
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
@@ -768,12 +767,6 @@ describe('winner', () => {
           .data as bigint[];
 
         const prizeAmount = (BigInt(totalPrize) * BigInt(winnerR4[0])) / 1000n;
-        const prizeBoxTokens = [winnerBox.assets[0], winnerBox.assets[1]];
-
-        prizeBoxTokens.push({
-          tokenId: successRaffleBox.assets[2].tokenId,
-          amount: prizeAmount,
-        });
 
         successRaffleOutputBoxTokens.push({
           tokenId: successRaffleBox.assets[2]!.tokenId,
@@ -795,7 +788,11 @@ describe('winner', () => {
           winnerTicketIndex,
           1n,
           0n,
-          prizeBoxTokens,
+          winnerBox.assets[1].amount,
+          {
+            tokenId: successRaffleBox.assets[2].tokenId,
+            amount: prizeAmount,
+          },
         );
 
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
@@ -877,7 +874,6 @@ describe('winner', () => {
           .data as bigint[];
 
         const prizeAmount = (BigInt(totalPrize) * BigInt(winnerR4[0])) / 1000n;
-        const prizeBoxTokens = winnerBox.assets;
 
         const winnerTicketIndex = testUtils.generateNextWinnerIndex(
           [],
@@ -894,7 +890,7 @@ describe('winner', () => {
           winnerTicketIndex,
           1n,
           0n,
-          prizeBoxTokens,
+          winnerBox.assets[1].amount,
         );
 
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
@@ -962,7 +958,6 @@ describe('winner', () => {
 
         const incorrectPrizeAmount =
           (BigInt(totalPrize) * BigInt(winnerR4[1])) / 1000n - 1n;
-        const prizeBoxTokens = [winnerBox.assets[0], winnerBox.assets[1]];
         const winnerTicketIndex = testUtils.generateNextWinnerIndex(
           [0n],
           1,
@@ -978,7 +973,7 @@ describe('winner', () => {
           winnerTicketIndex,
           1n,
           0n,
-          prizeBoxTokens,
+          winnerBox.assets[1].amount,
         );
 
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
@@ -1066,12 +1061,6 @@ describe('winner', () => {
 
         const prizeAmount =
           (BigInt(totalPrize) * BigInt(winnerR4[1])) / 1000n + 1n;
-        const prizeBoxTokens = [winnerBox.assets[0], winnerBox.assets[1]];
-
-        prizeBoxTokens.push({
-          tokenId: successRaffleBox.assets[2].tokenId,
-          amount: prizeAmount,
-        });
 
         successRaffleOutputBoxTokens.push({
           tokenId: successRaffleBox.assets[2]!.tokenId,
@@ -1093,7 +1082,11 @@ describe('winner', () => {
           winnerTicketIndex,
           1n,
           0n,
-          prizeBoxTokens,
+          winnerBox.assets[1].amount,
+          {
+            tokenId: successRaffleBox.assets[2].tokenId,
+            amount: prizeAmount,
+          },
         );
 
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
@@ -1162,14 +1155,6 @@ describe('winner', () => {
           .data as bigint[];
 
         const prizeAmount = (BigInt(totalPrize) * BigInt(winnerR4[0])) / 1000n;
-        const prizeBoxTokens = [
-          winnerBox.assets[0],
-          // Missing one token amount
-          {
-            tokenId: winnerBox.assets[1].tokenId,
-            amount: BigInt(winnerBox.assets[1].amount) - 1n,
-          },
-        ];
         const winnerTicketIndex = testUtils.generateNextWinnerIndex(
           [0n],
           1,
@@ -1185,7 +1170,7 @@ describe('winner', () => {
           winnerTicketIndex,
           1n,
           0n,
-          prizeBoxTokens,
+          winnerBox.assets[1].amount - 1n, // One stolen token
         );
 
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
@@ -1258,7 +1243,6 @@ describe('winner', () => {
           .data as bigint[];
 
         const prizeAmount = (BigInt(totalPrize) * BigInt(winnerR4[0])) / 1000n;
-        const prizeBoxTokens = [winnerBox.assets[0], winnerBox.assets[1]];
         const winnerTicketIndex = testUtils.generateNextWinnerIndex(
           [0n],
           1,
@@ -1274,7 +1258,7 @@ describe('winner', () => {
           winnerTicketIndex,
           1n,
           0n,
-          prizeBoxTokens,
+          winnerBox.assets[1].amount,
         );
 
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
@@ -1341,7 +1325,6 @@ describe('winner', () => {
           .data as bigint[];
 
         const prizeAmount = (BigInt(totalPrize) * BigInt(winnerR4[0])) / 1000n;
-        const prizeBoxTokens = [winnerBox.assets[0], winnerBox.assets[1]];
         const winnerTicketIndex = testUtils.generateNextWinnerIndex(
           [0n],
           1,
@@ -1357,7 +1340,7 @@ describe('winner', () => {
           winnerTicketIndex,
           1n,
           0n,
-          prizeBoxTokens,
+          winnerBox.assets[1].amount,
         );
 
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
@@ -1428,7 +1411,6 @@ describe('winner', () => {
           .data as bigint[];
 
         const prizeAmount = (BigInt(totalPrize) * BigInt(winnerR4[0])) / 1000n;
-        const prizeBoxTokens = [winnerBox1.assets[0], winnerBox1.assets[1]];
         const winnerTicketIndex = testUtils.generateNextWinnerIndex(
           [0n],
           1,
@@ -1444,7 +1426,7 @@ describe('winner', () => {
           winnerTicketIndex,
           1n,
           0n,
-          prizeBoxTokens,
+          winnerBox1.assets[1].amount,
         );
 
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
