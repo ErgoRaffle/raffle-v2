@@ -278,17 +278,17 @@ describe('successRaffle', () => {
      */
     successRaffleTokenGoalTest(
       'should successfully create winner prize for a token-goal raffle by zero reward percent',
-      ({ boxFactory, creator, nextSeed, successRaffleBox }) => {
+      ({
+        boxFactory,
+        creator,
+        newWinnerTicketIndex,
+        nextSeed,
+        successRaffleBox,
+      }) => {
         const winnersCount = 5;
         const totalPrize = 1_000_000n;
         const rewardPercent = 0n;
         const totalSoldTickets = 5n;
-        const newWinnerTicketIndex = testUtils.generateNextWinnerIndex(
-          [],
-          1,
-          Uint8Array.from(Array.from(Buffer.from(TEST_INITIAL_SEED, 'hex'))),
-          totalSoldTickets,
-        );
 
         const winnerBox = boxFactory.createWinnerSingleBoxMock(
           1,
@@ -299,11 +299,6 @@ describe('successRaffle', () => {
           0n,
           testUtils.GIFT_TOKEN_ID,
         );
-
-        successRaffleBox.setContextExtension({
-          0: SColl(SLong, []),
-          1: SLong(newWinnerTicketIndex),
-        });
 
         const winnerIndex = SConstant.from(winnerBox.additionalRegisters.R5!)
           .data as number;
@@ -571,18 +566,18 @@ describe('successRaffle', () => {
      */
     successRaffleTest(
       'should fail if input winner box belongs to another raffle',
-      ({ boxFactory, creator, nextSeed, successRaffleBox }) => {
+      ({
+        boxFactory,
+        creator,
+        newWinnerTicketIndex,
+        nextSeed,
+        successRaffleBox,
+      }) => {
         const winnersCount = 5;
         const totalPrize = 1_000_000n;
         const anotherRaffleTicketId = '0'.repeat(64);
         const rewardPercent = 200n;
         const totalSoldTickets = 5n;
-        const newWinnerTicketIndex = testUtils.generateNextWinnerIndex(
-          [],
-          1,
-          Uint8Array.from(Array.from(Buffer.from(TEST_INITIAL_SEED, 'hex'))),
-          totalSoldTickets,
-        );
 
         const winnerBox = boxFactory.createWinnerSingleBoxMock(
           1,
@@ -594,11 +589,6 @@ describe('successRaffle', () => {
           0n,
           testUtils.GIFT_TOKEN_ID,
         );
-
-        successRaffleBox.setContextExtension({
-          0: SColl(SLong, []),
-          1: SLong(newWinnerTicketIndex),
-        });
 
         const winnerIndex = SConstant.from(winnerBox.additionalRegisters.R5!)
           .data as number;
@@ -663,7 +653,7 @@ describe('successRaffle', () => {
         const totalSoldTickets = 5n;
 
         const winnerIndex = SConstant.from(
-          (winnersBoxes as Box[])[0].additionalRegisters.R5!,
+          (winnersBoxes as Box[])[1].additionalRegisters.R5!,
         ).data as number;
         const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 3n + (totalPrize * rewardPercent) / 1000n,
