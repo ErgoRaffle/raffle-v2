@@ -180,6 +180,7 @@ export class RaffleBoxFactory {
    * @param implementerFeePercent
    * @param creationFee
    * @param licenseTokenId
+   * @param serviceNftId
    * @returns Service Box
    */
   createServiceBoxMock(
@@ -189,6 +190,7 @@ export class RaffleBoxFactory {
     implementerFeePercent: bigint = 100n,
     creationFee = CREATION_FEE,
     licenseTokenId = LICENSE_TOKEN_ID,
+    serviceNftId: string = RAFFLE_NFT_ID,
   ) {
     return new ErgoUnsignedInput(
       mockUTxO({
@@ -196,7 +198,7 @@ export class RaffleBoxFactory {
         value: FEE,
         creationHeight: 4,
         assets: [
-          raffleNFTToken,
+          { tokenId: serviceNftId, amount: 1n },
           { tokenId: licenseTokenId, amount: licenseTokenCount },
         ],
         additionalRegisters: {

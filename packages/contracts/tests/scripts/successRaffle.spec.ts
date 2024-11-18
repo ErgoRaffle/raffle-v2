@@ -20,7 +20,7 @@ const TEST_INITIAL_SEED = '0123456789012345';
 const createSuccessRaffleTest = (collectingTokenId?: string) => {
   const winnersCount = 5;
   const totalPrize = 1_000_000n;
-  const totalRaised = totalPrize;
+  const totalRaised = 20_000_000n;
   const totalSoldTickets = 5n;
 
   const boxFactory = new testUtils.RaffleBoxFactory(
@@ -395,6 +395,91 @@ describe('successRaffle', () => {
           nextSeed,
           blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           [invalidWinnerTicketIndex],
+          totalSoldTickets,
+          winnersCount,
+          totalPrize,
+          undefined,
+          2,
+        );
+
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
+          .from([successRaffleBox, (winnersBoxes as Box[])[0]])
+          .to([successRaffleOutputBox, prizeOutputBox])
+          .payFee(testUtils.FEE)
+          .build();
+
+        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
+      },
+    );
+
+    /**
+     * @target should fail with wrong calculated winner ticket index on the successRaffle input box
+     * @scenario
+     * - create three output boxes
+     * - execute transaction
+     * - result of execution must be fail
+     * @expected
+     * - transaction result must throw error
+     */
+    successRaffleTest(
+      'should fail with wrong calculated winner ticket index on the successRaffle input box',
+      ({
+        boxFactory,
+        creator,
+        newWinnerTicketIndex,
+        nextSeed,
+        winnersBoxes,
+      }) => {
+        boxFactory.chain.setTip(2000);
+
+        const winnersCount = 5;
+        const totalPrize = 1_000_000n;
+        const totalRaised = 20_000_000n;
+        const rewardPercent = 200n;
+        const totalSoldTickets = 5n;
+
+        // Created input successRaffle-box
+        const successRaffleBox = boxFactory.createSuccessRaffleBoxMock(
+          testUtils.FEE * 3n + testUtils.CREATION_FEE,
+          testUtils.LICENSE_TOKEN_ID,
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+          TEST_INITIAL_SEED,
+          // set invalid ticket-index
+          [0n],
+          5n,
+          winnersCount,
+          totalPrize,
+          totalRaised,
+          1,
+        ) as ErgoUnsignedInput;
+
+        successRaffleBox.setContextExtension({
+          0: SColl(SLong, []),
+          1: SLong(newWinnerTicketIndex),
+        });
+
+        const winnerIndex = SConstant.from(
+          (winnersBoxes as Box[])[0].additionalRegisters.R5!,
+        ).data as number;
+        const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
+          testUtils.FEE * 3n + (totalPrize * rewardPercent) / 1000n,
+          winnerIndex,
+          newWinnerTicketIndex,
+          1n,
+          0n,
+          [(winnersBoxes as Box[])[0].assets[0]],
+        );
+        const successRaffleOutputValue =
+          BigInt((winnersBoxes as Box[])[0].value) +
+          successRaffleBox.value -
+          prizeOutputBox.value -
+          testUtils.FEE;
+        const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
+          successRaffleOutputValue,
+          testUtils.LICENSE_TOKEN_ID,
+          nextSeed,
+          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+          [newWinnerTicketIndex],
           totalSoldTickets,
           winnersCount,
           totalPrize,
@@ -1164,6 +1249,8 @@ describe('successRaffle', () => {
           100n,
           100n,
           testUtils.CREATION_FEE,
+          undefined,
+          testUtils.X_TOKEN_ID,
         );
 
         const serviceR4 = SConstant.from(serviceBox.additionalRegisters.R4!)
@@ -1188,11 +1275,7 @@ describe('successRaffle', () => {
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([
-            serviceBox,
-            successRaffleForLicenseRedeemBox,
-            ...someoneWallet.utxos,
-          ])
+          .from([serviceBox, successRaffleForLicenseRedeemBox])
           .to([serviceOutputBox, creatorFund])
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
