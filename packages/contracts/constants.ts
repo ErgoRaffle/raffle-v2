@@ -51,7 +51,9 @@ export const scriptsRequireAddresses: {
   successRaffle: {
     safePay: 'SAFE_PAY_SCRIPT_HASH_B64',
   },
-  winnerPrize: {},
+  winnerPrize: {
+    safePay: 'SAFE_PAY_SCRIPT_HASH_B64',
+  },
   gift: {},
   giftRedeem: {},
   giftTokenRepo: {},
