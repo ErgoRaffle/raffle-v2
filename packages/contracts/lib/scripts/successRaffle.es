@@ -4,7 +4,7 @@
   // Registers:
   //   R4[Coll[Long]]: [TotalPrize, totalSoldTickets, TxFee]
   //   R5[Int]: WinnersCount
-  //   R6[Coll[Byte]]: ProjectAddressHash
+  //   R6[Coll[Byte]]: ProjectErgoTreeHash
   //   R7[Coll[Coll[Byte]]]: [Seed, SelectedWinnersListHash]
   //   R8[Int]: Step
   // Tokens:
@@ -104,7 +104,7 @@
     val service = OUTPUTS(0)
     val projectFund = OUTPUTS(1)
     val txFee = SELF.R4[Coll[Long]].get(2)
-    val projectAddressHash = SELF.R6[Coll[Byte]].get
+    val projectErgoTreeHash = SELF.R6[Coll[Byte]].get
     val hasStolenTickets = OUTPUTS.exists{
       (box: Box) => 
         box.tokens.exists{(token: (Coll[Byte], Long)) => token._1 == SELF.tokens(1)._1}
@@ -117,7 +117,7 @@
       // Correct ProjectFund format
       blake2b256(projectFund.propositionBytes) == safePayScriptHash,
       projectFund.value == SELF.value - txFee,
-      projectFund.R4[Coll[Byte]].get == projectAddressHash,
+      projectFund.R4[Coll[Byte]].get == projectErgoTreeHash,
       projectFund.R5[Long].get == txFee,
       if(!isErgGoal) projectFund.tokens(0) == SELF.tokens(2) else true,
 

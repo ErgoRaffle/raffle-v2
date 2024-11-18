@@ -3,13 +3,15 @@
   //
   // Registers:
   //   R4[Coll[Long]]: [WinnersPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, Deadline, txFee]
-  //   R5[Coll[Coll[Byte]]]: [ServiceAddressHash, ImplementerAddressHash, ProjectAddressHash]
+  //   R5[Coll[Coll[Byte]]]: [ServiceErgoTreeHash, ImplementerErgoTreeHash, ProjectErgoTreeHash]
   //   R6[Int]: WinnersCount
   //   R7[Long]: TotalSoldTickets
   // Tokens:
   //   0: RaffleLicense
   //   1: Ticket
   //   2: CollectingToken (if token-goal raffle)
+  // Context:
+  //   C0: Coll[Byte]: [DonatorErgoTree] (only exists in donation tx)
   //
   // Spent in 3 transactions:
   //   - Donation
@@ -61,11 +63,12 @@
       depositTicketPrice,
 
       // Correct Ticket format
-      // R4: [DonatorAddress]
+      // R4: [DonatorErgoTreeHash]
       // R5: [RangeStart, RangeEnd, TicketPrice]
       blake2b256(ticket.propositionBytes) == ticketScriptHash,
       ticket.value >= 3 * txFee,
       ticket.tokens(0)._1 == SELF.tokens(1)._1,
+      ticket.R4[Coll[Byte]].get == blake2b256(getVar[Coll[Byte]](0).get),
       ticket.R5[Coll[Long]].get == Coll[Long](
         totalSoldTickets, 
         totalSoldTickets + onSaleTickets, 
@@ -82,9 +85,9 @@
     val winnersPercent = SELF.R4[Coll[Long]].get(0)
     val serviceFeePercent = SELF.R4[Coll[Long]].get(1)
     val implementerFeePercent = SELF.R4[Coll[Long]].get(2)
-    val serviceAddressHash = SELF.R5[Coll[Coll[Byte]]].get(0)
-    val implementorAddressHash = SELF.R5[Coll[Coll[Byte]]].get(1)
-    val projectAddressHash = SELF.R5[Coll[Coll[Byte]]].get(2)
+    val serviceErgoTreeHash = SELF.R5[Coll[Coll[Byte]]].get(0)
+    val implementorErgoTreeHash = SELF.R5[Coll[Coll[Byte]]].get(1)
+    val projectErgoTreeHash = SELF.R5[Coll[Coll[Byte]]].get(2)
     val splittingRaisedFund = if(isErgGoal) { 
       serviceFee.value == (totalRaised * serviceFeePercent) / 1000 + 2 * txFee &&
       implementerFee.value == (totalRaised * implementerFeePercent) / 1000 + 2 * txFee
@@ -121,17 +124,17 @@
         txFee
       ),
       successRaffle.R5[Int].get == winnersCount,
-      successRaffle.R6[Coll[Byte]].get == projectAddressHash,
+      successRaffle.R6[Coll[Byte]].get == projectErgoTreeHash,
       successRaffle.R7[Coll[Coll[Byte]]].get(0) == oracleBox.id,
       successRaffle.R7[Coll[Coll[Byte]]].get(1) == blake2b256(Coll[Byte]()),
       successRaffle.R8[Int].get == 1,
 
       // Correct Fee Safe Payments
       blake2b256(serviceFee.propositionBytes) == safePayScriptHash,
-      serviceFee.R4[Coll[Byte]].get == serviceAddressHash,
+      serviceFee.R4[Coll[Byte]].get == serviceErgoTreeHash,
       serviceFee.R5[Long].get == txFee,
       blake2b256(implementerFee.propositionBytes) == safePayScriptHash,
-      implementerFee.R4[Coll[Byte]].get == implementorAddressHash,
+      implementerFee.R4[Coll[Byte]].get == implementorErgoTreeHash,
       implementerFee.R5[Long].get == txFee,
 
       // Transaction constraints
