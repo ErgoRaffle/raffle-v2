@@ -16,6 +16,7 @@ import * as testUtils from '../../testUtils';
  * @param serviceBox : current service box
  * @param feeBoxes
  * @param implementerErgoTree
+ * @param serviceFeeErgoTree
  * @param winnersCount
  * @param deadline
  * @param winnersPercent
@@ -29,6 +30,7 @@ export const executeCreateRaffleTx = (
   serviceBox: ErgoUnsignedInput,
   feeBoxes: Box<bigint>[],
   implementerErgoTree: string,
+  serviceFeeErgoTree: string,
   winnersCount: number,
   deadline: bigint,
   winnersPercent: Array<bigint>,
@@ -44,9 +46,6 @@ export const executeCreateRaffleTx = (
       Array.from(Buffer.from(creator.ergoTree, 'hex')),
     ]),
   });
-  const serviceFeeErgoTree = Buffer.from(
-    SConstant.from(serviceBox.additionalRegisters.R5!).data as Uint8Array,
-  ).toString('hex');
   const serviceR4 = SConstant.from(serviceBox.additionalRegisters.R4!)
     .data as bigint[];
   const serviceFeePercent = serviceR4[0];
@@ -240,6 +239,10 @@ export const executeAddGiftTx = (
   giftGiver: KeyedMockChainParty,
   boxFactory: testUtils.RaffleBoxFactory,
 ) => {
+  const inputWinner = new ErgoUnsignedInput(winner);
+  inputWinner.setContextExtension({
+    0: SColl(SByte, Array.from(Buffer.from(giftGiver.ergoTree, 'hex'))),
+  });
   const ticketTokenId = winner.assets[0].tokenId;
   const giftTokenId = winner.assets[1].tokenId;
   const winnerR4 = SConstant.from(winner.additionalRegisters.R4!)
@@ -264,7 +267,7 @@ export const executeAddGiftTx = (
   );
 
   const addGiftTx = new TransactionBuilder(boxFactory.chain.height)
-    .from([winner, ...giftGiver.utxos.toArray()])
+    .from([inputWinner, ...giftGiver.utxos.toArray()])
     .to([outWinner, gift])
     .configureSelector((selector) => {
       selector.defineStrategy((inputs) => inputs);
@@ -291,6 +294,10 @@ export const executeDonateTx = (
   ticketCount: bigint,
   boxFactory: testUtils.RaffleBoxFactory,
 ) => {
+  const inputActiveRaffle = new ErgoUnsignedInput(activeRaffle);
+  inputActiveRaffle.setContextExtension({
+    0: SColl(SByte, Array.from(Buffer.from(donator.ergoTree, 'hex'))),
+  });
   const r4 = SConstant.from(activeRaffle.additionalRegisters.R4!)
     .data as bigint[];
   const r5 = SConstant.from(activeRaffle.additionalRegisters.R5!)
@@ -334,7 +341,7 @@ export const executeDonateTx = (
   );
 
   const donateTx = new TransactionBuilder(boxFactory.chain.height)
-    .from([activeRaffle, ...donator.utxos.toArray()])
+    .from([inputActiveRaffle, ...donator.utxos.toArray()])
     .to([activeRaffleOutputBox, ticket])
     .configureSelector((selector) => {
       selector.defineStrategy((inputs) => inputs);
@@ -427,7 +434,7 @@ export const executeGiftReturnTx = (
   const redeemedGift = boxFactory.createSafePayOutputBox(
     BigInt(gift.value.toString()) - testUtils.FEE,
     gift.assets.slice(1),
-    blake2b256(SConstant.from(gift.additionalRegisters.R4!).data as Uint8Array),
+    SConstant.from(gift.additionalRegisters.R4!).data as Uint8Array,
   );
   const giftReturnTx = new TransactionBuilder(boxFactory.chain.height)
     .from([winner, gift])
@@ -538,9 +545,6 @@ export const executeTicketRedeemTx = (
     .data as bigint;
   const ticketPrice = r4[1];
   const ticketCount = BigInt(ticket.assets[0].amount.toString());
-  const donatorAddress = Buffer.from(
-    SConstant.from(ticket.additionalRegisters.R4!).data as Uint8Array,
-  ).toString('hex');
 
   let redeemedDonationValue =
     BigInt(ticket.value.toString()) - testUtils.FEE + ticketPrice * ticketCount;
@@ -575,7 +579,7 @@ export const executeTicketRedeemTx = (
   const redeemedDonation = boxFactory.createSafePayOutputBox(
     redeemedDonationValue,
     redeemedDonationTokens,
-    blake2b256(Buffer.from(donatorAddress, 'hex')),
+    SConstant.from(ticket.additionalRegisters.R4!).data as Uint8Array,
   );
 
   const ticketRedeemTx = new TransactionBuilder(boxFactory.chain.height)
@@ -595,16 +599,15 @@ export const executeTicketRedeemTx = (
  * @param endedRaffle
  * @param service
  * @param boxFactory
+ * @param serviceFeeErgoTree
  */
 export const executeReturnRaffleLicenseTx = (
   endedRaffle: testUtils.OutputBox,
   service: testUtils.OutputBox,
   boxFactory: testUtils.RaffleBoxFactory,
   changeAddress: string,
+  serviceFeeErgoTree: string,
 ) => {
-  const serviceFeeErgoTree = Buffer.from(
-    SConstant.from(service.additionalRegisters.R5!).data as Uint8Array,
-  ).toString('hex');
   const serviceR4 = SConstant.from(service.additionalRegisters.R4!)
     .data as bigint[];
   const serviceFeePercent = serviceR4[0];
@@ -802,13 +805,12 @@ export const executePrizeCreationTx = (
         ],
   );
 
-  winnerIndexList.push(BigInt(winnerTicketIndex));
   const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
     isErgGoal ? successRaffleBox.value - prizeAmount : successRaffleBox.value,
     successRaffleBox.assets[0].tokenId,
     seed,
     projectAddressHash,
-    winnerIndexList,
+    [...winnerIndexList, winnerTicketIndex],
     totalSoldTickets,
     winnersCount,
     totalPrize,
@@ -876,9 +878,7 @@ export const executeGiftUnwrapTx = (
   const unwrappedGiftBox = boxFactory.createSafePayOutputBox(
     BigInt(giftForWinnerBox.value) - testUtils.FEE,
     giftOutputBoxTokens,
-    blake2b256(
-      SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array,
-    ),
+    SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array,
   );
 
   const giftUnwrapTx = new TransactionBuilder(boxFactory.chain.height)
@@ -909,9 +909,7 @@ export const executeFinalPrizeTx = (
   const finalPrizeSpendingBox = boxFactory.createSafePayOutputBox(
     BigInt(winnerPrizeBox.value) - testUtils.FEE,
     winnerPrizeBox.assets.length > 2 ? [winnerPrizeBox.assets[2]] : [],
-    blake2b256(
-      SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array,
-    ),
+    SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array,
   );
 
   const finalPrizeTx = new TransactionBuilder(boxFactory.chain.height)

@@ -4,7 +4,7 @@
   // Registers:
   //   R4[Coll[Long]]: [TotalPrize, totalSoldTickets, TxFee]
   //   R5[Int]: WinnersCount
-  //   R6[Coll[Byte]]: ProjectAddressHash
+  //   R6[Coll[Byte]]: ProjectErgoTreeHash
   //   R7[Coll[Coll[Byte]]]: [Seed, SelectedWinnersListHash]
   //   R8[Int]: Step
   // Tokens:
@@ -30,17 +30,19 @@
   if(step <= winnersCount) {
     // Winner prize creation
     // [SuccessRaffle, Winner] --> [SuccessRaffle, WinnerPrize]
+    val successRaffle = INPUTS(0)
     val outSuccessRaffle = OUTPUTS(0)
     val winner = INPUTS(1)
     val winnerPrize = OUTPUTS(1)
     val selectedWinners = getVar[Coll[Long]](0).get
     val winnerTicketIndex = getVar[Long](1).get
     val selectedWinnersBytes = selectedWinners
-      .append(Coll[Long](winnerTicketIndex))
       .fold(
         Coll[Byte](), 
         {(res: Coll[Byte], p: Long) => res ++ longToByteArray(p)}
       )
+    val allSelectedWinnersBytes = 
+      selectedWinnersBytes.append(longToByteArray(winnerTicketIndex))
     val totalPrize = SELF.R4[Coll[Long]].get(0)
     val rewardPercent = winner.R4[Coll[Long]].get(0)
     val winnerReward = totalPrize * rewardPercent / 1000
@@ -75,7 +77,8 @@
       outSuccessRaffle.R6[Coll[Byte]].get == SELF.R6[Coll[Byte]].get,
       outSuccessRaffle.R7[Coll[Coll[Byte]]].get(0) == 
         blake2b256(SELF.R7[Coll[Coll[Byte]]].get(0)),
-      outSuccessRaffle.R7[Coll[Coll[Byte]]].get(1) == blake2b256(selectedWinnersBytes),
+      successRaffle.R7[Coll[Coll[Byte]]].get(1) == blake2b256(selectedWinnersBytes),
+      outSuccessRaffle.R7[Coll[Coll[Byte]]].get(1) == blake2b256(allSelectedWinnersBytes),
       outSuccessRaffle.R8[Int].get == step + 1,
 
       // Correct Winner format
@@ -101,7 +104,7 @@
     val service = OUTPUTS(0)
     val projectFund = OUTPUTS(1)
     val txFee = SELF.R4[Coll[Long]].get(2)
-    val projectAddressHash = SELF.R6[Coll[Byte]].get
+    val projectErgoTreeHash = SELF.R6[Coll[Byte]].get
     val hasStolenTickets = OUTPUTS.exists{
       (box: Box) => 
         box.tokens.exists{(token: (Coll[Byte], Long)) => token._1 == SELF.tokens(1)._1}
@@ -114,7 +117,7 @@
       // Correct ProjectFund format
       blake2b256(projectFund.propositionBytes) == safePayScriptHash,
       projectFund.value == SELF.value - txFee,
-      projectFund.R4[Coll[Byte]].get == projectAddressHash,
+      projectFund.R4[Coll[Byte]].get == projectErgoTreeHash,
       projectFund.R5[Long].get == txFee,
       if(!isErgGoal) projectFund.tokens(0) == SELF.tokens(2) else true,
 

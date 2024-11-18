@@ -1,6 +1,7 @@
 import { it, describe, expect } from 'vitest';
 import { TransactionBuilder } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
+import { SColl, SByte } from '@fleet-sdk/serializer';
 import * as testUtils from '../testUtils';
 
 import {
@@ -81,6 +82,10 @@ const createActiveRaffleEndTest = (
     undefined,
     ticketPrice,
   );
+
+  activeRaffleBoxForDonate.setContextExtension({
+    0: SColl(SByte, Array.from(Buffer.from(donator.ergoTree, 'hex'))),
+  });
 
   const activeRaffleBoxForSuccessEnd = boxFactory.createActiveRaffleBoxMock(
     creator.ergoTree,
