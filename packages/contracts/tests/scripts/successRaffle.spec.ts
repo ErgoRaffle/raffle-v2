@@ -19,7 +19,10 @@ const TEST_INITIAL_SEED = '0123456789012345';
  */
 const createSuccessRaffleTest = (collectingTokenId?: string) => {
   const winnersCount = 5;
-  const totalPrize = 5n;
+  const totalPrize = 1_000_000n;
+  const totalRaised = totalPrize;
+  const totalSoldTickets = 5n;
+
   const boxFactory = new testUtils.RaffleBoxFactory(
     { height: 1000 },
     constants.scriptList.filter(
@@ -50,7 +53,6 @@ const createSuccessRaffleTest = (collectingTokenId?: string) => {
   );
 
   // Created input successRaffle-box
-  const collectingTokenAmount = 10n * totalPrize;
   const successRaffleBox = boxFactory.createSuccessRaffleBoxMock(
     testUtils.FEE * 3n + testUtils.CREATION_FEE,
     testUtils.LICENSE_TOKEN_ID,
@@ -60,12 +62,24 @@ const createSuccessRaffleTest = (collectingTokenId?: string) => {
     5n,
     winnersCount,
     totalPrize,
-    collectingTokenAmount,
+    totalRaised,
     1,
     undefined,
     undefined,
     collectingTokenId,
   ) as ErgoUnsignedInput;
+
+  const newWinnerTicketIndex = testUtils.generateNextWinnerIndex(
+    [],
+    1,
+    Uint8Array.from(Array.from(Buffer.from(TEST_INITIAL_SEED, 'hex'))),
+    totalSoldTickets,
+  );
+
+  successRaffleBox.setContextExtension({
+    0: SColl(SLong, []),
+    1: SLong(newWinnerTicketIndex),
+  });
 
   const successRaffleForLicenseRedeemBox =
     boxFactory.createSuccessRaffleBoxMock(
@@ -77,7 +91,7 @@ const createSuccessRaffleTest = (collectingTokenId?: string) => {
       5n,
       winnersCount,
       totalPrize,
-      collectingTokenAmount,
+      totalRaised,
       6,
       undefined,
       undefined,
@@ -100,6 +114,7 @@ const createSuccessRaffleTest = (collectingTokenId?: string) => {
     someoneWallet: someone,
     ownerWallet: owner,
     creator: creator,
+    newWinnerTicketIndex: newWinnerTicketIndex,
     nextSeed: nextSeed,
     serviceBox: serviceBox,
     successRaffleBox: successRaffleBox,
@@ -126,24 +141,20 @@ describe('successRaffle', () => {
      */
     successRaffleTest(
       'should successfully create winner prize for an erg-goal raffle',
-      ({ boxFactory, creator, nextSeed, winnersBoxes, successRaffleBox }) => {
+      ({
+        boxFactory,
+        creator,
+        newWinnerTicketIndex,
+        nextSeed,
+        winnersBoxes,
+        successRaffleBox,
+      }) => {
         boxFactory.chain.setTip(2000);
 
         const winnersCount = 5;
-        const totalPrize = 5n;
+        const totalPrize = 1_000_000n;
         const rewardPercent = 200n;
-        const totalSoldTickets = totalPrize;
-        const newWinnerTicketIndex = testUtils.generateNextWinnerIndex(
-          [],
-          1,
-          Uint8Array.from(Array.from(Buffer.from(TEST_INITIAL_SEED, 'hex'))),
-          totalSoldTickets,
-        );
-
-        successRaffleBox.setContextExtension({
-          0: SColl(SLong, []),
-          1: SLong(newWinnerTicketIndex),
-        });
+        const totalSoldTickets = 5n;
 
         const winnerIndex = SConstant.from(
           (winnersBoxes as Box[])[0].additionalRegisters.R5!,
@@ -197,22 +208,18 @@ describe('successRaffle', () => {
      */
     successRaffleTokenGoalTest(
       'should successfully create winner prize for a token-goal raffle',
-      ({ boxFactory, creator, nextSeed, winnersBoxes, successRaffleBox }) => {
+      ({
+        boxFactory,
+        creator,
+        newWinnerTicketIndex,
+        nextSeed,
+        winnersBoxes,
+        successRaffleBox,
+      }) => {
         const winnersCount = 5;
-        const totalPrize = 5n;
+        const totalPrize = 1_000_000n;
         const rewardPercent = 200n;
-        const totalSoldTickets = totalPrize;
-        const newWinnerTicketIndex = testUtils.generateNextWinnerIndex(
-          [],
-          1,
-          Uint8Array.from(Array.from(Buffer.from(TEST_INITIAL_SEED, 'hex'))),
-          totalSoldTickets,
-        );
-
-        successRaffleBox.setContextExtension({
-          0: SColl(SLong, []),
-          1: SLong(newWinnerTicketIndex),
-        });
+        const totalSoldTickets = 5n;
 
         const winnerIndex = SConstant.from(
           (winnersBoxes as Box[])[0].additionalRegisters.R5!,
@@ -273,9 +280,9 @@ describe('successRaffle', () => {
       'should successfully create winner prize for a token-goal raffle by zero reward percent',
       ({ boxFactory, creator, nextSeed, successRaffleBox }) => {
         const winnersCount = 5;
-        const totalPrize = 5n;
+        const totalPrize = 1_000_000n;
         const rewardPercent = 0n;
-        const totalSoldTickets = totalPrize;
+        const totalSoldTickets = 5n;
         const newWinnerTicketIndex = testUtils.generateNextWinnerIndex(
           [],
           1,
@@ -352,9 +359,9 @@ describe('successRaffle', () => {
         boxFactory.chain.setTip(2000);
 
         const winnersCount = 5;
-        const totalPrize = 5n;
+        const totalPrize = 1_000_000n;
         const rewardPercent = 200n;
-        const totalSoldTickets = totalPrize;
+        const totalSoldTickets = 5n;
         // calculate invalid ticket-index
         const invalidWinnerTicketIndex =
           (testUtils.generateNextWinnerIndex(
@@ -425,8 +432,8 @@ describe('successRaffle', () => {
         const winnersCount = 5;
         const rewardPercent = 200n;
         const totalSoldTickets = 5n;
-        const totalPrize = 5n;
-        const prizeValue = 10n * totalPrize;
+        const totalPrize = 1_000_000n;
+        const prizeValue = totalPrize;
         // set invalid special value that make the sameSelectedWinners size
         // more than zero on the contract
         const newWinnerTicketIndex = 1n;
@@ -500,22 +507,18 @@ describe('successRaffle', () => {
      */
     successRaffleTest(
       'should fail if wrong winner ticket index is set on winner prize box',
-      ({ boxFactory, creator, nextSeed, winnersBoxes, successRaffleBox }) => {
+      ({
+        boxFactory,
+        creator,
+        newWinnerTicketIndex,
+        nextSeed,
+        winnersBoxes,
+        successRaffleBox,
+      }) => {
         const winnersCount = 5;
-        const totalPrize = 5n;
+        const totalPrize = 1_000_000n;
         const rewardPercent = 200n;
-        const totalSoldTickets = totalPrize;
-        const newWinnerTicketIndex = testUtils.generateNextWinnerIndex(
-          [],
-          1,
-          Uint8Array.from(Array.from(Buffer.from(TEST_INITIAL_SEED, 'hex'))),
-          totalSoldTickets,
-        );
-
-        successRaffleBox.setContextExtension({
-          0: SColl(SLong, []),
-          1: SLong(newWinnerTicketIndex),
-        });
+        const totalSoldTickets = 5n;
 
         const winnerIndex = SConstant.from(
           (winnersBoxes as Box[])[0].additionalRegisters.R5!,
@@ -570,10 +573,10 @@ describe('successRaffle', () => {
       'should fail if input winner box belongs to another raffle',
       ({ boxFactory, creator, nextSeed, successRaffleBox }) => {
         const winnersCount = 5;
-        const totalPrize = 5n;
+        const totalPrize = 1_000_000n;
         const anotherRaffleTicketId = '0'.repeat(64);
         const rewardPercent = 200n;
-        const totalSoldTickets = totalPrize;
+        const totalSoldTickets = 5n;
         const newWinnerTicketIndex = testUtils.generateNextWinnerIndex(
           [],
           1,
@@ -646,22 +649,18 @@ describe('successRaffle', () => {
      */
     successRaffleTest(
       'should fail if input winner box does not match with step on success raffle',
-      ({ boxFactory, creator, nextSeed, winnersBoxes, successRaffleBox }) => {
+      ({
+        boxFactory,
+        creator,
+        newWinnerTicketIndex,
+        nextSeed,
+        winnersBoxes,
+        successRaffleBox,
+      }) => {
         const winnersCount = 5;
-        const totalPrize = 5n;
+        const totalPrize = 1_000_000n;
         const rewardPercent = 200n;
-        const totalSoldTickets = totalPrize;
-        const newWinnerTicketIndex = testUtils.generateNextWinnerIndex(
-          [],
-          1,
-          Uint8Array.from(Array.from(Buffer.from(TEST_INITIAL_SEED, 'hex'))),
-          totalSoldTickets,
-        );
-
-        successRaffleBox.setContextExtension({
-          0: SColl(SLong, []),
-          1: SLong(newWinnerTicketIndex),
-        });
+        const totalSoldTickets = 5n;
 
         const winnerIndex = SConstant.from(
           (winnersBoxes as Box[])[0].additionalRegisters.R5!,
@@ -714,22 +713,18 @@ describe('successRaffle', () => {
      */
     successRaffleTest(
       'should fail with wrong selected winner list in success raffle output box',
-      ({ boxFactory, creator, nextSeed, winnersBoxes, successRaffleBox }) => {
+      ({
+        boxFactory,
+        creator,
+        newWinnerTicketIndex,
+        nextSeed,
+        winnersBoxes,
+        successRaffleBox,
+      }) => {
         const winnersCount = 5;
-        const totalPrize = 5n;
+        const totalPrize = 1_000_000n;
         const rewardPercent = 200n;
-        const totalSoldTickets = totalPrize;
-        const newWinnerTicketIndex = testUtils.generateNextWinnerIndex(
-          [],
-          1,
-          Uint8Array.from(Array.from(Buffer.from(TEST_INITIAL_SEED, 'hex'))),
-          totalSoldTickets,
-        );
-
-        successRaffleBox.setContextExtension({
-          0: SColl(SLong, []),
-          1: SLong(newWinnerTicketIndex),
-        });
+        const totalSoldTickets = 5n;
 
         const winnerIndex = SConstant.from(
           (winnersBoxes as Box[])[0].additionalRegisters.R5!,
@@ -782,22 +777,17 @@ describe('successRaffle', () => {
      */
     successRaffleTest(
       'should fail with wrong seed in success raffle output box',
-      ({ boxFactory, creator, winnersBoxes, successRaffleBox }) => {
+      ({
+        boxFactory,
+        creator,
+        newWinnerTicketIndex,
+        winnersBoxes,
+        successRaffleBox,
+      }) => {
         const winnersCount = 5;
-        const totalPrize = 5n;
+        const totalPrize = 1_000_000n;
         const rewardPercent = 200n;
-        const totalSoldTickets = totalPrize;
-        const newWinnerTicketIndex = testUtils.generateNextWinnerIndex(
-          [],
-          1,
-          Uint8Array.from(Array.from(Buffer.from(TEST_INITIAL_SEED, 'hex'))),
-          totalSoldTickets,
-        );
-
-        successRaffleBox.setContextExtension({
-          0: SColl(SLong, []),
-          1: SLong(newWinnerTicketIndex),
-        });
+        const totalSoldTickets = 5n;
 
         const winnerIndex = SConstant.from(
           (winnersBoxes as Box[])[0].additionalRegisters.R5!,
@@ -850,22 +840,18 @@ describe('successRaffle', () => {
      */
     successRaffleTest(
       'should fail if in a erg-goal raffle funds are deducted more than required prize of the selected winner',
-      ({ boxFactory, creator, nextSeed, winnersBoxes, successRaffleBox }) => {
+      ({
+        boxFactory,
+        creator,
+        newWinnerTicketIndex,
+        nextSeed,
+        winnersBoxes,
+        successRaffleBox,
+      }) => {
         const winnersCount = 5;
-        const totalPrize = 5n;
+        const totalPrize = 1_000_000n;
         const rewardPercent = 200n;
-        const totalSoldTickets = totalPrize;
-        const newWinnerTicketIndex = testUtils.generateNextWinnerIndex(
-          [],
-          1,
-          Uint8Array.from(Array.from(Buffer.from(TEST_INITIAL_SEED, 'hex'))),
-          totalSoldTickets,
-        );
-
-        successRaffleBox.setContextExtension({
-          0: SColl(SLong, []),
-          1: SLong(newWinnerTicketIndex),
-        });
+        const totalSoldTickets = 5n;
 
         const winnerIndex = SConstant.from(
           (winnersBoxes as Box[])[0].additionalRegisters.R5!,
@@ -918,22 +904,18 @@ describe('successRaffle', () => {
      */
     successRaffleTokenGoalTest(
       'should fail if in a token-goal raffle funds are deducted more than required prize of the selected winner',
-      ({ boxFactory, creator, nextSeed, winnersBoxes, successRaffleBox }) => {
+      ({
+        boxFactory,
+        creator,
+        newWinnerTicketIndex,
+        nextSeed,
+        winnersBoxes,
+        successRaffleBox,
+      }) => {
         const winnersCount = 5;
-        const totalPrize = 5n;
+        const totalPrize = 1_000_000n;
         const rewardPercent = 200n;
-        const totalSoldTickets = totalPrize;
-        const newWinnerTicketIndex = testUtils.generateNextWinnerIndex(
-          [],
-          1,
-          Uint8Array.from(Array.from(Buffer.from(TEST_INITIAL_SEED, 'hex'))),
-          totalSoldTickets,
-        );
-
-        successRaffleBox.setContextExtension({
-          0: SColl(SLong, []),
-          1: SLong(newWinnerTicketIndex),
-        });
+        const totalSoldTickets = 5n;
 
         const winnerIndex = SConstant.from(
           (winnersBoxes as Box[])[0].additionalRegisters.R5!,
@@ -995,26 +977,16 @@ describe('successRaffle', () => {
       ({
         boxFactory,
         creator,
+        newWinnerTicketIndex,
         nextSeed,
         someoneWallet,
         winnersBoxes,
         successRaffleBox,
       }) => {
         const winnersCount = 5;
-        const totalPrize = 5n;
+        const totalPrize = 1_000_000n;
         const rewardPercent = 200n;
-        const totalSoldTickets = totalPrize;
-        const newWinnerTicketIndex = testUtils.generateNextWinnerIndex(
-          [],
-          1,
-          Uint8Array.from(Array.from(Buffer.from(TEST_INITIAL_SEED, 'hex'))),
-          totalSoldTickets,
-        );
-
-        successRaffleBox.setContextExtension({
-          0: SColl(SLong, []),
-          1: SLong(newWinnerTicketIndex),
-        });
+        const totalSoldTickets = 5n;
 
         const winnerIndex = SConstant.from(
           (winnersBoxes as Box[])[0].additionalRegisters.R5!,
@@ -1202,7 +1174,6 @@ describe('successRaffle', () => {
           100n,
           100n,
           testUtils.CREATION_FEE,
-          testUtils.X_TOKEN_ID,
         );
 
         const serviceR4 = SConstant.from(serviceBox.additionalRegisters.R4!)
@@ -1215,6 +1186,7 @@ describe('successRaffle', () => {
           serviceFeePercent,
           implementerFeePercent,
           serviceR4[2],
+          undefined,
           testUtils.X_TOKEN_ID,
         );
 

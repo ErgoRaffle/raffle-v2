@@ -223,6 +223,7 @@ export class RaffleBoxFactory {
    * @param implementerFeePercent
    * @param creationFee
    * @param licenseTokenId
+   * @param serviceNftId
    * @returns ServiceBox
    */
   createServiceOutputBox(
@@ -230,12 +231,16 @@ export class RaffleBoxFactory {
     licenseTokenCount: bigint = 999999999n,
     serviceFeePercent: bigint = 100n,
     implementerFeePercent: bigint = 100n,
-    creationFee = CREATION_FEE,
-    licenseTokenId = LICENSE_TOKEN_ID,
+    creationFee: bigint = CREATION_FEE,
+    licenseTokenId: string = LICENSE_TOKEN_ID,
+    serviceNftId: string = RAFFLE_NFT_ID,
   ) {
     return new OutputBuilder(FEE, this.contractsAddresses['service'])
       .addTokens([
-        raffleNFTToken,
+        {
+          tokenId: serviceNftId,
+          amount: 1n,
+        },
         {
           tokenId: licenseTokenId,
           amount: licenseTokenCount,
@@ -650,12 +655,13 @@ export class RaffleBoxFactory {
    * Create and return success-raffle input box
    * @param boxValue
    * @param licenseTokenId
+   * @param projectAddressHash
    * @param seed
    * @param selectedWinnersList
    * @param totalSoldTickets
    * @param winnersCount
    * @param totalPrize
-   * @param prizeValue
+   * @param collectingTokenAmount
    * @param step
    * @param ticketTokenId
    * @param ticketTokenAmount
@@ -1042,38 +1048,33 @@ export class RaffleBoxFactory {
     const winnersBoxes: Box[] = [];
     for (let i = 0; i < winnersCount; i++)
       winnersBoxes.push(
-        mockUTxO({
-          value: 4n * FEE,
-          ergoTree: this.contractsAddresses['winner'],
-          additionalRegisters: {
-            R4: SColl(SLong, [
-              1000n / BigInt(winnersCount),
-              deadline,
-              FEE,
-            ]).toHex(),
-            R5: SInt(i + 1).toHex(),
-            R6: SLong(giftCount).toHex(),
-            R7:
-              giftTokenId !== undefined
-                ? SColl(
-                    SByte,
-                    Array.from(Buffer.from(giftTokenId, 'hex')),
-                  ).toHex()
-                : undefined,
-          },
-          assets: [
-            {
-              tokenId: ticketTokenId,
-              amount: ticketTokenAmount,
-            },
-            ...(extraTokens || []),
-          ],
-        }),
+        this.createWinnerSingleBoxMock(
+          i + 1,
+          winnersCount,
+          ticketTokenId,
+          ticketTokenAmount,
+          giftCount,
+          deadline,
+          giftTokenId,
+          extraTokens,
+        ),
       );
 
     return winnersBoxes;
   }
 
+  /**
+   * create single winner output box
+   * @param step
+   * @param winnersCount
+   * @param ticketTokenId
+   * @param ticketTokenAmount
+   * @param giftCount
+   * @param deadline
+   * @param giftTokenId
+   * @param extraTokens
+   * @returns
+   */
   createWinnerSingleBoxMock(
     step: number,
     winnersCount: number = 1,
