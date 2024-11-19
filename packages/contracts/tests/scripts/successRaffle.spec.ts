@@ -413,7 +413,7 @@ describe('successRaffle', () => {
     );
 
     /**
-     * @target should fail with wrong calculated winner ticket index on the successRaffle input box
+     * @target should fail with wrong selected winner list in transaction context
      * @scenario
      * - create three output boxes
      * - execute transaction
@@ -422,39 +422,25 @@ describe('successRaffle', () => {
      * - transaction result must throw error
      */
     successRaffleTest(
-      'should fail with wrong calculated winner ticket index on the successRaffle input box',
+      'should fail with wrong selected winner list in transaction context',
       ({
         boxFactory,
         creator,
         newWinnerTicketIndex,
         nextSeed,
         winnersBoxes,
+        successRaffleBox,
       }) => {
         boxFactory.chain.setTip(2000);
 
         const winnersCount = 5;
         const totalPrize = 1_000_000n;
-        const totalRaised = 20_000_000n;
         const rewardPercent = 200n;
         const totalSoldTickets = 5n;
-
-        // Created input successRaffle-box
-        const successRaffleBox = boxFactory.createSuccessRaffleBoxMock(
-          testUtils.FEE * 3n + testUtils.CREATION_FEE,
-          testUtils.LICENSE_TOKEN_ID,
-          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
-          TEST_INITIAL_SEED,
-          // set invalid ticket-index
-          [0n],
-          5n,
-          winnersCount,
-          totalPrize,
-          totalRaised,
-          1,
-        ) as ErgoUnsignedInput;
+        const invalidWinnerTicketIndex = 4n;
 
         successRaffleBox.setContextExtension({
-          0: SColl(SLong, []),
+          0: SColl(SLong, [invalidWinnerTicketIndex]),
           1: SLong(newWinnerTicketIndex),
         });
 
@@ -479,7 +465,7 @@ describe('successRaffle', () => {
           testUtils.LICENSE_TOKEN_ID,
           nextSeed,
           blake2b256(Buffer.from(creator.ergoTree, 'hex')),
-          [newWinnerTicketIndex],
+          [invalidWinnerTicketIndex, newWinnerTicketIndex],
           totalSoldTickets,
           winnersCount,
           totalPrize,
