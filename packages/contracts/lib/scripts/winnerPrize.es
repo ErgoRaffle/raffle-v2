@@ -12,12 +12,13 @@
   //
   // Spent in 2 transactions:
   //   - Gift unwrap
-  //      [WinnerPrize, Gift] + [(DataInput)Ticket] --> [WinnerPrize, UserBox]
+  //      [WinnerPrize, Gift] + [(DataInput)Ticket] --> [WinnerPrize, UnwrappedGift]
   //   - Winner Reward
-  //      [WinnerPrize] + [(DataInput)Ticket] --> [UserBox]
+  //      [WinnerPrize] + [(DataInput)Ticket] --> [FinalPrize]
   //
   val safePayScriptHash = fromBase64("SAFE_PAY_SCRIPT_HASH_B64")
-  
+  val ticketScriptHash = fromBase64("TICKET_SCRIPT_HASH_B64")
+
   val winnerTicketIndex = SELF.R4[Coll[Long]].get(0)
   val giftCount = SELF.R4[Coll[Long]].get(1)
   val txFee = SELF.R4[Coll[Long]].get(2)
@@ -25,13 +26,14 @@
   val UnwrappedGiftCount = SELF.R6[Long].get
   val winnerTicket = CONTEXT.dataInputs(0)
   val isTicketCorrect =
+    blake2b256(winnerTicket.propositionBytes) == ticketScriptHash &&
     winnerTicket.tokens(0)._1 == SELF.tokens(0)._1 &&
     winnerTicket.R5[Coll[Long]].get(0) <= winnerTicketIndex &&
     winnerTicket.R5[Coll[Long]].get(1) > winnerTicketIndex
 
   if(giftCount > UnwrappedGiftCount){
     // Gift unwrap
-    // [WinnerPrize, Gift] + [(DataInput)Ticket] --> [WinnerPrize, UserBox]
+    // [WinnerPrize, Gift] + [(DataInput)Ticket] --> [WinnerPrize, UnwrappedGift]
     val gift = INPUTS(1)
     val outWinnerPrize = OUTPUTS(0)
     val unwrappedGift = OUTPUTS(1)
@@ -45,7 +47,7 @@
       outWinnerPrize.tokens(1)._2 == SELF.tokens(1)._2 + 1,
       if(SELF.tokens.size == 3) outWinnerPrize.tokens(2) == SELF.tokens(2) else true,
       outWinnerPrize.R4[Coll[Long]].get == SELF.R4[Coll[Long]].get,
-      outWinnerPrize.R5[Int].get == SELF.R5[Int].get,
+      outWinnerPrize.R5[Int].get == winnerIndex,
       outWinnerPrize.R6[Long].get == SELF.R6[Long].get + 1,
 
       // Correct Gift format
@@ -56,11 +58,10 @@
 
       // Transaction constraints
       isTicketCorrect,
-      INPUTS.size == 2, // Prevent spending multiple gifts
     )))
   } else {
     // Winner Reward
-    // [WinnerPrize] + [(DataInput)Ticket] --> [UserBox]
+    // [WinnerPrize] + [(DataInput)Ticket] --> [FinalPrize]
     val finalPrize = OUTPUTS(0)
     val hasStolenTokens = { (stolenToken: (Coll[Byte], Long)) =>
         OUTPUTS.exists{ (box: Box) => 

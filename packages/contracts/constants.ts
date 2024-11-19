@@ -53,6 +53,7 @@ export const scriptsRequireAddresses: {
   },
   winnerPrize: {
     safePay: 'SAFE_PAY_SCRIPT_HASH_B64',
+    ticket: 'TICKET_SCRIPT_HASH_B64',
   },
   gift: {},
   giftRedeem: {},
