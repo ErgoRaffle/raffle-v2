@@ -63,9 +63,9 @@
     // Winner Reward
     // [WinnerPrize] + [(DataInput)Ticket] --> [FinalPrize]
     val finalPrize = OUTPUTS(0)
-    val hasStolenTokens = { (stolenToken: (Coll[Byte], Long)) =>
+    val hasStolenTokens = { (stolenTokenId: Coll[Byte]) =>
         OUTPUTS.exists{ (box: Box) => 
-          box.tokens.exists{(token: (Coll[Byte], Long)) => token._1 == stolenToken._1}
+          box.tokens.exists{(token: (Coll[Byte], Long)) => token._1 == stolenTokenId}
       }
     }
     sigmaProp(allOf(Coll(
@@ -78,8 +78,8 @@
 
       // Transaction constraints
       isTicketCorrect,
-      hasStolenTokens(SELF.tokens(0)) == false,
-      hasStolenTokens(SELF.tokens(1)) == false,
+      hasStolenTokens(SELF.tokens(0)._1) == false,
+      hasStolenTokens(SELF.tokens(1)._1) == false,
     )))
   }
 }
