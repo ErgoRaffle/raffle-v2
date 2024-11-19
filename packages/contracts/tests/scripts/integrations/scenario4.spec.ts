@@ -186,7 +186,7 @@ describe('Raffle', () => {
         }
 
         // Step 4: Add one gift to one of the winner
-        let winner1 = winnerBoxes[0];
+        const winner1 = winnerBoxes[0];
         const winnersGifts = [];
         const addGiftTx = executeAddGiftTx(
           winner1,
@@ -194,7 +194,7 @@ describe('Raffle', () => {
           boxFactory,
         );
         expect(addGiftTx.success).true;
-        winner1 = addGiftTx.outputs[0];
+        winnerBoxes[0] = addGiftTx.outputs[0];
         winnersGifts.push(addGiftTx.outputs[1]);
 
         // Step 5: Donate fifth by five different donators
@@ -286,7 +286,6 @@ describe('Raffle', () => {
             prizeBoxes[i],
             winnersGifts[i],
             winnerTicket,
-            BigInt(i + 1),
             boxFactory,
           );
           expect(giftUnwrappedTx.success).true;

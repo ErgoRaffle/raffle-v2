@@ -165,7 +165,6 @@ describe('successRaffle', () => {
           newWinnerTicketIndex,
           1n,
           0n,
-          [(winnersBoxes as Box[])[0].assets[0]],
         );
         const successRaffleOutputValue =
           BigInt((winnersBoxes as Box[])[0].value) +
@@ -230,8 +229,8 @@ describe('successRaffle', () => {
           newWinnerTicketIndex,
           1n,
           0n,
+          undefined,
           [
-            (winnersBoxes as Box[])[0].assets[0],
             {
               tokenId: testUtils.X_TOKEN_ID,
               amount: (totalPrize * rewardPercent) / 1000n,
@@ -308,7 +307,6 @@ describe('successRaffle', () => {
           newWinnerTicketIndex,
           1n,
           0n,
-          [winnerBox.assets[0]],
         );
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
           successRaffleBox.value,
@@ -382,7 +380,6 @@ describe('successRaffle', () => {
           invalidWinnerTicketIndex,
           1n,
           0n,
-          [(winnersBoxes as Box[])[0].assets[0]],
         );
         const successRaffleOutputValue =
           BigInt((winnersBoxes as Box[])[0].value) +
@@ -453,7 +450,6 @@ describe('successRaffle', () => {
           newWinnerTicketIndex,
           1n,
           0n,
-          [(winnersBoxes as Box[])[0].assets[0]],
         );
         const successRaffleOutputValue =
           BigInt((winnersBoxes as Box[])[0].value) +
@@ -532,7 +528,6 @@ describe('successRaffle', () => {
           newWinnerTicketIndex,
           1n,
           0n,
-          [(winnersBoxes as Box[])[1].assets[0]],
         );
         const successRaffleOutputValue =
           BigInt((winnersBoxes as Box[])[0].value) +
@@ -596,7 +591,6 @@ describe('successRaffle', () => {
           newWinnerTicketIndex + 1n,
           1n,
           0n,
-          [(winnersBoxes as Box[])[0].assets[0]],
         );
         const successRaffleOutputValue =
           BigInt((winnersBoxes as Box[])[0].value) +
@@ -669,7 +663,9 @@ describe('successRaffle', () => {
           newWinnerTicketIndex,
           1n,
           0n,
-          [winnerBox.assets[0]],
+          undefined,
+          undefined,
+          winnerBox.assets[0].tokenId,
         );
         const successRaffleOutputValue =
           BigInt(winnerBox.value) +
@@ -732,7 +728,6 @@ describe('successRaffle', () => {
           newWinnerTicketIndex,
           1n,
           0n,
-          [(winnersBoxes as Box[])[0].assets[0]],
         );
         const successRaffleOutputValue =
           BigInt((winnersBoxes as Box[])[0].value) +
@@ -796,7 +791,6 @@ describe('successRaffle', () => {
           newWinnerTicketIndex,
           1n,
           0n,
-          [(winnersBoxes as Box[])[0].assets[0]],
         );
         const successRaffleOutputValue =
           BigInt((winnersBoxes as Box[])[0].value) +
@@ -859,7 +853,6 @@ describe('successRaffle', () => {
           newWinnerTicketIndex,
           1n,
           0n,
-          [(winnersBoxes as Box[])[0].assets[0]],
         );
         const successRaffleOutputValue =
           BigInt((winnersBoxes as Box[])[0].value) +
@@ -924,7 +917,6 @@ describe('successRaffle', () => {
           newWinnerTicketIndex,
           1n,
           0n,
-          [(winnersBoxes as Box[])[0].assets[0]],
         );
         const successRaffleOutputValue =
           BigInt((winnersBoxes as Box[])[0].value) +
@@ -987,8 +979,8 @@ describe('successRaffle', () => {
           newWinnerTicketIndex,
           1n,
           0n,
+          undefined,
           [
-            (winnersBoxes as Box[])[0].assets[0],
             {
               tokenId: testUtils.X_TOKEN_ID,
               // put 1 more token to this box
@@ -1058,7 +1050,6 @@ describe('successRaffle', () => {
           newWinnerTicketIndex,
           1n,
           0n,
-          [(winnersBoxes as Box[])[0].assets[0]],
         );
         const successRaffleOutputValue =
           BigInt((winnersBoxes as Box[])[0].value) +
