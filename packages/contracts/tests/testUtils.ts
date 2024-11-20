@@ -827,10 +827,10 @@ export class RaffleBoxFactory {
     ticketIndex: bigint,
     giftCount: bigint,
     unwrappedGiftCount: bigint,
-    giftTokenCount: bigint = 0n,
+    giftTokenCount: bigint,
     collectingToken?: TokenAmount<bigint>[] | TokenAmount<Amount>,
-    ticketTokenId: string = TICKET_TOKEN_ID,
-    giftTokenId: string = GIFT_TOKEN_ID,
+    ticketTokenId = TICKET_TOKEN_ID,
+    giftTokenId = GIFT_TOKEN_ID,
   ) {
     const winnerPrizeBox = new OutputBuilder(
       value,
@@ -841,14 +841,10 @@ export class RaffleBoxFactory {
           tokenId: ticketTokenId,
           amount: 1n,
         },
-        ...(giftTokenCount > 0n
-          ? [
-              {
-                tokenId: giftTokenId,
-                amount: giftTokenCount,
-              },
-            ]
-          : []),
+        {
+          tokenId: giftTokenId,
+          amount: giftTokenCount,
+        },
       ])
       .setAdditionalRegisters({
         R4: SColl(SLong, [ticketIndex, giftCount, FEE]),
