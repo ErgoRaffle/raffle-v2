@@ -41,7 +41,7 @@
         Coll[Byte](), 
         {(res: Coll[Byte], p: Long) => res ++ longToByteArray(p)}
       )
-    val allSelectedWinnersBytes = 
+    val outSelectedWinnersBytes = 
       selectedWinnersBytes.append(longToByteArray(winnerTicketIndex))
     val totalPrize = SELF.R4[Coll[Long]].get(0)
     val rewardPercent = winner.R4[Coll[Long]].get(0)
@@ -78,7 +78,7 @@
       outSuccessRaffle.R7[Coll[Coll[Byte]]].get(0) == 
         blake2b256(SELF.R7[Coll[Coll[Byte]]].get(0)),
       successRaffle.R7[Coll[Coll[Byte]]].get(1) == blake2b256(selectedWinnersBytes),
-      outSuccessRaffle.R7[Coll[Coll[Byte]]].get(1) == blake2b256(allSelectedWinnersBytes),
+      outSuccessRaffle.R7[Coll[Coll[Byte]]].get(1) == blake2b256(outSelectedWinnersBytes),
       outSuccessRaffle.R8[Int].get == step + 1,
 
       // Correct Winner format
