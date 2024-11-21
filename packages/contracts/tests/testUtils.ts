@@ -50,7 +50,6 @@ export const TICKET_TOKEN_ID = '4'.repeat(64);
 export const GIFT_TOKEN_ID = '5'.repeat(64);
 export const GIFT_TOKEN_COUNT = 2_000n;
 export const CREATION_FEE = 1_000_000_000n;
-export const raffleNFTToken = { amount: 1n, tokenId: RAFFLE_NFT_ID };
 export const LICENSE_TOKEN_COUNT = 1_000_000_000n;
 export const CREATOR_DEFAULT_BALANCE = 500_000_000_000n;
 export const UNKNOWN_WALLET_DEFAULT_BALANCE = 10_000_000_000n;

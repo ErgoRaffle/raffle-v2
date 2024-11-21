@@ -342,7 +342,7 @@ describe('successRaffle', () => {
     /**
      * @target should fail with wrong calculated winner ticket index
      * @scenario
-     * - create three output boxes
+     * - create two output boxes by invalid ticket-index
      * - execute transaction
      * - result of execution must be fail
      * @expected
@@ -370,6 +370,7 @@ describe('successRaffle', () => {
 
         successRaffleBox.setContextExtension({
           0: SColl(SLong, []),
+          // put invalid ticket index to the context vars
           1: SLong(invalidWinnerTicketIndex),
         });
 
@@ -379,6 +380,7 @@ describe('successRaffle', () => {
         const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 3n + (totalPrize * rewardPercent) / 1000n,
           winnerIndex,
+          // put invalid ticket index to winnerPrize box
           invalidWinnerTicketIndex,
           1n,
           0n,
@@ -394,6 +396,7 @@ describe('successRaffle', () => {
           testUtils.LICENSE_TOKEN_ID,
           nextSeed,
           blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+          // put invalid ticket index to the successRaffle box
           [invalidWinnerTicketIndex],
           totalSoldTickets,
           winnersCount,
@@ -415,7 +418,8 @@ describe('successRaffle', () => {
     /**
      * @target should fail with wrong calculated winner ticket index on the successRaffle input box
      * @scenario
-     * - create three output boxes
+     * - create successRaffle input box by invalid ticket-index list
+     * - create two output boxes
      * - execute transaction
      * - result of execution must be fail
      * @expected
@@ -444,7 +448,7 @@ describe('successRaffle', () => {
           testUtils.LICENSE_TOKEN_ID,
           blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           TEST_INITIAL_SEED,
-          // set invalid ticket-index
+          // set invalid ticket-index list
           [0n],
           5n,
           winnersCount,
@@ -500,7 +504,9 @@ describe('successRaffle', () => {
     /**
      * @target should fail with duplicated winner ticket index
      * @scenario
-     * - create three output boxes
+     * - create successRaffle input box
+     * - put duplicated winner ticket index on the context-vars of the successRaffle
+     * - create two output boxes
      * - execute transaction
      * - result of execution must be fail
      * @expected
@@ -579,7 +585,8 @@ describe('successRaffle', () => {
     /**
      * @target should fail if wrong winner ticket index is set on winner prize box
      * @scenario
-     * - create three output boxes
+     * - create successRaffle output boxes
+     * - create winnerPrize output box by invalid winner ticket index
      * - execute transaction
      * - result of execution must be fail
      * @expected
@@ -643,7 +650,8 @@ describe('successRaffle', () => {
     /**
      * @target should fail if input winner box belongs to another raffle
      * @scenario
-     * - create three output boxes
+     * - create input winner box by different raffle ticket token
+     * - create two output boxes
      * - execute transaction
      * - result of execution must be fail
      * @expected
@@ -716,8 +724,8 @@ describe('successRaffle', () => {
     /**
      * @target should fail if input winner box does not match with step on success raffle
      * @scenario
-     * - create three output boxes
-     * - execute transaction
+     * - create two output boxes
+     * - execute transaction by winner box with invalid index
      * - result of execution must be fail
      * @expected
      * - transaction result must throw error
@@ -780,7 +788,8 @@ describe('successRaffle', () => {
     /**
      * @target should fail with wrong selected winner list in success raffle output box
      * @scenario
-     * - create three output boxes
+     * - create successRaffle output box by invalid selectedWinnersList
+     * - create winnerPrize output box
      * - execute transaction
      * - result of execution must be fail
      * @expected
@@ -844,7 +853,8 @@ describe('successRaffle', () => {
     /**
      * @target should fail with wrong seed in success raffle output box
      * @scenario
-     * - create three output boxes
+     * - create successRaffle output box by invalid seed
+     * - create winnerPrize output box
      * - execute transaction
      * - result of execution must be fail
      * @expected
@@ -907,7 +917,8 @@ describe('successRaffle', () => {
     /**
      * @target should fail if in a erg-goal raffle funds are deducted more than required prize of the selected winner
      * @scenario
-     * - create three output boxes
+     * - create successRaffle output box
+     * - create winnerPrize output box by extra amount of erg
      * - execute transaction
      * - result of execution must be fail
      * @expected
@@ -971,7 +982,8 @@ describe('successRaffle', () => {
     /**
      * @target should fail if in a token-goal raffle funds are deducted more than required prize of the selected winner
      * @scenario
-     * - create three output boxes
+     * - create successRaffle output box
+     * - create winnerPrize output box by extra collecting token
      * - execute transaction
      * - result of execution must be fail
      * @expected
@@ -1041,7 +1053,8 @@ describe('successRaffle', () => {
     /**
      * @target should fail if an arbitrary token is added to erg-goal success raffle
      * @scenario
-     * - create three output boxes
+     * - create successRaffle output box by extra arbitrary token
+     * - create winnerPrize output box
      * - execute transaction
      * - result of execution must be fail
      * @expected
@@ -1122,8 +1135,8 @@ describe('successRaffle', () => {
     /**
      * @target should successfully return license token and pay the project fund for an erg-goal raffle
      * @scenario
-     * - create two output boxes by values
-     * - execute transaction
+     * - create two output boxes
+     * - execute transaction and burn current raffle related ticket tokens
      * - check execution done successfully
      * @expected
      * - transaction result must be true
@@ -1175,8 +1188,8 @@ describe('successRaffle', () => {
     /**
      * @target should successfully return license token and pay the project fund for a token-goal raffle
      * @scenario
-     * - create two output boxes by values
-     * - execute transaction
+     * - create two output boxes
+     * - execute transaction and burn current raffle related ticket tokens
      * - check execution done successfully
      * @expected
      * - transaction result must be true
@@ -1228,8 +1241,9 @@ describe('successRaffle', () => {
     /**
      * @target should fail if service box has a different service nft
      * @scenario
-     * - create three output boxes
-     * - execute transaction
+     * - create successRaffle output box by invalid nft id
+     * - create creatorFund output box
+     * - execute transaction and burn current raffle related ticket tokens
      * - result of execution must be fail
      * @expected
      * - transaction result must throw error
@@ -1264,6 +1278,7 @@ describe('successRaffle', () => {
           implementerFeePercent,
           serviceR4[2],
           undefined,
+          // set invalid nft id
           testUtils.X_TOKEN_ID,
         );
 
@@ -1293,8 +1308,9 @@ describe('successRaffle', () => {
     /**
      * @target should fail if project fund withdrawal is incorrect for an erg-goal raffle
      * @scenario
-     * - create three output boxes
-     * - execute transaction
+     * - create successRaffle output box
+     * - create creatorFund output box by invalid value
+     * - execute transaction and burn current raffle related ticket tokens
      * - result of execution must be fail
      * @expected
      * - transaction result must throw error
@@ -1348,8 +1364,9 @@ describe('successRaffle', () => {
     /**
      * @target should fail if project fund withdrawal is incorrect for a token-goal raffle
      * @scenario
-     * - create three output boxes
-     * - execute transaction
+     * - create successRaffle output box
+     * - create creatorFund output box by invalid collecting token amount
+     * - execute transaction and burn current raffle related ticket tokens and some of collecting token
      * - result of execution must be fail
      * @expected
      * - transaction result must throw error
@@ -1412,8 +1429,9 @@ describe('successRaffle', () => {
     /**
      * @target should fail if a ticket token is stolen
      * @scenario
-     * - create three output boxes
-     * - execute transaction
+     * - create successRaffle output box
+     * - create creatorFund output box by one stole ticket token
+     * - execute transaction and burn current raffle related ticket tokens and some of collecting token
      * - result of execution must be fail
      * @expected
      * - transaction result must throw error
@@ -1443,6 +1461,7 @@ describe('successRaffle', () => {
           BigInt(successRaffleForLicenseRedeemBox.value.toString()) -
             testUtils.FEE,
           [
+            // stole one ticket token
             {
               tokenId: successRaffleForLicenseRedeemBox.assets[1].tokenId,
               amount: 1n,
@@ -1476,7 +1495,7 @@ describe('successRaffle', () => {
      * @target should fail if a raffle license is stolen with spending two similar success raffles
      * @scenario
      * - create three output boxes
-     * - execute transaction
+     * - execute transaction and burn current raffle related ticket tokens
      * - result of execution must be fail
      * @expected
      * - transaction result must throw error
