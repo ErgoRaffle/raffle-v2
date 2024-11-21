@@ -1,5 +1,5 @@
 import { it, describe, expect } from 'vitest';
-import { Box, ErgoUnsignedInput, TransactionBuilder } from '@fleet-sdk/core';
+import { ErgoUnsignedInput, TransactionBuilder } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
 import { SColl, SLong, SConstant } from '@fleet-sdk/serializer';
 
@@ -98,13 +98,20 @@ const createSuccessRaffleTest = (collectingTokenId?: string) => {
       collectingTokenId,
     ) as ErgoUnsignedInput;
 
-  const winnersBoxes = boxFactory.createWinnersBoxMock(
+  const winnerBox = boxFactory.createWinnerSingleBoxMock(
+    1,
     winnersCount,
     testUtils.TICKET_TOKEN_ID,
     undefined,
     2000n,
     0n,
     testUtils.GIFT_TOKEN_ID,
+    [
+      {
+        tokenId: testUtils.GIFT_TOKEN_ID,
+        amount: 1000n,
+      },
+    ],
   );
 
   const nextSeed = Buffer.from(blake2b256(TEST_INITIAL_SEED)).toString('hex');
@@ -119,7 +126,7 @@ const createSuccessRaffleTest = (collectingTokenId?: string) => {
     serviceBox: serviceBox,
     successRaffleBox: successRaffleBox,
     successRaffleForLicenseRedeemBox: successRaffleForLicenseRedeemBox,
-    winnersBoxes: winnersBoxes as Box[],
+    winnerBox: winnerBox,
   });
 };
 
@@ -146,7 +153,7 @@ describe('successRaffle', () => {
         creator,
         newWinnerTicketIndex,
         nextSeed,
-        winnersBoxes,
+        winnerBox,
         successRaffleBox,
       }) => {
         boxFactory.chain.setTip(2000);
@@ -156,19 +163,16 @@ describe('successRaffle', () => {
         const rewardPercent = 200n;
         const totalSoldTickets = 5n;
 
-        const winnerIndex = SConstant.from(
-          (winnersBoxes as Box[])[0].additionalRegisters.R5!,
-        ).data as number;
         const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 3n + (totalPrize * rewardPercent) / 1000n,
-          winnerIndex,
+          1,
           newWinnerTicketIndex,
           1n,
           0n,
-          [(winnersBoxes as Box[])[0].assets[0]],
+          winnerBox.assets[1].amount,
         );
         const successRaffleOutputValue =
-          BigInt((winnersBoxes as Box[])[0].value) +
+          BigInt(winnerBox.value) +
           successRaffleBox.value -
           prizeOutputBox.value -
           testUtils.FEE;
@@ -186,7 +190,7 @@ describe('successRaffle', () => {
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([successRaffleBox, (winnersBoxes as Box[])[0]])
+          .from([successRaffleBox, winnerBox])
           .to([successRaffleOutputBox, prizeOutputBox])
           .payFee(testUtils.FEE)
           .build();
@@ -213,7 +217,7 @@ describe('successRaffle', () => {
         creator,
         newWinnerTicketIndex,
         nextSeed,
-        winnersBoxes,
+        winnerBox,
         successRaffleBox,
       }) => {
         const winnersCount = 5;
@@ -221,22 +225,17 @@ describe('successRaffle', () => {
         const rewardPercent = 200n;
         const totalSoldTickets = 5n;
 
-        const winnerIndex = SConstant.from(
-          (winnersBoxes as Box[])[0].additionalRegisters.R5!,
-        ).data as number;
         const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 3n,
-          winnerIndex,
+          1,
           newWinnerTicketIndex,
           1n,
           0n,
-          [
-            (winnersBoxes as Box[])[0].assets[0],
-            {
-              tokenId: testUtils.X_TOKEN_ID,
-              amount: (totalPrize * rewardPercent) / 1000n,
-            },
-          ],
+          winnerBox.assets[1].amount,
+          {
+            tokenId: testUtils.X_TOKEN_ID,
+            amount: (totalPrize * rewardPercent) / 1000n,
+          },
         );
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
           successRaffleBox.value,
@@ -256,7 +255,7 @@ describe('successRaffle', () => {
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([successRaffleBox, (winnersBoxes as Box[])[0]])
+          .from([successRaffleBox, winnerBox])
           .to([successRaffleOutputBox, prizeOutputBox])
           .payFee(testUtils.FEE)
           .build();
@@ -298,17 +297,21 @@ describe('successRaffle', () => {
           0n,
           0n,
           testUtils.GIFT_TOKEN_ID,
+          [
+            {
+              tokenId: testUtils.GIFT_TOKEN_ID,
+              amount: 1000n,
+            },
+          ],
         );
 
-        const winnerIndex = SConstant.from(winnerBox.additionalRegisters.R5!)
-          .data as number;
         const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 3n,
-          winnerIndex,
+          1,
           newWinnerTicketIndex,
           1n,
           0n,
-          [winnerBox.assets[0]],
+          winnerBox.assets[1].amount,
         );
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
           successRaffleBox.value,
@@ -350,7 +353,7 @@ describe('successRaffle', () => {
      */
     successRaffleTest(
       'should fail with wrong calculated winner ticket index',
-      ({ boxFactory, creator, nextSeed, winnersBoxes, successRaffleBox }) => {
+      ({ boxFactory, creator, nextSeed, winnerBox, successRaffleBox }) => {
         boxFactory.chain.setTip(2000);
 
         const winnersCount = 5;
@@ -374,20 +377,17 @@ describe('successRaffle', () => {
           1: SLong(invalidWinnerTicketIndex),
         });
 
-        const winnerIndex = SConstant.from(
-          (winnersBoxes as Box[])[0].additionalRegisters.R5!,
-        ).data as number;
         const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 3n + (totalPrize * rewardPercent) / 1000n,
-          winnerIndex,
+          1,
           // put invalid ticket index to winnerPrize box
           invalidWinnerTicketIndex,
           1n,
           0n,
-          [(winnersBoxes as Box[])[0].assets[0]],
+          winnerBox.assets[1].amount,
         );
         const successRaffleOutputValue =
-          BigInt((winnersBoxes as Box[])[0].value) +
+          BigInt(winnerBox.value) +
           successRaffleBox.value -
           prizeOutputBox.value -
           testUtils.FEE;
@@ -406,7 +406,7 @@ describe('successRaffle', () => {
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([successRaffleBox, (winnersBoxes as Box[])[0]])
+          .from([successRaffleBox, winnerBox])
           .to([successRaffleOutputBox, prizeOutputBox])
           .payFee(testUtils.FEE)
           .build();
@@ -416,7 +416,7 @@ describe('successRaffle', () => {
     );
 
     /**
-     * @target should fail with wrong calculated winner ticket index on the successRaffle input box
+     * @target should fail with wrong selected winner list in transaction context
      * @scenario
      * - create successRaffle input box by invalid ticket-index list
      * - create two output boxes
@@ -426,14 +426,8 @@ describe('successRaffle', () => {
      * - transaction result must throw error
      */
     successRaffleTest(
-      'should fail with wrong calculated winner ticket index on the successRaffle input box',
-      ({
-        boxFactory,
-        creator,
-        newWinnerTicketIndex,
-        nextSeed,
-        winnersBoxes,
-      }) => {
+      'should fail with wrong selected winner list in transaction context',
+      ({ boxFactory, creator, newWinnerTicketIndex, nextSeed, winnerBox }) => {
         boxFactory.chain.setTip(2000);
 
         const winnersCount = 5;
@@ -462,19 +456,16 @@ describe('successRaffle', () => {
           1: SLong(newWinnerTicketIndex),
         });
 
-        const winnerIndex = SConstant.from(
-          (winnersBoxes as Box[])[0].additionalRegisters.R5!,
-        ).data as number;
         const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 3n + (totalPrize * rewardPercent) / 1000n,
-          winnerIndex,
+          1,
           newWinnerTicketIndex,
           1n,
           0n,
-          [(winnersBoxes as Box[])[0].assets[0]],
+          winnerBox.assets[1].amount,
         );
         const successRaffleOutputValue =
-          BigInt((winnersBoxes as Box[])[0].value) +
+          BigInt(winnerBox.value) +
           successRaffleBox.value -
           prizeOutputBox.value -
           testUtils.FEE;
@@ -492,7 +483,7 @@ describe('successRaffle', () => {
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([successRaffleBox, (winnersBoxes as Box[])[0]])
+          .from([successRaffleBox, winnerBox])
           .to([successRaffleOutputBox, prizeOutputBox])
           .payFee(testUtils.FEE)
           .build();
@@ -514,7 +505,7 @@ describe('successRaffle', () => {
      */
     successRaffleTest(
       'should fail with duplicated winner ticket index',
-      ({ boxFactory, creator, nextSeed, winnersBoxes }) => {
+      ({ boxFactory, creator, nextSeed }) => {
         const winnersCount = 5;
         const rewardPercent = 200n;
         const totalSoldTickets = 5n;
@@ -542,20 +533,32 @@ describe('successRaffle', () => {
           1: SLong(newWinnerTicketIndex),
         });
 
-        const winnerIndex = SConstant.from(
-          (winnersBoxes as Box[])[1].additionalRegisters.R5!,
-        ).data as number;
+        const winnerBox = boxFactory.createWinnerSingleBoxMock(
+          2,
+          winnersCount,
+          testUtils.TICKET_TOKEN_ID,
+          undefined,
+          BigInt(2000),
+          0n,
+          testUtils.GIFT_TOKEN_ID,
+          [
+            {
+              tokenId: testUtils.GIFT_TOKEN_ID,
+              amount: 1000n,
+            },
+          ],
+        );
 
         const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 3n + (totalPrize * rewardPercent) / 1000n,
-          winnerIndex,
+          2,
           newWinnerTicketIndex,
           1n,
           0n,
-          [(winnersBoxes as Box[])[1].assets[0]],
+          winnerBox.assets[1].amount,
         );
         const successRaffleOutputValue =
-          BigInt((winnersBoxes as Box[])[0].value) +
+          BigInt(winnerBox.value) +
           successRaffleBox.value -
           prizeOutputBox.value -
           testUtils.FEE;
@@ -573,7 +576,7 @@ describe('successRaffle', () => {
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([successRaffleBox, (winnersBoxes as Box[])[1]])
+          .from([successRaffleBox, winnerBox])
           .to([successRaffleOutputBox, prizeOutputBox])
           .payFee(testUtils.FEE)
           .build();
@@ -599,7 +602,7 @@ describe('successRaffle', () => {
         creator,
         newWinnerTicketIndex,
         nextSeed,
-        winnersBoxes,
+        winnerBox,
         successRaffleBox,
       }) => {
         const winnersCount = 5;
@@ -607,20 +610,17 @@ describe('successRaffle', () => {
         const rewardPercent = 200n;
         const totalSoldTickets = 5n;
 
-        const winnerIndex = SConstant.from(
-          (winnersBoxes as Box[])[0].additionalRegisters.R5!,
-        ).data as number;
         const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 3n + (totalPrize * rewardPercent) / 1000n,
-          winnerIndex,
+          1,
           // set invalid winner ticket index
           newWinnerTicketIndex + 1n,
           1n,
           0n,
-          [(winnersBoxes as Box[])[0].assets[0]],
+          winnerBox.assets[1].amount,
         );
         const successRaffleOutputValue =
-          BigInt((winnersBoxes as Box[])[0].value) +
+          BigInt(winnerBox.value) +
           successRaffleBox.value -
           prizeOutputBox.value -
           testUtils.FEE;
@@ -638,7 +638,7 @@ describe('successRaffle', () => {
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([successRaffleBox, (winnersBoxes as Box[])[0]])
+          .from([successRaffleBox, winnerBox])
           .to([successRaffleOutputBox, prizeOutputBox])
           .payFee(testUtils.FEE)
           .build();
@@ -681,17 +681,23 @@ describe('successRaffle', () => {
           BigInt(2000),
           0n,
           testUtils.GIFT_TOKEN_ID,
+          [
+            {
+              tokenId: testUtils.GIFT_TOKEN_ID,
+              amount: 1000n,
+            },
+          ],
         );
 
-        const winnerIndex = SConstant.from(winnerBox.additionalRegisters.R5!)
-          .data as number;
         const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 3n + (totalPrize * rewardPercent) / 1000n,
-          winnerIndex,
+          1,
           newWinnerTicketIndex,
           1n,
           0n,
-          [winnerBox.assets[0]],
+          winnerBox.assets[1].amount,
+          undefined,
+          anotherRaffleTicketId,
         );
         const successRaffleOutputValue =
           BigInt(winnerBox.value) +
@@ -737,7 +743,6 @@ describe('successRaffle', () => {
         creator,
         newWinnerTicketIndex,
         nextSeed,
-        winnersBoxes,
         successRaffleBox,
       }) => {
         const winnersCount = 5;
@@ -745,19 +750,32 @@ describe('successRaffle', () => {
         const rewardPercent = 200n;
         const totalSoldTickets = 5n;
 
-        const winnerIndex = SConstant.from(
-          (winnersBoxes as Box[])[1].additionalRegisters.R5!,
-        ).data as number;
+        const winnerBox = boxFactory.createWinnerSingleBoxMock(
+          2,
+          winnersCount,
+          testUtils.TICKET_TOKEN_ID,
+          undefined,
+          BigInt(2000),
+          0n,
+          testUtils.GIFT_TOKEN_ID,
+          [
+            {
+              tokenId: testUtils.GIFT_TOKEN_ID,
+              amount: 1000n,
+            },
+          ],
+        );
+
         const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 3n + (totalPrize * rewardPercent) / 1000n,
-          winnerIndex,
+          2,
           newWinnerTicketIndex,
           1n,
           0n,
-          [(winnersBoxes as Box[])[0].assets[0]],
+          winnerBox.assets[1].amount,
         );
         const successRaffleOutputValue =
-          BigInt((winnersBoxes as Box[])[0].value) +
+          BigInt(winnerBox.value) +
           successRaffleBox.value -
           prizeOutputBox.value -
           testUtils.FEE;
@@ -776,7 +794,7 @@ describe('successRaffle', () => {
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           // use invalid winner box
-          .from([successRaffleBox, (winnersBoxes as Box[])[1]])
+          .from([successRaffleBox, winnerBox])
           .to([successRaffleOutputBox, prizeOutputBox])
           .payFee(testUtils.FEE)
           .build();
@@ -802,7 +820,7 @@ describe('successRaffle', () => {
         creator,
         newWinnerTicketIndex,
         nextSeed,
-        winnersBoxes,
+        winnerBox,
         successRaffleBox,
       }) => {
         const winnersCount = 5;
@@ -810,19 +828,16 @@ describe('successRaffle', () => {
         const rewardPercent = 200n;
         const totalSoldTickets = 5n;
 
-        const winnerIndex = SConstant.from(
-          (winnersBoxes as Box[])[0].additionalRegisters.R5!,
-        ).data as number;
         const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 3n + (totalPrize * rewardPercent) / 1000n,
-          winnerIndex,
+          1,
           newWinnerTicketIndex,
           1n,
           0n,
-          [(winnersBoxes as Box[])[0].assets[0]],
+          winnerBox.assets[1].amount,
         );
         const successRaffleOutputValue =
-          BigInt((winnersBoxes as Box[])[0].value) +
+          BigInt(winnerBox.value) +
           successRaffleBox.value -
           prizeOutputBox.value -
           testUtils.FEE;
@@ -841,7 +856,7 @@ describe('successRaffle', () => {
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([successRaffleBox, (winnersBoxes as Box[])[0]])
+          .from([successRaffleBox, winnerBox])
           .to([successRaffleOutputBox, prizeOutputBox])
           .payFee(testUtils.FEE)
           .build();
@@ -866,7 +881,7 @@ describe('successRaffle', () => {
         boxFactory,
         creator,
         newWinnerTicketIndex,
-        winnersBoxes,
+        winnerBox,
         successRaffleBox,
       }) => {
         const winnersCount = 5;
@@ -874,19 +889,16 @@ describe('successRaffle', () => {
         const rewardPercent = 200n;
         const totalSoldTickets = 5n;
 
-        const winnerIndex = SConstant.from(
-          (winnersBoxes as Box[])[0].additionalRegisters.R5!,
-        ).data as number;
         const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 3n + (totalPrize * rewardPercent) / 1000n,
-          winnerIndex,
+          1,
           newWinnerTicketIndex,
           1n,
           0n,
-          [(winnersBoxes as Box[])[0].assets[0]],
+          winnerBox.assets[1].amount,
         );
         const successRaffleOutputValue =
-          BigInt((winnersBoxes as Box[])[0].value) +
+          BigInt(winnerBox.value) +
           successRaffleBox.value -
           prizeOutputBox.value -
           testUtils.FEE;
@@ -905,7 +917,7 @@ describe('successRaffle', () => {
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([successRaffleBox, (winnersBoxes as Box[])[0]])
+          .from([successRaffleBox, winnerBox])
           .to([successRaffleOutputBox, prizeOutputBox])
           .payFee(testUtils.FEE)
           .build();
@@ -931,7 +943,7 @@ describe('successRaffle', () => {
         creator,
         newWinnerTicketIndex,
         nextSeed,
-        winnersBoxes,
+        winnerBox,
         successRaffleBox,
       }) => {
         const winnersCount = 5;
@@ -939,20 +951,17 @@ describe('successRaffle', () => {
         const rewardPercent = 200n;
         const totalSoldTickets = 5n;
 
-        const winnerIndex = SConstant.from(
-          (winnersBoxes as Box[])[0].additionalRegisters.R5!,
-        ).data as number;
         const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
           // put 100 more nano-ergs to this box
           testUtils.FEE * 3n + (totalPrize * rewardPercent) / 1000n + 100n,
-          winnerIndex,
+          1,
           newWinnerTicketIndex,
           1n,
           0n,
-          [(winnersBoxes as Box[])[0].assets[0]],
+          winnerBox.assets[1].amount,
         );
         const successRaffleOutputValue =
-          BigInt((winnersBoxes as Box[])[0].value) +
+          BigInt(winnerBox.value) +
           successRaffleBox.value -
           prizeOutputBox.value -
           testUtils.FEE;
@@ -970,7 +979,7 @@ describe('successRaffle', () => {
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([successRaffleBox, (winnersBoxes as Box[])[0]])
+          .from([successRaffleBox, winnerBox])
           .to([successRaffleOutputBox, prizeOutputBox])
           .payFee(testUtils.FEE)
           .build();
@@ -996,7 +1005,7 @@ describe('successRaffle', () => {
         creator,
         newWinnerTicketIndex,
         nextSeed,
-        winnersBoxes,
+        winnerBox,
         successRaffleBox,
       }) => {
         const winnersCount = 5;
@@ -1004,23 +1013,18 @@ describe('successRaffle', () => {
         const rewardPercent = 200n;
         const totalSoldTickets = 5n;
 
-        const winnerIndex = SConstant.from(
-          (winnersBoxes as Box[])[0].additionalRegisters.R5!,
-        ).data as number;
         const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 3n,
-          winnerIndex,
+          1,
           newWinnerTicketIndex,
           1n,
           0n,
-          [
-            (winnersBoxes as Box[])[0].assets[0],
-            {
-              tokenId: testUtils.X_TOKEN_ID,
-              // put 1 more token to this box
-              amount: (totalPrize * rewardPercent) / 1000n + 1n,
-            },
-          ],
+          winnerBox.assets[1].amount,
+          {
+            tokenId: testUtils.X_TOKEN_ID,
+            // put 1 more token to this box
+            amount: (totalPrize * rewardPercent) / 1000n + 1n,
+          },
         );
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
           successRaffleBox.value,
@@ -1041,7 +1045,7 @@ describe('successRaffle', () => {
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([successRaffleBox, (winnersBoxes as Box[])[0]])
+          .from([successRaffleBox, winnerBox])
           .to([successRaffleOutputBox, prizeOutputBox])
           .payFee(testUtils.FEE)
           .build();
@@ -1068,7 +1072,7 @@ describe('successRaffle', () => {
         newWinnerTicketIndex,
         nextSeed,
         someoneWallet,
-        winnersBoxes,
+        winnerBox,
         successRaffleBox,
       }) => {
         const winnersCount = 5;
@@ -1076,19 +1080,16 @@ describe('successRaffle', () => {
         const rewardPercent = 200n;
         const totalSoldTickets = 5n;
 
-        const winnerIndex = SConstant.from(
-          (winnersBoxes as Box[])[0].additionalRegisters.R5!,
-        ).data as number;
         const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 3n + (totalPrize * rewardPercent) / 1000n,
-          winnerIndex,
+          1,
           newWinnerTicketIndex,
           1n,
           0n,
-          [(winnersBoxes as Box[])[0].assets[0]],
+          winnerBox.assets[1].amount,
         );
         const successRaffleOutputValue =
-          BigInt((winnersBoxes as Box[])[0].value) +
+          BigInt(winnerBox.value) +
           successRaffleBox.value -
           prizeOutputBox.value -
           testUtils.FEE;
@@ -1116,11 +1117,7 @@ describe('successRaffle', () => {
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([
-            (winnersBoxes as Box[])[0],
-            successRaffleBox,
-            ...someoneWallet.utxos,
-          ])
+          .from([winnerBox, successRaffleBox, ...someoneWallet.utxos])
           .to([successRaffleOutputBox, prizeOutputBox])
           .payFee(testUtils.FEE)
           .sendChangeTo(someoneWallet.address)
@@ -1155,15 +1152,14 @@ describe('successRaffle', () => {
         const implementerFeePercent = serviceR4[1];
         const serviceOutputBox = boxFactory.createServiceOutputBox(
           serviceBox.ergoTree,
-          BigInt(serviceBox.assets[1].amount.toString()) + 1n,
+          serviceBox.assets[1].amount + 1n,
           serviceFeePercent,
           implementerFeePercent,
           serviceR4[2],
         );
 
         const creatorFund = boxFactory.createSafePayOutputBox(
-          BigInt(successRaffleForLicenseRedeemBox.value.toString()) -
-            testUtils.FEE,
+          successRaffleForLicenseRedeemBox.value - testUtils.FEE,
           [],
           blake2b256(Buffer.from(creator.ergoTree, 'hex')),
         );
@@ -1208,15 +1204,14 @@ describe('successRaffle', () => {
         const implementerFeePercent = serviceR4[1];
         const serviceOutputBox = boxFactory.createServiceOutputBox(
           serviceBox.ergoTree,
-          BigInt(serviceBox.assets[1].amount.toString()) + 1n,
+          serviceBox.assets[1].amount + 1n,
           serviceFeePercent,
           implementerFeePercent,
           serviceR4[2],
         );
 
         const creatorFund = boxFactory.createSafePayOutputBox(
-          BigInt(successRaffleForLicenseRedeemBox.value.toString()) -
-            testUtils.FEE,
+          successRaffleForLicenseRedeemBox.value - testUtils.FEE,
           [successRaffleForLicenseRedeemBox.assets[2]],
           blake2b256(Buffer.from(creator.ergoTree, 'hex')),
         );
@@ -1273,7 +1268,7 @@ describe('successRaffle', () => {
         const implementerFeePercent = serviceR4[1];
         const serviceOutputBox = boxFactory.createServiceOutputBox(
           serviceBox.ergoTree,
-          BigInt(serviceBox.assets[1].amount.toString()) + 1n,
+          serviceBox.assets[1].amount + 1n,
           serviceFeePercent,
           implementerFeePercent,
           serviceR4[2],
@@ -1283,8 +1278,7 @@ describe('successRaffle', () => {
         );
 
         const creatorFund = boxFactory.createSafePayOutputBox(
-          BigInt(successRaffleForLicenseRedeemBox.value.toString()) -
-            testUtils.FEE,
+          successRaffleForLicenseRedeemBox.value - testUtils.FEE,
           [],
           blake2b256(Buffer.from(creator.ergoTree, 'hex')),
         );
@@ -1330,7 +1324,7 @@ describe('successRaffle', () => {
 
         const serviceOutputBox = boxFactory.createServiceOutputBox(
           serviceBox.ergoTree,
-          BigInt(serviceBox.assets[1].amount.toString()) + 1n,
+          serviceBox.assets[1].amount + 1n,
           serviceFeePercent,
           implementerFeePercent,
           serviceR4[2],
@@ -1338,7 +1332,7 @@ describe('successRaffle', () => {
 
         const creatorFund = boxFactory.createSafePayOutputBox(
           // invalid value: minus one extra fee value
-          BigInt(successRaffleForLicenseRedeemBox.value.toString()) -
+          successRaffleForLicenseRedeemBox.value -
             testUtils.FEE -
             testUtils.FEE,
           [],
@@ -1385,15 +1379,14 @@ describe('successRaffle', () => {
         const implementerFeePercent = serviceR4[1];
         const serviceOutputBox = boxFactory.createServiceOutputBox(
           serviceBox.ergoTree,
-          BigInt(serviceBox.assets[1].amount.toString()) + 1n,
+          serviceBox.assets[1].amount + 1n,
           serviceFeePercent,
           implementerFeePercent,
           serviceR4[2],
         );
 
         const creatorFund = boxFactory.createSafePayOutputBox(
-          BigInt(successRaffleForLicenseRedeemBox.value.toString()) -
-            testUtils.FEE,
+          successRaffleForLicenseRedeemBox.value - testUtils.FEE,
           [
             {
               tokenId: successRaffleForLicenseRedeemBox.assets[2].tokenId,
@@ -1451,15 +1444,14 @@ describe('successRaffle', () => {
 
         const serviceOutputBox = boxFactory.createServiceOutputBox(
           serviceBox.ergoTree,
-          BigInt(serviceBox.assets[1].amount.toString()) + 1n,
+          serviceBox.assets[1].amount + 1n,
           serviceFeePercent,
           implementerFeePercent,
           serviceR4[2],
         );
 
         const creatorFund = boxFactory.createSafePayOutputBox(
-          BigInt(successRaffleForLicenseRedeemBox.value.toString()) -
-            testUtils.FEE,
+          successRaffleForLicenseRedeemBox.value - testUtils.FEE,
           [
             // stole one ticket token
             {
@@ -1531,15 +1523,14 @@ describe('successRaffle', () => {
 
         const serviceOutputBox = boxFactory.createServiceOutputBox(
           serviceBox.ergoTree,
-          BigInt(serviceBox.assets[1].amount.toString()) + 1n,
+          serviceBox.assets[1].amount + 1n,
           serviceFeePercent,
           implementerFeePercent,
           serviceR4[2],
         );
 
         const creatorFund = boxFactory.createSafePayOutputBox(
-          BigInt(successRaffleForLicenseRedeemBox.value.toString()) -
-            testUtils.FEE,
+          successRaffleForLicenseRedeemBox.value - testUtils.FEE,
           [],
           blake2b256(Buffer.from(creator.ergoTree, 'hex')),
         );

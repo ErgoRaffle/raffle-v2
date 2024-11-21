@@ -793,16 +793,15 @@ export const executePrizeCreationTx = (
     winnerTicketIndex,
     giftCount,
     0n,
+    BigInt(winnerBox.assets[1].amount.toString()),
     isErgGoal || prizeAmount == 0n
-      ? [winnerBox.assets[0], winnerBox.assets[1]]
-      : [
-          winnerBox.assets[0],
-          winnerBox.assets[1],
-          {
-            tokenId: successRaffleBox.assets[2].tokenId,
-            amount: prizeAmount,
-          },
-        ],
+      ? undefined
+      : {
+          tokenId: successRaffleBox.assets[2].tokenId,
+          amount: prizeAmount,
+        },
+    winnerBox.assets[0].tokenId,
+    winnerBox.assets[1].tokenId,
   );
 
   const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
@@ -853,21 +852,26 @@ export const executeGiftUnwrapTx = (
   winnerPrizeBox: testUtils.OutputBox,
   giftForWinnerBox: testUtils.OutputBox,
   ticketBox: testUtils.OutputBox,
-  prizeNumber: bigint,
   boxFactory: testUtils.RaffleBoxFactory,
 ) => {
   const winnerPrizeR4 = SConstant.from(winnerPrizeBox.additionalRegisters.R4!)
     .data as bigint[];
   const winnerIndex = SConstant.from(winnerPrizeBox.additionalRegisters.R5!)
     .data as number;
+  const unwrappedGiftCount = SConstant.from(
+    winnerPrizeBox.additionalRegisters.R6!,
+  ).data as bigint;
 
   const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
     BigInt(winnerPrizeBox.value),
     winnerIndex,
     winnerPrizeR4[0],
     winnerPrizeR4[1],
-    prizeNumber,
-    winnerPrizeBox.assets,
+    unwrappedGiftCount + 1n,
+    BigInt(winnerPrizeBox.assets[1].amount.toString()) + 1n,
+    winnerPrizeBox.assets[2],
+    winnerPrizeBox.assets[0].tokenId,
+    winnerPrizeBox.assets[1].tokenId,
   );
 
   const giftOutputBoxTokens = giftForWinnerBox.assets.slice(
@@ -884,7 +888,6 @@ export const executeGiftUnwrapTx = (
   const giftUnwrapTx = new TransactionBuilder(boxFactory.chain.height)
     .from([winnerPrizeBox, giftForWinnerBox])
     .to([prizeOutputBox, unwrappedGiftBox])
-    .burnTokens([giftForWinnerBox.assets[0]])
     .configureSelector((selector) => {
       selector.defineStrategy((inputs) => inputs);
     })
