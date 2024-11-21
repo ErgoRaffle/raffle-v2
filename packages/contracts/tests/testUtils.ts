@@ -479,6 +479,8 @@ export class RaffleBoxFactory {
    * @param totalSoldTicket
    * @param goal
    * @param ticketPrice
+   * @param ticketTokenId
+   * @param ticketTokenAmount
    * @returns
    */
   createActiveRaffleBoxMock(
@@ -494,17 +496,20 @@ export class RaffleBoxFactory {
     totalSoldTicket: bigint = 0n,
     goal: bigint = 1000n,
     ticketPrice: bigint = 10n,
+    ticketTokenId: string = TICKET_TOKEN_ID,
+    ticketTokenAmount?: bigint,
+    licenseTokenId: string = LICENSE_TOKEN_ID,
   ) {
     value = value || creationFee + 7n * FEE;
 
     const tokens = [
       {
-        tokenId: LICENSE_TOKEN_ID,
+        tokenId: licenseTokenId,
         amount: 1n,
       },
       {
-        tokenId: TICKET_TOKEN_ID,
-        amount: 1_000_000_000n - 1n - BigInt(winnersCount),
+        tokenId: ticketTokenId,
+        amount: ticketTokenAmount || 1_000_000_000n - 1n - BigInt(winnersCount),
       },
     ];
     if (collectingToken != null) tokens.push(collectingToken);
@@ -601,6 +606,8 @@ export class RaffleBoxFactory {
    * @param extraTokens
    * @param goal
    * @param ticketPrice
+   * @param ticketTokenId
+   * @param ticketTokenAmount
    * @returns
    */
   createActiveRaffleOutputBox(
