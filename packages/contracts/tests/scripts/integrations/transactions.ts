@@ -804,13 +804,12 @@ export const executePrizeCreationTx = (
     winnerBox.assets[1].tokenId,
   );
 
-  winnerIndexList.push(BigInt(winnerTicketIndex));
   const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
     isErgGoal ? successRaffleBox.value - prizeAmount : successRaffleBox.value,
     successRaffleBox.assets[0].tokenId,
     seed,
     projectAddressHash,
-    winnerIndexList,
+    [...winnerIndexList, winnerTicketIndex],
     totalSoldTickets,
     winnersCount,
     totalPrize,
