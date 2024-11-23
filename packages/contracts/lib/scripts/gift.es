@@ -11,9 +11,9 @@
   //
   // Spent in 4 transactions:
   //   - Gift unwrap
-  //      [WinnerPrize, Gift] + [(DataInput)Ticket] --> [WinnerPrize, redeemedGift]
-  //   - Gift redeem (for failed raffle) 
-  //      [Winner, Gift] + [(DataInput)GiftRedeem] --> [Winner, unwrappedGift]
+  //      [WinnerPrize, Gift] + [(DataInput)Ticket] --> [WinnerPrize, unwrappedGift]
+  //   - Gift return (for failed raffle) 
+  //      [Winner, Gift] + [(DataInput)GiftRedeem] --> [Winner, returnedGift]
   //
   val safePayScriptHash = fromBase64("SAFE_PAY_SCRIPT_HASH_B64")
   val winnerPrizeScriptHash = fromBase64("WINNER_PRIZE_SCRIPT_HASH_B64")
@@ -32,15 +32,15 @@
 
   if(blake2b256(OUTPUTS(0).propositionBytes) == winnerPrizeScriptHash){
     // Gift unwrap
-    // [WinnerPrize, Gift] + [(DataInput)Ticket] --> [WinnerPrize, redeemedGift]
+    // [WinnerPrize, Gift] + [(DataInput)Ticket] --> [WinnerPrize, unwrappedGift]
     val winnerTicket = CONTEXT.dataInputs(0)
     sigmaProp(allOf(Coll(
       safePayBox.R4[Coll[Byte]].get == winnerTicket.R4[Coll[Byte]].get,
       txConstraints
     )))
   } else {
-    // Gift redeem (for failed raffle) 
-    // [Winner, Gift] + [(DataInput)GiftRedeem] --> [Winner, unwrappedGift]
+    // Gift return (for failed raffle) 
+    // [Winner, Gift] + [(DataInput)GiftRedeem] --> [Winner, returnedGift]
     sigmaProp(allOf(Coll(
       safePayBox.R4[Coll[Byte]].get == SELF.R4[Coll[Byte]].get,
       txConstraints
