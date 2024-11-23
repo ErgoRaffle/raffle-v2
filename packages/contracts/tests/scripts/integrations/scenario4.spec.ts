@@ -65,6 +65,9 @@ const createRaffleTest = () => {
   donator5.addBalance({
     tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000n }],
   });
+  giftgiver1.addBalance({
+    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000n }],
+  });
 
   // Created input service-box
   const creationFee = testUtils.CREATION_FEE;
@@ -76,7 +79,6 @@ const createRaffleTest = () => {
     creationFee,
   );
 
-  const giftGiverWallets: KeyedMockChainParty[] = [giftgiver1];
   const donatorWallets: KeyedMockChainParty[] = [
     donator1,
     donator2,
@@ -91,7 +93,7 @@ const createRaffleTest = () => {
     serviceBox: serviceBox,
     implementerErgoTree: implementer.ergoTree,
     ownerErgoTree: owner.ergoTree,
-    giftGiverWallets: giftGiverWallets as KeyedMockChainParty[],
+    giftGiverWallet: giftgiver1,
     donatorWallets: donatorWallets as KeyedMockChainParty[],
   });
 };
@@ -124,7 +126,7 @@ describe('Raffle', () => {
         serviceBox,
         implementerErgoTree,
         ownerErgoTree,
-        giftGiverWallets,
+        giftGiverWallet,
         donatorWallets,
       }) => {
         boxFactory.chain.setTip(100);
@@ -190,8 +192,14 @@ describe('Raffle', () => {
         const winnersGifts = [];
         const addGiftTx = executeAddGiftTx(
           winner1,
-          (giftGiverWallets as KeyedMockChainParty[])[0],
+          giftGiverWallet,
           boxFactory,
+          [
+            {
+              tokenId: testUtils.X_TOKEN_ID,
+              amount: 10n,
+            },
+          ],
         );
         expect(addGiftTx.success).true;
         winnerBoxes[0] = addGiftTx.outputs[0];
