@@ -19,9 +19,7 @@
   val winnerPrizeScriptHash = fromBase64("WINNER_PRIZE_SCRIPT_HASH_B64")
 
   val safePayBox = OUTPUTS(1)
-  val txFee = SELF.R6[Long].get
-  val safePayTokens = 
-    if(SELF.tokens.size > 1) safePayBox.tokens == SELF.tokens.slice(1, SELF.tokens.size) else true
+  val txFee = SELF.R6[Long].get    
 
   val txConstraints = 
     OUTPUTS(0).tokens(1)._1 == SELF.tokens(0)._1 && // winner or winner prize gift token
@@ -29,7 +27,7 @@
     // Correct Safe Pay format
     blake2b256(safePayBox.propositionBytes) == safePayScriptHash &&
     safePayBox.value == SELF.value - txFee &&
-    safePayTokens &&
+    safePayBox.tokens == SELF.tokens.slice(1, SELF.tokens.size) &&
     safePayBox.R5[Long].get == txFee
 
   if(blake2b256(OUTPUTS(0).propositionBytes) == winnerPrizeScriptHash){
