@@ -30,7 +30,7 @@
     safePayBox.tokens == SELF.tokens.slice(1, SELF.tokens.size) &&
     safePayBox.R5[Long].get == txFee
 
-  if(blake2b256(OUTPUTS(0).propositionBytes) == winnerPrizeScriptHash){
+  if(blake2b256(INPUTS(0).propositionBytes) == winnerPrizeScriptHash){
     // Gift unwrap
     // [WinnerPrize, Gift] + [(DataInput)Ticket] --> [WinnerPrize, unwrappedGift]
     val winnerTicket = CONTEXT.dataInputs(0)
