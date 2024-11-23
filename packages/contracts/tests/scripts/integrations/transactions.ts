@@ -238,6 +238,7 @@ export const executeAddGiftTx = (
   winner: testUtils.OutputBox,
   giftGiver: KeyedMockChainParty,
   boxFactory: testUtils.RaffleBoxFactory,
+  giftTokens?: TokenAmount<bigint>[],
 ) => {
   const inputWinner = new ErgoUnsignedInput(winner);
   inputWinner.setContextExtension({
@@ -264,6 +265,8 @@ export const executeAddGiftTx = (
     giftGiver.ergoTree,
     testUtils.FEE * 10n,
     giftTokenId,
+    undefined,
+    giftTokens,
   );
 
   const addGiftTx = new TransactionBuilder(boxFactory.chain.height)

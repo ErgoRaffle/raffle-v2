@@ -55,9 +55,12 @@ export const scriptsRequireAddresses: {
     safePay: 'SAFE_PAY_SCRIPT_HASH_B64',
     ticket: 'TICKET_SCRIPT_HASH_B64',
   },
-  gift: {},
   giftRedeem: {
     ticketRedeem: 'TICKET_REDEEM_SCRIPT_HASH_B64',
+  },
+  gift: {
+    safePay: 'SAFE_PAY_SCRIPT_HASH_B64',
+    winnerPrize: 'WINNER_PRIZE_SCRIPT_HASH_B64',
   },
   giftTokenRepo: {},
   ticketRedeem: {},

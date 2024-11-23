@@ -43,6 +43,18 @@ const createRaffleTest = () => {
     donator1: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
     donator2: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
   });
+  giftgiver1.addBalance({
+    tokens: [
+      { tokenId: testUtils.X_TOKEN_ID, amount: 1_000n },
+      { tokenId: 'f'.repeat(64), amount: 1_000n },
+    ],
+  });
+  giftgiver2.addBalance({
+    tokens: [
+      { tokenId: testUtils.X_TOKEN_ID, amount: 1_000n },
+      { tokenId: 'f'.repeat(64), amount: 1_000n },
+    ],
+  });
 
   // Created input service-box
   const serviceBox = boxFactory.createServiceBoxMock(
@@ -161,6 +173,16 @@ describe('Raffle', () => {
             winner1,
             (giftGiverWallets as KeyedMockChainParty[])[i],
             boxFactory,
+            [
+              {
+                tokenId: testUtils.X_TOKEN_ID,
+                amount: 10n,
+              },
+              {
+                tokenId: 'f'.repeat(64),
+                amount: 10n,
+              },
+            ],
           );
           expect(addGiftTx.success).true;
           winner1 = addGiftTx.outputs[0];
