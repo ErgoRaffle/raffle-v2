@@ -34,7 +34,7 @@
     sigmaProp(allOf(Coll(true,
       // Correct GiftRedeem format
       outGiftRedeem.propositionBytes == SELF.propositionBytes,
-      outGiftRedeem.value == SELF.value + winner.value - txFee,
+      outGiftRedeem.value >= SELF.value + winner.value - txFee,
       outGiftRedeem.tokens.size == SELF.tokens.size,
       outGiftRedeem.tokens(0) == SELF.tokens(0),
       outGiftRedeem.tokens(1)._1 == SELF.tokens(1)._1,
@@ -50,7 +50,6 @@
       // R6: GiftCount
       winner.tokens(0)._1 == SELF.tokens(1)._1,
       winner.R5[Int].get == step,
-      winner.R6[Long].get == 0,
     )))
   } else {
     // Move to ticket redeem step
@@ -61,7 +60,7 @@
       // R4[Coll[Long]]: [TotalSoldTicket, TicketPrice, txFee]
       // R5[Long]: RedeemedTickets
       blake2b256(ticketRedeem.propositionBytes) == ticketRedeemScriptHash,
-      ticketRedeem.value == SELF.value - txFee,
+      ticketRedeem.value >= SELF.value - txFee,
       ticketRedeem.tokens == SELF.tokens,
       ticketRedeem.R4[Coll[Long]].get == SELF.R4[Coll[Long]].get,
       ticketRedeem.R5[Long].get == 0L
