@@ -468,13 +468,14 @@ export const executeWinnerRemovalTx = (
     .data as number;
   const ticketTokenId = giftRedeem.assets[1].tokenId;
   const giftRedeemOutputBox = boxFactory.createGiftRedeemOutputBox(
-    BigInt(giftRedeem.value.toString()) + 3n * testUtils.FEE,
+    BigInt(giftRedeem.value.toString()) + BigInt(winner.value) - testUtils.FEE,
     r4[0],
     r4[1],
     winnersCount,
     step + 1,
     ticketTokenId,
     BigInt(giftRedeem.assets[1].amount.toString()) + 1n,
+    giftRedeem.assets[2],
   );
 
   const winnerRemovalTx = new TransactionBuilder(boxFactory.chain.height)

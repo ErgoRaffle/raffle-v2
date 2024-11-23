@@ -56,7 +56,9 @@ export const scriptsRequireAddresses: {
     ticket: 'TICKET_SCRIPT_HASH_B64',
   },
   gift: {},
-  giftRedeem: {},
+  giftRedeem: {
+    ticketRedeem: 'TICKET_REDEEM_SCRIPT_HASH_B64',
+  },
   giftTokenRepo: {},
   ticketRedeem: {},
   raffleDetails: {
