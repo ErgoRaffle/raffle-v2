@@ -1007,6 +1007,7 @@ export class RaffleBoxFactory {
           Array.from(Buffer.from(giftGiverWalletAddress)),
         ).toHex(),
         R5: SInt(winnerIndex).toHex(),
+        R6: SLong(FEE).toHex(),
       },
       assets: [
         {
@@ -1310,6 +1311,7 @@ export class RaffleBoxFactory {
     value: bigint = 0n,
     giftTokenId?: string,
     giftTokenAmount: bigint = 1n,
+    extraTokens?: TokenAmount<bigint>[],
   ) {
     const giftForWinnerOutputBox = new OutputBuilder(
       value,
@@ -1320,6 +1322,7 @@ export class RaffleBoxFactory {
         Array.from(blake2b256(Buffer.from(giftGiverErgoTree, 'hex'))),
       ),
       R5: SInt(winnerIndex),
+      R6: SLong(FEE),
     });
     if (giftTokenId !== undefined) {
       giftForWinnerOutputBox.assets.add({
@@ -1327,6 +1330,7 @@ export class RaffleBoxFactory {
         amount: giftTokenAmount,
       });
     }
+    if (extraTokens) giftForWinnerOutputBox.assets.add(extraTokens);
     return giftForWinnerOutputBox;
   }
 
