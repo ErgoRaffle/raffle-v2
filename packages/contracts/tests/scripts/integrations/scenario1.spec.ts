@@ -276,7 +276,7 @@ describe('Raffle', () => {
           const donationSafePayBox = ticketRedeemTx.outputs[1];
           const donationSafeWithdrawTx = executeSafeWithdrawTransaction(
             donationSafePayBox,
-            (donatorWallets as KeyedMockChainParty[])[i++].ergoTree,
+            (donatorWallets as KeyedMockChainParty[])[i].ergoTree,
             boxFactory,
           );
           expect(donationSafeWithdrawTx.success).true;

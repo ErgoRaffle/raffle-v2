@@ -118,6 +118,10 @@ export const initialContracts = (
   ticketRepo.set('RAFFLE_LICENSE_B64', defaultLicenseTokenId);
   scriptsVars.set('ticketRepo', ticketRepo);
 
+  const ticketRedeem = scriptsVars.get('ticketRedeem') || new Map();
+  ticketRedeem.set('SERVICE_NFT_B64', defaultRaffleNftId);
+  scriptsVars.set('ticketRedeem', ticketRedeem);
+
   const winner = scriptsVars.get('winner') || new Map();
   winner.set('RAFFLE_LICENSE_B64', defaultLicenseTokenId);
   scriptsVars.set('winner', winner);
