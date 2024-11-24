@@ -57,7 +57,10 @@
       blake2b256(safePayBox.propositionBytes) == safePayScriptHash,
       safePayBox.R4[Coll[Byte]] == SELF.R4[Coll[Byte]],
       safePayBox.R5[Long].get == txFee,
-      redeemedDonation
+      redeemedDonation,
+
+      // Transaction constraints
+      INPUTS(1).id == SELF.id, // prevent spending multiple tickets
     )))
   }
 }
