@@ -48,6 +48,7 @@ export const LICENSE_TOKEN_ID = '2'.repeat(64);
 export const X_TOKEN_ID = '3'.repeat(64);
 export const TICKET_TOKEN_ID = '4'.repeat(64);
 export const GIFT_TOKEN_ID = '5'.repeat(64);
+export const TICKET_COLLECTOR_NFT_ID = '6'.repeat(64);
 export const GIFT_TOKEN_COUNT = 2_000n;
 export const CREATION_FEE = 1_000_000_000n;
 export const LICENSE_TOKEN_COUNT = 1_000_000_000n;
@@ -96,6 +97,10 @@ export const initialContracts = (
   const defaultLicenseTokenId = Buffer.from(LICENSE_TOKEN_ID, 'hex').toString(
     'base64',
   );
+  const defaultTicketCollectorNft = Buffer.from(
+    TICKET_COLLECTOR_NFT_ID,
+    'hex',
+  ).toString('base64');
   const defaultRaffleNftId = Buffer.from(RAFFLE_NFT_ID, 'hex').toString(
     'base64',
   );
@@ -137,6 +142,11 @@ export const initialContracts = (
   const raffleDetails = scriptsVars.get('raffleDetails') || new Map();
   raffleDetails.set('RAFFLE_LICENSE_B64', defaultLicenseTokenId);
   scriptsVars.set('raffleDetails', raffleDetails);
+
+  const ticket = scriptsVars.get('ticket') || new Map();
+  ticket.set('RAFFLE_LICENSE_B64', defaultLicenseTokenId);
+  ticket.set('TICKET_COLLECTOR_NFT_B64', defaultTicketCollectorNft);
+  scriptsVars.set('ticket', ticket);
 
   return compileAll(scriptsVars as ContextVarsType, true, trueScripts);
 };
