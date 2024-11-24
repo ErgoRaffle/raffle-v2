@@ -2019,11 +2019,10 @@ describe('winner', () => {
     /**
      * @target should fail if two winner boxes are spent in inputs
      * @scenario
-     * - create winner input box
-     * - create giftRedeem input box
+     * - create winner boxes (raffle with 2 winners)
+     * - create giftRedeem input box (with step 1)
      * - create giftRedeem output box
-     * - execute transaction
-     * - result of execution must be success
+     * - build transaction spending both winner boxes and stealing one ticket token in change box
      * @expected
      * - transaction must done successfully
      */
