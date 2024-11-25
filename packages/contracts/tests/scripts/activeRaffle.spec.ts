@@ -243,7 +243,7 @@ describe('ActiveRaffle', () => {
           donatorWallet.ergoTree,
           5n,
           testUtils.TICKET_TOKEN_ID,
-          [0n, 5n, 100_000n], // from-ticket-range, to-ticket-range, ticket-price
+          [0n, 5n, 100_000n, 1000n], // from-ticket-range, to-ticket-range, ticket-price
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
@@ -300,7 +300,7 @@ describe('ActiveRaffle', () => {
           donatorWallet.ergoTree,
           5n,
           testUtils.TICKET_TOKEN_ID,
-          [0n, 5n, 10n], // from-ticket-range, to-ticket-range, ticket-price
+          [0n, 5n, 10n, 1000n], // from-ticket-range, to-ticket-range, ticket-price
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
@@ -357,7 +357,7 @@ describe('ActiveRaffle', () => {
           14n,
           testUtils.TICKET_TOKEN_ID,
           // put extra range to the output ticket box
-          [0n, 15n, 100_000n], // from-ticket-range, to-ticket-range, ticket-price
+          [0n, 15n, 100_000n, 1000n], // from-ticket-range, to-ticket-range, ticket-price
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
@@ -412,7 +412,7 @@ describe('ActiveRaffle', () => {
           14n,
           testUtils.TICKET_TOKEN_ID,
           // put extra range to the output ticket box
-          [0n, 15n, 10n], // from-ticket-range, to-ticket-range, ticket-price
+          [0n, 15n, 10n, 1000n], // from-ticket-range, to-ticket-range, ticket-price
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
@@ -467,7 +467,7 @@ describe('ActiveRaffle', () => {
           donatorWallet.ergoTree,
           1n,
           testUtils.TICKET_TOKEN_ID,
-          [0n, 1n, 100_000n], // from-ticket-range, to-ticket-range, ticket-price
+          [0n, 1n, 100_000n, 1000n], // from-ticket-range, to-ticket-range, ticket-price
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
@@ -521,7 +521,7 @@ describe('ActiveRaffle', () => {
           donatorWallet.ergoTree,
           1n,
           testUtils.TICKET_TOKEN_ID,
-          [0n, 1n, 100_000n], // from-ticket-range, to-ticket-range, ticket-price
+          [0n, 1n, 100_000n, 1000n], // from-ticket-range, to-ticket-range, ticket-price
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
@@ -585,7 +585,7 @@ describe('ActiveRaffle', () => {
           donatorWallet.ergoTree,
           1n,
           testUtils.TICKET_TOKEN_ID,
-          [0n, 1n, 100_000n], // from-ticket-range, to-ticket-range, ticket-price
+          [0n, 1n, 100_000n, 1000n], // from-ticket-range, to-ticket-range, ticket-price
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
@@ -641,7 +641,7 @@ describe('ActiveRaffle', () => {
           donatorWallet.ergoTree,
           2n,
           testUtils.TICKET_TOKEN_ID,
-          [0n, 2n, 10n], // from-ticket-range, to-ticket-range, ticket-price
+          [0n, 2n, 10n, 1000n], // from-ticket-range, to-ticket-range, ticket-price
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
@@ -702,7 +702,7 @@ describe('ActiveRaffle', () => {
           donatorWallet.ergoTree,
           1n,
           testUtils.TICKET_TOKEN_ID,
-          [0n, 1n, 100_000n], // from-ticket-range, to-ticket-range, ticket-price
+          [0n, 1n, 100_000n, 1000n], // from-ticket-range, to-ticket-range, ticket-price
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
@@ -758,7 +758,7 @@ describe('ActiveRaffle', () => {
           1n,
           // put invalid ticket token id
           testUtils.X_TOKEN_ID,
-          [0n, 1n, 100_000n], // from-ticket-range, to-ticket-range, ticket-price
+          [0n, 1n, 100_000n, 1000n], // from-ticket-range, to-ticket-range, ticket-price
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
@@ -814,7 +814,7 @@ describe('ActiveRaffle', () => {
           1n,
           testUtils.TICKET_TOKEN_ID,
           // set invalid tickets range
-          [0n, 2n, 100_000n], // from-ticket-range, to-ticket-range, ticket-price
+          [0n, 2n, 100_000n, 1000n], // from-ticket-range, to-ticket-range, ticket-price
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)

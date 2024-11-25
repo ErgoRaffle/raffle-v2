@@ -340,7 +340,7 @@ export const executeDonateTx = (
     donator.ergoTree,
     ticketCount,
     ticketTokenId,
-    [totalSoldTickets, totalSoldTickets + ticketCount, r4[3]],
+    [totalSoldTickets, totalSoldTickets + ticketCount, r4[3], r4[5]],
   );
 
   const donateTx = new TransactionBuilder(boxFactory.chain.height)
