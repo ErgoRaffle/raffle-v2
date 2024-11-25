@@ -145,6 +145,7 @@ describe('Raffle', () => {
           step++;
           winnerBoxes.push(giftTokenReceiptTx.outputs[0]);
           giftTokenRepo = giftTokenReceiptTx.outputs[1];
+          expect(giftTokenReceiptTx.success).true;
         }
 
         // Step 4: Donate twice by two different donators
