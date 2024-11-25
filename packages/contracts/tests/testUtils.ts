@@ -872,6 +872,7 @@ export class RaffleBoxFactory {
    * @param collectingToken
    * @param ticketTokenId
    * @param giftTokenId
+   * @param ticketTokenAmount
    * @returns
    */
   createWinnerPrizeOutputBox(
@@ -882,18 +883,23 @@ export class RaffleBoxFactory {
     unwrappedGiftCount: bigint,
     giftTokenCount: bigint,
     collectingToken?: TokenAmount<bigint> | TokenAmount<Amount>,
-    ticketTokenId = TICKET_TOKEN_ID,
-    giftTokenId = GIFT_TOKEN_ID,
+    ticketTokenId: string = TICKET_TOKEN_ID,
+    giftTokenId: string = GIFT_TOKEN_ID,
+    ticketTokenAmount: bigint = 1n,
   ) {
     const winnerPrizeBox = new OutputBuilder(
       value,
       this.contractsAddresses['winnerPrize'],
     )
       .addTokens([
-        {
-          tokenId: ticketTokenId,
-          amount: 1n,
-        },
+        ...(ticketTokenAmount > 0
+          ? [
+              {
+                tokenId: ticketTokenId,
+                amount: 1n,
+              },
+            ]
+          : []),
         {
           tokenId: giftTokenId,
           amount: giftTokenCount,
@@ -1634,7 +1640,7 @@ export class RaffleBoxFactory {
    */
   createSafePayOutputBox(
     value: bigint,
-    tokens: TokenAmount<Amount>[],
+    tokens: TokenAmount<Amount | bigint>[],
     addressHash: Uint8Array,
   ) {
     const outputBox = new OutputBuilder(
