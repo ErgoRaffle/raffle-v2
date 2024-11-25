@@ -19,8 +19,8 @@
   //      [Winner, UserBox] --> [Winner, Gift]
   //   - Winner prize creation (for successfully ended raffle) 
   //      [SuccessRaffle, Winner] --> [SuccessRaffle, WinnerPrize]
-  //   - Gift redeem (for failed raffle) 
-  //      [Winner, Gift] + [(DataInput)GiftRedeem] --> [Winner, UserBox]
+  //   - Gift return (for failed raffle) 
+  //      [Winner, Gift] + [(DataInput)GiftRedeem] --> [Winner, returnedGift]
   //   - Winner box removal (for failed raffle)
   //      [GiftRedeem, Winner] --> [GiftRedeem]
   //
@@ -105,8 +105,8 @@
     } else { sigmaProp(false) }
   }
   else if (HEIGHT > deadline) {
-    // Gift redeem (for failed raffle) 
-    // [Winner, Gift] + [(DataInput)GiftRedeem] --> [Winner, UserBox]
+    // Gift return (for failed raffle) 
+    // [Winner, Gift] + [(DataInput)GiftRedeem] --> [Winner, returnedGift]
     val giftRedeem = CONTEXT.dataInputs(0)
     val gift = INPUTS(1)
     sigmaProp(allOf(Coll(

@@ -1334,7 +1334,7 @@ export class RaffleBoxFactory {
     step: number,
     ticketTokenId: string,
     ticketTokenCount: bigint,
-    collectingToken?: TokenAmount<bigint>,
+    collectingToken?: TokenAmount<bigint | Amount>,
     extraTokens: TokenAmount<bigint>[] = [],
   ) {
     const giftRedeemOutputBox = new OutputBuilder(
