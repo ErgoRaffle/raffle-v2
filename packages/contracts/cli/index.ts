@@ -136,7 +136,17 @@ program
       'ORACLE_TOKEN_ID_B64',
       Buffer.from(tokens['oracleTokenId'].toString(), 'hex').toString('base64'),
     );
+    defaults.set(
+      'TICKET_COLLECTOR_NFT_B64',
+      Buffer.from(tokens['ticketCollectorNft'].toString(), 'hex').toString(
+        'base64',
+      ),
+    );
     defaults.set('GIFT_TOKEN_COUNT', rawConfigs['giftTokenCount'].toString());
+    defaults.set(
+      'TICKET_EXPIRATION_HEIGHT',
+      rawConfigs['ticketExpirationHeight'].toString(),
+    );
     const configs = new Map<'defaults', Map<string, string>>();
     configs.set('defaults', defaults);
 

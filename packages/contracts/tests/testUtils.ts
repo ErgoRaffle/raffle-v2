@@ -48,6 +48,7 @@ export const LICENSE_TOKEN_ID = '2'.repeat(64);
 export const X_TOKEN_ID = '3'.repeat(64);
 export const TICKET_TOKEN_ID = '4'.repeat(64);
 export const GIFT_TOKEN_ID = '5'.repeat(64);
+export const TICKET_COLLECTOR_NFT_ID = '6'.repeat(64);
 export const GIFT_TOKEN_COUNT = 2_000n;
 export const CREATION_FEE = 1_000_000_000n;
 export const LICENSE_TOKEN_COUNT = 1_000_000_000n;
@@ -93,13 +94,18 @@ export const initialContracts = (
       new Map(Object.entries(constants.defaultScriptsVariables[key])),
     );
 
-  const defaultLicenseTokenId = Buffer.from(LICENSE_TOKEN_ID, 'hex').toString(
+  const defaultLicenseTokenIdB64 = Buffer.from(
+    LICENSE_TOKEN_ID,
+    'hex',
+  ).toString('base64');
+  const defaultTicketCollectorNftB64 = Buffer.from(
+    TICKET_COLLECTOR_NFT_ID,
+    'hex',
+  ).toString('base64');
+  const defaultRaffleNftIdB64 = Buffer.from(RAFFLE_NFT_ID, 'hex').toString(
     'base64',
   );
-  const defaultRaffleNftId = Buffer.from(RAFFLE_NFT_ID, 'hex').toString(
-    'base64',
-  );
-  const defaultOracleTokenId = Buffer.from(ORACLE_NFT_ID, 'hex').toString(
+  const defaultOracleTokenIdB64 = Buffer.from(ORACLE_NFT_ID, 'hex').toString(
     'base64',
   );
 
@@ -115,11 +121,11 @@ export const initialContracts = (
   );
 
   const ticketRepo = scriptsVars.get('ticketRepo') || new Map();
-  ticketRepo.set('RAFFLE_LICENSE_B64', defaultLicenseTokenId);
+  ticketRepo.set('RAFFLE_LICENSE_B64', defaultLicenseTokenIdB64);
   scriptsVars.set('ticketRepo', ticketRepo);
 
   const winner = scriptsVars.get('winner') || new Map();
-  winner.set('RAFFLE_LICENSE_B64', defaultLicenseTokenId);
+  winner.set('RAFFLE_LICENSE_B64', defaultLicenseTokenIdB64);
   scriptsVars.set('winner', winner);
 
   const inactiveRaffle = scriptsVars.get('inactiveRaffle') || new Map();
@@ -127,16 +133,21 @@ export const initialContracts = (
   scriptsVars.set('inactiveRaffle', inactiveRaffle);
 
   const activeRaffle = scriptsVars.get('activeRaffle') || new Map();
-  activeRaffle.set('ORACLE_TOKEN_ID_B64', defaultOracleTokenId);
+  activeRaffle.set('ORACLE_TOKEN_ID_B64', defaultOracleTokenIdB64);
   scriptsVars.set('activeRaffle', activeRaffle);
 
   const successRaffle = scriptsVars.get('successRaffle') || new Map();
-  successRaffle.set('SERVICE_NFT_B64', defaultRaffleNftId);
+  successRaffle.set('SERVICE_NFT_B64', defaultRaffleNftIdB64);
   scriptsVars.set('successRaffle', successRaffle);
 
   const raffleDetails = scriptsVars.get('raffleDetails') || new Map();
-  raffleDetails.set('RAFFLE_LICENSE_B64', defaultLicenseTokenId);
+  raffleDetails.set('RAFFLE_LICENSE_B64', defaultLicenseTokenIdB64);
   scriptsVars.set('raffleDetails', raffleDetails);
+
+  const ticket = scriptsVars.get('ticket') || new Map();
+  ticket.set('RAFFLE_LICENSE_B64', defaultLicenseTokenIdB64);
+  ticket.set('TICKET_COLLECTOR_NFT_B64', defaultTicketCollectorNftB64);
+  scriptsVars.set('ticket', ticket);
 
   return compileAll(scriptsVars as ContextVarsType, true, trueScripts);
 };

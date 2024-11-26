@@ -47,7 +47,10 @@ export const scriptsRequireAddresses: {
     successRaffle: 'SUCCESS_RAFFLE_SCRIPT_HASH_B64',
     giftRedeem: 'GIFT_REDEEM_SCRIPT_HASH_B64',
   },
-  ticket: {},
+  ticket: {
+    safePay: 'SAFE_PAY_SCRIPT_HASH_B64',
+    ticketRedeem: 'TICKET_REDEEM_SCRIPT_HASH_B64',
+  },
   successRaffle: {
     safePay: 'SAFE_PAY_SCRIPT_HASH_B64',
   },
@@ -92,10 +95,16 @@ export const defaultScriptsVariables: {
   successRaffle: {
     SERVICE_NFT_B64: '',
   },
+  ticket: {
+    RAFFLE_LICENSE_B64: '',
+    TICKET_COLLECTOR_NFT_B64: '',
+    TICKET_EXPIRATION_HEIGHT: 7200,
+  },
 };
 
 export const defaultBuildVariables = {
   giftTokenCount: '1000L',
+  ticketExpirationHeight: 7200,
   tokens: {
     oracleTokenId:
       '0000000000000000000000000000000000000000000000000000000000000000',
@@ -105,5 +114,7 @@ export const defaultBuildVariables = {
       '0000000000000000000000000000000000000000000000000000000000000002',
     ownerNft:
       '0000000000000000000000000000000000000000000000000000000000000003',
+    ticketCollectorNft:
+      '0000000000000000000000000000000000000000000000000000000000000004',
   },
 };

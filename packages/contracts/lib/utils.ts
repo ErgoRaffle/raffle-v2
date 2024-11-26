@@ -77,12 +77,12 @@ export function compileAll(
   const compiledDependenciesStatus =
     mergeContextVarsAndRequiredAddress(contextVars);
   let notCompiledAnyScript = false;
+  let trueScriptsIndex = 1;
   while (
     !notCompiledAnyScript &&
     compiledScripts.length < constants.scriptList.length
   ) {
     notCompiledAnyScript = true;
-    let trueScriptsIndex = 1;
     for (const scriptName of constants.scriptList as ScriptNamesType[]) {
       // Check that precompiled required script already compiled or not
       let readyToCompile = true;

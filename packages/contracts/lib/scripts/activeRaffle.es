@@ -64,7 +64,7 @@
 
       // Correct Ticket format
       // R4: [DonatorErgoTreeHash]
-      // R5: [RangeStart, RangeEnd, TicketPrice]
+      // R5: [RangeStart, RangeEnd, TicketPrice, deadline]
       blake2b256(ticket.propositionBytes) == ticketScriptHash,
       ticket.value >= 3 * txFee,
       ticket.tokens(0)._1 == SELF.tokens(1)._1,
@@ -72,7 +72,8 @@
       ticket.R5[Coll[Long]].get == Coll[Long](
         totalSoldTickets, 
         totalSoldTickets + onSaleTickets, 
-        ticketPrice
+        ticketPrice,
+        deadline
       ),
     )))
   } else if (totalRaised >= goal) {

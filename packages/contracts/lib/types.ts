@@ -18,10 +18,12 @@ export type ContextVarsType =
 
 export interface RaffleContextVarsInterface {
   giftTokenCount: string;
+  ticketExpirationHeight: number;
   tokens: {
     oracleTokenId: string;
     serviceNft: string;
     raffleLicense: string;
     ownerNft: string;
+    ticketCollectorNft: string;
   };
 }
