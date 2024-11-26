@@ -2024,7 +2024,7 @@ describe('winner', () => {
      * - create giftRedeem output box
      * - build transaction spending both winner boxes and stealing one ticket token in change box
      * @expected
-     * - transaction must done successfully
+     * - to throw sign error
      */
     winnerTest(
       'should should fail if two winner boxes are spent in inputs',
@@ -2068,6 +2068,7 @@ describe('winner', () => {
         );
 
         const giftReturnTx = new TransactionBuilder(boxFactory.chain.height)
+          // spending multiple winner boxes
           .from([redeemedGift, winners[0], winners[1]])
           .to([redeemedGiftOutputBox])
           .configureSelector((selector) => {
