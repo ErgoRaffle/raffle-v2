@@ -66,7 +66,10 @@ export const scriptsRequireAddresses: {
     winnerPrize: 'WINNER_PRIZE_SCRIPT_HASH_B64',
   },
   giftTokenRepo: {},
-  ticketRedeem: {},
+  ticketRedeem: {
+    ticket: 'TICKET_SCRIPT_HASH_B64',
+    safePay: 'SAFE_PAY_SCRIPT_HASH_B64',
+  },
   raffleDetails: {
     activeRaffle: 'ACTIVE_RAFFLE_SCRIPT_HASH_B64',
   },
@@ -82,6 +85,9 @@ export const defaultScriptsVariables: {
   },
   ticketRepo: {
     RAFFLE_LICENSE_B64: '',
+  },
+  ticketRedeem: {
+    SERVICE_NFT_B64: '',
   },
   inactiveRaffle: {
     GIFT_TOKEN_COUNT: '1000L',
