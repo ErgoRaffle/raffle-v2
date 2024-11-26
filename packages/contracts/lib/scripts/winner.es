@@ -63,7 +63,11 @@
         box.tokens.exists{(token: (Coll[Byte], Long)) => token._1 == SELF.tokens(1)._1}
       }
       sigmaProp(allOf(Coll(
+        // Correct Gift Redeem format
         giftRedeem.tokens(1)._1 == SELF.tokens(0)._1,
+        giftRedeem.R6[Int].get == winnerIndex,
+
+        // Transaction constraints
         giftCount == 0,
         stolenGiftTokens == false, // All gift tokens should burn
       )))

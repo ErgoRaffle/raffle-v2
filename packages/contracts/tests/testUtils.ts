@@ -1219,8 +1219,8 @@ export class RaffleBoxFactory {
     value: bigint,
     totalSoldTicket: bigint,
     ticketPrice: bigint,
-    winnersCount: bigint,
-    step: bigint,
+    winnersCount: number,
+    step: number,
     ticketTokenId: string,
     ticketTokenCount: bigint,
     collectingToken?: TokenAmount<bigint>,
@@ -1232,9 +1232,10 @@ export class RaffleBoxFactory {
         additionalRegisters: {
           R4: SColl(
             SLong,
-            Array.from([totalSoldTicket, ticketPrice, winnersCount, FEE]),
+            Array.from([totalSoldTicket, ticketPrice, FEE]),
           ).toHex(),
-          R5: SLong(step).toHex(),
+          R5: SInt(winnersCount).toHex(),
+          R6: SInt(step).toHex(),
         },
         assets: [
           {
