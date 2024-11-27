@@ -28,7 +28,7 @@ const createRaffleServiceTest = (winnersCount: bigint = 1n) => {
   );
   boxFactory.chain.setTip(100);
   const { creator, someone } = boxFactory.createPartners({
-    Creator: CREATOR_DEFAULT_BALANCE,
+    creator: CREATOR_DEFAULT_BALANCE,
     someone: UNKNOWN_WALLET_DEFAULT_BALANCE,
   });
   creator.addBalance({ tokens: [{ tokenId: X_TOKEN_ID, amount: 100n }] });

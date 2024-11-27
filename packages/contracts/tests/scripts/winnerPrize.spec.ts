@@ -54,7 +54,7 @@ const createWinnerPrizeTest = () => {
   // create gift input box
   const giftBox = boxFactory.createGiftBoxMock(
     1,
-    someone.ergoTree,
+    blake2b256(Buffer.from(someone.ergoTree, 'hex')),
     testUtils.FEE * 10n,
     testUtils.GIFT_TOKEN_ID,
     1n,
@@ -281,7 +281,7 @@ describe('winnerPrize', () => {
 
         const giftBox = boxFactory.createGiftBoxMock(
           1,
-          someoneWallet.ergoTree,
+          blake2b256(Buffer.from(someoneWallet.ergoTree, 'hex')),
           testUtils.FEE * 10n,
           // set different giftToken
           testUtils.X_TOKEN_ID,

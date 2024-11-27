@@ -28,7 +28,7 @@ function createInactiveRaffleTest(winnersCount: number = 1) {
     ) as ScriptNamesType[],
   );
   const { creator, someone } = boxFactory.createPartners({
-    Creator: CREATOR_DEFAULT_BALANCE,
+    creator: CREATOR_DEFAULT_BALANCE,
     someone: UNKNOWN_WALLET_DEFAULT_BALANCE,
   });
 
