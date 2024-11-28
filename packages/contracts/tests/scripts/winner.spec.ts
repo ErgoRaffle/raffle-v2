@@ -1511,8 +1511,8 @@ describe('winner', () => {
           1_000_000_000n,
           0n,
           testUtils.FEE * 2n,
-          1n,
-          0n,
+          1,
+          0,
           testUtils.TICKET_TOKEN_ID,
           1n,
         );
@@ -1589,8 +1589,8 @@ describe('winner', () => {
           1_000_000_000n,
           0n,
           testUtils.FEE * 2n,
-          1n,
-          0n,
+          1,
+          0,
           testUtils.X_TOKEN_ID,
           1n,
         );
@@ -1668,8 +1668,8 @@ describe('winner', () => {
           1_000_000_000n,
           0n,
           testUtils.FEE * 2n,
-          1n,
-          0n,
+          1,
+          0,
           testUtils.TICKET_TOKEN_ID,
           1n,
           undefined,
@@ -1751,8 +1751,8 @@ describe('winner', () => {
           1_000_000_000n,
           0n,
           testUtils.FEE * 2n,
-          1n,
-          0n,
+          1,
+          0,
           testUtils.TICKET_TOKEN_ID,
           1n,
         );
@@ -1831,8 +1831,8 @@ describe('winner', () => {
           1_000_000_000n,
           0n,
           testUtils.FEE * 2n,
-          10n,
-          0n,
+          10,
+          0,
           testUtils.TICKET_TOKEN_ID,
           1n,
           undefined,
@@ -1919,8 +1919,8 @@ describe('winner', () => {
           1_000_000_000n,
           0n,
           testUtils.FEE * 2n,
-          1n,
-          0n,
+          1,
+          0,
           testUtils.TICKET_TOKEN_ID,
           1n,
           undefined,
@@ -1983,8 +1983,8 @@ describe('winner', () => {
           testUtils.FEE,
           1n,
           1_000n,
-          1n,
-          1n,
+          1,
+          1,
           testUtils.TICKET_TOKEN_ID,
           1n,
           undefined,
@@ -2013,6 +2013,73 @@ describe('winner', () => {
           .build();
 
         expect(boxFactory.chain.execute(giftReturnTx)).true;
+      },
+    );
+
+    /**
+     * @target should fail if two winner boxes are spent in inputs
+     * @scenario
+     * - create winner boxes (raffle with 2 winners)
+     * - create giftRedeem input box (with step 1)
+     * - create giftRedeem output box
+     * - build transaction spending both winner boxes and stealing one ticket token in change box
+     * @expected
+     * - to throw sign error
+     */
+    winnerTest(
+      'should should fail if two winner boxes are spent in inputs',
+      ({ boxFactory, creator }) => {
+        // Create input boxes
+        const winners = boxFactory.createWinnersBoxMock(
+          2,
+          testUtils.TICKET_TOKEN_ID,
+          undefined,
+          0n,
+          0n,
+          undefined,
+          [
+            {
+              tokenId: testUtils.GIFT_TOKEN_ID,
+              amount: 10n,
+            },
+          ],
+        );
+        const redeemedGift = boxFactory.createGiftRedeemBoxMock(
+          testUtils.FEE,
+          1n,
+          1_000n,
+          2,
+          1,
+          testUtils.TICKET_TOKEN_ID,
+          1n,
+          undefined,
+        );
+
+        // create output boxes
+        const redeemedGiftOutputBox = boxFactory.createGiftRedeemOutputBox(
+          BigInt(winners[0].value),
+          1n,
+          1_000n,
+          1,
+          2,
+          testUtils.TICKET_TOKEN_ID,
+          2n,
+          undefined,
+        );
+
+        const giftReturnTx = new TransactionBuilder(boxFactory.chain.height)
+          // spending multiple winner boxes
+          .from([redeemedGift, winners[0], winners[1]])
+          .to([redeemedGiftOutputBox])
+          .configureSelector((selector) => {
+            selector.defineStrategy((inputs) => inputs);
+          })
+          .burnTokens([winners[0].assets[1], winners[1].assets[1]])
+          .payFee(testUtils.FEE)
+          .sendChangeTo(creator.ergoTree)
+          .build();
+
+        expect(() => boxFactory.chain.execute(giftReturnTx)).toThrowError();
       },
     );
 
@@ -2049,8 +2116,8 @@ describe('winner', () => {
           testUtils.FEE,
           1n,
           1_000n,
-          1n,
-          1n,
+          1,
+          1,
           // set other raffle ticket token id
           testUtils.X_TOKEN_ID,
           1n,
@@ -2117,8 +2184,8 @@ describe('winner', () => {
           testUtils.FEE,
           1n,
           1_000n,
-          1n,
-          1n,
+          1,
+          1,
           testUtils.TICKET_TOKEN_ID,
           1n,
           undefined,
@@ -2184,8 +2251,8 @@ describe('winner', () => {
           testUtils.FEE,
           1n,
           1_000n,
-          1n,
-          1n,
+          1,
+          1,
           testUtils.TICKET_TOKEN_ID,
           1n,
           undefined,

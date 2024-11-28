@@ -163,6 +163,7 @@ describe('Raffle', () => {
           step++;
           winnerBoxes.push(giftTokenReceiptTx.outputs[0]);
           giftTokenRepo = giftTokenReceiptTx.outputs[1];
+          expect(giftTokenReceiptTx.success).true;
         }
 
         // Step 4: Add two gifts to one of the winners
@@ -276,7 +277,7 @@ describe('Raffle', () => {
           const donationSafePayBox = ticketRedeemTx.outputs[1];
           const donationSafeWithdrawTx = executeSafeWithdrawTransaction(
             donationSafePayBox,
-            (donatorWallets as KeyedMockChainParty[])[i++].ergoTree,
+            (donatorWallets as KeyedMockChainParty[])[i].ergoTree,
             boxFactory,
           );
           expect(donationSafeWithdrawTx.success).true;

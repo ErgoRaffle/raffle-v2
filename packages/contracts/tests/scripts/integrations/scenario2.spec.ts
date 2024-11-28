@@ -11,6 +11,8 @@ import {
   executeTicketRedeemTx,
   executeReturnRaffleLicenseTx,
   executeSafeWithdrawTransaction,
+  executeGiftTokenReceiptTx,
+  executeWinnerRemovalTx,
 } from './transactions';
 
 /*
@@ -70,11 +72,13 @@ describe('Raffle', () => {
      * @scenario
      * 1. Raffle creation phase 1 (create inactive raffle and ticketRepo with special collecting token)
      * 2. Raffle creation phase 2 (merge inactive and ticket repo and create active raffle and winners)
-     * 3. Donate twice by two different donators
-     * 4. Failure transaction after passing the deadline
-     * 5. Forward to ticket redeem phase
-     * 6. Redeem two tickets to donators
-     * 7. Return raffle license to service
+     * 3. Gift token receipt transaction (move gift tokens to winner boxes)
+     * 4. Donate twice by two different donators
+     * 5. Failure transaction after passing the deadline
+     * 6. Winner removal transaction
+     * 7. Forward to ticket redeem phase
+     * 8. Redeem two tickets to donators
+     * 9. Return raffle license to service
      * @expected
      * - To sign all transactions successfully and complete the scenario
      */
@@ -125,7 +129,26 @@ describe('Raffle', () => {
 
         const raffleDetails = mergeTx.outputs[1];
 
-        // Step 3: Donate twice by two different donators
+        // Step 3: Gift token receipt transaction (move gift tokens to winner boxes)
+        let giftTokenRepo = mergeTx.outputs[2];
+        const emptyWinnerBoxes = mergeTx.outputs.slice(3, 5);
+        let step = 1;
+        const winnerBoxes = [];
+        for (const winnerBox of emptyWinnerBoxes) {
+          const giftTokenReceiptTx = executeGiftTokenReceiptTx(
+            winnerBox,
+            giftTokenRepo,
+            step,
+            winnersCount,
+            boxFactory,
+          );
+          step++;
+          winnerBoxes.push(giftTokenReceiptTx.outputs[0]);
+          giftTokenRepo = giftTokenReceiptTx.outputs[1];
+          expect(giftTokenReceiptTx.success).true;
+        }
+
+        // Step 4: Donate twice by two different donators
         let activeRaffle = mergeTx.outputs[0];
         const tickets = [];
         for (let donateCount = 0; donateCount < 2; donateCount++) {
@@ -151,7 +174,7 @@ describe('Raffle', () => {
         // Pass the raffle deadline
         boxFactory.chain.setTip(2001);
 
-        // Step 4: Failure transaction
+        // Step 5: Failure transaction
         const failureTx = executeFailureTx(
           activeRaffle,
           raffleDetails,
@@ -159,15 +182,26 @@ describe('Raffle', () => {
         );
         expect(failureTx.success).true;
 
-        // Step 5: Forward to ticket redeem phase
-        const giftRedeem = failureTx.outputs[0];
+        // Step 6: Winner removal transaction
+        let giftRedeem = failureTx.outputs[0];
+        for (const winnerBox of winnerBoxes) {
+          const winnerRemovalTx = executeWinnerRemovalTx(
+            giftRedeem,
+            winnerBox,
+            boxFactory,
+          );
+          expect(winnerRemovalTx.success).true;
+          giftRedeem = winnerRemovalTx.outputs[0];
+        }
+
+        // Step 7: Forward to ticket redeem phase
         const forwardToTicketRedeemTx = executeForwardToTicketRedeemTx(
           giftRedeem,
           boxFactory,
         );
         expect(forwardToTicketRedeemTx.success).true;
 
-        // Step 6: Redeem two tickets to donators
+        // Step 8: Redeem two tickets to donators
         let ticketRedeem = forwardToTicketRedeemTx.outputs[0];
         for (let i = 0; i < tickets.length; i++) {
           const ticketRedeemTx = executeTicketRedeemTx(
@@ -181,13 +215,13 @@ describe('Raffle', () => {
           const donationSafePayBox = ticketRedeemTx.outputs[1];
           const donationSafeWithdrawTx = executeSafeWithdrawTransaction(
             donationSafePayBox,
-            (donatorWallets as KeyedMockChainParty[])[i++].ergoTree,
+            (donatorWallets as KeyedMockChainParty[])[i].ergoTree,
             boxFactory,
           );
           expect(donationSafeWithdrawTx.success).true;
         }
 
-        // Step 7: Return raffle license to service
+        // Step 9: Return raffle license to service
         const service = createRaffleTx.outputs[0];
         const returnLicenseTx = executeReturnRaffleLicenseTx(
           ticketRedeem,
