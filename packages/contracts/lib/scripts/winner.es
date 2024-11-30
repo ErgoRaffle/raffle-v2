@@ -19,8 +19,8 @@
   //      [Winner, UserBox] --> [Winner, Gift]
   //   - Winner prize creation (for successfully ended raffle) 
   //      [SuccessRaffle, Winner] --> [SuccessRaffle, WinnerPrize]
-  //   - Gift redeem (for failed raffle) 
-  //      [Winner, Gift] + [(DataInput)GiftRedeem] --> [Winner, UserBox]
+  //   - Gift return (for failed raffle) 
+  //      [Winner, Gift] + [(DataInput)GiftRedeem] --> [Winner, returnedGift]
   //   - Winner box removal (for failed raffle)
   //      [GiftRedeem, Winner] --> [GiftRedeem]
   //
@@ -63,7 +63,11 @@
         box.tokens.exists{(token: (Coll[Byte], Long)) => token._1 == SELF.tokens(1)._1}
       }
       sigmaProp(allOf(Coll(
+        // Correct Gift Redeem format
         giftRedeem.tokens(1)._1 == SELF.tokens(0)._1,
+        giftRedeem.R6[Int].get == winnerIndex,
+
+        // Transaction constraints
         giftCount == 0,
         stolenGiftTokens == false, // All gift tokens should burn
       )))
@@ -105,8 +109,8 @@
     } else { sigmaProp(false) }
   }
   else if (HEIGHT > deadline) {
-    // Gift redeem (for failed raffle) 
-    // [Winner, Gift] + [(DataInput)GiftRedeem] --> [Winner, UserBox]
+    // Gift return (for failed raffle) 
+    // [Winner, Gift] + [(DataInput)GiftRedeem] --> [Winner, returnedGift]
     val giftRedeem = CONTEXT.dataInputs(0)
     val gift = INPUTS(1)
     sigmaProp(allOf(Coll(
