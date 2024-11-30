@@ -125,7 +125,7 @@ export const initialContracts = (
   scriptsVars.set('ticketRepo', ticketRepo);
 
   const ticketRedeem = scriptsVars.get('ticketRedeem') || new Map();
-  ticketRedeem.set('SERVICE_NFT_B64', defaultRaffleNftId);
+  ticketRedeem.set('SERVICE_NFT_B64', defaultRaffleNftIdB64);
   scriptsVars.set('ticketRedeem', ticketRedeem);
 
   const winner = scriptsVars.get('winner') || new Map();

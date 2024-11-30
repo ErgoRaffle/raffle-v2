@@ -49,7 +49,7 @@ export const scriptsRequireAddresses: {
   },
   ticket: {
     safePay: 'SAFE_PAY_SCRIPT_HASH_B64',
-    ticketRedeem: 'TICKET_REDEEM_SCRIPT_HASH_B64',
+    // ticketRedeem: 'TICKET_REDEEM_SCRIPT_HASH_B64',
   },
   successRaffle: {
     safePay: 'SAFE_PAY_SCRIPT_HASH_B64',
