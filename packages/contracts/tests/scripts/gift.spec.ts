@@ -72,8 +72,8 @@ const createRaffleGiftTest = (extraGiftTokens: TokenAmount<bigint>[] = []) => {
     1_000_000_000n,
     0n,
     testUtils.FEE * 2n,
-    1n,
-    0n,
+    1,
+    0,
     testUtils.TICKET_TOKEN_ID,
     1n,
   );
@@ -217,6 +217,66 @@ describe('gift', () => {
           .build();
 
         expect(boxFactory.chain.execute(transaction)).true;
+      },
+    );
+
+    /**
+     * @target should fail if winner box belongs to a different raffle
+     * @scenario
+     * - create winner input and output boxes by different gift token
+     * - execute transaction and burn unused gift token
+     * - result of execution must be fail
+     * @expected
+     * - transaction result must throw error
+     */
+    raffleGiftErgTest(
+      'should fail if winner box belongs to a different raffle',
+      ({ boxFactory, giftBox, giftRedeemBox, redeemedGiftOutputBox }) => {
+        const winnerBox = boxFactory.createWinnerSingleBoxMock(
+          1,
+          1,
+          testUtils.TICKET_TOKEN_ID,
+          undefined,
+          1n,
+          0n,
+          testUtils.X_TOKEN_ID,
+          [
+            {
+              // set different gift token id
+              tokenId: testUtils.X_TOKEN_ID,
+              amount: 2n,
+            },
+          ],
+        );
+
+        const winnerOutputBox =
+          boxFactory.createWinnerOutputBoxWithConstantRegisters(
+            SConstant.from(winnerBox.additionalRegisters.R4!).data as bigint[],
+            testUtils.TICKET_TOKEN_ID,
+            // set different gift token id
+            testUtils.X_TOKEN_ID,
+            2n,
+            0n,
+          );
+
+        testUtils.prettyPrintJson([
+          [winnerBox, giftBox],
+          [winnerOutputBox, redeemedGiftOutputBox],
+        ]);
+
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
+          .from([winnerBox, giftBox])
+          .to([winnerOutputBox, redeemedGiftOutputBox])
+          .withDataFrom([giftRedeemBox])
+          .configureSelector((selector) => {
+            selector.defineStrategy((inputs) => inputs);
+          })
+          // burn unused gift token
+          .burnTokens({ tokenId: testUtils.GIFT_TOKEN_ID, amount: 1n })
+          .payFee(testUtils.FEE)
+          .build();
+
+        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
       },
     );
 
