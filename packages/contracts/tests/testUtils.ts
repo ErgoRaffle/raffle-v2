@@ -1414,10 +1414,14 @@ export class RaffleBoxFactory {
         tokenId: LICENSE_TOKEN_ID,
         amount: 1n,
       },
-      {
-        tokenId: ticketTokenId,
-        amount: ticketTokenCount,
-      },
+      ...(ticketTokenCount > 0
+        ? [
+            {
+              tokenId: ticketTokenId,
+              amount: ticketTokenCount,
+            },
+          ]
+        : []),
     ]);
 
     if (collectingToken !== undefined)
