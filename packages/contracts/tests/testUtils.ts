@@ -1304,6 +1304,39 @@ export class RaffleBoxFactory {
    * @param r5
    * @returns
    */
+  createTicketBoxMock(
+    donatorErgoTree: string,
+    ticketCount: bigint,
+    ticketTokenId: string,
+    r5: bigint[],
+  ) {
+    const donateTicketBox = mockUTxO({
+      value: FEE * 3n,
+      ergoTree: this.contractsAddresses['ticket'],
+      additionalRegisters: {
+        R4: SColl(
+          SByte,
+          Array.from(blake2b256(Buffer.from(donatorErgoTree, 'hex'))),
+        ).toHex(),
+        R5: SColl(SLong, r5).toHex(),
+      },
+      assets: (
+        ticketCount > 0
+          ? [{ tokenId: ticketTokenId, amount: ticketCount }]
+          : []
+      )
+    })
+    return donateTicketBox;
+  }
+
+  /**
+   * Create ticket box
+   * @param donatorErgoTree
+   * @param ticketCount
+   * @param ticketTokenId
+   * @param r5
+   * @returns
+   */
   createTicketOutputBox(
     donatorErgoTree: string,
     ticketCount: bigint,
@@ -1392,6 +1425,49 @@ export class RaffleBoxFactory {
    * @param collectingToken
    * @returns
    */
+  createTicketRedeemBoxMock(
+    value: bigint,
+    totalSoldTicket: bigint,
+    ticketPrice: bigint,
+    redeemedTickets: bigint,
+    ticketTokenId: string,
+    ticketTokenCount: bigint,
+    collectingToken?: TokenAmount<bigint>,
+  ) {
+    const ticketRedeemBox = mockUTxO({
+      value: value,
+      ergoTree: this.contractsAddresses['ticketRedeem'],
+      additionalRegisters: {
+        R4: SColl(SLong, Array.from([totalSoldTicket, ticketPrice, FEE])).toHex(),
+        R5: SLong(redeemedTickets).toHex(),
+      },
+      assets: [
+        {
+          tokenId: LICENSE_TOKEN_ID,
+          amount: 1n,
+        },
+        {
+          tokenId: ticketTokenId,
+          amount: ticketTokenCount,
+        },
+        ...(collectingToken ? [collectingToken] : [])
+      ]
+    });
+
+    return ticketRedeemBox;
+  }
+
+  /**
+   * Create ticket redeem box
+   * @param value
+   * @param totalSoldTicket
+   * @param ticketPrice
+   * @param redeemedTickets
+   * @param ticketTokenId
+   * @param ticketTokenCount
+   * @param collectingToken
+   * @returns
+   */
   createTicketRedeemOutputBox(
     value: bigint,
     totalSoldTicket: bigint,
@@ -1400,6 +1476,8 @@ export class RaffleBoxFactory {
     ticketTokenId: string,
     ticketTokenCount: bigint,
     collectingToken?: TokenAmount<bigint>,
+    licenseTokenId: string = LICENSE_TOKEN_ID,
+    licenseTokenCount: bigint = 1n,
   ) {
     const ticketRedeemOutputBox = new OutputBuilder(
       value,
@@ -1410,14 +1488,14 @@ export class RaffleBoxFactory {
       R5: SLong(redeemedTickets).toHex(),
     });
     ticketRedeemOutputBox.addTokens([
-      {
-        tokenId: LICENSE_TOKEN_ID,
-        amount: 1n,
-      },
-      {
+      ...(licenseTokenCount > 0n ? [{
+        tokenId: licenseTokenId,
+        amount: licenseTokenCount,
+      }] : []),
+      ...(ticketTokenCount > 0 ? [{
         tokenId: ticketTokenId,
         amount: ticketTokenCount,
-      },
+      }] : []),
     ]);
 
     if (collectingToken !== undefined)
