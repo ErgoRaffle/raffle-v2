@@ -22,12 +22,12 @@ const createRaffleTicketRedeemTest = (collectingToken?: TokenAmount<bigint>) => 
   const ticketCount = 1n;
 
   const boxFactory = new testUtils.RaffleBoxFactory(
-    { height: 1000 },
+    { height: 100 },
     constants.scriptList.filter(
       (value) => value != 'ticketRedeem',
     ) as ScriptNamesType[],
   );
-  boxFactory.chain.setTip(100);
+  boxFactory.chain.setTip(10);
   const { creator, someone, another } = boxFactory.createPartners({
     creator: testUtils.CREATOR_DEFAULT_BALANCE,
     someone: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
@@ -49,7 +49,7 @@ const createRaffleTicketRedeemTest = (collectingToken?: TokenAmount<bigint>) => 
     someone.ergoTree,
     ticketCount,
     testUtils.TICKET_TOKEN_ID,
-    [0n, 1n, 100_000n, 10n], // from-ticket-range, to-ticket-range, ticket-price, deadline
+    [0n, 1n, 100_000n, 1000n], // from-ticket-range, to-ticket-range, ticket-price, deadline
   );
 
   let redeemedDonationValue =
@@ -86,19 +86,53 @@ const createRaffleTicketRedeemTest = (collectingToken?: TokenAmount<bigint>) => 
     SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array,
   );
 
+  const serviceBox = boxFactory.createServiceBoxMock(
+    creator.ergoTree,
+    999_999_999n,
+  );
+
+  const ticketRedeemForLicenseRedeemBox = boxFactory.createTicketRedeemBoxMock(
+    testUtils.FEE * 3n,
+    totalSoldTickets,
+    ticketPrice,
+    10n,
+    testUtils.TICKET_TOKEN_ID,
+    1n,
+    collectingToken,
+  );
+
+  const serviceOutputBox = boxFactory.createServiceOutputBox(
+    someone.ergoTree,
+    BigInt(serviceBox.assets[1].amount.toString()) + 1n,
+    1_000_000_000n,
+  );
+
+  const licenseRedeemChangeBox = boxFactory.createSafePayOutputBox(
+    BigInt(ticketRedeemForLicenseRedeemBox.value.toString()) - testUtils.FEE,
+    (collectingToken ? [{
+      tokenId: ticketRedeemForLicenseRedeemBox.assets[2].tokenId,
+      amount: ticketCount * ticketPrice,
+    }] : []),
+    blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+  );
+
   return it.extend({
     boxFactory: boxFactory,
     someoneWallet: someone,
     anotherOne: another,
     creator: creator,
+    serviceBox: serviceBox,
     ticketRedeemBox: ticketRedeemBox,
+    ticketRedeemForLicenseRedeemBox: ticketRedeemForLicenseRedeemBox,
     ticketBox: ticketBox,
     ticketRedeemOutputBox: ticketRedeemOutputBox,
     redeemedDonationOutputBox: redeemedDonationOutputBox,
+    serviceOutputBox: serviceOutputBox,
+    licenseRedeemChangeBox: licenseRedeemChangeBox
   });
 };
 
-describe('Service', () => {
+describe('ticketRedeem', () => {
   const ticketRedeemTest = createRaffleTicketRedeemTest();
   const ticketRedeemErgGoalTest = createRaffleTicketRedeemTest({
     tokenId: testUtils.X_TOKEN_ID,
@@ -455,7 +489,7 @@ describe('Service', () => {
           someoneWallet.ergoTree,
           ticketCount,
           testUtils.TICKET_TOKEN_ID,
-          [0n, 1n, 100_000n, 10n], // from-ticket-range, to-ticket-range, ticket-price, deadline
+          [0n, 1n, 100_000n, 1000n], // from-ticket-range, to-ticket-range, ticket-price, deadline
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
@@ -465,6 +499,135 @@ describe('Service', () => {
             selector.defineStrategy((inputs) => inputs);
           })
           .sendChangeTo(someoneWallet.address)
+          .payFee(testUtils.FEE)
+          .build();
+
+        expect(() => { boxFactory.chain.execute(transaction) }).toThrowError();
+      },
+    );
+  });
+
+  describe('License redeem', () => {
+    /**
+     * @target should successfully collect old expired ticket boxes
+     * @scenario
+     * - execute transaction
+     * - check execution done successfully
+     * @expected
+     * - transaction result must be true
+     * - it should create three output box
+     */
+    ticketRedeemTest(
+      'should successfully collect old expired ticket boxes',
+      ({
+        boxFactory,
+        ticketRedeemForLicenseRedeemBox,
+        serviceBox,
+        serviceOutputBox,
+        licenseRedeemChangeBox,
+      }) => {
+        boxFactory.chain.setTip(1100);
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
+          .from([serviceBox, ticketRedeemForLicenseRedeemBox])
+          .to([serviceOutputBox, licenseRedeemChangeBox])
+          .configureSelector((selector) => {
+            selector.defineStrategy((inputs) => inputs);
+          })
+          .burnTokens(ticketRedeemForLicenseRedeemBox.assets[1]) // burn remaining tickets
+          .payFee(testUtils.FEE)
+          .build();
+
+        testUtils.prettyPrintJson(transaction);
+
+        expect(boxFactory.chain.execute(transaction)).true;
+      },
+    );
+
+    /**
+     * @target should fail if ticket is not expired
+     * @scenario
+     * - set chain height lower of expiration height
+     * - execute transaction and send change to the someoneWallet
+     * - result of execution must be fail
+     * @expected
+     * - transaction result must throw error
+     */
+    ticketRedeemTest(
+      'should fail if ticket is not expired',
+      ({
+        boxFactory,
+        ticketRedeemForLicenseRedeemBox,
+        serviceBox,
+        serviceOutputBox,
+        licenseRedeemChangeBox,
+      }) => {
+        // set height lower of expiration height
+        boxFactory.chain.setTip(500);
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
+          .from([serviceBox, ticketRedeemForLicenseRedeemBox])
+          .to([serviceOutputBox, licenseRedeemChangeBox])
+          .configureSelector((selector) => {
+            selector.defineStrategy((inputs) => inputs);
+          })
+          .burnTokens(ticketRedeemForLicenseRedeemBox.assets[1]) // burn remaining tickets
+          .payFee(testUtils.FEE)
+          .build();
+
+        expect(() => { boxFactory.chain.execute(transaction) }).toThrowError();
+      },
+    );
+
+    /**
+     * @target should fail if ticker collecting token is not correct
+     * @scenario
+     * - create second ticketBox input box
+     * - execute transaction and send change to the someoneWallet
+     * - result of execution must be fail
+     * @expected
+     * - transaction result must throw error
+     */
+    ticketRedeemErgGoalTest(
+      'should fail if ticker collecting token is not correct',
+      ({
+        boxFactory,
+        someoneWallet,
+        serviceBox,
+        serviceOutputBox,
+        licenseRedeemChangeBox,
+      }) => {
+        const totalSoldTickets = 10n;
+        const ticketPrice = 100n / totalSoldTickets;
+
+        const ticketRedeemForLicenseRedeemBox = boxFactory.createTicketRedeemBoxMock(
+          testUtils.FEE * 3n,
+          totalSoldTickets,
+          ticketPrice,
+          10n,
+          testUtils.TICKET_TOKEN_ID,
+          1n,
+          {
+            tokenId: '0'.repeat(64),
+            amount: 100n
+          },
+        );
+
+        const extraTokensBox = mockUTxO({
+          value: testUtils.FEE,
+          ergoTree: someoneWallet.ergoTree,
+          assets: [{
+            tokenId: testUtils.X_TOKEN_ID,
+            amount: 10n
+          }]
+        });
+
+        const transaction = new TransactionBuilder(boxFactory.chain.height)
+          .from([serviceBox, ticketRedeemForLicenseRedeemBox, extraTokensBox])
+          .to([serviceOutputBox, licenseRedeemChangeBox])
+          .configureSelector((selector) => {
+            selector.defineStrategy((inputs) => inputs);
+          })
+          .sendChangeTo(someoneWallet.address)
+          .burnTokens(ticketRedeemForLicenseRedeemBox.assets[1]) // burn remaining tickets
           .payFee(testUtils.FEE)
           .build();
 
