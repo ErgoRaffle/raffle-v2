@@ -2,7 +2,6 @@ import { it, describe, expect } from 'vitest';
 import { TokenAmount, TransactionBuilder } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
 import { SConstant } from '@fleet-sdk/serializer';
-import { mockUTxO } from '@fleet-sdk/mock-chain';
 
 import * as testUtils from '../testUtils';
 import {
@@ -85,7 +84,7 @@ const createRaffleGiftTest = (extraGiftTokens: TokenAmount<bigint>[] = []) => {
     winnerTicketIndex,
     giftCount,
     0n,
-    0n,
+    1n,
   );
 
   // Create prize output box
@@ -95,13 +94,13 @@ const createRaffleGiftTest = (extraGiftTokens: TokenAmount<bigint>[] = []) => {
     winnerTicketIndex,
     giftCount,
     1n,
-    1n,
+    2n,
   );
 
   // Create giftBox input box
   const giftBox = boxFactory.createGiftBoxMock(
     1,
-    Buffer.from(creator.ergoTree, 'hex'),
+    blake2b256(Buffer.from(creator.ergoTree, 'hex')),
     testUtils.FEE * 3n,
     testUtils.GIFT_TOKEN_ID,
     1n,
@@ -118,7 +117,7 @@ const createRaffleGiftTest = (extraGiftTokens: TokenAmount<bigint>[] = []) => {
     SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
   );
 
-  // Create giftBox input box
+  // Create unwrappedGift output Box
   const unwrappedGiftOutputBox = boxFactory.createSafePayOutputBox(
     BigInt(giftBox.value) - testUtils.FEE,
     giftOutputBoxTokens,
@@ -128,7 +127,7 @@ const createRaffleGiftTest = (extraGiftTokens: TokenAmount<bigint>[] = []) => {
   // create ticket box
   const ticketBox = boxFactory.createTicketBoxMock(
     creator.ergoTree,
-    1n,
+    5n,
     testUtils.TICKET_TOKEN_ID,
     [0n, 5n, 100_000n], // from-ticket-range, to-ticket-range, ticket-price
   );
@@ -258,11 +257,6 @@ describe('gift', () => {
             2n,
             0n,
           );
-
-        testUtils.prettyPrintJson([
-          [winnerBox, giftBox],
-          [winnerOutputBox, redeemedGiftOutputBox],
-        ]);
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([winnerBox, giftBox])
@@ -522,23 +516,16 @@ describe('gift', () => {
     /**
      * @target should fail if winner box belongs to a different raffle
      * @scenario
-     * - create extraBox input box that contains gift token
+     * - create prizeBox input box by different gift token
      * - create prize output box by different gift token
-     * - execute transaction and return extra Ergs to the someoneWallet
+     * - execute transaction and burn gift token
      * - result of execution must be fail
      * @expected
      * - transaction result must throw error
      */
     raffleGiftErgTest(
       'should fail if winner box belongs to a different raffle',
-      ({
-        boxFactory,
-        someoneWallet,
-        giftBox,
-        prizeBox,
-        unwrappedGiftOutputBox,
-        ticketBox,
-      }) => {
+      ({ boxFactory, giftBox, unwrappedGiftOutputBox, ticketBox }) => {
         const winnerIndex = 1;
         const winnerTicketIndex = 1n;
         const giftCount = 1n;
@@ -548,16 +535,17 @@ describe('gift', () => {
 
         const differentRaffleGiftTokenId = 'ab'.repeat(32);
 
-        const extraBox = mockUTxO({
-          value: testUtils.FEE,
-          ergoTree: someoneWallet.ergoTree,
-          assets: [
-            {
-              tokenId: differentRaffleGiftTokenId,
-              amount: 1n,
-            },
-          ],
-        });
+        const prizeBox = boxFactory.createWinnerPrizeBoxMock(
+          testUtils.FEE * 3n + BigInt(prizeAmount),
+          winnerIndex,
+          winnerTicketIndex,
+          giftCount,
+          0n,
+          1n,
+          undefined,
+          undefined,
+          differentRaffleGiftTokenId,
+        );
 
         const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 3n + BigInt(prizeAmount),
@@ -572,14 +560,14 @@ describe('gift', () => {
           differentRaffleGiftTokenId,
         );
         const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([prizeBox, giftBox, extraBox])
+          .from([prizeBox, giftBox])
           .to([prizeOutputBox, unwrappedGiftOutputBox])
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
           })
           .withDataFrom([ticketBox])
-          // send extra Erg value to the someoneWallet address
-          .sendChangeTo(someoneWallet.address)
+          // burn giftTokens on the gift box
+          .burnTokens({ tokenId: testUtils.GIFT_TOKEN_ID, amount: 1n })
           .payFee(testUtils.FEE)
           .build();
 
@@ -598,7 +586,7 @@ describe('gift', () => {
      * - transaction result must throw error
      */
     raffleGiftErgTest(
-      'should successfully unwrap the gift containing Erg',
+      'should fail if winner box belongs to a different raffle',
       ({
         boxFactory,
         creator,

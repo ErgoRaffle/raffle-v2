@@ -841,7 +841,7 @@ export class RaffleBoxFactory {
     ticketIndex: bigint,
     giftCount: bigint,
     unwrappedGiftCount: bigint,
-    giftTokenCount: bigint,
+    giftTokenCount: bigint = 1n,
     collectingToken?: TokenAmount<bigint> | TokenAmount<Amount>,
     ticketTokenId = TICKET_TOKEN_ID,
     giftTokenId = GIFT_TOKEN_ID,
@@ -854,14 +854,10 @@ export class RaffleBoxFactory {
           tokenId: ticketTokenId,
           amount: 1n,
         },
-        ...(giftTokenCount > 0
-          ? [
-              {
-                tokenId: giftTokenId,
-                amount: giftTokenCount,
-              },
-            ]
-          : []),
+        {
+          tokenId: giftTokenId,
+          amount: giftTokenCount,
+        },
         ...(collectingToken !== undefined
           ? [
               {
