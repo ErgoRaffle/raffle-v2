@@ -887,7 +887,6 @@ export class RaffleBoxFactory {
    * @param collectingToken
    * @param ticketTokenId
    * @param giftTokenId
-   * @param ticketTokenAmount
    * @returns
    */
   createWinnerPrizeOutputBox(
@@ -900,30 +899,25 @@ export class RaffleBoxFactory {
     collectingToken?: TokenAmount<bigint> | TokenAmount<Amount>,
     ticketTokenId: string = TICKET_TOKEN_ID,
     giftTokenId: string = GIFT_TOKEN_ID,
-    ticketTokenAmount: bigint = 1n,
   ) {
     const winnerPrizeBox = new OutputBuilder(
       value,
       this.contractsAddresses['winnerPrize'],
     )
       .addTokens([
-        ...(ticketTokenAmount > 0
-          ? [
-              {
-                tokenId: ticketTokenId,
-                amount: 1n,
-              },
-            ]
-          : []),
+        {
+          tokenId: ticketTokenId,
+          amount: 1n,
+        },
         {
           tokenId: giftTokenId,
           amount: giftTokenCount,
         },
       ])
       .setAdditionalRegisters({
-        R4: SColl(SLong, [ticketIndex, giftCount, FEE]),
-        R5: SInt(winnerIndex),
-        R6: SLong(unwrappedGiftCount),
+        R4: SColl(SLong, [ticketIndex, giftCount, FEE]).toHex(),
+        R5: SInt(winnerIndex).toHex(),
+        R6: SLong(unwrappedGiftCount).toHex(),
       });
     if (collectingToken) winnerPrizeBox.addTokens(collectingToken);
     return winnerPrizeBox;
