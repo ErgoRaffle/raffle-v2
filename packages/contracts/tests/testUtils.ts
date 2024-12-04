@@ -151,6 +151,7 @@ export const initialContracts = (
   const ticket = scriptsVars.get('ticket') || new Map();
   ticket.set('RAFFLE_LICENSE_B64', defaultLicenseTokenIdB64);
   ticket.set('TICKET_COLLECTOR_NFT_B64', defaultTicketCollectorNftB64);
+  ticket.set('TICKET_EXPIRATION_HEIGHT', '0');
   scriptsVars.set('ticket', ticket);
 
   return compileAll(scriptsVars as ContextVarsType, true, trueScripts);
@@ -1320,12 +1321,11 @@ export class RaffleBoxFactory {
         ).toHex(),
         R5: SColl(SLong, r5).toHex(),
       },
-      assets: (
+      assets:
         ticketCount > 0
           ? [{ tokenId: ticketTokenId, amount: ticketCount }]
-          : []
-      )
-    })
+          : [],
+    });
     return donateTicketBox;
   }
 
@@ -1433,25 +1433,34 @@ export class RaffleBoxFactory {
     ticketTokenId: string,
     ticketTokenCount: bigint,
     collectingToken?: TokenAmount<bigint>,
+    licenseTokenId: string = LICENSE_TOKEN_ID,
+    licenseTokenCount: bigint = 1n,
   ) {
     const ticketRedeemBox = mockUTxO({
       value: value,
       ergoTree: this.contractsAddresses['ticketRedeem'],
       additionalRegisters: {
-        R4: SColl(SLong, Array.from([totalSoldTicket, ticketPrice, FEE])).toHex(),
+        R4: SColl(
+          SLong,
+          Array.from([totalSoldTicket, ticketPrice, FEE]),
+        ).toHex(),
         R5: SLong(redeemedTickets).toHex(),
       },
       assets: [
-        {
-          tokenId: LICENSE_TOKEN_ID,
-          amount: 1n,
-        },
+        ...(licenseTokenCount > 0n
+          ? [
+              {
+                tokenId: licenseTokenId,
+                amount: licenseTokenCount,
+              },
+            ]
+          : []),
         {
           tokenId: ticketTokenId,
           amount: ticketTokenCount,
         },
-        ...(collectingToken ? [collectingToken] : [])
-      ]
+        ...(collectingToken ? [collectingToken] : []),
+      ],
     });
 
     return ticketRedeemBox;
@@ -1488,14 +1497,22 @@ export class RaffleBoxFactory {
       R5: SLong(redeemedTickets).toHex(),
     });
     ticketRedeemOutputBox.addTokens([
-      ...(licenseTokenCount > 0n ? [{
-        tokenId: licenseTokenId,
-        amount: licenseTokenCount,
-      }] : []),
-      ...(ticketTokenCount > 0 ? [{
-        tokenId: ticketTokenId,
-        amount: ticketTokenCount,
-      }] : []),
+      ...(licenseTokenCount > 0n
+        ? [
+            {
+              tokenId: licenseTokenId,
+              amount: licenseTokenCount,
+            },
+          ]
+        : []),
+      ...(ticketTokenCount > 0
+        ? [
+            {
+              tokenId: ticketTokenId,
+              amount: ticketTokenCount,
+            },
+          ]
+        : []),
     ]);
 
     if (collectingToken !== undefined)
@@ -1583,6 +1600,48 @@ export class RaffleBoxFactory {
     }
 
     return winnerBox;
+  }
+
+  /**
+   * Create ticketCollector output-box
+   * @param value
+   * @param ticketCollectorTokenAmount
+   * @returns
+   */
+  createTicketCollectorOutputBox(
+    value: bigint = FEE,
+    ticketCollectorTokenAmount: bigint = 1n,
+  ) {
+    const ticketCollectorBox = new OutputBuilder(
+      value,
+      constants.TRUE_SCRIPT_HEX,
+    ).addTokens({
+      tokenId: TICKET_COLLECTOR_NFT_ID,
+      amount: ticketCollectorTokenAmount,
+    });
+    return ticketCollectorBox;
+  }
+
+  /**
+   * Create ticketCollector box
+   * @param value
+   * @param ticketCollectorTokenAmount
+   * @returns
+   */
+  createTicketCollectorBoxMock(
+    value: bigint = FEE,
+    ticketCollectorTokenAmount: bigint = 1n,
+  ) {
+    return mockUTxO({
+      value: value,
+      ergoTree: constants.TRUE_SCRIPT_HEX,
+      assets: [
+        {
+          tokenId: TICKET_COLLECTOR_NFT_ID,
+          amount: ticketCollectorTokenAmount,
+        },
+      ],
+    });
   }
 
   /**
