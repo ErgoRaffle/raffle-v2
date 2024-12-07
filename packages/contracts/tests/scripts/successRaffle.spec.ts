@@ -224,7 +224,6 @@ describe('successRaffle', () => {
         const totalPrize = 1_000_000n;
         const rewardPercent = 200n;
         const totalSoldTickets = 5n;
-
         const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
           testUtils.FEE * 3n,
           1,
