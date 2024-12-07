@@ -799,6 +799,7 @@ describe('winnerPrize', () => {
       ({ boxFactory, ticketBox, winnerPrizeBoxForFinalPrize }) => {
         const finalPrizeBox = boxFactory.createSafePayOutputBox(
           BigInt(winnerPrizeBoxForFinalPrize.value.toString()) - testUtils.FEE,
+          // Insert the ticket token into this box to steal
           [{ tokenId: testUtils.TICKET_TOKEN_ID, amount: 1n }],
           SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array,
         );
@@ -808,6 +809,7 @@ describe('winnerPrize', () => {
           .to([finalPrizeBox])
           .payFee(testUtils.FEE)
           .withDataFrom([ticketBox])
+          // prevent the ticket token from burning
           .burnTokens(winnerPrizeBoxForFinalPrize.assets.slice(1, 2))
           .build();
 
@@ -829,6 +831,7 @@ describe('winnerPrize', () => {
       ({ boxFactory, ticketBox, winnerPrizeBoxForFinalPrize }) => {
         const finalPrizeBox = boxFactory.createSafePayOutputBox(
           BigInt(winnerPrizeBoxForFinalPrize.value.toString()) - testUtils.FEE,
+          // Insert the gift token into this box to steal
           [{ tokenId: testUtils.GIFT_TOKEN_ID, amount: 1n }],
           SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array,
         );
@@ -838,6 +841,7 @@ describe('winnerPrize', () => {
           .to([finalPrizeBox])
           .payFee(testUtils.FEE)
           .withDataFrom([ticketBox])
+          // prevent the gift token from burning
           .burnTokens(winnerPrizeBoxForFinalPrize.assets.slice(0, 1))
           .build();
 
