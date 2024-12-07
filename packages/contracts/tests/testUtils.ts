@@ -841,7 +841,7 @@ export class RaffleBoxFactory {
     ticketIndex: bigint,
     giftCount: bigint,
     unwrappedGiftCount: bigint,
-    giftTokenCount: bigint,
+    giftTokenCount: bigint = 1n,
     collectingToken?: TokenAmount<bigint> | TokenAmount<Amount>,
     ticketTokenId = TICKET_TOKEN_ID,
     giftTokenId = GIFT_TOKEN_ID,
@@ -1012,6 +1012,7 @@ export class RaffleBoxFactory {
     value: bigint = 0n,
     giftTokenId: string,
     giftTokenAmount: bigint = 1n,
+    extraGiftTokens: TokenAmount<bigint>[] = [],
   ) {
     const giftForWinnerOutputBox = mockUTxO({
       value: value,
@@ -1029,6 +1030,7 @@ export class RaffleBoxFactory {
           tokenId: giftTokenId,
           amount: giftTokenAmount,
         },
+        ...extraGiftTokens,
       ],
     });
 
