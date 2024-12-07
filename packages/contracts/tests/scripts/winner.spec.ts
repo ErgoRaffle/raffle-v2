@@ -1493,7 +1493,7 @@ describe('winner', () => {
         )[0];
         const gift = boxFactory.createGiftBoxMock(
           1,
-          someoneWallet.ergoTree,
+          blake2b256(Buffer.from(someoneWallet.ergoTree, 'hex')),
           testUtils.FEE * 2n,
           testUtils.GIFT_TOKEN_ID,
           1n,
@@ -1571,7 +1571,7 @@ describe('winner', () => {
         )[0];
         const gift = boxFactory.createGiftBoxMock(
           1,
-          someoneWallet.ergoTree,
+          blake2b256(Buffer.from(someoneWallet.ergoTree, 'hex')),
           testUtils.FEE * 2n,
           testUtils.GIFT_TOKEN_ID,
           1n,
@@ -1648,7 +1648,7 @@ describe('winner', () => {
         )[0];
         const gift = boxFactory.createGiftBoxMock(
           1,
-          someoneWallet.ergoTree,
+          blake2b256(Buffer.from(someoneWallet.ergoTree, 'hex')),
           testUtils.FEE * 2n,
           testUtils.GIFT_TOKEN_ID,
           1n,
@@ -1732,7 +1732,7 @@ describe('winner', () => {
         )[0];
         const gift = boxFactory.createGiftBoxMock(
           1,
-          someoneWallet.ergoTree,
+          blake2b256(Buffer.from(someoneWallet.ergoTree, 'hex')),
           testUtils.FEE * 2n,
           testUtils.GIFT_TOKEN_ID,
           1n,
@@ -1813,7 +1813,7 @@ describe('winner', () => {
         const gift = boxFactory.createGiftBoxMock(
           // set invalid winner-index to this box
           7,
-          someoneWallet.ergoTree,
+          blake2b256(Buffer.from(someoneWallet.ergoTree, 'hex')),
           testUtils.FEE * 2n,
           testUtils.GIFT_TOKEN_ID,
           1n,
@@ -1893,7 +1893,7 @@ describe('winner', () => {
         )[0];
         const gift1 = boxFactory.createGiftBoxMock(
           1,
-          someoneWallet.ergoTree,
+          blake2b256(Buffer.from(someoneWallet.ergoTree, 'hex')),
           testUtils.FEE * 2n,
           testUtils.GIFT_TOKEN_ID,
           1n,
@@ -1901,7 +1901,7 @@ describe('winner', () => {
 
         const gift2 = boxFactory.createGiftBoxMock(
           1,
-          someoneWallet.ergoTree,
+          blake2b256(Buffer.from(someoneWallet.ergoTree, 'hex')),
           testUtils.FEE * 2n,
           testUtils.GIFT_TOKEN_ID,
           1n,
