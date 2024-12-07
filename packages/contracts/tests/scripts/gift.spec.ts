@@ -458,7 +458,7 @@ describe('gift', () => {
      * - transaction result must be true
      */
     raffleGiftErgTest(
-      'should successfully unwrap the gift containing Erg and tokens',
+      'should successfully unwrap the gift containing Erg',
       ({
         boxFactory,
         prizeBox,
