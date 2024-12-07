@@ -151,7 +151,7 @@ export const initialContracts = (
   const ticket = scriptsVars.get('ticket') || new Map();
   ticket.set('RAFFLE_LICENSE_B64', defaultLicenseTokenIdB64);
   ticket.set('TICKET_COLLECTOR_NFT_B64', defaultTicketCollectorNftB64);
-  ticket.set('TICKET_EXPIRATION_HEIGHT', '0');
+  ticket.set('TICKET_EXPIRATION_HEIGHT', '10');
   scriptsVars.set('ticket', ticket);
 
   return compileAll(scriptsVars as ContextVarsType, true, trueScripts);
@@ -1377,10 +1377,7 @@ export class RaffleBoxFactory {
         ).toHex(),
         R5: SColl(SLong, r5).toHex(),
       },
-      assets:
-        ticketCount > 0
-          ? [{ tokenId: ticketTokenId, amount: ticketCount }]
-          : [],
+      assets: [{ tokenId: ticketTokenId, amount: ticketCount }],
     });
     return donateTicketBox;
   }
@@ -1503,14 +1500,10 @@ export class RaffleBoxFactory {
         R5: SLong(redeemedTickets).toHex(),
       },
       assets: [
-        ...(licenseTokenCount > 0n
-          ? [
-              {
-                tokenId: licenseTokenId,
-                amount: licenseTokenCount,
-              },
-            ]
-          : []),
+        {
+          tokenId: licenseTokenId,
+          amount: licenseTokenCount,
+        },
         {
           tokenId: ticketTokenId,
           amount: ticketTokenCount,
@@ -1553,14 +1546,10 @@ export class RaffleBoxFactory {
       R5: SLong(redeemedTickets).toHex(),
     });
     ticketRedeemOutputBox.addTokens([
-      ...(licenseTokenCount > 0n
-        ? [
-            {
-              tokenId: licenseTokenId,
-              amount: licenseTokenCount,
-            },
-          ]
-        : []),
+      {
+        tokenId: licenseTokenId,
+        amount: licenseTokenCount,
+      },
       ...(ticketTokenCount > 0
         ? [
             {

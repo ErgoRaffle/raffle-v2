@@ -111,9 +111,9 @@ const createRaffleTicketTest = (collectingToken?: TokenAmount<bigint>) => {
   });
 };
 
-describe('ticketRedeem', () => {
-  const ticketRedeemTest = createRaffleTicketTest();
-  const ticketRedeemErgGoalTest = createRaffleTicketTest({
+describe('ticket', () => {
+  const ticketTest = createRaffleTicketTest();
+  const ticketErgGoalTest = createRaffleTicketTest({
     tokenId: testUtils.X_TOKEN_ID,
     amount: 100n,
   });
@@ -128,7 +128,7 @@ describe('ticketRedeem', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    ticketRedeemTest(
+    ticketTest(
       'should successfully remove winner box and collect its ticket token(Erg-goal)',
       ({
         boxFactory,
@@ -159,7 +159,7 @@ describe('ticketRedeem', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    ticketRedeemErgGoalTest(
+    ticketErgGoalTest(
       'should successfully remove winner box and collect its ticket token(Token-goal)',
       ({
         boxFactory,
@@ -190,7 +190,7 @@ describe('ticketRedeem', () => {
      * @expected
      * - transaction result must throw error
      */
-    ticketRedeemTest(
+    ticketTest(
       "should fail if ticket redeem doesn't have a proper license nft",
       ({ boxFactory, someoneWallet, ticketBox, redeemedDonationOutputBox }) => {
         const totalSoldTickets = 10n;
@@ -246,7 +246,7 @@ describe('ticketRedeem', () => {
      * @expected
      * - transaction result must throw error
      */
-    ticketRedeemTest(
+    ticketTest(
       'should fail if ticket redeem belongs to a different raffle (has different ticket token)',
       ({ boxFactory, someoneWallet, ticketBox, redeemedDonationOutputBox }) => {
         const totalSoldTickets = 10n;
@@ -309,7 +309,7 @@ describe('ticketRedeem', () => {
      * @expected
      * - transaction result must throw error
      */
-    ticketRedeemTest(
+    ticketTest(
       'should fail if safe pay erg deposit is not correct for an erg-goal raffle',
       ({ boxFactory, ticketRedeemBox, ticketBox }) => {
         const ticketPrice = testUtils.FEE * 2n;
@@ -363,7 +363,7 @@ describe('ticketRedeem', () => {
      * @expected
      * - transaction result must throw error
      */
-    ticketRedeemErgGoalTest(
+    ticketErgGoalTest(
       'should fail if safe pay erg deposit is not correct for an token-goal raffle',
       ({ boxFactory, ticketRedeemBox, ticketBox }) => {
         const ticketPrice = 10n;
@@ -423,7 +423,7 @@ describe('ticketRedeem', () => {
      * @expected
      * - transaction result must throw error
      */
-    ticketRedeemTest(
+    ticketTest(
       'should fail if safe pay address hash differs from the ticket address hash',
       ({
         boxFactory,
@@ -466,7 +466,7 @@ describe('ticketRedeem', () => {
      * @expected
      * - transaction result must throw error
      */
-    ticketRedeemTest(
+    ticketTest(
       'should fail if two tickets are spent in the transaction',
       ({
         boxFactory,
@@ -513,7 +513,7 @@ describe('ticketRedeem', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    ticketRedeemTest(
+    ticketTest(
       'should successfully collect old expired ticket boxes',
       ({
         boxFactory,
@@ -537,7 +537,7 @@ describe('ticketRedeem', () => {
     );
 
     /**
-     * @target should fail if ticket is not expired
+     * @target should fail if the ticket has not expired
      * @scenario
      * - set chain height to invalid value
      * - execute transaction and send change to the someoneWallet
@@ -545,8 +545,8 @@ describe('ticketRedeem', () => {
      * @expected
      * - transaction result must throw error
      */
-    ticketRedeemTest(
-      'should fail if ticket is not expired',
+    ticketTest(
+      'should fail if the ticket has not expired',
       ({
         boxFactory,
         ticketBox,
@@ -579,7 +579,7 @@ describe('ticketRedeem', () => {
      * @expected
      * - transaction result must throw error
      */
-    ticketRedeemTest(
+    ticketTest(
       'should fail if ticket is not expired',
       ({ boxFactory, ticketBox }) => {
         boxFactory.chain.setTip(2000);
