@@ -279,22 +279,12 @@ describe('winnerPrize', () => {
         const prizeAmount = (totalPrize * winnerRewardPercent) / 1000n;
         const winnerGiftTokensAmount = 2n;
 
-        const extraGiftToken = mockUTxO({
-          value: testUtils.FEE,
-          ergoTree: constants.TRUE_SCRIPT_HEX,
-          assets: [
-            {
-              tokenId: testUtils.GIFT_TOKEN_ID,
-              amount: 1n,
-            },
-          ],
-        });
-
         const giftBox = boxFactory.createGiftBoxMock(
-          1,
+          // set different winnerIndex
+          2,
           blake2b256(Buffer.from(someoneWallet.ergoTree, 'hex')),
           testUtils.FEE * 10n,
-          testUtils.X_TOKEN_ID,
+          testUtils.GIFT_TOKEN_ID,
           1n,
         );
 
@@ -308,18 +298,14 @@ describe('winnerPrize', () => {
         );
 
         const redeemedGift = boxFactory.createSafePayOutputBox(
-          BigInt(giftBox.value.toString()),
+          BigInt(giftBox.value.toString()) - testUtils.FEE,
           giftBox.assets.slice(1),
           SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([winnerPrizeBox, giftBox, extraGiftToken])
+          .from([winnerPrizeBox, giftBox])
           .to([winnerPrizeOutputBox, redeemedGift])
-          .burnTokens({
-            tokenId: testUtils.X_TOKEN_ID,
-            amount: 1n,
-          })
           .payFee(testUtils.FEE)
           .withDataFrom([ticketBox])
           .build();
