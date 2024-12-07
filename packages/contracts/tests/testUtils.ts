@@ -1000,7 +1000,7 @@ export class RaffleBoxFactory {
   /**
    * Create gift output box
    * @param winnerIndex
-   * @param giftGiverWalletAddress
+   * @param giftGiverWalletAddressHash
    * @param value
    * @param giftTokenId
    * @param giftTokenAmount
@@ -1008,7 +1008,7 @@ export class RaffleBoxFactory {
    */
   createGiftBoxMock(
     winnerIndex: number,
-    giftGiverWalletAddress: string,
+    giftGiverWalletAddressHash: Uint8Array,
     value: bigint = 0n,
     giftTokenId: string,
     giftTokenAmount: bigint = 1n,
@@ -1019,7 +1019,7 @@ export class RaffleBoxFactory {
       additionalRegisters: {
         R4: SColl(
           SByte,
-          Array.from(Buffer.from(giftGiverWalletAddress)),
+          Array.from(Buffer.from(giftGiverWalletAddressHash)),
         ).toHex(),
         R5: SInt(winnerIndex).toHex(),
         R6: SLong(FEE).toHex(),
