@@ -113,7 +113,7 @@ const createRaffleTicketTest = (collectingToken?: TokenAmount<bigint>) => {
 
 describe('ticket', () => {
   const ticketTest = createRaffleTicketTest();
-  const ticketErgGoalTest = createRaffleTicketTest({
+  const ticketTokenGoalTest = createRaffleTicketTest({
     tokenId: testUtils.X_TOKEN_ID,
     amount: 100n,
   });
@@ -159,7 +159,7 @@ describe('ticket', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    ticketErgGoalTest(
+    ticketTokenGoalTest(
       'should successfully remove winner box and collect its ticket token(Token-goal)',
       ({
         boxFactory,
@@ -363,7 +363,7 @@ describe('ticket', () => {
      * @expected
      * - transaction result must throw error
      */
-    ticketErgGoalTest(
+    ticketTokenGoalTest(
       'should fail if safe pay erg deposit is not correct for an token-goal raffle',
       ({ boxFactory, ticketRedeemBox, ticketBox }) => {
         const ticketPrice = 10n;
@@ -537,7 +537,7 @@ describe('ticket', () => {
     );
 
     /**
-     * @target should fail if the ticket has not expired
+     * @target should fail if ticket is not expired
      * @scenario
      * - set chain height to invalid value
      * - execute transaction and send change to the someoneWallet
@@ -546,13 +546,14 @@ describe('ticket', () => {
      * - transaction result must throw error
      */
     ticketTest(
-      'should fail if the ticket has not expired',
+      'should fail if ticket is not expired',
       ({
         boxFactory,
         ticketBox,
         ticketCollectorBox,
         ticketCollectorOutputBox,
       }) => {
+        // set invalid height
         boxFactory.chain.setTip(20);
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([ticketCollectorBox, ticketBox])
@@ -571,25 +572,27 @@ describe('ticket', () => {
     );
 
     /**
-     * @target should fail if ticket is not expired
+     * @target should fail if ticker collector token is not correct
      * @scenario
-     * - set chain height to invalid value
+     * - create ticketCollector input & output Boxes by invalid token
      * - execute transaction and send change to the someoneWallet
      * - result of execution must be fail
      * @expected
      * - transaction result must throw error
      */
     ticketTest(
-      'should fail if ticket is not expired',
+      'should fail if ticker collector token is not correct',
       ({ boxFactory, ticketBox }) => {
         boxFactory.chain.setTip(2000);
         const ticketCollectorBox = mockUTxO({
           value: testUtils.FEE,
           ergoTree: constants.TRUE_SCRIPT_HEX,
+          // put invalid collector token
           assets: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1n }],
         });
         const ticketCollectorOutputBox = boxFactory.createCustomOutputBox(
           ticketBox.value,
+          // put invalid collector token
           [{ tokenId: testUtils.X_TOKEN_ID, amount: 1n }],
           constants.TRUE_SCRIPT_HEX,
         );
