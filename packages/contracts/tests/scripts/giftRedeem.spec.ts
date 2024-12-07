@@ -209,7 +209,6 @@ describe('giftRedeem', () => {
         const step = 1;
 
         const giftRedeemOutputBox = boxFactory.createGiftRedeemOutputBox(
-          // reduced value of the box and move to the someoneWallet
           BigInt(giftRedeemBox.value.toString()) +
             BigInt(winnerBox.value) -
             testUtils.FEE,
@@ -246,7 +245,7 @@ describe('giftRedeem', () => {
     /**
      * @target should fail if gift redeem collecting token is lost in outputs
      * @scenario
-     * - create giftRedeemOutputBox output box by reduced value
+     * - create giftRedeemOutputBox output box by extra amount of collecting token
      * - execute transaction
      * - result of execution must be fail
      * @expected
@@ -269,8 +268,8 @@ describe('giftRedeem', () => {
           winnersCount,
           step + 1,
           testUtils.TICKET_TOKEN_ID,
+          // put extra amount of collecting token
           BigInt(giftRedeemBox.assets[1].amount.toString()) + 1n,
-          undefined,
         );
 
         const extraErgInputBox = mockUTxO({
@@ -495,7 +494,7 @@ describe('giftRedeem', () => {
      * - it should create three output box
      */
     giftRedeemTest(
-      'should successfully remove winner box and collect its ticket token',
+      'should successfully proceed to ticket redeem step',
       ({
         boxFactory,
         giftRedeemBoxForTicketRedeemBox,
@@ -535,6 +534,7 @@ describe('giftRedeem', () => {
         const ticketPrice = testUtils.FEE * 2n;
 
         const ticketRedeemOutputBox = boxFactory.createTicketRedeemOutputBox(
+          // reduced value of the box and move to the someoneWallet
           BigInt(giftRedeemBox.value.toString()) - testUtils.FEE * 2n,
           totalSoldTickets,
           ticketPrice,
@@ -583,6 +583,7 @@ describe('giftRedeem', () => {
           ticketPrice,
           0n,
           testUtils.X_TOKEN_ID,
+          // prevent of inserting any ticket token
           0n,
         );
 
@@ -604,7 +605,7 @@ describe('giftRedeem', () => {
     /**
      * @target should fail if the content of register R4 is incorrect
      * @scenario
-     * - create ticketRedeemOutputBox output box without ticket token
+     * - create ticketRedeemOutputBox output box with reduced totalSoldTickets value
      * - execute transaction ant burn ticket token
      * - result of execution must be fail
      * @expected
@@ -648,7 +649,7 @@ describe('giftRedeem', () => {
     /**
      * @target should fail if the redeem tickets value is not set to zero
      * @scenario
-     * - create ticketRedeemOutputBox output box without ticket token
+     * - create ticketRedeemOutputBox output box by invalid redeemedTickets amount
      * - execute transaction ant burn ticket token
      * - result of execution must be fail
      * @expected
