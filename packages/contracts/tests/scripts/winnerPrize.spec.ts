@@ -225,7 +225,7 @@ describe('winnerPrize', () => {
 
         const ticketBox = boxFactory.createTicketBoxMock(
           someoneWallet.ergoTree,
-          4n,
+          3n,
           testUtils.TICKET_TOKEN_ID,
           // set invalid winner range
           [2n, 5n, 100_000n], // from-ticket-range, to-ticket-range, ticket-price
