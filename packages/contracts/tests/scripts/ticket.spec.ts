@@ -129,7 +129,7 @@ describe('ticket', () => {
      * - it should create three output box
      */
     ticketTest(
-      'should successfully remove winner box and collect its ticket token(Erg-goal)',
+      'should successfully proceed to ticket redeem step(Erg-goal)',
       ({
         boxFactory,
         ticketRedeemBox,
@@ -160,7 +160,7 @@ describe('ticket', () => {
      * - it should create three output box
      */
     ticketTokenGoalTest(
-      'should successfully remove winner box and collect its ticket token(Token-goal)',
+      'should successfully proceed to ticket redeem step(Token-goal)',
       ({
         boxFactory,
         ticketRedeemBox,
