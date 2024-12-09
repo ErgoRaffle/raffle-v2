@@ -151,6 +151,7 @@ export const initialContracts = (
   const ticket = scriptsVars.get('ticket') || new Map();
   ticket.set('RAFFLE_LICENSE_B64', defaultLicenseTokenIdB64);
   ticket.set('TICKET_COLLECTOR_NFT_B64', defaultTicketCollectorNftB64);
+  ticket.set('TICKET_EXPIRATION_HEIGHT', '10');
   scriptsVars.set('ticket', ticket);
 
   return compileAll(scriptsVars as ContextVarsType, true, trueScripts);
@@ -1366,7 +1367,7 @@ export class RaffleBoxFactory {
     ticketTokenId: string,
     r5: bigint[],
   ) {
-    const donateTicketOutputBox = mockUTxO({
+    const donateTicketBox = mockUTxO({
       value: FEE * 3n,
       ergoTree: this.contractsAddresses['ticket'],
       additionalRegisters: {
@@ -1376,13 +1377,9 @@ export class RaffleBoxFactory {
         ).toHex(),
         R5: SColl(SLong, r5).toHex(),
       },
-      assets: [
-        ...(ticketCount > 0
-          ? [{ tokenId: ticketTokenId, amount: ticketCount }]
-          : []),
-      ],
+      assets: [{ tokenId: ticketTokenId, amount: ticketCount }],
     });
-    return donateTicketOutputBox;
+    return donateTicketBox;
   }
 
   /**
@@ -1481,6 +1478,54 @@ export class RaffleBoxFactory {
    * @param collectingToken
    * @returns
    */
+  createTicketRedeemBoxMock(
+    value: bigint,
+    totalSoldTicket: bigint,
+    ticketPrice: bigint,
+    redeemedTickets: bigint,
+    ticketTokenId: string,
+    ticketTokenCount: bigint,
+    collectingToken?: TokenAmount<bigint>,
+    licenseTokenId: string = LICENSE_TOKEN_ID,
+    licenseTokenCount: bigint = 1n,
+  ) {
+    const ticketRedeemBox = mockUTxO({
+      value: value,
+      ergoTree: this.contractsAddresses['ticketRedeem'],
+      additionalRegisters: {
+        R4: SColl(
+          SLong,
+          Array.from([totalSoldTicket, ticketPrice, FEE]),
+        ).toHex(),
+        R5: SLong(redeemedTickets).toHex(),
+      },
+      assets: [
+        {
+          tokenId: licenseTokenId,
+          amount: licenseTokenCount,
+        },
+        {
+          tokenId: ticketTokenId,
+          amount: ticketTokenCount,
+        },
+        ...(collectingToken ? [collectingToken] : []),
+      ],
+    });
+
+    return ticketRedeemBox;
+  }
+
+  /**
+   * Create ticket redeem box
+   * @param value
+   * @param totalSoldTicket
+   * @param ticketPrice
+   * @param redeemedTickets
+   * @param ticketTokenId
+   * @param ticketTokenCount
+   * @param collectingToken
+   * @returns
+   */
   createTicketRedeemOutputBox(
     value: bigint,
     totalSoldTicket: bigint,
@@ -1489,6 +1534,8 @@ export class RaffleBoxFactory {
     ticketTokenId: string,
     ticketTokenCount: bigint,
     collectingToken?: TokenAmount<bigint>,
+    licenseTokenId: string = LICENSE_TOKEN_ID,
+    licenseTokenCount: bigint = 1n,
   ) {
     const ticketRedeemOutputBox = new OutputBuilder(
       value,
@@ -1500,13 +1547,17 @@ export class RaffleBoxFactory {
     });
     ticketRedeemOutputBox.addTokens([
       {
-        tokenId: LICENSE_TOKEN_ID,
-        amount: 1n,
+        tokenId: licenseTokenId,
+        amount: licenseTokenCount,
       },
-      {
-        tokenId: ticketTokenId,
-        amount: ticketTokenCount,
-      },
+      ...(ticketTokenCount > 0
+        ? [
+            {
+              tokenId: ticketTokenId,
+              amount: ticketTokenCount,
+            },
+          ]
+        : []),
     ]);
 
     if (collectingToken !== undefined)
@@ -1594,6 +1645,48 @@ export class RaffleBoxFactory {
     }
 
     return winnerBox;
+  }
+
+  /**
+   * Create ticketCollector output-box
+   * @param value
+   * @param ticketCollectorTokenAmount
+   * @returns
+   */
+  createTicketCollectorOutputBox(
+    value: bigint = FEE,
+    ticketCollectorTokenAmount: bigint = 1n,
+  ) {
+    const ticketCollectorBox = new OutputBuilder(
+      value,
+      constants.TRUE_SCRIPT_HEX,
+    ).addTokens({
+      tokenId: TICKET_COLLECTOR_NFT_ID,
+      amount: ticketCollectorTokenAmount,
+    });
+    return ticketCollectorBox;
+  }
+
+  /**
+   * Create ticketCollector box
+   * @param value
+   * @param ticketCollectorTokenAmount
+   * @returns
+   */
+  createTicketCollectorBoxMock(
+    value: bigint = FEE,
+    ticketCollectorTokenAmount: bigint = 1n,
+  ) {
+    return mockUTxO({
+      value: value,
+      ergoTree: constants.TRUE_SCRIPT_HEX,
+      assets: [
+        {
+          tokenId: TICKET_COLLECTOR_NFT_ID,
+          amount: ticketCollectorTokenAmount,
+        },
+      ],
+    });
   }
 
   /**
