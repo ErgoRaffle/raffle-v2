@@ -17,7 +17,6 @@
   //      [Service, TicketRedeem] --> [Service, ServiceFee]
   // 
   
-  val ticketScriptHash = fromBase64("TICKET_SCRIPT_HASH_B64")
   val safePayScriptHash = fromBase64("SAFE_PAY_SCRIPT_HASH_B64")
   val serviceNft = fromBase64("SERVICE_NFT_B64")
 
@@ -50,7 +49,6 @@
       outTicketRedeem.R5[Long].get == redeemedTickets + ticketCount,
 
       // Correct Ticket format
-      blake2b256(ticket.propositionBytes) == ticketScriptHash,
       ticket.tokens(0)._1 == SELF.tokens(1)._1,
     )))
   } else {
