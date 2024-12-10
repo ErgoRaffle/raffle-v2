@@ -10,11 +10,10 @@ import { ScriptNamesType } from '../../lib/types';
  * create fixtures that contains below steps data:
  *   - mock chain and partners
  *   - compile contracts
- *   - create inactiveRaffle input box(by sigmaProp(true) ergoTree)
- *   - create ticketRepo input box
+ *   - create ticketRepo & inactiveRaffle input boxes
  * @returns vitest customized "it" object
  */
-function createInactiveRaffleTest(winnersCount: number = 1) {
+function createTicketRepoTest(winnersCount: number = 1) {
   const boxFactory = new testUtils.RaffleBoxFactory(
     { height: 1000 },
     constants.scriptList.filter(
@@ -51,8 +50,8 @@ function createInactiveRaffleTest(winnersCount: number = 1) {
 }
 
 describe('ticketRepo', () => {
-  const ticketRepoBy1WinnerTest = createInactiveRaffleTest();
-  const ticketRepoBy5WinnerTest = createInactiveRaffleTest(5);
+  const ticketRepoBy1WinnerTest = createTicketRepoTest();
+  const ticketRepoBy5WinnerTest = createTicketRepoTest(5);
 
   describe('Active raffle creation', () => {
     /**
