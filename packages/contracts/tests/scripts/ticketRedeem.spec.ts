@@ -21,6 +21,9 @@ const createTicketRedeemTest = (collectingToken?: TokenAmount<bigint>) => {
     ? collectingToken.amount / totalSoldTickets
     : testUtils.FEE * 2n;
   const ticketCount = 1n;
+  const isErgGoal = collectingToken == undefined;
+  const creationFee = 1_000_000n;
+  const winnersCount = 3n;
 
   const boxFactory = new testUtils.RaffleBoxFactory(
     { height: 100 },
@@ -39,7 +42,10 @@ const createTicketRedeemTest = (collectingToken?: TokenAmount<bigint>) => {
   });
 
   const ticketRedeemBox = boxFactory.createTicketRedeemBoxMock(
-    testUtils.FEE * 3n,
+    creationFee +
+      winnersCount * 3n * testUtils.FEE +
+      6n * testUtils.FEE +
+      (isErgGoal ? ticketCount * ticketPrice : 0n),
     totalSoldTickets,
     ticketPrice,
     0n,
@@ -92,11 +98,6 @@ const createTicketRedeemTest = (collectingToken?: TokenAmount<bigint>) => {
     SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array,
   );
 
-  const ticketCollectorBox = boxFactory.createTicketCollectorBoxMock();
-  const ticketCollectorOutputBox = boxFactory.createTicketCollectorOutputBox(
-    ticketBox.value,
-  );
-
   const ticketRedeemBoxForLicenseRedeem = boxFactory.createTicketRedeemBoxMock(
     testUtils.FEE * 3n,
     totalSoldTickets,
@@ -131,8 +132,6 @@ const createTicketRedeemTest = (collectingToken?: TokenAmount<bigint>) => {
     ticketRedeemBox: ticketRedeemBox,
     ticketRedeemOutputBox: ticketRedeemOutputBox,
     redeemedDonationOutputBox: redeemedDonationOutputBox,
-    ticketCollectorBox: ticketCollectorBox,
-    ticketCollectorOutputBox: ticketCollectorOutputBox,
     ticketRedeemBoxForLicenseRedeem: ticketRedeemBoxForLicenseRedeem,
     serviceBox: serviceBox,
     serviceOutputBox: serviceOutputBox,
@@ -473,6 +472,8 @@ describe('ticketRedeem', () => {
         const totalSoldTickets = 10n;
         const ticketPrice = testUtils.FEE * 2n;
         const ticketCount = 1n;
+        const creationFee = 1_000_000n;
+        const winnersCount = 3n;
 
         const extraTokenBox = mockUTxO({
           value: testUtils.FEE,
@@ -485,7 +486,10 @@ describe('ticketRedeem', () => {
           ],
         });
         const ticketRedeemBox = boxFactory.createTicketRedeemBoxMock(
-          testUtils.FEE * 3n,
+          creationFee +
+            winnersCount * 3n * testUtils.FEE +
+            6n * testUtils.FEE +
+            ticketCount * ticketPrice,
           totalSoldTickets,
           ticketPrice,
           0n,
