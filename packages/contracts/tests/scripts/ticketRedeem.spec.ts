@@ -778,6 +778,7 @@ describe('ticketRedeem', () => {
           [
             {
               tokenId: ticketRedeemBoxForLicenseRedeem.assets[2].tokenId,
+              // put reduced amount of collecting token
               amount: ticketRedeemBoxForLicenseRedeem.assets[2].amount - 1n,
             },
           ],
@@ -828,6 +829,7 @@ describe('ticketRedeem', () => {
           BigInt(ticketRedeemBoxForLicenseRedeem.value.toString()) -
             testUtils.FEE,
           [],
+          // set different address
           blake2b256(Buffer.from(someoneWallet.ergoTree, 'hex')),
         );
 
@@ -883,6 +885,7 @@ describe('ticketRedeem', () => {
           .from([
             serviceBox,
             ticketRedeemBoxForLicenseRedeem,
+            // put duplicated  ticketRedeemBox
             ticketRedeemBoxForLicenseRedeem2,
           ])
           .to([serviceOutputBox, serviceFeeBox])
