@@ -20,7 +20,7 @@
   //      [WinnerPrize] + [(DataInput)Ticket] --> [finalPrize]
   //
   
-  // val ticketRedeemScriptHash = fromBase64("TICKET_REDEEM_SCRIPT_HASH_B64")
+  val ticketRedeemScriptHash = fromBase64("TICKET_REDEEM_SCRIPT_HASH_B64")
   val safePayScriptHash = fromBase64("SAFE_PAY_SCRIPT_HASH_B64")
   val raffleLicense = fromBase64("RAFFLE_LICENSE_B64")
   val ticketCollectorNft =  fromBase64("TICKET_COLLECTOR_NFT_B64")
@@ -49,9 +49,7 @@
     }
     sigmaProp(allOf(Coll(
       // Correct Ticket Redeem format
-      // TODO: must verify this part before remove
-      //  local:ergo/ergoraffle/raffle-2#391
-      // blake2b256(ticketRedeem.propositionBytes) == ticketRedeemScriptHash,
+      blake2b256(ticketRedeem.propositionBytes) == ticketRedeemScriptHash,
       ticketRedeem.tokens(0)._1 == raffleLicense,
       ticketRedeem.tokens(1)._1 == SELF.tokens(0)._1,
 

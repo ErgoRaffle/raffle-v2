@@ -49,7 +49,7 @@ export const scriptsRequireAddresses: {
   },
   ticket: {
     safePay: 'SAFE_PAY_SCRIPT_HASH_B64',
-    // ticketRedeem: 'TICKET_REDEEM_SCRIPT_HASH_B64',
+    ticketRedeem: 'TICKET_REDEEM_SCRIPT_HASH_B64',
   },
   successRaffle: {
     safePay: 'SAFE_PAY_SCRIPT_HASH_B64',
@@ -67,7 +67,6 @@ export const scriptsRequireAddresses: {
   },
   giftTokenRepo: {},
   ticketRedeem: {
-    ticket: 'TICKET_SCRIPT_HASH_B64',
     safePay: 'SAFE_PAY_SCRIPT_HASH_B64',
   },
   raffleDetails: {
