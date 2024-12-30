@@ -11,7 +11,7 @@ export { TicketRedeem } from './entities/ticketRedeem';
 export { Winner } from "./entities/winner";
 export { WinnerPrize } from './entities/winnerPrize';
 
-import { AppDataSource } from "./data-source.js"
+import { AppDataSource } from "./dataSource.js"
 
 AppDataSource.initialize().then(async () => {
     console.log("Inserting a new user into the database...")
