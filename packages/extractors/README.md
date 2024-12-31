@@ -7,6 +7,8 @@
 
 ## Introduction
 
+Raffle v2 related extractors
+
 ## Installation
 
 npm:
