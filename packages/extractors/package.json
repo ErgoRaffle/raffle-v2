@@ -1,35 +1,37 @@
 {
-   "name": "@ergo-raffle/extractors",
-   "version": "0.1.0",
-   "description": "",
-   "repository": "",
-   "license": "GPL-3.0",
-   "author": "",
-   "type": "module",
-   "main": "dist/index.js",
-   "types": "dist/index.d.ts",
-   "scripts": {
-      "build": "tsc --build tsconfig.build.json",
-      "release": "npm run build && npm publish --access public",
-      "type-check": "tsc --noEmit",
-      "start": "ts-node src/index.ts",
-      "typeorm:generate:sqlite": "npm run typeorm migration:generate ./lib/migration/sqlite -- -p -d ./lib/dataSource.ts",
-      "typeorm:generate:postgres": "npm run typeorm migration:generate ./lib/migration/postgres -- -p -d ./lib/dataSource.ts",
-      "typeorm:migrate": "npm run typeorm migration:run -- -d lib/dataSource.ts",
-      "typeorm": "NODE_OPTIONS=--experimental-specifier-resolution=node typeorm-ts-node-esm"
-   },
-   "devDependencies": {
-      "@types/node": "^20.11.9",
-      "ts-node": "10.9.1",
-      "typescript": "4.5.2"
-   },
-   "engines": {
-      "node": ">=20.11.0"
-   },
-   "dependencies": {
-      "pg": "^8.4.0",
-      "reflect-metadata": "^0.1.13",
-      "sqlite3": "^5.1.7",
-      "typeorm": "0.3.20"
-   }
+  "name": "@ergo-raffle/extractors",
+  "version": "0.1.0",
+  "description": "Raffle v2 related extractors",
+  "license": "GPL-3.0",
+  "author": "Ergo Raffle Team",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc --build tsconfig.build.json",
+    "release": "npm run build && npm publish --access public",
+    "type-check": "tsc --noEmit",
+    "start": "ts-node src/index.ts",
+    "typeorm:generate:sqlite": "npm run typeorm migration:generate ./lib/migration/sqlite -- -p -d ./lib/dataSource.ts",
+    "typeorm:generate:postgres": "npm run typeorm migration:generate ./lib/migration/postgres -- -p -d ./lib/dataSource.ts",
+    "typeorm:migrate": "npm run typeorm migration:run -- -d lib/dataSource.ts",
+    "typeorm": "NODE_OPTIONS=--experimental-specifier-resolution=node typeorm-ts-node-esm"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.9",
+    "ts-node": "10.9.1",
+    "@types/node": "^20.11.9",
+    "@typescript-eslint/eslint-plugin": "^6.19.1",
+    "@typescript-eslint/parser": "^6.19.1",
+    "typescript": "5.3.3"
+  },
+  "engines": {
+    "node": ">=20.11.0"
+  },
+  "dependencies": {
+    "pg": "^8.4.0",
+    "reflect-metadata": "^0.1.13",
+    "sqlite3": "^5.1.7",
+    "typeorm": "0.3.20"
+  }
 }
