@@ -7,17 +7,16 @@
 
 ## Introduction
 
-
 ## Installation
 
 npm:
 
 ```sh
-npm i extractors
+npm i @ergo-raffle/extractors
 ```
 
 yarn:
 
 ```sh
-yarn add extractors
+yarn add @ergo-raffle/extractors
 ```
