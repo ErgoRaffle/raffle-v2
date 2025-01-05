@@ -135,6 +135,7 @@ dist
 
 # Sqlite databases
 *.sqlite
+*.sqlite3
 
 # jetbrains IDEs project files
 .idea/

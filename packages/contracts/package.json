@@ -9,6 +9,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "mkdir -p dist/ && node --trace-warnings --loader ts-node/esm --loader extensionless ./cli/index.ts build configs.json",
+    "build-testnet": "mkdir -p dist/ && node --trace-warnings --loader ts-node/esm --loader extensionless ./cli/index.ts build configs.json --testnet",
     "coverage": "npm run test -- --coverage",
     "lint": "eslint --fix . && npm run prettify",
     "prettify": "prettier --write . --ignore-path ./.gitignore --ignore-path ./.prettierignore",

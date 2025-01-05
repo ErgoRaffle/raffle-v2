@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import { exit } from 'process';
 
+import { Network } from '@fleet-sdk/core';
 import { program } from 'commander';
 
 import * as types from '../lib/types';
@@ -105,9 +106,15 @@ program
     '-c, --config <config file path>',
     'Address of input file that contains JSON contract name and variables',
   )
-  .action((config) => {
+  .option(
+    '-t, --testnet',
+    'This flag determine output addresses must be generate for the Testnet or no',
+  )
+  .action((config, options) => {
     let rawConfigs;
     let contracts;
+    console.log(options);
+    const isTestnet = options.testnet;
 
     try {
       rawConfigs = JSON.parse(fs.readFileSync(config).toString()) as {
@@ -151,7 +158,12 @@ program
     configs.set('defaults', defaults);
 
     try {
-      contracts = compileAll(configs as types.ContextVarsType);
+      contracts = compileAll(
+        configs as types.ContextVarsType,
+        false,
+        [],
+        isTestnet ? Network.Testnet : Network.Mainnet,
+      );
     } catch (err) {
       logger.error(`Compile Error: \n${err}`);
       process.exit(0);

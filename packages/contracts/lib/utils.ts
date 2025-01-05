@@ -1,6 +1,7 @@
 import { compile } from '@fleet-sdk/compiler';
 import { blake2b256 } from '@fleet-sdk/crypto';
 import { SConstant } from '@fleet-sdk/serializer';
+import { Network } from '@fleet-sdk/core';
 import { Value } from 'sigmastate-js/main';
 import * as fs from 'fs';
 import * as path from 'node:path';
@@ -71,6 +72,7 @@ export function compileAll(
   contextVars?: ContextVarsType,
   outputsAsHex: boolean = false,
   trueScripts: ScriptNamesType[] = [],
+  network: Network = Network.Mainnet,
 ): { [key: string]: string } {
   const contracts: { [key: string]: string } = {};
   const compiledScripts = [];
@@ -128,7 +130,7 @@ export function compileAll(
         if (outputsAsHex) {
           contracts[scriptName] = contract.toHex().toString();
         } else {
-          contracts[scriptName] = contract.toAddress().toString();
+          contracts[scriptName] = contract.toAddress(network).toString();
         }
       } catch (err) {
         logger.error(
