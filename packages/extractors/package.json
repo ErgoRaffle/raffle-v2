@@ -1,0 +1,23 @@
+{
+  "name": "@ergo-raffle/extractors",
+  "version": "0.0.0",
+  "description": "Raffle v2 related extractors",
+  "repository": "",
+  "license": "GPL-3.0",
+  "author": "Ergo Raffle Team",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc --build tsconfig.build.json",
+    "release": "npm run build && npm publish --access public",
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.9",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=20.11.0"
+  }
+}
