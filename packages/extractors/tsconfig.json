@@ -1,24 +1,10 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "allowJs": false,
-    "declaration": true,
-    "declarationMap": true,
-    "esModuleInterop": true,
-    "inlineSourceMap": true,
-    "inlineSources": true,
-    "isolatedModules": false,
-    "module": "esnext",
-    "moduleResolution": "node",
+    "outDir": "./dist",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "strictPropertyInitialization": false,
-    "noFallthroughCasesInSwitch": true,
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "target": "esnext"
+    "strictPropertyInitialization": false
   },
-  "ts-node": {
-    "esm": true
-  }
+  "include": ["tests", "lib"]
 }

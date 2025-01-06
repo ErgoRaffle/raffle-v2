@@ -7,7 +7,7 @@
 
 ## Introduction
 
-Raffle v2 related extractors
+The raffle-v2 project related extractors
 
 ## Installation
 
@@ -20,5 +20,5 @@ npm i @ergo-raffle/extractors
 yarn:
 
 ```sh
-yarn add @ergo-raffle/extractors
+yarn add @ergo-raffle-extractors
 ```

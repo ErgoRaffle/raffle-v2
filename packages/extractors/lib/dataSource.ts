@@ -7,7 +7,7 @@ import {
   ExtractorStatusEntity,
   migrations as scannerMigrations,
 } from '@rosen-bridge/scanner';
-import { Sqlite1736006674374 } from './migrations/sqlite/1736006674374-sqlite';
+import { Sqlite1736162463033 } from './migrations/sqlite/1736162463033-sqlite';
 
 export const AppDataSource = new DataSource({
   type: 'sqlite',
@@ -16,5 +16,5 @@ export const AppDataSource = new DataSource({
   synchronize: false,
   logging: false,
   entities: [BlockEntity, ExtractorStatusEntity, RaffleService],
-  migrations: [Sqlite1736006674374, ...scannerMigrations['sqlite']],
+  migrations: [Sqlite1736162463033, ...scannerMigrations['sqlite']],
 });

@@ -6,31 +6,31 @@ export class RaffleService {
   boxId: string;
 
   @Column()
-  block: string;
-
-  @Column()
-  height: number;
-
-  @Column()
-  txId: string;
-
-  @Column({ nullable: true, type: 'text' })
-  spendBlock: string | null;
-
-  @Column({ nullable: true })
-  spendHeight: number;
+  extractorName: string;
 
   @Column()
   boxSerialized: string;
 
+  @Column({ type: 'bigint' })
+  height: string;
+
   @Column()
-  extractorName: string;
+  block: string;
 
-  @Column({ type: 'bigint' })
-  serviceFeePercent: string;
+  @Column()
+  txId: string;
 
-  @Column({ type: 'bigint' })
-  implementerFeePercent: string;
+  @Column({ nullable: true, type: 'bigint' })
+  spendHeight: string;
+
+  @Column({ nullable: true, type: 'text' })
+  spendBlock: string | null;
+
+  @Column()
+  serviceFeePercent: number;
+
+  @Column()
+  implementerFeePercent: number;
 
   @Column({ type: 'bigint' })
   creationFee: string;

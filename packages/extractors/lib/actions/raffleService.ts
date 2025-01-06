@@ -36,6 +36,7 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
     block: BlockInfo,
     extractor: string,
   ) => {
+    this.logger.error('XXXXXXXXXXXXXXXXX');
     const boxIds = boxes.map((item) => item.boxId);
     const dbBoxes = await this.dataSource.getRepository(RaffleService).findBy({
       boxId: In(boxIds),
@@ -53,13 +54,13 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
         const entity = {
           boxId: box.boxId,
           block: block.hash,
-          height: block.height,
+          height: String(block.height),
           txId: box.txId,
           boxSerialized: box.boxSerialized,
           extractorName: extractor,
           serviceFeePercent: box.serviceFeePercent,
           implementerFeePercent: box.implementerFeePercent,
-          creationFee: box.creationFee,
+          creationFee: String(box.creationFee),
         };
         const dbBox = dbBoxes.filter((item) => item.boxId === box.boxId);
         if (dbBox.length > 0) {
@@ -106,7 +107,7 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
       const boxIds = spendInfoChunk.map((info) => info.boxId);
       const updateResult = await this.repository.update(
         { boxId: In(boxIds), extractorName: extractor },
-        { spendBlock: block.hash, spendHeight: block.height },
+        { spendBlock: block.hash, spendHeight: String(block.height) },
       );
 
       if (updateResult.affected && updateResult.affected > 0) {
@@ -148,7 +149,7 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
     });
     await this.repository.update(
       { spendBlock: block, extractorName: extractor },
-      { spendBlock: null, spendHeight: 0 },
+      { spendBlock: null, spendHeight: '0' },
     );
   };
 }

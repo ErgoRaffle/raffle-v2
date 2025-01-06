@@ -1,21 +1,21 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class Sqlite1736006674374 implements MigrationInterface {
-  name = 'Sqlite1736006674374';
+export class Sqlite1736162463033 implements MigrationInterface {
+  name = 'Sqlite1736162463033';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
             CREATE TABLE "raffle_service" (
                 "boxId" varchar PRIMARY KEY NOT NULL,
-                "block" varchar NOT NULL,
-                "height" integer NOT NULL,
-                "txId" varchar NOT NULL,
-                "spendBlock" text,
-                "spendHeight" integer,
-                "boxSerialized" varchar NOT NULL,
                 "extractorName" varchar NOT NULL,
-                "serviceFeePercent" bigint NOT NULL,
-                "implementerFeePercent" bigint NOT NULL,
+                "boxSerialized" varchar NOT NULL,
+                "height" bigint NOT NULL,
+                "block" varchar NOT NULL,
+                "txId" varchar NOT NULL,
+                "spendHeight" bigint,
+                "spendBlock" text,
+                "serviceFeePercent" integer NOT NULL,
+                "implementerFeePercent" integer NOT NULL,
                 "creationFee" bigint NOT NULL
             )
         `);

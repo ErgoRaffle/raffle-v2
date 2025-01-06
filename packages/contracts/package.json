@@ -1,5 +1,5 @@
 {
-  "name": "contracts",
+  "name": "@ergo-raffle/contracts",
   "version": "0.0.0",
   "description": "Raffle v2 related contracts",
   "license": "GPL-3.0",
