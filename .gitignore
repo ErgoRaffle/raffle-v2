@@ -139,3 +139,7 @@ dist
 
 # jetbrains IDEs project files
 .idea/
+
+
+# ignore try-package files
+packages/try/

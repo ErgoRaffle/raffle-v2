@@ -2,22 +2,22 @@ import { Entity, PrimaryColumn, Column } from 'typeorm';
 
 @Entity()
 export class RaffleService {
-  @PrimaryColumn()
+  @PrimaryColumn('text')
   boxId: string;
 
-  @Column()
-  extractorName: string;
+  @Column('text')
+  extractor: string;
 
-  @Column()
+  @Column('text')
   boxSerialized: string;
 
   @Column({ type: 'bigint' })
   height: string;
 
-  @Column()
+  @Column('text')
   block: string;
 
-  @Column()
+  @Column('text')
   txId: string;
 
   @Column({ nullable: true, type: 'bigint' })
@@ -26,10 +26,10 @@ export class RaffleService {
   @Column({ nullable: true, type: 'text' })
   spendBlock: string | null;
 
-  @Column()
+  @Column('integer')
   serviceFeePercent: number;
 
-  @Column()
+  @Column('integer')
   implementerFeePercent: number;
 
   @Column({ type: 'bigint' })

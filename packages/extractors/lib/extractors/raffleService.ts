@@ -11,7 +11,7 @@ import {
 
 import { RaffleServiceAction } from '../actions/raffleService';
 import { RaffleServiceBoxInterface } from '../interfaces/types';
-import { JsonBI } from '../utils';
+import JsonBI from '@rosen-bridge/json-bigint';
 
 export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<RaffleServiceBoxInterface> {
   readonly actions: RaffleServiceAction;
@@ -82,7 +82,7 @@ export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<R
       serviceFeePercent: R4Serialized[0],
       implementerFeePercent: R4Serialized[1],
       creationFee: R4Serialized[2],
-      extractorName: 'RaffleService',
+      extractor: 'RaffleService',
     };
 
     return data;

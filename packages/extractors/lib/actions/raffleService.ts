@@ -1,5 +1,5 @@
 import { DataSource, In, Repository } from 'typeorm';
-import { chunk } from 'lodash-es';
+import { chunk, difference } from 'lodash-es';
 import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
 import {
   AbstractInitializableErgoExtractorAction,
@@ -7,10 +7,10 @@ import {
   DB_CHUNK_SIZE,
   BlockInfo,
 } from '@rosen-bridge/abstract-extractor';
+import JsonBigInt from '@rosen-bridge/json-bigint';
 
 import { RaffleServiceBoxInterface } from '../interfaces/types';
 import { RaffleService } from '../entities/raffleService';
-import { JsonBI } from '../utils';
 
 export class RaffleServiceAction extends AbstractInitializableErgoExtractorAction<RaffleServiceBoxInterface> {
   private readonly dataSource: DataSource;
@@ -36,58 +36,82 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
     block: BlockInfo,
     extractor: string,
   ) => {
-    this.logger.error('XXXXXXXXXXXXXXXXX');
-    const boxIds = boxes.map((item) => item.boxId);
-    const dbBoxes = await this.dataSource.getRepository(RaffleService).findBy({
-      boxId: In(boxIds),
-      extractorName: extractor,
-    });
-    if (dbBoxes.length > 0)
-      this.logger.debug(`Found stored boxes with same boxId`, dbBoxes);
-    let success = true;
+    const entities = boxes.map((box) => ({
+      boxId: box.boxId,
+      block: block.hash,
+      height: String(block.height),
+      txId: box.txId,
+      boxSerialized: box.boxSerialized,
+      extractor: extractor,
+      serviceFeePercent: box.serviceFeePercent,
+      implementerFeePercent: box.implementerFeePercent,
+      creationFee: String(box.creationFee),
+    }));
+
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
     const repository = await queryRunner.manager.getRepository(RaffleService);
     try {
-      for (const box of boxes) {
-        const entity = {
-          boxId: box.boxId,
-          block: block.hash,
-          height: String(block.height),
-          txId: box.txId,
-          boxSerialized: box.boxSerialized,
-          extractorName: extractor,
-          serviceFeePercent: box.serviceFeePercent,
-          implementerFeePercent: box.implementerFeePercent,
-          creationFee: String(box.creationFee),
-        };
-        const dbBox = dbBoxes.filter((item) => item.boxId === box.boxId);
-        if (dbBox.length > 0) {
-          this.logger.info(
-            `Updating box ${box.boxId} and extractor ${extractor}`,
-          );
-          await repository.update({ boxId: dbBox[0].boxId }, entity);
-          this.logger.debug(
-            `Updated entity is [${JsonBI.stringify(
-              box,
-            )}], and stored similar box is [${JsonBI.stringify(dbBox)}]`,
-          );
-        } else {
-          this.logger.info(`Storing box ${box.boxId}`);
-          await repository.insert(entity);
-          this.logger.debug(`Stored ${JsonBI.stringify(entity)}`);
-        }
+      const existingBoxIds = (
+        await repository.find({
+          where: {
+            boxId: In(entities.map((box) => box.boxId)),
+            extractor: extractor,
+          },
+          select: {
+            boxId: true,
+          },
+        })
+      ).map((entity) => entity.boxId);
+
+      const entitiesToUpdate = entities.filter((entity) =>
+        existingBoxIds.includes(entity.boxId),
+      );
+
+      const entitiesToInsert = difference(entities, entitiesToUpdate);
+
+      if (entitiesToUpdate.length > 0) {
+        this.logger.info(
+          `Inserting boxes with following IDs into the database: [${entitiesToInsert
+            .map((col) => col.boxId)
+            .join(', ')}]`,
+        );
+        this.logger.debug(
+          `Inserting RaffleService boxes [${JsonBigInt.stringify(
+            entitiesToInsert,
+          )}]`,
+        );
       }
+      await repository.insert(entitiesToInsert);
+
+      if (entitiesToUpdate.length > 0)
+        this.logger.info(
+          `Updating boxes with following IDs in the database: [${entitiesToUpdate
+            .map((col) => col.boxId)
+            .join(', ')}]`,
+        );
+      entitiesToUpdate.forEach(async (entity) => {
+        this.logger.debug(
+          `Updating RaffleService box in database [${JsonBigInt.stringify(
+            entity,
+          )}]`,
+        );
+        await repository.update(
+          { boxId: entity.boxId, extractor: extractor },
+          entity,
+        );
+      });
+
       await queryRunner.commitTransaction();
     } catch (e) {
       this.logger.error(`An error occurred during store boxes action: ${e}`);
       await queryRunner.rollbackTransaction();
-      success = false;
+      return false;
     } finally {
       await queryRunner.release();
     }
-    return success;
+    return true;
   };
 
   /**
@@ -106,7 +130,7 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
     for (const spendInfoChunk of spendInfoChunks) {
       const boxIds = spendInfoChunk.map((info) => info.boxId);
       const updateResult = await this.repository.update(
-        { boxId: In(boxIds), extractorName: extractor },
+        { boxId: In(boxIds), extractor: extractor },
         { spendBlock: block.hash, spendHeight: String(block.height) },
       );
 
@@ -129,7 +153,7 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
    * @param extractorId
    */
   removeAllData = async (extractorId: string) => {
-    await this.repository.delete({ extractorName: extractorId });
+    await this.repository.delete({ extractor: extractorId });
   };
 
   /**
@@ -144,11 +168,11 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
       `Deleting boxes in block ${block} and extractor ${extractor}`,
     );
     await this.repository.delete({
-      extractorName: extractor,
+      extractor: extractor,
       block: block,
     });
     await this.repository.update(
-      { spendBlock: block, extractorName: extractor },
+      { spendBlock: block, extractor: extractor },
       { spendBlock: null, spendHeight: '0' },
     );
   };
