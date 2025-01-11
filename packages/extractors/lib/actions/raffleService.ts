@@ -45,7 +45,7 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
       extractor: extractor,
       serviceFeePercent: box.serviceFeePercent,
       implementerFeePercent: box.implementerFeePercent,
-      creationFee: String(box.creationFee),
+      creationFee: BigInt(box.creationFee),
     }));
 
     const queryRunner = this.dataSource.createQueryRunner();
@@ -71,7 +71,7 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
 
       const entitiesToInsert = difference(entities, entitiesToUpdate);
 
-      if (entitiesToUpdate.length > 0) {
+      if (entitiesToInsert.length > 0) {
         this.logger.info(
           `Inserting boxes with following IDs into the database: [${entitiesToInsert
             .map((col) => col.boxId)
@@ -82,8 +82,8 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
             entitiesToInsert,
           )}]`,
         );
+        await repository.insert(entitiesToInsert);
       }
-      await repository.insert(entitiesToInsert);
 
       if (entitiesToUpdate.length > 0)
         this.logger.info(
@@ -152,8 +152,8 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
    * remove all existing data for the extractor
    * @param extractorId
    */
-  removeAllData = async (extractorId: string) => {
-    await this.repository.delete({ extractor: extractorId });
+  removeAllData = async () => {
+    await this.repository.delete({ extractor: 'RaffleService' });
   };
 
   /**
@@ -163,17 +163,17 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
    * @param block
    * @param extractorId
    */
-  deleteBlockBoxes = async (block: string, extractor: string) => {
+  deleteBlockBoxes = async (block: string) => {
     this.logger.info(
-      `Deleting boxes in block ${block} and extractor ${extractor}`,
+      `Deleting boxes in block ${block} and extractor RaffleService`,
     );
     await this.repository.delete({
-      extractor: extractor,
+      extractor: 'RaffleService',
       block: block,
     });
     await this.repository.update(
-      { spendBlock: block, extractor: extractor },
-      { spendBlock: null, spendHeight: '0' },
+      { spendBlock: block, extractor: 'RaffleService' },
+      { spendBlock: null, spendHeight: undefined },
     );
   };
 }

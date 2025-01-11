@@ -1,18 +1,18 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class Postgres1736256482771 implements MigrationInterface {
-  name = 'Postgres1736256482771';
+export class Postgres1736599984267 implements MigrationInterface {
+  name = 'Postgres1736599984267';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
             CREATE TABLE "raffle_service" (
-                "boxId" character varying NOT NULL,
-                "extractor" character varying NOT NULL,
-                "boxSerialized" character varying NOT NULL,
-                "height" bigint NOT NULL,
-                "block" character varying NOT NULL,
-                "txId" character varying NOT NULL,
-                "spendHeight" bigint,
+                "boxId" text NOT NULL,
+                "extractor" text NOT NULL,
+                "boxSerialized" text NOT NULL,
+                "height" integer NOT NULL,
+                "block" text NOT NULL,
+                "txId" text NOT NULL,
+                "spendHeight" integer,
                 "spendBlock" text,
                 "serviceFeePercent" integer NOT NULL,
                 "implementerFeePercent" integer NOT NULL,

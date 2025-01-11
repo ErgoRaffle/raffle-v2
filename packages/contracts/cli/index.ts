@@ -113,8 +113,11 @@ program
   .action((config, options) => {
     let rawConfigs;
     let contracts;
-    console.log(options);
     const isTestnet = options.testnet;
+
+    logger.info(
+      `starts building addresses and tokens list on the ${isTestnet ? 'testnet' : 'mainnet'}`,
+    );
 
     try {
       rawConfigs = JSON.parse(fs.readFileSync(config).toString()) as {

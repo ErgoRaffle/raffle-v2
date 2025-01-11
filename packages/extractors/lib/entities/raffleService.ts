@@ -1,3 +1,5 @@
+import { BigIntValueTransformer } from '@rosen-bridge/extended-typeorm';
+
 import { Entity, PrimaryColumn, Column } from 'typeorm';
 
 @Entity()
@@ -11,7 +13,7 @@ export class RaffleService {
   @Column('text')
   boxSerialized: string;
 
-  @Column({ type: 'bigint' })
+  @Column({ type: 'integer' })
   height: string;
 
   @Column('text')
@@ -20,7 +22,7 @@ export class RaffleService {
   @Column('text')
   txId: string;
 
-  @Column({ nullable: true, type: 'bigint' })
+  @Column({ nullable: true, type: 'integer' })
   spendHeight: string;
 
   @Column({ nullable: true, type: 'text' })
@@ -32,6 +34,6 @@ export class RaffleService {
   @Column('integer')
   implementerFeePercent: number;
 
-  @Column({ type: 'bigint' })
-  creationFee: string;
+  @Column({ type: 'bigint', transformer: new BigIntValueTransformer() })
+  creationFee: bigint;
 }

@@ -14,9 +14,10 @@ export const createDatabase = async (): Promise<DataSource> => {
   const dataSource = new DataSource({
     type: 'sqlite',
     database: `:memory:`,
+    dropSchema: true,
     entities: [RaffleService],
     migrations: [...migrations.sqlite, ...scannerMigrations.sqlite],
-    synchronize: true,
+    synchronize: false,
     logging: false,
   });
   await dataSource.initialize();

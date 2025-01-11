@@ -1,5 +1,4 @@
 import 'reflect-metadata';
-import { RaffleService } from './entities';
-
+export { RaffleService } from './entities';
+export { ExtractedBox, RaffleServiceBoxInterface } from './interfaces/types';
 export { migrations } from './migrations/index';
-export { RaffleService };

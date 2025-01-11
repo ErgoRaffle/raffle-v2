@@ -18,7 +18,7 @@ export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<R
   private readonly id: string;
   private readonly networkType: ergoLib.NetworkPrefix;
   private readonly ergoTree?: string;
-  private readonly tokens: Array<string>;
+  private readonly token: string | undefined;
 
   constructor(
     dataSource: DataSource,
@@ -27,7 +27,7 @@ export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<R
     url: string,
     type: ErgoNetworkType,
     address: string,
-    tokens?: Array<string>,
+    token?: string,
     logger?: AbstractLogger,
     initialize = true,
   ) {
@@ -37,7 +37,7 @@ export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<R
     this.ergoTree = address
       ? ergoLib.Address.from_base58(address).to_ergo_tree().to_base16_bytes()
       : undefined;
-    this.tokens = tokens ? tokens : [];
+    this.token = token ? token : undefined;
     this.actions = new RaffleServiceAction(dataSource, this.logger);
   }
 
@@ -52,10 +52,7 @@ export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<R
    * @return true if the box has the required data and false otherwise
    */
   hasData = (box: OutputBox): boolean => {
-    return (
-      (!this.ergoTree || box.ergoTree == this.ergoTree) &&
-      (this.tokens.length == 0 || boxHasToken(box, this.tokens))
-    );
+    return box.ergoTree == this.ergoTree && boxHasToken(box, [this.token!]);
   };
 
   /**
@@ -63,11 +60,7 @@ export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<R
    * @param box
    * @return extracted data in proper format
    */
-  extractBoxData = (
-    box: OutputBox,
-  ):
-    | Omit<RaffleServiceBoxInterface, 'spendBlock' | 'spendHeight'>
-    | undefined => {
+  extractBoxData = (box: OutputBox): RaffleServiceBoxInterface | undefined => {
     const ergoBox = ergoLib.ErgoBox.from_json(JsonBI.stringify(box));
     const R4Serialized = ergoBox
       .register_value(ergoLib.NonMandatoryRegisterId.R4)!
@@ -82,7 +75,7 @@ export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<R
       serviceFeePercent: R4Serialized[0],
       implementerFeePercent: R4Serialized[1],
       creationFee: R4Serialized[2],
-      extractor: 'RaffleService',
+      extractor: this.id,
     };
 
     return data;

@@ -8,7 +8,7 @@ export const sampleRaffleServiceEntities: RaffleServiceBoxInterface[] = [
     extractor: 'RaffleService',
     serviceFeePercent: 100,
     implementerFeePercent: 100,
-    creationFee: '800',
+    creationFee: 100000000n,
   },
   {
     boxId: '2',
@@ -17,7 +17,7 @@ export const sampleRaffleServiceEntities: RaffleServiceBoxInterface[] = [
     extractor: 'RaffleService',
     serviceFeePercent: 200,
     implementerFeePercent: 100,
-    creationFee: '700',
+    creationFee: 100000000n,
   },
   {
     boxId: '3',
@@ -26,7 +26,7 @@ export const sampleRaffleServiceEntities: RaffleServiceBoxInterface[] = [
     extractor: 'RaffleService',
     serviceFeePercent: 100,
     implementerFeePercent: 100,
-    creationFee: '800',
+    creationFee: 100000000n,
   },
   {
     boxId: '4',
@@ -35,6 +35,6 @@ export const sampleRaffleServiceEntities: RaffleServiceBoxInterface[] = [
     extractor: 'RaffleService',
     serviceFeePercent: 50,
     implementerFeePercent: 50,
-    creationFee: '900',
+    creationFee: 100000000n,
   },
 ];

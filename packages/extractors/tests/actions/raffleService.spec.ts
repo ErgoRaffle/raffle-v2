@@ -5,6 +5,13 @@ import { RaffleServiceAction } from '../../lib/actions/raffleService';
 import { createDatabase } from '../utilsFunctions.mock';
 import * as testData from './data.mock';
 
+/*
+ * create fixtures that contains below steps data:
+ *   - create datasource and initial database
+ *   - create action object
+ *   - create repository object
+ * @returns vitest customized "it" object
+ */
 const createRaffleServiceActionTest = async () => {
   const dataSource = await createDatabase();
 
@@ -23,7 +30,7 @@ describe('RaffleServiceAction', () => {
      * @target should insert a nonexistent RaffleService box entity into database
      * @dependencies
      * @scenario
-     * - call insertBoxes function
+     * - insert sample data to the database by calling the insertBoxes method
      * - check if the RaffleService have been saved to database successfully
      * @expected
      * - RaffleService should have been saved to database successfully
@@ -40,8 +47,11 @@ describe('RaffleServiceAction', () => {
 
         const [rows, rowsCount] = await repository.findAndCount();
         expect(rowsCount).toEqual(1);
-        expect(rows[0]).toMatchObject({
-          ...RaffleService,
+        expect(rows[0]).toEqual({
+          ...raffleServices,
+          block: '123',
+          creationFee: 100000000n,
+          height: 1,
           extractor: 'RaffleService',
           spendBlock: null,
           spendHeight: null,
@@ -50,16 +60,17 @@ describe('RaffleServiceAction', () => {
     );
 
     /**
-     * @target should update an existing RaffleService related spend info correctly
+     * @target should update data of an existing RaffleService related spend info correctly
      * @dependencies
      * @scenario
-     * - call spendBoxes
+     * - insert sample data to the database by calling the insertBoxes method
+     * - update some data on the database by calling the insertBoxes method again
      * - check if the RaffleService have been updated in database correctly
      * @expected
      * - RaffleService should have been updated in database correctly
      */
     raffleServiceActionTest(
-      `should update an existing RaffleService correctly`,
+      `should update data of an existing RaffleService related spend info correctly`,
       async ({ repository, action }) => {
         await action.insertBoxes(
           [
@@ -74,34 +85,162 @@ describe('RaffleServiceAction', () => {
           'RaffleService',
         );
 
-        const expectedData = {
-          ...testData.sampleRaffleServiceEntities[1],
-          creationFee: Number(
-            testData.sampleRaffleServiceEntities[1].creationFee,
-          ),
-        };
-        await action.spendBoxes(
+        await action.insertBoxes(
           [
             {
-              boxId: expectedData.boxId,
-              txId: 'tx 2',
-              index: 2,
+              ...testData.sampleRaffleServiceEntities[0],
+              serviceFeePercent: 200,
+              implementerFeePercent: 200,
+              creationFee: 100000000n,
             },
           ],
-          { hash: '123', height: 200 },
-          expectedData.extractor,
+          { hash: '123', height: 1 },
+          'RaffleService',
         );
 
         const [rows, rowCount] = await repository.findAndCount();
 
         expect(rowCount).toEqual(2);
         expect(
-          rows.filter((col) => col.boxId === expectedData.boxId)[0],
+          rows.filter(
+            (col) =>
+              col.boxId === testData.sampleRaffleServiceEntities[0].boxId,
+          )[0],
         ).toMatchObject({
-          ...expectedData,
+          ...testData.sampleRaffleServiceEntities[0],
+          serviceFeePercent: 200,
+          implementerFeePercent: 200,
+          creationFee: 100000000n,
+        });
+      },
+    );
+
+    /**
+     * @target should update spend info of an existing RaffleService related spend info correctly
+     * @dependencies
+     * @scenario
+     * - insert sample data to the database by calling the insertBoxes method
+     * - update some data on the database by calling the spendBoxes method
+     * - check if the RaffleService have been updated in database correctly
+     * @expected
+     * - RaffleService should have been updated in database correctly
+     */
+    raffleServiceActionTest(
+      `should update spend info of an existing RaffleService related spend info correctly`,
+      async ({ repository, action }) => {
+        await action.insertBoxes(
+          [
+            {
+              ...testData.sampleRaffleServiceEntities[0],
+            },
+            {
+              ...testData.sampleRaffleServiceEntities[1],
+            },
+          ],
+          { hash: '123', height: 1 },
+          'RaffleService',
+        );
+
+        await action.spendBoxes(
+          [
+            {
+              boxId: testData.sampleRaffleServiceEntities[1].boxId,
+              txId: 'tx 2',
+              index: 2,
+            },
+          ],
+          { hash: '123', height: 200 },
+          testData.sampleRaffleServiceEntities[1].extractor,
+        );
+
+        const [rows, rowCount] = await repository.findAndCount();
+
+        expect(rowCount).toEqual(2);
+
+        expect(
+          rows.filter(
+            (col) =>
+              col.boxId === testData.sampleRaffleServiceEntities[1].boxId,
+          )[0],
+        ).toMatchObject({
+          ...testData.sampleRaffleServiceEntities[1],
           spendBlock: '123',
           spendHeight: 200,
         });
+      },
+    );
+
+    /**
+     * @target should remove all RaffleService boxes data
+     * @dependencies
+     * @scenario
+     * - insert sample data to the database
+     * - call the removeAllData method of RaffleServiceAction object
+     * - check database for deleted data
+     * @expected
+     * - RaffleService should have been updated in database correctly
+     */
+    raffleServiceActionTest(
+      `should remove all RaffleService boxes data`,
+      async ({ repository, action }) => {
+        await action.insertBoxes(
+          [
+            {
+              ...testData.sampleRaffleServiceEntities[0],
+            },
+            {
+              ...testData.sampleRaffleServiceEntities[1],
+            },
+          ],
+          { hash: '123', height: 1 },
+          'RaffleService',
+        );
+
+        let [, rowCount] = await repository.findAndCount();
+        expect(rowCount).toEqual(2);
+
+        await action.removeAllData();
+
+        [, rowCount] = await repository.findAndCount();
+
+        expect(rowCount).toEqual(0);
+      },
+    );
+
+    /**
+     * @target should delete RaffleService boxes data related to special block
+     * @dependencies
+     * @scenario
+     * - insert sample data to the database
+     * - call the deleteBlockBoxes method of RaffleServiceAction object
+     * - check database for deleted data
+     * @expected
+     * - RaffleService should have been updated in database correctly
+     */
+    raffleServiceActionTest(
+      `should delete RaffleService boxes data related to special block`,
+      async ({ repository, action }) => {
+        await action.insertBoxes(
+          [
+            {
+              ...testData.sampleRaffleServiceEntities[0],
+            },
+            {
+              ...testData.sampleRaffleServiceEntities[1],
+            },
+          ],
+          { hash: '123', height: 1 },
+          'RaffleService',
+        );
+
+        let [, rowCount] = await repository.findAndCount();
+        expect(rowCount).toEqual(2);
+
+        await action.deleteBlockBoxes('123');
+
+        [, rowCount] = await repository.findAndCount();
+
+        expect(rowCount).toEqual(0);
       },
     );
   });

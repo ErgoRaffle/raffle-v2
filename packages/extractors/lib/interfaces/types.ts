@@ -1,3 +1,5 @@
+export { SpendInfo } from '@rosen-bridge/abstract-extractor';
+
 export interface ExtractedBox {
   boxId: string;
   txId: string;
@@ -8,11 +10,5 @@ export interface ExtractedBox {
 export interface RaffleServiceBoxInterface extends ExtractedBox {
   serviceFeePercent: number;
   implementerFeePercent: number;
-  creationFee: string;
-}
-
-export interface SpendInfo {
-  boxId: string;
-  txId: string;
-  index?: number;
+  creationFee: bigint;
 }

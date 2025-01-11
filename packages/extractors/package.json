@@ -10,30 +10,24 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
+    "coverage": "npm run test -- --coverage",
+    "lint": "eslint --fix . && npm run prettify",
+    "prettify": "prettier --write . --ignore-path ./.gitignore",
     "release": "npm run build && npm publish --access public",
-    "type-check": "tsc --noEmit",
     "start": "ts-node src/index.ts",
     "test": "NODE_OPTIONS=--loader=extensionless vitest",
-    "typeorm:generate:sqlite": "npm run typeorm migration:generate ./lib/migrations/sqlite/sqlite -- -p -d ./lib/dataSources/sqlite.ts",
+    "type-check": "tsc --noEmit",
+    "typeorm": "NODE_OPTIONS=--experimental-specifier-resolution=node typeorm-ts-node-esm",
     "typeorm:generate:postgres": "npm run typeorm migration:generate ./lib/migrations/postgres/postgres -- -p -d ./lib/dataSources/postgres.ts",
-    "typeorm:migrate:sqlite": "npm run typeorm migration:run -- -d ./lib/dataSources/sqlite.ts",
+    "typeorm:generate:sqlite": "npm run typeorm migration:generate ./lib/migrations/sqlite/sqlite -- -p -d ./lib/dataSources/sqlite.ts",
     "typeorm:migrate:postgres": "npm run typeorm migration:run -- -d ./lib/dataSources/postgres.ts",
-    "typeorm": "NODE_OPTIONS=--experimental-specifier-resolution=node typeorm-ts-node-esm"
-  },
-  "devDependencies": {
-    "@fleet-sdk/core": "^0.4.1",
-    "@fleet-sdk/mock-chain": "^0.4.2",
-    "@types/lodash-es": "^4.17.12",
-    "@types/node": "^16.11.10",
-    "ts-node": "10.9.1",
-    "typescript": "4.5.2"
-  },
-  "engines": {
-    "node": ">=20.11.0"
+    "typeorm:migrate:sqlite": "npm run typeorm migration:run -- -d ./lib/dataSources/sqlite.ts"
   },
   "dependencies": {
+    "@fleet-sdk/core": "^0.4.1",
     "@rosen-bridge/abstract-extractor": "^0.3.1",
     "@rosen-bridge/abstract-logger": "^2.0.1",
+    "@rosen-bridge/extended-typeorm": "^0.0.3",
     "@rosen-bridge/json-bigint": "^0.1.0",
     "@rosen-bridge/scanner": "^5.0.0",
     "@rosen-bridge/winston-logger": "^1.0.2",
@@ -45,5 +39,23 @@
     "reflect-metadata": "^0.1.14",
     "sqlite3": "^5.1.7",
     "typeorm": "0.3.20"
+  },
+  "devDependencies": {
+    "@fleet-sdk/mock-chain": "^0.4.2",
+    "@types/lodash-es": "^4.17.12",
+    "@types/node": "^20.11.9",
+    "@typescript-eslint/eslint-plugin": "^6.19.1",
+    "@typescript-eslint/parser": "^6.19.1",
+    "@vitest/coverage-istanbul": "^1.2.2",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "extensionless": "^1.9.6",
+    "prettier": "^3.2.4",
+    "ts-node": "10.9.1",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.2"
+  },
+  "engines": {
+    "node": ">=20.11.0"
   }
 }
