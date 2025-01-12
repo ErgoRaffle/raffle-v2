@@ -16,6 +16,7 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
   private readonly dataSource: DataSource;
   readonly logger: AbstractLogger;
   private readonly repository: Repository<RaffleService>;
+  private readonly prefix = 'RaffleService';
 
   constructor(dataSource: DataSource, logger?: AbstractLogger) {
     super();
@@ -34,15 +35,15 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
   insertBoxes = async (
     boxes: Array<RaffleServiceBoxInterface>,
     block: BlockInfo,
-    extractor: string,
+    extractor?: string,
   ) => {
     const entities = boxes.map((box) => ({
       boxId: box.boxId,
       block: block.hash,
-      height: String(block.height),
+      height: block.height,
       txId: box.txId,
       boxSerialized: box.boxSerialized,
-      extractor: extractor,
+      extractor: this.prefix + (extractor ? `-${extractor}` : ''),
       serviceFeePercent: box.serviceFeePercent,
       implementerFeePercent: box.implementerFeePercent,
       creationFee: BigInt(box.creationFee),
@@ -57,7 +58,7 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
         await repository.find({
           where: {
             boxId: In(entities.map((box) => box.boxId)),
-            extractor: extractor,
+            extractor: this.prefix + (extractor ? `-${extractor}` : ''),
           },
           select: {
             boxId: true,
@@ -98,7 +99,10 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
           )}]`,
         );
         await repository.update(
-          { boxId: entity.boxId, extractor: extractor },
+          {
+            boxId: entity.boxId,
+            extractor: this.prefix + (extractor ? `-${extractor}` : ''),
+          },
           entity,
         );
       });
@@ -124,14 +128,17 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
   spendBoxes = async (
     spendInfos: Array<SpendInfo>,
     block: BlockInfo,
-    extractor: string,
+    extractor?: string,
   ): Promise<void> => {
     const spendInfoChunks = chunk(spendInfos, DB_CHUNK_SIZE);
     for (const spendInfoChunk of spendInfoChunks) {
       const boxIds = spendInfoChunk.map((info) => info.boxId);
       const updateResult = await this.repository.update(
-        { boxId: In(boxIds), extractor: extractor },
-        { spendBlock: block.hash, spendHeight: String(block.height) },
+        {
+          boxId: In(boxIds),
+          extractor: this.prefix + (extractor ? `-${extractor}` : ''),
+        },
+        { spendBlock: block.hash, spendHeight: block.height },
       );
 
       if (updateResult.affected && updateResult.affected > 0) {
@@ -150,10 +157,12 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
 
   /**
    * remove all existing data for the extractor
-   * @param extractorId
+   * @param extractor
    */
-  removeAllData = async () => {
-    await this.repository.delete({ extractor: 'RaffleService' });
+  removeAllData = async (extractor: string) => {
+    await this.repository.delete({
+      extractor: this.prefix + (extractor ? `-${extractor}` : ''),
+    });
   };
 
   /**
@@ -161,18 +170,21 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
    * if a box is spend in this block mark it as unspent
    * if a box is created in this block remove it from database
    * @param block
-   * @param extractorId
+   * @param extractor
    */
-  deleteBlockBoxes = async (block: string) => {
+  deleteBlockBoxes = async (block: string, extractor: string) => {
     this.logger.info(
       `Deleting boxes in block ${block} and extractor RaffleService`,
     );
     await this.repository.delete({
-      extractor: 'RaffleService',
+      extractor: this.prefix + (extractor ? `-${extractor}` : ''),
       block: block,
     });
     await this.repository.update(
-      { spendBlock: block, extractor: 'RaffleService' },
+      {
+        spendBlock: block,
+        extractor: this.prefix + (extractor ? `-${extractor}` : ''),
+      },
       { spendBlock: null, spendHeight: undefined },
     );
   };

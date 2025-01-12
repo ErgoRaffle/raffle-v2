@@ -4,17 +4,17 @@ import { Entity, PrimaryColumn, Column } from 'typeorm';
 
 @Entity()
 export class RaffleService {
-  @PrimaryColumn('text')
+  @PrimaryColumn({ type: 'varchar', length: 64 })
   boxId: string;
 
-  @Column('text')
+  @Column({ type: 'varchar', length: 255 })
   extractor: string;
 
   @Column('text')
   boxSerialized: string;
 
   @Column({ type: 'integer' })
-  height: string;
+  height: number;
 
   @Column('text')
   block: string;
@@ -23,7 +23,7 @@ export class RaffleService {
   txId: string;
 
   @Column({ nullable: true, type: 'integer' })
-  spendHeight: string;
+  spendHeight: number;
 
   @Column({ nullable: true, type: 'text' })
   spendBlock: string | null;

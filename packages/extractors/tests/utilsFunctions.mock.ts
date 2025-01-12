@@ -24,18 +24,3 @@ export const createDatabase = async (): Promise<DataSource> => {
   await dataSource.runMigrations();
   return dataSource;
 };
-
-/**
- * cleaning all table of the passed datasource
- * @param dataSource
- */
-export async function clearDB(dataSource: DataSource) {
-  const entities = dataSource.entityMetadatas;
-  for (const entity of entities) {
-    const repository = await dataSource.getRepository(entity.name);
-    await repository.query(`DELETE FROM ${entity.tableName};`);
-    await repository.query(
-      `DELETE FROM SQLITE_SEQUENCE WHERE name='${entity.tableName}';`,
-    );
-  }
-}

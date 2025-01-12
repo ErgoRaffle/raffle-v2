@@ -1,13 +1,13 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class Sqlite1736599914434 implements MigrationInterface {
-  name = 'Sqlite1736599914434';
+export class Postgres1736703911798 implements MigrationInterface {
+  name = 'Postgres1736703911798';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
             CREATE TABLE "raffle_service" (
-                "boxId" text PRIMARY KEY NOT NULL,
-                "extractor" text NOT NULL,
+                "boxId" character varying(64) NOT NULL,
+                "extractor" character varying(255) NOT NULL,
                 "boxSerialized" text NOT NULL,
                 "height" integer NOT NULL,
                 "block" text NOT NULL,
@@ -16,7 +16,8 @@ export class Sqlite1736599914434 implements MigrationInterface {
                 "spendBlock" text,
                 "serviceFeePercent" integer NOT NULL,
                 "implementerFeePercent" integer NOT NULL,
-                "creationFee" bigint NOT NULL
+                "creationFee" bigint NOT NULL,
+                CONSTRAINT "PK_6e064e7253a3bf34ecda2fc3624" PRIMARY KEY ("boxId")
             )
         `);
   }

@@ -99,7 +99,7 @@ describe('RaffleServiceExtractor', () => {
     );
 
     /**
-     * @target should result of hasData method be false by invalid box data
+     * @target should result of hasData method be false by invalid box address
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -109,11 +109,33 @@ describe('RaffleServiceExtractor', () => {
      * - RaffleServices box checking result must be false
      */
     raffleServiceExtractorTest(
-      `should result of hasData method be false by invalid box data`,
+      `should result of hasData method be false by invalid box address`,
       async ({ extractor, boxFalseErgoTree }) => {
         const extractedData = await extractor.hasData({
           ...sampleRaffleServiceBoxes[0],
           ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
+        });
+
+        expect(extractedData).toBeFalsy();
+      },
+    );
+
+    /**
+     * @target should result of hasData method be false by invalid serviceNFT
+     * @dependencies
+     * @scenario
+     * - call the hasData functions
+     * - check if RaffleService box
+     * - result must be false
+     * @expected
+     * - RaffleServices box checking result must be false
+     */
+    raffleServiceExtractorTest(
+      `should result of hasData method be false by invalid box serviceNFT`,
+      async ({ extractor }) => {
+        const extractedData = await extractor.hasData({
+          ...sampleRaffleServiceBoxes[0],
+          assets: [{ tokenId: '0'.repeat(64), amount: 1n }],
         });
 
         expect(extractedData).toBeFalsy();

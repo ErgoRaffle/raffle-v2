@@ -18,7 +18,7 @@ export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<R
   private readonly id: string;
   private readonly networkType: ergoLib.NetworkPrefix;
   private readonly ergoTree?: string;
-  private readonly token: string | undefined;
+  private readonly serviceNFTId: string;
 
   constructor(
     dataSource: DataSource,
@@ -27,7 +27,7 @@ export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<R
     url: string,
     type: ErgoNetworkType,
     address: string,
-    token?: string,
+    serviceNFTId: string,
     logger?: AbstractLogger,
     initialize = true,
   ) {
@@ -37,7 +37,7 @@ export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<R
     this.ergoTree = address
       ? ergoLib.Address.from_base58(address).to_ergo_tree().to_base16_bytes()
       : undefined;
-    this.token = token ? token : undefined;
+    this.serviceNFTId = serviceNFTId;
     this.actions = new RaffleServiceAction(dataSource, this.logger);
   }
 
@@ -52,7 +52,9 @@ export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<R
    * @return true if the box has the required data and false otherwise
    */
   hasData = (box: OutputBox): boolean => {
-    return box.ergoTree == this.ergoTree && boxHasToken(box, [this.token!]);
+    return (
+      box.ergoTree == this.ergoTree && boxHasToken(box, [this.serviceNFTId])
+    );
   };
 
   /**
