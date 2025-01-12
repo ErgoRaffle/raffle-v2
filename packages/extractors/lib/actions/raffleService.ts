@@ -159,7 +159,7 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
    * remove all existing data for the extractor
    * @param extractor
    */
-  removeAllData = async (extractor: string) => {
+  removeAllData = async (extractor?: string) => {
     await this.repository.delete({
       extractor: this.prefix + (extractor ? `-${extractor}` : ''),
     });
@@ -172,7 +172,7 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
    * @param block
    * @param extractor
    */
-  deleteBlockBoxes = async (block: string, extractor: string) => {
+  deleteBlockBoxes = async (block: string, extractor?: string) => {
     this.logger.info(
       `Deleting boxes in block ${block} and extractor RaffleService`,
     );
