@@ -12,3 +12,17 @@ export interface RaffleServiceBoxInterface extends ExtractedBox {
   implementerFeePercent: number;
   creationFee: bigint;
 }
+
+export interface InactiveRaffleBoxInterface extends ExtractedBox {
+  serviceErgoTree: string;
+  implementorErgoTree: string;
+  creatorErgoTree: string;
+  serviceFeePercent: number;
+  implementerFeePercent: number;
+  winnersPercent: number;
+  ticketPrice: bigint;
+  goal: bigint;
+  deadline: number;
+  winnersPercentList: string;
+  txFee: bigint;
+}
