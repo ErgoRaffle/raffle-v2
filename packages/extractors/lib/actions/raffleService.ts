@@ -16,7 +16,6 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
   private readonly dataSource: DataSource;
   readonly logger: AbstractLogger;
   private readonly repository: Repository<RaffleService>;
-  private readonly prefix = 'RaffleService';
 
   constructor(dataSource: DataSource, logger?: AbstractLogger) {
     super();
@@ -35,7 +34,7 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
   insertBoxes = async (
     boxes: Array<RaffleServiceBoxInterface>,
     block: BlockInfo,
-    extractor?: string,
+    extractor: string,
   ) => {
     const entities = boxes.map((box) => ({
       boxId: box.boxId,
@@ -43,7 +42,7 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
       height: block.height,
       txId: box.txId,
       boxSerialized: box.boxSerialized,
-      extractor: this.prefix + (extractor ? `-${extractor}` : ''),
+      extractor: extractor,
       serviceFeePercent: box.serviceFeePercent,
       implementerFeePercent: box.implementerFeePercent,
       creationFee: BigInt(box.creationFee),
@@ -58,7 +57,7 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
         await repository.find({
           where: {
             boxId: In(entities.map((box) => box.boxId)),
-            extractor: this.prefix + (extractor ? `-${extractor}` : ''),
+            extractor: extractor,
           },
           select: {
             boxId: true,
@@ -101,7 +100,7 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
         await repository.update(
           {
             boxId: entity.boxId,
-            extractor: this.prefix + (extractor ? `-${extractor}` : ''),
+            extractor: extractor,
           },
           entity,
         );
@@ -128,7 +127,7 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
   spendBoxes = async (
     spendInfos: Array<SpendInfo>,
     block: BlockInfo,
-    extractor?: string,
+    extractor: string,
   ): Promise<void> => {
     const spendInfoChunks = chunk(spendInfos, DB_CHUNK_SIZE);
     for (const spendInfoChunk of spendInfoChunks) {
@@ -136,7 +135,7 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
       const updateResult = await this.repository.update(
         {
           boxId: In(boxIds),
-          extractor: this.prefix + (extractor ? `-${extractor}` : ''),
+          extractor: extractor,
         },
         { spendBlock: block.hash, spendHeight: block.height },
       );
@@ -161,7 +160,7 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
    */
   removeAllData = async (extractor?: string) => {
     await this.repository.delete({
-      extractor: this.prefix + (extractor ? `-${extractor}` : ''),
+      extractor: extractor,
     });
   };
 
@@ -177,13 +176,13 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
       `Deleting boxes in block ${block} and extractor RaffleService`,
     );
     await this.repository.delete({
-      extractor: this.prefix + (extractor ? `-${extractor}` : ''),
+      extractor: extractor,
       block: block,
     });
     await this.repository.update(
       {
         spendBlock: block,
-        extractor: this.prefix + (extractor ? `-${extractor}` : ''),
+        extractor: extractor,
       },
       { spendBlock: null, spendHeight: undefined },
     );

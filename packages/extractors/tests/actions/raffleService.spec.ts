@@ -25,7 +25,7 @@ const createRaffleServiceActionTest = async () => {
 const raffleServiceActionTest = await createRaffleServiceActionTest();
 
 describe('RaffleServiceAction', () => {
-  describe('insert', () => {
+  describe('insertBoxes', () => {
     /**
      * @target should insert a nonexistent RaffleService box entity into database
      * @dependencies
@@ -56,9 +56,7 @@ describe('RaffleServiceAction', () => {
         });
       },
     );
-  });
 
-  describe('update', () => {
     /**
      * @target should update data of an existing RaffleService correctly
      * @dependencies
@@ -171,7 +169,7 @@ describe('RaffleServiceAction', () => {
     );
   });
 
-  describe('delete', () => {
+  describe('removeAllData', () => {
     /**
      * @target should delete all RaffleService boxes data
      * @dependencies
@@ -208,7 +206,9 @@ describe('RaffleServiceAction', () => {
         expect(rowCount).toEqual(0);
       },
     );
+  });
 
+  describe('deleteBlockBoxes', () => {
     /**
      * @target should delete RaffleService boxes data related to special block
      * @dependencies

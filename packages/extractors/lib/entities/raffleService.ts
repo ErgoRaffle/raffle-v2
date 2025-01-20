@@ -23,7 +23,7 @@ export class RaffleService {
   txId: string;
 
   @Column({ nullable: true, type: 'integer' })
-  spendHeight: number;
+  spendHeight: number | null;
 
   @Column({ nullable: true, type: 'text' })
   spendBlock: string | null;
