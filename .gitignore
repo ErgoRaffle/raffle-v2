@@ -138,3 +138,9 @@ dist
 
 # jetbrains IDEs project files
 .idea/
+
+
+*.sqlite
+*.sqlite3
+**/dataSources/
+packages/try/

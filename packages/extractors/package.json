@@ -19,5 +19,9 @@
   },
   "engines": {
     "node": ">=20.11.0"
+  },
+  "dependencies": {
+    "@rosen-bridge/scanner": "^5.0.0",
+    "typeorm": "^0.3.20"
   }
 }
