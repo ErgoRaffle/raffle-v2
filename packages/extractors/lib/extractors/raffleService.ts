@@ -12,8 +12,12 @@ import {
 import { RaffleServiceAction } from '../actions/raffleService';
 import { RaffleServiceBoxInterface } from '../interfaces/types';
 import JsonBI from '@rosen-bridge/json-bigint';
+import { RaffleService } from '../entities';
 
-export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<RaffleServiceBoxInterface> {
+export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<
+  RaffleServiceBoxInterface,
+  RaffleService
+> {
   readonly actions: RaffleServiceAction;
   private readonly id: string;
   private readonly networkType: ergoLib.NetworkPrefix;
@@ -71,7 +75,7 @@ export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<R
     const data = {
       boxId: ergoBox.box_id().to_str(),
       txId: box.transactionId,
-      boxSerialized: Buffer.from(ergoBox.sigma_serialize_bytes()).toString(
+      serialized: Buffer.from(ergoBox.sigma_serialize_bytes()).toString(
         'base64',
       ),
       serviceFeePercent: R4Serialized[0],

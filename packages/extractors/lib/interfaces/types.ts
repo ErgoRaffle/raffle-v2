@@ -3,7 +3,7 @@ export { SpendInfo } from '@rosen-bridge/abstract-extractor';
 export interface ExtractedBox {
   boxId: string;
   txId: string;
-  boxSerialized: string;
+  serialized: string;
   extractor: string;
 }
 
