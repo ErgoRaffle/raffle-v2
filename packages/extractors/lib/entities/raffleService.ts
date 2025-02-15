@@ -3,7 +3,7 @@ import { AbstractErgoExtractorEntity } from '@rosen-bridge/abstract-extractor';
 
 import { Entity, Column } from 'typeorm';
 
-@Entity()
+@Entity('raffle_service')
 export class RaffleService extends AbstractErgoExtractorEntity {
   @Column({ type: 'varchar', length: 255 })
   txId: string;
