@@ -22,21 +22,9 @@ export class Postgres1739623115850 implements MigrationInterface {
                 CONSTRAINT "PK_5107a6615223ef101ca4488c63f" PRIMARY KEY ("id")
             )
         `);
-    await queryRunner.query(`
-            CREATE TABLE "extractor_status_entity" (
-                "scannerId" character varying NOT NULL,
-                "extractorId" character varying NOT NULL,
-                "updateHeight" integer NOT NULL,
-                "updateBlockHash" character varying NOT NULL,
-                CONSTRAINT "PK_74b8d00f8f0bbfc3814ef77e07e" PRIMARY KEY ("scannerId", "extractorId")
-            )
-        `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`
-            DROP TABLE "extractor_status_entity"
-        `);
     await queryRunner.query(`
             DROP TABLE "raffle_service"
         `);
