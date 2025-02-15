@@ -5,7 +5,7 @@ import { Entity, Column } from 'typeorm';
 
 @Entity()
 export class RaffleService extends AbstractErgoExtractorEntity {
-  @Column('text')
+  @Column({ type: 'varchar', length: 255 })
   txId: string;
 
   @Column('integer')
