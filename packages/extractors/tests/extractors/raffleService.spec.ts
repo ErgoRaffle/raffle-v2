@@ -62,9 +62,9 @@ describe('RaffleServiceExtractor', () => {
         expect(extractedData).toMatchObject({
           boxId: sampleRaffleServiceBoxes[0].boxId,
           txId: sampleRaffleServiceBoxes[0].transactionId,
-          serviceFeePercent: '100',
-          implementerFeePercent: '100',
-          creationFee: '800',
+          serviceFeePercent: 100,
+          implementerFeePercent: 100,
+          creationFee: 800n,
           extractor: 'RaffleService',
         });
       },

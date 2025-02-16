@@ -165,10 +165,11 @@ export class RaffleBoxFactory {
   constructor(
     chainOptions: MockChainOptions,
     trueScripts: ScriptNamesType[] = [],
+    configs?: { [key2: string]: string },
   ) {
     this.trueScripts = trueScripts;
     this.chain = new RaffleMockChain(chainOptions);
-    this.contractsAddresses = initialContracts(trueScripts);
+    this.contractsAddresses = configs || initialContracts(trueScripts);
   }
 
   /**
@@ -339,10 +340,11 @@ export class RaffleBoxFactory {
     creationFee: bigint = CREATION_FEE,
     ticketTokenId: string = TICKET_TOKEN_ID,
     deadline: bigint = 100n,
+    licenseTokenId: string = LICENSE_TOKEN_ID,
   ) {
     const tokens = [
       {
-        tokenId: LICENSE_TOKEN_ID,
+        tokenId: licenseTokenId,
         amount: 1n,
       },
     ];
@@ -427,10 +429,11 @@ export class RaffleBoxFactory {
     deadline: bigint = 100n,
     ticketPrice: bigint = 10n,
     winnersSharePercent: bigint = 200n,
+    licenseTokenId: string = LICENSE_TOKEN_ID,
   ) {
     const tokens = [
       {
-        tokenId: LICENSE_TOKEN_ID,
+        tokenId: licenseTokenId,
         amount: 1n,
       },
     ];
@@ -579,10 +582,11 @@ export class RaffleBoxFactory {
     ticketTokenId: string = TICKET_TOKEN_ID,
     totalSoldTicket: bigint = 0n,
     collectingToken?: TokenAmount<bigint>,
+    licenseTokenId: string = LICENSE_TOKEN_ID,
   ) {
     const tokens = [
       {
-        tokenId: LICENSE_TOKEN_ID,
+        tokenId: licenseTokenId,
         amount: 1n,
       },
       {
