@@ -33,7 +33,6 @@
     "@rosen-bridge/winston-logger": "^1.0.2",
     "@types/json-bigint": "^1.0.4",
     "commander": "^13.0.0",
-    "ergo-lib-wasm-nodejs": "^0.28.0",
     "lodash-es": "^4.17.21",
     "pg": "^8.4.0",
     "reflect-metadata": "^0.1.14",
