@@ -14,7 +14,7 @@ export class Postgres1739623115850 implements MigrationInterface {
                 "spendHeight" integer,
                 "extractor" character varying NOT NULL,
                 "serialized" character varying NOT NULL,
-                "txId" character varying(255) NOT NULL,
+                "txId" character varying NOT NULL,
                 "serviceFeePercent" integer NOT NULL,
                 "implementerFeePercent" integer NOT NULL,
                 "creationFee" bigint NOT NULL,
