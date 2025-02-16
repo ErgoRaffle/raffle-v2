@@ -2,7 +2,7 @@ import { Entity, Column } from 'typeorm';
 import { BigIntValueTransformer } from '@rosen-bridge/extended-typeorm';
 import { AbstractErgoExtractorEntity } from '@rosen-bridge/abstract-extractor';
 
-@Entity()
+@Entity('inactive_raffle')
 export class InactiveRaffle extends AbstractErgoExtractorEntity {
   @Column({ type: 'varchar', length: 255 })
   txId: string;
