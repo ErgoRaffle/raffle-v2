@@ -6,17 +6,19 @@ export class Sqlite1736703916775 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
             CREATE TABLE "raffle_service" (
-                "boxId" varchar(64) PRIMARY KEY NOT NULL,
-                "extractor" varchar(255) NOT NULL,
-                "boxSerialized" text NOT NULL,
+                "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+                "boxId" varchar NOT NULL,
+                "block" varchar NOT NULL,
                 "height" integer NOT NULL,
-                "block" text NOT NULL,
-                "txId" text NOT NULL,
+                "spendBlock" varchar,
                 "spendHeight" integer,
-                "spendBlock" text,
+                "extractor" varchar NOT NULL,
+                "serialized" varchar NOT NULL,
+                "txId" text NOT NULL,
                 "serviceFeePercent" integer NOT NULL,
                 "implementerFeePercent" integer NOT NULL,
-                "creationFee" bigint NOT NULL
+                "creationFee" bigint NOT NULL,
+                CONSTRAINT "UQ_e25fd5268f192a7a6cc6617957b" UNIQUE ("boxId", "extractor")
             )
         `);
   }

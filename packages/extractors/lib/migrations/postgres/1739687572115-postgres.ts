@@ -1,19 +1,20 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class Postgres1736705568860 implements MigrationInterface {
-  name = 'Postgres1736705568860';
+export class Postgres1739687572115 implements MigrationInterface {
+  name = 'Postgres1739687572115';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
             CREATE TABLE "inactive_raffle" (
-                "boxId" character varying(64) NOT NULL,
-                "extractor" character varying(255) NOT NULL,
-                "boxSerialized" text NOT NULL,
+                "id" SERIAL NOT NULL,
+                "boxId" character varying NOT NULL,
+                "block" character varying NOT NULL,
                 "height" integer NOT NULL,
-                "block" text NOT NULL,
-                "txId" text NOT NULL,
+                "spendBlock" character varying,
                 "spendHeight" integer,
-                "spendBlock" text,
+                "extractor" character varying NOT NULL,
+                "serialized" character varying NOT NULL,
+                "txId" character varying(255) NOT NULL,
                 "serviceErgoTree" text NOT NULL,
                 "implementorErgoTree" text NOT NULL,
                 "creatorErgoTree" text NOT NULL,
@@ -25,7 +26,8 @@ export class Postgres1736705568860 implements MigrationInterface {
                 "deadline" integer NOT NULL,
                 "winnersPercentList" text NOT NULL,
                 "txFee" bigint NOT NULL,
-                CONSTRAINT "PK_6b8699dc1bd049777584b52bbb2" PRIMARY KEY ("boxId")
+                CONSTRAINT "UQ_4a8f47d5384df37b669cdbb33b6" UNIQUE ("boxId", "extractor"),
+                CONSTRAINT "PK_d594769fc6ec16d6a0f74db6831" PRIMARY KEY ("id")
             )
         `);
   }
