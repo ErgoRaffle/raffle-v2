@@ -11,8 +11,12 @@ import {
 import { InactiveRaffleAction } from '../actions/inactiveRaffle';
 import { InactiveRaffleBoxInterface } from '../interfaces/types';
 import JsonBI from '@rosen-bridge/json-bigint';
+import { InactiveRaffle } from '../entities';
 
-export class InactiveRaffleExtractor extends AbstractInitializableErgoExtractor<InactiveRaffleBoxInterface> {
+export class InactiveRaffleExtractor extends AbstractInitializableErgoExtractor<
+  InactiveRaffleBoxInterface,
+  InactiveRaffle
+> {
   readonly actions: InactiveRaffleAction;
   private readonly id: string;
   private readonly networkType: ergoLib.NetworkPrefix;
@@ -84,7 +88,7 @@ export class InactiveRaffleExtractor extends AbstractInitializableErgoExtractor<
     const data = {
       boxId: ergoBox.box_id().to_str(),
       txId: box.transactionId,
-      boxSerialized: Buffer.from(ergoBox.sigma_serialize_bytes()).toString(
+      serialized: Buffer.from(ergoBox.sigma_serialize_bytes()).toString(
         'base64',
       ),
       extractor: this.id,

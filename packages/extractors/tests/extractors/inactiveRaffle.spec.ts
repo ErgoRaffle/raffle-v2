@@ -72,7 +72,7 @@ describe('InactiveRaffleExtractor', () => {
         expect(extractedData).toEqual({
           boxId: sampleInactiveRaffleBoxes[0].boxId,
           txId: sampleInactiveRaffleBoxes[0].transactionId,
-          boxSerialized:
+          serialized:
             'wIQ9GQYBAQHRcwBkASIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIi' +
             'AQURB5ADyAHIAcCaDICJetAPsOoBGgMgsyiS4NtDjteZCvL2Fhr1TQ7+2cWgkoCs732QLXNLM/' +
             'AgdB4lw40FQMbZocnIcAh7X0IaZt6MSmb6yE1cDfJZGHogXH9xiMrF43Y0Ndj/FhjuAMMPnqgU' +

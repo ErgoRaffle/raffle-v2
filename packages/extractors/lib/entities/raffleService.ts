@@ -1,31 +1,12 @@
-import { Entity, PrimaryColumn, Column } from 'typeorm';
 import { BigIntValueTransformer } from '@rosen-bridge/extended-typeorm';
+import { AbstractErgoExtractorEntity } from '@rosen-bridge/abstract-extractor';
 
-@Entity()
-export class RaffleService {
-  @PrimaryColumn({ type: 'varchar', length: 64 })
-  boxId: string;
+import { Entity, Column } from 'typeorm';
 
+@Entity('raffle_service')
+export class RaffleService extends AbstractErgoExtractorEntity {
   @Column({ type: 'varchar', length: 255 })
-  extractor: string;
-
-  @Column('text')
-  boxSerialized: string;
-
-  @Column({ type: 'integer' })
-  height: number;
-
-  @Column('text')
-  block: string;
-
-  @Column('text')
   txId: string;
-
-  @Column({ nullable: true, type: 'integer' })
-  spendHeight: number;
-
-  @Column({ nullable: true, type: 'text' })
-  spendBlock: string | null;
 
   @Column('integer')
   serviceFeePercent: number;

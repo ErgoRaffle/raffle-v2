@@ -1,166 +1,79 @@
-import { DataSource, In, Repository } from 'typeorm';
-import { chunk, difference } from 'lodash-es';
+import { DataSource, Repository } from 'typeorm';
 import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
 import {
   AbstractInitializableErgoExtractorAction,
-  SpendInfo,
-  DB_CHUNK_SIZE,
   BlockInfo,
 } from '@rosen-bridge/abstract-extractor';
-import JsonBigInt from '@rosen-bridge/json-bigint';
 
 import { InactiveRaffleBoxInterface } from '../interfaces/types';
 import { InactiveRaffle } from '../entities';
 
-export class InactiveRaffleAction extends AbstractInitializableErgoExtractorAction<InactiveRaffleBoxInterface> {
+export class InactiveRaffleAction extends AbstractInitializableErgoExtractorAction<
+  InactiveRaffleBoxInterface,
+  InactiveRaffle
+> {
   private readonly dataSource: DataSource;
   readonly logger: AbstractLogger;
-  private readonly repository: Repository<InactiveRaffle>;
+  public repository: Repository<InactiveRaffle>;
   private readonly prefix = 'InactiveRaffle';
 
   constructor(dataSource: DataSource, logger?: AbstractLogger) {
-    super();
+    super(dataSource, InactiveRaffle, logger);
     this.dataSource = dataSource;
     this.logger = logger ? logger : new DummyLogger();
     this.repository = dataSource.getRepository(InactiveRaffle);
   }
 
-  /**
-   * insert all extracted box data in an atomic transaction
-   * @param boxes
-   * @param block
-   * @param extractor
-   * @return success
-   */
-  insertBoxes = async (
-    boxes: Array<InactiveRaffleBoxInterface>,
+  createEntity = (
+    boxes: InactiveRaffleBoxInterface[],
     block: BlockInfo,
-    extractor?: string,
-  ) => {
-    const entities: InactiveRaffleBoxInterface[] = boxes.map((box) => ({
-      boxId: box.boxId,
-      block: block.hash,
-      height: String(block.height),
-      txId: box.txId,
-      boxSerialized: box.boxSerialized,
-      extractor: this.prefix + (extractor ? `-${extractor}` : ''),
-      serviceErgoTree: box.serviceErgoTree,
-      implementorErgoTree: box.implementorErgoTree,
-      creatorErgoTree: box.creatorErgoTree,
-      serviceFeePercent: box.serviceFeePercent,
-      implementerFeePercent: box.implementerFeePercent,
-      winnersPercent: box.winnersPercent,
-      ticketPrice: box.ticketPrice,
-      goal: box.goal,
-      deadline: box.deadline,
-      winnersPercentList: box.winnersPercentList,
-      txFee: box.txFee,
-    }));
-
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-    const repository = await queryRunner.manager.getRepository(InactiveRaffle);
-    try {
-      const existingBoxIds = (
-        await repository.find({
-          where: {
-            boxId: In(entities.map((box) => box.boxId)),
-            extractor: this.prefix + (extractor ? `-${extractor}` : ''),
-          },
-          select: {
-            boxId: true,
-          },
-        })
-      ).map((entity) => entity.boxId);
-
-      const entitiesToUpdate = entities.filter((entity) =>
-        existingBoxIds.includes(entity.boxId),
-      );
-
-      const entitiesToInsert = difference(entities, entitiesToUpdate);
-
-      if (entitiesToInsert.length > 0) {
-        this.logger.info(
-          `Inserting boxes with following IDs into the database: [${entitiesToInsert
-            .map((col) => col.boxId)
-            .join(', ')}]`,
-        );
-        this.logger.debug(
-          `Inserting InactiveRaffle boxes [${JsonBigInt.stringify(
-            entitiesToInsert,
-          )}]`,
-        );
-        await repository.insert(entitiesToInsert);
-      }
-
-      if (entitiesToUpdate.length > 0)
-        this.logger.info(
-          `Updating boxes with following IDs in the database: [${entitiesToUpdate
-            .map((col) => col.boxId)
-            .join(', ')}]`,
-        );
-      entitiesToUpdate.forEach(async (entity: InactiveRaffleBoxInterface) => {
-        this.logger.debug(
-          `Updating InactiveRaffle box in database [${JsonBigInt.stringify(
-            entity,
-          )}]`,
-        );
-        await repository.update(
-          {
-            boxId: entity.boxId,
-            extractor: this.prefix + (extractor ? `-${extractor}` : ''),
-          },
-          entity,
-        );
-      });
-
-      await queryRunner.commitTransaction();
-    } catch (e) {
-      this.logger.error(`An error occurred during store boxes action: ${e}`);
-      await queryRunner.rollbackTransaction();
-      return false;
-    } finally {
-      await queryRunner.release();
-    }
-    return true;
+    extractor: string,
+  ): Omit<InactiveRaffle, 'id'>[] => {
+    return boxes.map((box) => {
+      return {
+        boxId: box.boxId,
+        block: block.hash,
+        height: block.height,
+        serialized: box.serialized,
+        extractor: extractor,
+        txId: box.txId,
+        serviceErgoTree: box.serviceErgoTree,
+        implementorErgoTree: box.implementorErgoTree,
+        creatorErgoTree: box.creatorErgoTree,
+        serviceFeePercent: box.serviceFeePercent,
+        implementerFeePercent: box.implementerFeePercent,
+        winnersPercent: box.winnersPercent,
+        ticketPrice: box.ticketPrice,
+        goal: box.goal,
+        deadline: box.deadline,
+        winnersPercentList: box.winnersPercentList,
+        txFee: box.txFee,
+      };
+    });
   };
 
-  /**
-   * update spending information of stored boxes
-   * chunk spendInfos to prevent large database queries
-   * @param spendInfos
-   * @param block
-   * @param extractor
-   */
-  spendBoxes = async (
-    spendInfos: Array<SpendInfo>,
-    block: BlockInfo,
-    extractor?: string,
-  ): Promise<void> => {
-    const spendInfoChunks = chunk(spendInfos, DB_CHUNK_SIZE);
-    for (const spendInfoChunk of spendInfoChunks) {
-      const boxIds = spendInfoChunk.map((info) => info.boxId);
-      const updateResult = await this.repository.update(
-        {
-          boxId: In(boxIds),
-          extractor: this.prefix + (extractor ? `-${extractor}` : ''),
-        },
-        { spendBlock: block.hash, spendHeight: block.height },
-      );
-
-      if (updateResult.affected && updateResult.affected > 0) {
-        const spentRows = await this.repository.findBy({
-          boxId: In(boxIds),
-          spendBlock: block.hash,
-        });
-        for (const row of spentRows) {
-          this.logger.debug(
-            `Spent box with boxId [${row.boxId}] at height ${block.height}`,
-          );
-        }
-      }
-    }
+  convertEntityToData = (
+    entities: InactiveRaffle[],
+  ): InactiveRaffleBoxInterface[] => {
+    return entities.map((data) => ({
+      boxId: data.boxId,
+      block: data.block,
+      height: data.height,
+      serialized: data.serialized,
+      extractor: data.extractor,
+      txId: data.txId,
+      serviceErgoTree: data.serviceErgoTree,
+      implementorErgoTree: data.implementorErgoTree,
+      creatorErgoTree: data.creatorErgoTree,
+      serviceFeePercent: data.serviceFeePercent,
+      implementerFeePercent: data.implementerFeePercent,
+      winnersPercent: data.winnersPercent,
+      ticketPrice: data.ticketPrice,
+      goal: data.goal,
+      deadline: data.deadline,
+      winnersPercentList: data.winnersPercentList,
+      txFee: data.txFee,
+    }));
   };
 
   /**
@@ -171,29 +84,5 @@ export class InactiveRaffleAction extends AbstractInitializableErgoExtractorActi
     await this.repository.delete({
       extractor: this.prefix + (extractor ? `-${extractor}` : ''),
     });
-  };
-
-  /**
-   * delete extracted data from a specific block
-   * if a box is spend in this block mark it as unspent
-   * if a box is created in this block remove it from database
-   * @param block
-   * @param extractor
-   */
-  deleteBlockBoxes = async (block: string, extractor?: string) => {
-    this.logger.info(
-      `Deleting boxes in block ${block} and extractor InactiveRaffle`,
-    );
-    await this.repository.delete({
-      extractor: this.prefix + (extractor ? `-${extractor}` : ''),
-      block: block,
-    });
-    await this.repository.update(
-      {
-        spendBlock: block,
-        extractor: this.prefix + (extractor ? `-${extractor}` : ''),
-      },
-      { spendBlock: null, spendHeight: undefined },
-    );
   };
 }

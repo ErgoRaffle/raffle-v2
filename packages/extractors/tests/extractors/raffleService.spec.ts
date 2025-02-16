@@ -63,7 +63,7 @@ describe('RaffleServiceExtractor', () => {
         expect(extractedData).toMatchObject({
           boxId: sampleRaffleServiceBoxes[0].boxId,
           txId: sampleRaffleServiceBoxes[0].transactionId,
-          boxSerialized:
+          serialized:
             'wIQ9GQYBAQHRcwBkAhERERERERERERERERERERERERERERERERERERERERERAS' +
             'IiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiwIQ9AhEEyAHIAcAM4KcSDiAf3qYMD6+' +
             '4oyUk249AGdtnsSpixJ9LlcFLeJAt4uzUvAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ==',

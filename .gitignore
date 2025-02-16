@@ -141,5 +141,5 @@ dist
 .idea/
 
 
-# ignore try-package files
+**/dataSources/
 packages/try/
