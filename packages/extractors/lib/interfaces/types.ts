@@ -26,3 +26,9 @@ export interface InactiveRaffleBoxInterface extends ExtractedBox {
   winnersPercentList: string;
   txFee: bigint;
 }
+
+export interface ActiveRaffleBoxInterface extends ExtractedBox {
+  raffleId: string;
+}
+export type GiftTokenRepoBoxInterface = ActiveRaffleBoxInterface;
+export type TicketRepoBoxInterface = ActiveRaffleBoxInterface;

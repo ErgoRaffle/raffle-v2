@@ -104,3 +104,84 @@ export const sampleInactiveRaffleBoxes: OutputBox[] = [
     },
   },
 ];
+
+export const sampleActiveRaffleBoxes: OutputBox[] = [
+  {
+    boxId: '80ee753a8e22eef579fe30f9fbee89d39d7ba87ee1c5158157e62cc898f9ac1c',
+    value: 1105000000n,
+    ergoTree: '1906010101d17300',
+    creationHeight: 1615918,
+    assets: [
+      {
+        tokenId:
+          '716149d5c68e4ea1ea0529b60c7029797ffb26f3d401d44f9aadd4b090593e4e',
+        amount: 1n,
+      },
+      {
+        tokenId:
+          'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
+        amount: 999999998n,
+      },
+    ],
+    additionalRegisters: {
+      R4: '11079003c801c80180dac409d00fe6a0c5018087a70e',
+      R5: '1a0320edb662d009b16812a2bd2ffd1b926b965d62040ade9241fdc4b88237a99dfebe20b894faef6f944647dac930d195680808a3fd7c660308196f2a0f4e94dc8c0fa820d217c8109e3bb5535c96d04875649efdb07b211b59bd0d1c62681baa8b8e0f11',
+      R6: '0402',
+      R7: '0500',
+    },
+    transactionId:
+      '36dbda203d2143a51957941d7a3fa588795921c866ff4075e3ee6e991f0c62d5',
+    index: 0,
+  },
+];
+
+export const sampleGiftTokenRepo: OutputBox[] = [
+  {
+    boxId: 'b2700f7673ca635c05a1835f91409f9d0b2d1bdc24a7539fefe64c734025b3bd',
+    value: 15000000n,
+    ergoTree: '1906010101d17300',
+    creationHeight: 1615918,
+    assets: [
+      {
+        tokenId:
+          '8f40a92f22809452ea0bc8193315f6c3dabbcba0defe6cd93fa2444fc564ff0a',
+        amount: 2000n,
+      },
+    ],
+    additionalRegisters: {
+      R4: '100102',
+      R5: '100104',
+      R6: '100106',
+      R7: '1102a01f8087a70e',
+      R8: '0e20d29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
+      R9: '10020202',
+    },
+    transactionId:
+      '36dbda203d2143a51957941d7a3fa588795921c866ff4075e3ee6e991f0c62d5',
+    index: 2,
+  },
+];
+
+export const sampleTicketRepo: OutputBox[] = [
+  {
+    boxId: '157fa1823781aab72939019ed39b6286b62b81a236efa7b5378e4436894be718',
+    value: 15000000n,
+    ergoTree: '1906010101d17300',
+    creationHeight: 1615918,
+    assets: [
+      {
+        tokenId:
+          'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
+        amount: 1000000000n,
+      },
+    ],
+    additionalRegisters: {
+      R4: '0e0f5469636b65745265706f546f6b656e',
+      R5: '0e00',
+      R6: '0e0130',
+    },
+    transactionId:
+      '10507382cec223dcd93d14c13009ddcbb3585d139a26ac9eb97a2b0be4c636d2',
+    index: 1,
+  },
+];
