@@ -1,11 +1,11 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class Sqlite1736703916775 implements MigrationInterface {
-  name = 'Sqlite1736703916775';
+export class Sqlite1739711375567 implements MigrationInterface {
+  name = 'Sqlite1739711375567';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-            CREATE TABLE "raffle_service" (
+            CREATE TABLE "inactive_raffle" (
                 "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
                 "boxId" varchar NOT NULL,
                 "block" varchar NOT NULL,
@@ -14,18 +14,26 @@ export class Sqlite1736703916775 implements MigrationInterface {
                 "spendHeight" integer,
                 "extractor" varchar NOT NULL,
                 "serialized" varchar NOT NULL,
-                "txId" text NOT NULL,
+                "txId" varchar NOT NULL,
+                "serviceErgoTree" varchar NOT NULL,
+                "implementorErgoTree" varchar NOT NULL,
+                "creatorErgoTree" varchar NOT NULL,
                 "serviceFeePercent" integer NOT NULL,
                 "implementerFeePercent" integer NOT NULL,
-                "creationFee" bigint NOT NULL,
-                CONSTRAINT "UQ_e25fd5268f192a7a6cc6617957b" UNIQUE ("boxId", "extractor")
+                "winnersPercent" integer NOT NULL,
+                "ticketPrice" bigint NOT NULL,
+                "goal" bigint NOT NULL,
+                "deadline" integer NOT NULL,
+                "winnersPercentList" varchar NOT NULL,
+                "txFee" bigint NOT NULL,
+                CONSTRAINT "UQ_4a8f47d5384df37b669cdbb33b6" UNIQUE ("boxId", "extractor")
             )
         `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-            DROP TABLE "raffle_service"
+            DROP TABLE "inactive_raffle"
         `);
   }
 }

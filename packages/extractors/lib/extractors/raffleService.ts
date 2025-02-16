@@ -1,6 +1,4 @@
 import { DataSource } from 'typeorm';
-import * as ergoLib from 'ergo-lib-wasm-nodejs';
-import { Buffer } from 'buffer';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import {
   AbstractInitializableErgoExtractor,
@@ -11,8 +9,9 @@ import {
 
 import { RaffleServiceAction } from '../actions/raffleService';
 import { RaffleServiceBoxInterface } from '../interfaces/types';
-import JsonBI from '@rosen-bridge/json-bigint';
 import { RaffleService } from '../entities';
+import { ErgoAddress, Box, Network } from '@fleet-sdk/core';
+import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 
 export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<
   RaffleServiceBoxInterface,
@@ -20,14 +19,14 @@ export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<
 > {
   readonly actions: RaffleServiceAction;
   private readonly id: string;
-  private readonly networkType: ergoLib.NetworkPrefix;
+  private readonly networkType: Network;
   private readonly ergoTree?: string;
   private readonly serviceNFTId: string;
 
   constructor(
     dataSource: DataSource,
     id: string,
-    networkType: ergoLib.NetworkPrefix,
+    networkType: Network,
     url: string,
     type: ErgoNetworkType,
     address: string,
@@ -39,7 +38,7 @@ export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<
     this.id = id;
     this.networkType = networkType;
     this.ergoTree = address
-      ? ergoLib.Address.from_base58(address).to_ergo_tree().to_base16_bytes()
+      ? ErgoAddress.fromBase58(address).ergoTree.toString()
       : undefined;
     this.serviceNFTId = serviceNFTId;
     this.actions = new RaffleServiceAction(dataSource, this.logger);
@@ -67,19 +66,17 @@ export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<
    * @return extracted data in proper format
    */
   extractBoxData = (box: OutputBox): RaffleServiceBoxInterface | undefined => {
-    const ergoBox = ergoLib.ErgoBox.from_json(JsonBI.stringify(box));
-    const R4Serialized = ergoBox
-      .register_value(ergoLib.NonMandatoryRegisterId.R4)!
-      .to_i64_str_array();
-
+    const ergoBox = box as Box;
+    const R4Serialized = SConstant.from(ergoBox.additionalRegisters.R4!)
+      .data as bigint[];
     const data = {
-      boxId: ergoBox.box_id().to_str(),
-      txId: box.transactionId,
-      serialized: Buffer.from(ergoBox.sigma_serialize_bytes()).toString(
+      boxId: ergoBox.boxId.toString(),
+      txId: ergoBox.transactionId,
+      serialized: Buffer.from(serializeBox(ergoBox).toBytes()).toString(
         'base64',
       ),
-      serviceFeePercent: R4Serialized[0],
-      implementerFeePercent: R4Serialized[1],
+      serviceFeePercent: Number(R4Serialized[0]),
+      implementerFeePercent: Number(R4Serialized[1]),
       creationFee: R4Serialized[2],
       extractor: this.id,
     };

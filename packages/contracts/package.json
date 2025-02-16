@@ -35,6 +35,7 @@
   },
   "dependencies": {
     "@fleet-sdk/compiler": "^0.4.2",
+    "@fleet-sdk/serializer": "^0.4.1",
     "commander": "^12.0.0",
     "extensionless": "^1.9.6",
     "sigmastate-js": "^0.4.6",

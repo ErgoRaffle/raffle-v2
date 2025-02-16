@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest';
-import { NetworkPrefix } from 'ergo-lib-wasm-nodejs';
 import { Network } from '@fleet-sdk/core';
 import { compile } from '@fleet-sdk/compiler';
 import { ErgoNetworkType } from '@rosen-bridge/scanner';
@@ -34,7 +33,7 @@ const createInactiveRaffleExtractorTest = async () => {
     extractor: new InactiveRaffleExtractor(
       dataSource,
       'InactiveRaffle',
-      NetworkPrefix.Testnet,
+      Network.Testnet,
       'http://127.0.0.1/',
       ErgoNetworkType.Node,
       boxErgoTree.toAddress(Network.Testnet).toString(),

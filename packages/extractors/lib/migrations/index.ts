@@ -1,11 +1,11 @@
 // sqlite migrations
-import { Sqlite1736703916775 } from '../migrations/sqlite/1736703916775-sqlite';
-import { Sqlite1739687566209 } from '../migrations/sqlite/1739687566209-sqlite';
+import { Sqlite1739696777998 } from '../migrations/sqlite/1739696777998-sqlite';
+import { Sqlite1739711375567 } from '../migrations/sqlite/1739711375567-sqlite';
 // postgres migrations
 import { Postgres1739623115850 } from '../migrations/postgres/1739623115850-postgres';
-import { Postgres1739687572115 } from '../migrations/postgres/1739687572115-postgres';
+import { Postgres1739711977993 } from '../migrations/postgres/1739711977993-postgres';
 
 export const migrations = {
-  sqlite: [Sqlite1736703916775, Sqlite1739687566209],
-  postgres: [Postgres1739623115850, Postgres1739687572115],
+  sqlite: [Sqlite1739696777998, Sqlite1739711375567],
+  postgres: [Postgres1739623115850, Postgres1739711977993],
 };

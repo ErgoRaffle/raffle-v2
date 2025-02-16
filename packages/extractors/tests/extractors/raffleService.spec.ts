@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest';
-import { NetworkPrefix } from 'ergo-lib-wasm-nodejs';
 import { Network } from '@fleet-sdk/core';
 import { ErgoNetworkType } from '@rosen-bridge/scanner';
 import { compile } from '@fleet-sdk/compiler';
@@ -29,7 +28,7 @@ const createRaffleServiceExtractorTest = async () => {
     extractor: new RaffleServiceExtractor(
       dataSource,
       'RaffleService',
-      NetworkPrefix.Testnet,
+      Network.Testnet,
       'http://127.0.0.1/',
       ErgoNetworkType.Node,
       boxErgoTree.toAddress(Network.Testnet).toString(),
@@ -63,13 +62,9 @@ describe('RaffleServiceExtractor', () => {
         expect(extractedData).toMatchObject({
           boxId: sampleRaffleServiceBoxes[0].boxId,
           txId: sampleRaffleServiceBoxes[0].transactionId,
-          serialized:
-            'wIQ9GQYBAQHRcwBkAhERERERERERERERERERERERERERERERERERERERERERAS' +
-            'IiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiwIQ9AhEEyAHIAcAM4KcSDiAf3qYMD6+' +
-            '4oyUk249AGdtnsSpixJ9LlcFLeJAt4uzUvAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ==',
-          serviceFeePercent: '100',
-          implementerFeePercent: '100',
-          creationFee: '800',
+          serviceFeePercent: 100,
+          implementerFeePercent: 100,
+          creationFee: 800n,
           extractor: 'RaffleService',
         });
       },

@@ -4,16 +4,16 @@ import { AbstractErgoExtractorEntity } from '@rosen-bridge/abstract-extractor';
 
 @Entity('inactive_raffle')
 export class InactiveRaffle extends AbstractErgoExtractorEntity {
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar' })
   txId: string;
 
-  @Column('text')
+  @Column({ type: 'varchar' })
   serviceErgoTree: string;
 
-  @Column('text')
+  @Column({ type: 'varchar' })
   implementorErgoTree: string;
 
-  @Column('text')
+  @Column({ type: 'varchar' })
   creatorErgoTree: string;
 
   @Column('integer')
@@ -34,7 +34,7 @@ export class InactiveRaffle extends AbstractErgoExtractorEntity {
   @Column('integer')
   deadline: number;
 
-  @Column('text')
+  @Column({ type: 'varchar' })
   winnersPercentList: string;
 
   @Column({ type: 'bigint', transformer: new BigIntValueTransformer() })

@@ -1,6 +1,4 @@
 import { DataSource } from 'typeorm';
-import * as ergoLib from 'ergo-lib-wasm-nodejs';
-import { Buffer } from 'buffer';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import {
   AbstractInitializableErgoExtractor,
@@ -10,8 +8,9 @@ import {
 
 import { InactiveRaffleAction } from '../actions/inactiveRaffle';
 import { InactiveRaffleBoxInterface } from '../interfaces/types';
-import JsonBI from '@rosen-bridge/json-bigint';
 import { InactiveRaffle } from '../entities';
+import { Box, ErgoAddress, Network } from '@fleet-sdk/core';
+import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 
 export class InactiveRaffleExtractor extends AbstractInitializableErgoExtractor<
   InactiveRaffleBoxInterface,
@@ -19,7 +18,7 @@ export class InactiveRaffleExtractor extends AbstractInitializableErgoExtractor<
 > {
   readonly actions: InactiveRaffleAction;
   private readonly id: string;
-  private readonly networkType: ergoLib.NetworkPrefix;
+  private readonly networkType: Network;
   private readonly ergoTree?: string;
   private readonly licenseTokenId: string;
   private readonly serviceErgoTree: string;
@@ -30,7 +29,7 @@ export class InactiveRaffleExtractor extends AbstractInitializableErgoExtractor<
   constructor(
     dataSource: DataSource,
     id: string,
-    networkType: ergoLib.NetworkPrefix,
+    networkType: Network,
     url: string,
     type: ErgoNetworkType,
     address: string,
@@ -47,7 +46,7 @@ export class InactiveRaffleExtractor extends AbstractInitializableErgoExtractor<
     this.licenseTokenId = licenseTokenId;
     this.networkType = networkType;
     this.ergoTree = address
-      ? ergoLib.Address.from_base58(address).to_ergo_tree().to_base16_bytes()
+      ? ErgoAddress.fromBase58(address).ergoTree.toString()
       : undefined;
     this.actions = new InactiveRaffleAction(dataSource, this.logger);
     this.serviceErgoTree = serviceErgoTree;
@@ -80,27 +79,26 @@ export class InactiveRaffleExtractor extends AbstractInitializableErgoExtractor<
    * @return extracted data in proper format
    */
   extractBoxData = (box: OutputBox): InactiveRaffleBoxInterface | undefined => {
-    const ergoBox = ergoLib.ErgoBox.from_json(JsonBI.stringify(box));
-    const R4Serialized = ergoBox
-      .register_value(ergoLib.NonMandatoryRegisterId.R4)!
-      .to_i64_str_array();
+    const ergoBox = box as Box;
+    const R4Serialized = SConstant.from(ergoBox.additionalRegisters.R4!)
+      .data as bigint[];
 
     const data = {
-      boxId: ergoBox.box_id().to_str(),
+      boxId: ergoBox.boxId.toString(),
       txId: box.transactionId,
-      serialized: Buffer.from(ergoBox.sigma_serialize_bytes()).toString(
+      serialized: Buffer.from(serializeBox(ergoBox).toBytes()).toString(
         'base64',
       ),
       extractor: this.id,
       serviceErgoTree: this.serviceErgoTree,
       implementorErgoTree: this.implementorErgoTree,
       creatorErgoTree: this.creatorErgoTree,
-      winnersPercent: R4Serialized[0],
-      serviceFeePercent: R4Serialized[1],
-      implementerFeePercent: R4Serialized[2],
+      winnersPercent: Number(R4Serialized[0]),
+      serviceFeePercent: Number(R4Serialized[1]),
+      implementerFeePercent: Number(R4Serialized[2]),
       ticketPrice: R4Serialized[3],
       goal: R4Serialized[4],
-      deadline: R4Serialized[5],
+      deadline: Number(R4Serialized[5]),
       winnersPercentList: this.winnersPercentList,
       txFee: R4Serialized[6],
     };
