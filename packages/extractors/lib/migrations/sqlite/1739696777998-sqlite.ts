@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class Sqlite1736703916775 implements MigrationInterface {
-  name = 'Sqlite1736703916775';
+export class Sqlite1739696777998 implements MigrationInterface {
+  name = 'Sqlite1739696777998';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
@@ -14,7 +14,7 @@ export class Sqlite1736703916775 implements MigrationInterface {
                 "spendHeight" integer,
                 "extractor" varchar NOT NULL,
                 "serialized" varchar NOT NULL,
-                "txId" text NOT NULL,
+                "txId" varchar NOT NULL,
                 "serviceFeePercent" integer NOT NULL,
                 "implementerFeePercent" integer NOT NULL,
                 "creationFee" bigint NOT NULL,
