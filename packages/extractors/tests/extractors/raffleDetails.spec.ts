@@ -62,8 +62,6 @@ describe('RaffleDetailsExtractor', () => {
           sampleRaffleDetailsBoxes[0],
         );
 
-        expect(await dataSource.manager.count(Picture)).toEqual(3);
-
         expect(extractedData).toEqual({
           boxId: sampleRaffleDetailsBoxes[0].boxId,
           txId: sampleRaffleDetailsBoxes[0].transactionId,
@@ -78,6 +76,8 @@ describe('RaffleDetailsExtractor', () => {
             'EXBpY3R1cmUgY29udGVudCAyEXBpY3R1cmUgY29udGVudCAzNtvaID0hQ6UZV5Qd' +
             'ej+liHlZIchm/0B14+5umR8MYtUB',
         });
+
+        expect(await dataSource.manager.count(Picture)).toEqual(3);
       },
     );
   });
