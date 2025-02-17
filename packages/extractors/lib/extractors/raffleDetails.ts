@@ -6,12 +6,12 @@ import {
   ErgoNetworkType,
   boxHasToken,
 } from '@rosen-bridge/abstract-extractor';
-
-import { RaffleDetailsAction } from '../actions/raffleDetails';
-import { RaffleDetailsBoxInterface } from '../interfaces/types';
-import { RaffleDetails } from '../entities';
 import { ErgoAddress, Box, Network } from '@fleet-sdk/core';
 import { SConstant, serializeBox } from '@fleet-sdk/serializer';
+
+import { RaffleDetails, Picture } from '@ergo-raffle/extractors/lib/entities';
+import { RaffleDetailsAction } from '../actions/raffleDetails';
+import { RaffleDetailsBoxInterface } from '../interfaces/types';
 
 export class RaffleDetailsExtractor extends AbstractInitializableErgoExtractor<
   RaffleDetailsBoxInterface,
@@ -23,6 +23,7 @@ export class RaffleDetailsExtractor extends AbstractInitializableErgoExtractor<
   private readonly ergoTree?: string;
   private readonly raffleId: string;
   private readonly ticketTokenId: string;
+  private readonly dataSource: DataSource;
 
   constructor(
     dataSource: DataSource,
@@ -44,6 +45,7 @@ export class RaffleDetailsExtractor extends AbstractInitializableErgoExtractor<
       : undefined;
     this.raffleId = raffleId;
     this.ticketTokenId = ticketTokenId;
+    this.dataSource = dataSource;
     this.actions = new RaffleDetailsAction(dataSource, this.logger);
   }
 
@@ -72,6 +74,21 @@ export class RaffleDetailsExtractor extends AbstractInitializableErgoExtractor<
     const ergoBox = box as Box;
     const R4Serialized = SConstant.from(ergoBox.additionalRegisters.R4!)
       .data as Uint8Array[];
+    for (let i = 0; i < R4Serialized.slice(2).length; i++) {
+      this.dataSource
+        .createQueryBuilder()
+        .insert()
+        .into(Picture)
+        .values([
+          {
+            orderIndex: i,
+            raffleId: this.raffleId,
+            content: String.fromCharCode(...R4Serialized.slice(2)[i]),
+          },
+        ])
+        .execute();
+    }
+
     const data = {
       boxId: ergoBox.boxId.toString(),
       txId: ergoBox.transactionId,

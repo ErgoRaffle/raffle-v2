@@ -1,5 +1,5 @@
 import { AbstractErgoExtractorEntity } from '@rosen-bridge/abstract-extractor';
-import { Entity, Column } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('raffle_details')
 export class RaffleDetails extends AbstractErgoExtractorEntity {
@@ -14,4 +14,19 @@ export class RaffleDetails extends AbstractErgoExtractorEntity {
 
   @Column({ type: 'varchar' })
   description: string;
+}
+
+@Entity('pictures')
+export class Picture {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column({ type: 'varchar' })
+  raffleId: string;
+
+  @Column({ type: 'integer' })
+  orderIndex: number;
+
+  @Column({ type: 'varchar' })
+  content: string;
 }

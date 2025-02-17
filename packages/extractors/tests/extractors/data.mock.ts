@@ -225,7 +225,13 @@ export const sampleRaffleDetailsBoxes: OutputBox[] = [
       },
     ],
     additionalRegisters: {
-      R4: '1a02045465737414536f6d65206465736372697074696f6e732e2e2e',
+      R4: SColl(SColl(SByte), [
+        Array.from(Buffer.from('Test')),
+        Array.from(Buffer.from('Some descriptions...')),
+        Array.from(Buffer.from('picture content 1')),
+        Array.from(Buffer.from('picture content 2')),
+        Array.from(Buffer.from('picture content 3')),
+      ]).toHex(),
     },
     transactionId:
       '36dbda203d2143a51957941d7a3fa588795921c866ff4075e3ee6e991f0c62d5',

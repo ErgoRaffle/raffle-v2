@@ -7,6 +7,7 @@ import WinstonLogger from '@rosen-bridge/winston-logger/dist/WinstonLogger';
 import { RaffleDetailsExtractor } from '../../lib/extractors/raffleDetails';
 import { createDatabase } from '../utilsFunctions.mock';
 import { sampleRaffleDetailsBoxes } from './data.mock';
+import { Picture } from '../../lib/entities';
 
 /*
  * create fixtures that contains below steps data:
@@ -36,6 +37,7 @@ const createRaffleDetailsExtractorTest = async () => {
       'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
       logger,
     ),
+    dataSource: dataSource,
     boxFalseErgoTree: boxFalseErgoTree,
   });
 };
@@ -55,10 +57,12 @@ describe('RaffleDetailsExtractor', () => {
      */
     raffleDetailsExtractorTest(
       `should extract data from sample RaffleDetails box`,
-      async ({ extractor }) => {
+      async ({ extractor, dataSource }) => {
         const extractedData = await extractor.extractBoxData(
           sampleRaffleDetailsBoxes[0],
         );
+
+        expect(await dataSource.manager.count(Picture)).toEqual(3);
 
         expect(extractedData).toEqual({
           boxId: sampleRaffleDetailsBoxes[0].boxId,
@@ -69,8 +73,10 @@ describe('RaffleDetailsExtractor', () => {
           raffleId:
             '1111111111111111111111111111111111111111111111111111111111111111',
           serialized:
-            'wMOTBxkGAQEB0XMArtBiAdKd6qXYCV/jCTCEVBKwk9K6dbSOMcJd/58FpnOWdzD7AQEaAgRU' +
-            'ZXN0FFNvbWUgZGVzY3JpcHRpb25zLi4uNtvaID0hQ6UZV5Qdej+liHlZIchm/0B14+5umR8MYtUB',
+            'wMOTBxkGAQEB0XMArtBiAdKd6qXYCV/jCTCEVBKwk9K6dbSOMcJd/58FpnOWdzD7' +
+            'AQEaBQRUZXN0FFNvbWUgZGVzY3JpcHRpb25zLi4uEXBpY3R1cmUgY29udGVudCAx' +
+            'EXBpY3R1cmUgY29udGVudCAyEXBpY3R1cmUgY29udGVudCAzNtvaID0hQ6UZV5Qd' +
+            'ej+liHlZIchm/0B14+5umR8MYtUB',
         });
       },
     );

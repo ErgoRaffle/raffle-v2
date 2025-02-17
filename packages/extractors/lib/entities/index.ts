@@ -5,4 +5,4 @@ export { ActiveRaffle } from './activeRaffle';
 export { GiftTokenRepo } from './giftTokenRepo';
 export { TicketRepo } from './ticketRepo';
 export { Winner } from './winner';
-export { RaffleDetails } from './raffleDetails';
+export { RaffleDetails, Picture } from './raffleDetails';

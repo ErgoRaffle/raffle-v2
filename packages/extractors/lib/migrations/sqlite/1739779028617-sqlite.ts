@@ -21,9 +21,20 @@ export class Sqlite1739779028617 implements MigrationInterface {
                 CONSTRAINT "UQ_56b3b23b4ea44ddef3ca2c1286a" UNIQUE ("boxId", "extractor")
             )
         `);
+    await queryRunner.query(`
+            CREATE TABLE "pictures" (
+                "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+                "raffleId" varchar NOT NULL,
+                "orderIndex" integer NOT NULL,
+                "content" varchar NOT NULL
+            )
+        `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`
+            DROP TABLE "pictures"
+        `);
     await queryRunner.query(`
             DROP TABLE "raffle_details"
         `);
