@@ -32,3 +32,9 @@ export interface ActiveRaffleBoxInterface extends ExtractedBox {
 }
 export type GiftTokenRepoBoxInterface = ActiveRaffleBoxInterface;
 export type TicketRepoBoxInterface = ActiveRaffleBoxInterface;
+
+export interface WinnerBoxInterface extends ExtractedBox {
+  raffleId: string;
+  index: number;
+  rewardPercent: number;
+}
