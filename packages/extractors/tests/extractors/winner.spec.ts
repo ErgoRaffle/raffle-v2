@@ -60,13 +60,18 @@ describe('WinnerExtractor', () => {
           sampleWinnerBoxes[0],
         );
 
-        expect(extractedData).toMatchObject({
+        expect(extractedData).toEqual({
           boxId: sampleWinnerBoxes[0].boxId,
           txId: sampleWinnerBoxes[0].transactionId,
-          serviceFeePercent: 100,
-          implementerFeePercent: 100,
-          creationFee: 800n,
           extractor: 'Winner',
+          index: 1,
+          raffleId:
+            '1111111111111111111111111111111111111111111111111111111111111111',
+          rewardPercent: 1000,
+          serialized:
+            'gI7OHBkGAQEB0XMArtBiAdKd6qXYCV/jCTCEVBKwk9K6dbSOMcJd/58FpnOWdz' +
+            'D7AQQRA9AP5qDFAYCHpw4EAgUADiCPQKkvIoCUUuoLyBkzFfbD2rvLoN7+bNk/okRPxWT/Cjbb2i' +
+            'A9IUOlGVeUHXo/pYh5WSHIZv9AdePubpkfDGLVAw==',
         });
       },
     );
