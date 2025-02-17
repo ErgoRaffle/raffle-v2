@@ -38,3 +38,9 @@ export interface WinnerBoxInterface extends ExtractedBox {
   index: number;
   rewardPercent: number;
 }
+
+export interface RaffleDetailsBoxInterface extends ExtractedBox {
+  raffleId: string;
+  name: string;
+  description: string;
+}

@@ -210,3 +210,25 @@ export const sampleWinnerBoxes: OutputBox[] = [
     index: 3,
   },
 ];
+
+export const sampleRaffleDetailsBoxes: OutputBox[] = [
+  {
+    boxId: '4f444639b431ec30f6a4b96d6a42bb3489f422c98043c47670a84b0a3a495edd',
+    value: 15000000n,
+    ergoTree: '1906010101d17300',
+    creationHeight: 1615918,
+    assets: [
+      {
+        tokenId:
+          'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
+        amount: 1n,
+      },
+    ],
+    additionalRegisters: {
+      R4: '1a02045465737414536f6d65206465736372697074696f6e732e2e2e',
+    },
+    transactionId:
+      '36dbda203d2143a51957941d7a3fa588795921c866ff4075e3ee6e991f0c62d5',
+    index: 1,
+  },
+];
