@@ -44,3 +44,9 @@ export interface RaffleDetailsBoxInterface extends ExtractedBox {
   name: string;
   description: string;
 }
+
+export interface GiftBoxInterface extends ExtractedBox {
+  raffleId: string;
+  donatorErgoTree: string;
+  winnerIndex: number;
+}

@@ -16,6 +16,7 @@ import {
   Winner,
   RaffleDetails,
   Picture,
+  Gift,
 } from '../lib/entities';
 
 /**
@@ -39,6 +40,7 @@ export const createDatabase = async (): Promise<DataSource> => {
       Winner,
       RaffleDetails,
       Picture,
+      Gift,
     ],
     migrations: [...migrations.sqlite, ...scannerMigrations.sqlite],
     synchronize: false,

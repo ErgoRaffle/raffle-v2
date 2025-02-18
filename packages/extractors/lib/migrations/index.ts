@@ -4,12 +4,14 @@ import { Sqlite1739711375567 } from '../migrations/sqlite/1739711375567-sqlite';
 import { Sqlite1739716606607 } from '../migrations/sqlite/1739716606607-sqlite';
 import { Sqlite1739776460056 } from '../migrations/sqlite/1739776460056-sqlite';
 import { Sqlite1739779028617 } from '../migrations/sqlite/1739779028617-sqlite';
+import { Sqlite1739856561630 } from '../migrations/sqlite/1739856561630-sqlite';
 // postgres migrations
 import { Postgres1739623115850 } from '../migrations/postgres/1739623115850-postgres';
 import { Postgres1739711977993 } from '../migrations/postgres/1739711977993-postgres';
 import { Postgres1739716652155 } from '../migrations/postgres/1739716652155-postgres';
 import { Postgres1739776466062 } from '../migrations/postgres/1739776466062-postgres';
 import { Postgres1739779034480 } from '../migrations/postgres/1739779034480-postgres';
+import { Postgres1739856465885 } from '../migrations/postgres/1739856465885-postgres';
 
 export const migrations = {
   sqlite: [
@@ -18,6 +20,7 @@ export const migrations = {
     Sqlite1739716606607,
     Sqlite1739776460056,
     Sqlite1739779028617,
+    Sqlite1739856561630,
   ],
   postgres: [
     Postgres1739623115850,
@@ -25,5 +28,6 @@ export const migrations = {
     Postgres1739716652155,
     Postgres1739776466062,
     Postgres1739779034480,
+    Postgres1739856465885,
   ],
 };
