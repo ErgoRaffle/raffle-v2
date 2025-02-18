@@ -123,7 +123,7 @@ describe('GiftExtractor', () => {
     );
 
     /**
-     * @target should result of hasData method be false by invalid ticketTokenId
+     * @target should result of hasData method be false by invalid giftTokenId
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -133,7 +133,7 @@ describe('GiftExtractor', () => {
      * - Gifts box checking result must be false
      */
     giftExtractorTest(
-      `should result of hasData method be false by invalid box ticketTokenId`,
+      `should result of hasData method be false by invalid box giftTokenId`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
           ...sampleGiftBoxes[0],
