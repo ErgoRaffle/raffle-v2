@@ -8,3 +8,4 @@ export { Winner } from './winner';
 export { RaffleDetails, Picture } from './raffleDetails';
 export { Gift } from './gift';
 export { Ticket } from './ticket';
+export { WinnerPrize } from './winnerPrize';
