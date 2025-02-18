@@ -7,3 +7,4 @@ export { TicketRepo } from './ticketRepo';
 export { Winner } from './winner';
 export { RaffleDetails, Picture } from './raffleDetails';
 export { Gift } from './gift';
+export { Ticket } from './ticket';
