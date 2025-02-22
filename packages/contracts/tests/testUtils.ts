@@ -1442,6 +1442,7 @@ export class RaffleBoxFactory {
     ticketTokenCount: bigint,
     collectingToken?: TokenAmount<bigint | Amount>,
     extraTokens: TokenAmount<bigint>[] = [],
+    licenseTokenId: string = LICENSE_TOKEN_ID,
   ) {
     const giftRedeemOutputBox = new OutputBuilder(
       value,
@@ -1454,7 +1455,7 @@ export class RaffleBoxFactory {
     });
     giftRedeemOutputBox.addTokens([
       {
-        tokenId: LICENSE_TOKEN_ID,
+        tokenId: licenseTokenId,
         amount: 1n,
       },
       {
