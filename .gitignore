@@ -140,6 +140,5 @@ dist
 # jetbrains IDEs project files
 .idea/
 
-
-# ignore try-package files
+**/dataSources/
 packages/try/
