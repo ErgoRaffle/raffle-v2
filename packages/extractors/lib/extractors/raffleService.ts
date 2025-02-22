@@ -20,7 +20,7 @@ export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<
   readonly actions: RaffleServiceAction;
   private readonly id: string;
   private readonly networkType: Network;
-  private readonly ergoTree?: string;
+  private readonly ergoTree: string;
   private readonly serviceNFTId: string;
 
   constructor(
@@ -37,9 +37,7 @@ export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<
     super(type, url, address, logger, initialize);
     this.id = id;
     this.networkType = networkType;
-    this.ergoTree = address
-      ? ErgoAddress.fromBase58(address).ergoTree.toString()
-      : undefined;
+    this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
     this.serviceNFTId = serviceNFTId;
     this.actions = new RaffleServiceAction(dataSource, this.logger);
   }
