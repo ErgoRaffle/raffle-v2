@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { Network } from '@fleet-sdk/core';
 import { ErgoNetworkType } from '@rosen-bridge/scanner';
 import { compile } from '@fleet-sdk/compiler';
-import WinstonLogger from '@rosen-bridge/winston-logger/dist/WinstonLogger';
 
 import { RaffleServiceExtractor } from '../../lib/extractors/raffleService';
 import { createDatabase } from '../utilsFunctions.mock';
@@ -19,21 +18,14 @@ const createRaffleServiceExtractorTest = async () => {
   const boxErgoTree = compile('{sigmaProp(true);}');
   const boxFalseErgoTree = compile('{sigmaProp(false);}');
 
-  const winstonLogger = new WinstonLogger([
-    { type: 'console', level: 'debug' },
-  ]);
-  const logger = winstonLogger.getLogger(import.meta.url);
-
   return it.extend({
     extractor: new RaffleServiceExtractor(
       dataSource,
       'RaffleService',
-      Network.Testnet,
       'http://127.0.0.1/',
       ErgoNetworkType.Node,
       boxErgoTree.toAddress(Network.Testnet).toString(),
       '1'.repeat(64),
-      logger,
     ),
     boxFalseErgoTree: boxFalseErgoTree,
   });
