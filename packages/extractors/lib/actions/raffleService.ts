@@ -1,4 +1,5 @@
 import { DataSource, Repository } from 'typeorm';
+import { pick } from 'lodash-es';
 import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
 import {
   AbstractInitializableErgoExtractorAction,
@@ -6,7 +7,7 @@ import {
 } from '@rosen-bridge/abstract-extractor';
 
 import { RaffleServiceBoxInterface } from '../interfaces/types';
-import { RaffleService } from '../entities/raffleService';
+import { RaffleService } from '../entities';
 
 export class RaffleServiceAction extends AbstractInitializableErgoExtractorAction<
   RaffleServiceBoxInterface,
@@ -26,6 +27,9 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
 
   /**
    * create the box entity from extracted data and block information
+   * @param boxes
+   * @param block
+   * @param extractor
    */
   createEntity = (
     boxes: RaffleServiceBoxInterface[],
@@ -49,18 +53,21 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
 
   /**
    * convert the database entity back to raw data
+   * @param entities
    */
   convertEntityToData = (
     entities: RaffleService[],
   ): RaffleServiceBoxInterface[] => {
-    return entities.map((data) => ({
-      boxId: data.boxId,
-      txId: data.txId,
-      serviceFeePercent: data.serviceFeePercent,
-      implementerFeePercent: data.implementerFeePercent,
-      creationFee: data.creationFee,
-      extractor: data.extractor,
-      serialized: data.serialized,
-    }));
+    return entities.map((data) =>
+      pick(data, [
+        'boxId',
+        'txId',
+        'serviceFeePercent',
+        'implementerFeePercent',
+        'creationFee',
+        'extractor',
+        'serialized',
+      ]),
+    );
   };
 }
