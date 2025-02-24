@@ -73,7 +73,6 @@ export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<
       serviceFeePercent: Number(R4Serialized[0]),
       implementerFeePercent: Number(R4Serialized[1]),
       creationFee: R4Serialized[2],
-      extractor: this.id,
     };
 
     return data;
