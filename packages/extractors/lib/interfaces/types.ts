@@ -25,4 +25,5 @@ export interface InactiveRaffleBoxInterface extends ExtractedBox {
   deadline: number;
   winnersPercentList: string;
   txFee: bigint;
+  raffleId: string;
 }

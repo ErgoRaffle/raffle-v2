@@ -1,8 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { Network } from '@fleet-sdk/core';
+import { Network, SByte, SColl, SLong } from '@fleet-sdk/core';
 import { compile } from '@fleet-sdk/compiler';
 import { ErgoNetworkType } from '@rosen-bridge/scanner';
-import WinstonLogger from '@rosen-bridge/winston-logger/dist/WinstonLogger';
 
 import { InactiveRaffleExtractor } from '../../lib/extractors/inactiveRaffle';
 import { createDatabase } from '../utilsFunctions.mock';
@@ -24,25 +23,15 @@ const createInactiveRaffleExtractorTest = async () => {
   const boxErgoTree = compile('{sigmaProp(true);}');
   const boxFalseErgoTree = compile('{sigmaProp(false);}');
 
-  const winstonLogger = new WinstonLogger([
-    { type: 'console', level: 'debug' },
-  ]);
-  const logger = winstonLogger.getLogger(import.meta.url);
-
   return it.extend({
     extractor: new InactiveRaffleExtractor(
       dataSource,
       'InactiveRaffle',
-      Network.Testnet,
       'http://127.0.0.1/',
       ErgoNetworkType.Node,
       boxErgoTree.toAddress(Network.Testnet).toString(),
-      '2'.repeat(64),
       serviceWallet.ergoTree.toString(),
-      implementerWallet.ergoTree.toString(),
-      creatorWallet.ergoTree.toString(),
-      [200, 200, 200, 200, 200].toString(),
-      logger,
+      '2'.repeat(64),
     ),
     boxFalseErgoTree: boxFalseErgoTree,
   });
@@ -66,6 +55,20 @@ describe('InactiveRaffleExtractor', () => {
       async ({ extractor }) => {
         const extractedData = await extractor.extractBoxData(
           sampleInactiveRaffleBoxes[0],
+          [
+            {
+              '0': SColl(SLong, [200n, 200n, 200n, 200n, 200n]).toHex(),
+              '1': SColl(SColl(SByte), [
+                Array.from(
+                  Buffer.from(implementerWallet.ergoTree.toString(), 'hex'),
+                ),
+                Array.from(
+                  Buffer.from(creatorWallet.ergoTree.toString(), 'hex'),
+                ),
+              ]).toHex(),
+            },
+            {},
+          ],
         );
 
         expect(extractedData).toEqual({
@@ -78,6 +81,8 @@ describe('InactiveRaffleExtractor', () => {
             '064mYgVHFiAwCpIaAgRUZXN0FFNvbWUgZGVzY3JpcHRpb25zLi4uGgIgMzMzMzMzMzMzMzMzMz' +
             'MzMzMzMzMzMzMzMzMzMzMzMzMge8trSPEi5LKmV26w9zy4pvrbGAREDHFDs8o74DhqB5gECgEB' +
             'AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ==',
+          raffleId:
+            '7bcb6b48f122e4b2a6576eb0f73cb8a6fadb1804440c7143b3ca3be0386a0798',
           creatorErgoTree: creatorWallet.ergoTree.toString(),
           implementorErgoTree: implementerWallet.ergoTree.toString(),
           serviceErgoTree: serviceWallet.ergoTree.toString(),

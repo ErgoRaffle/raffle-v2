@@ -96,8 +96,6 @@ describe('Service', () => {
           .sendChangeTo(creator.address)
           .build();
 
-        testUtils.prettyPrintJson(transaction);
-
         const res = boxFactory.chain.execute(transaction, {
           signers: [creator],
         });
