@@ -1,4 +1,5 @@
 import { DataSource, Repository } from 'typeorm';
+import { pick } from 'lodash-es';
 import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
 import {
   AbstractInitializableErgoExtractorAction,
@@ -24,6 +25,12 @@ export class InactiveRaffleAction extends AbstractInitializableErgoExtractorActi
     this.repository = dataSource.getRepository(InactiveRaffle);
   }
 
+  /**
+   * create the database entity from extracted data and block information
+   * @param boxes
+   * @param block
+   * @param extractor
+   */
   createEntity = (
     boxes: InactiveRaffleBoxInterface[],
     block: BlockInfo,
@@ -37,6 +44,7 @@ export class InactiveRaffleAction extends AbstractInitializableErgoExtractorActi
         serialized: box.serialized,
         extractor: extractor,
         txId: box.txId,
+        raffleId: box.raffleId,
         serviceErgoTree: box.serviceErgoTree,
         implementorErgoTree: box.implementorErgoTree,
         creatorErgoTree: box.creatorErgoTree,
@@ -52,37 +60,34 @@ export class InactiveRaffleAction extends AbstractInitializableErgoExtractorActi
     });
   };
 
+  /**
+   * convert the database entity back to raw data
+   * @param entities
+   */
   convertEntityToData = (
     entities: InactiveRaffle[],
   ): InactiveRaffleBoxInterface[] => {
-    return entities.map((data) => ({
-      boxId: data.boxId,
-      block: data.block,
-      height: data.height,
-      serialized: data.serialized,
-      extractor: data.extractor,
-      txId: data.txId,
-      serviceErgoTree: data.serviceErgoTree,
-      implementorErgoTree: data.implementorErgoTree,
-      creatorErgoTree: data.creatorErgoTree,
-      serviceFeePercent: data.serviceFeePercent,
-      implementerFeePercent: data.implementerFeePercent,
-      winnersPercent: data.winnersPercent,
-      ticketPrice: data.ticketPrice,
-      goal: data.goal,
-      deadline: data.deadline,
-      winnersPercentList: data.winnersPercentList,
-      txFee: data.txFee,
-    }));
-  };
-
-  /**
-   * remove all existing data for the extractor
-   * @param extractor
-   */
-  removeAllData = async (extractor?: string) => {
-    await this.repository.delete({
-      extractor: this.prefix + (extractor ? `-${extractor}` : ''),
-    });
+    return entities.map((data) =>
+      pick(data, [
+        'boxId',
+        'block',
+        'height',
+        'serialized',
+        'extractor',
+        'txId',
+        'raffleId',
+        'serviceErgoTree',
+        'implementorErgoTree',
+        'creatorErgoTree',
+        'serviceFeePercent',
+        'implementerFeePercent',
+        'winnersPercent',
+        'ticketPrice',
+        'goal',
+        'deadline',
+        'winnersPercentList',
+        'txFee',
+      ]),
+    );
   };
 }

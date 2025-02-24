@@ -9,7 +9,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "mkdir -p dist/ && node --trace-warnings --loader ts-node/esm --loader extensionless ./cli/index.ts build configs.json",
-    "build-testnet": "mkdir -p dist/ && node --trace-warnings --loader ts-node/esm --loader extensionless ./cli/index.ts build configs.json",
+    "build-testnet": "npm run build -- --testnet",
     "coverage": "npm run test -- --coverage",
     "lint": "eslint --fix . && npm run prettify",
     "prettify": "prettier --write . --ignore-path ./.gitignore --ignore-path ./.prettierignore",
@@ -26,17 +26,19 @@
     "@types/node": "^20.11.9",
     "@typescript-eslint/eslint-plugin": "^6.19.1",
     "@typescript-eslint/parser": "^6.19.1",
-    "@vitest/coverage-istanbul": "^1.2.2",
+    "@vitest/coverage-istanbul": "^2.0.5",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "prettier": "^3.2.4",
     "typescript": "^5.3.3",
-    "vitest": "^1.2.2"
+    "vitest": "^2.0.5"
   },
   "dependencies": {
     "@fleet-sdk/compiler": "^0.4.2",
+    "@fleet-sdk/core": "^0.4.1",
+    "@fleet-sdk/crypto": "^0.4.1",
     "@fleet-sdk/serializer": "^0.4.1",
-    "commander": "^12.0.0",
+    "commander": "^12.1.0",
     "extensionless": "^1.9.6",
     "sigmastate-js": "^0.4.6",
     "winston": "^3.13.0"
