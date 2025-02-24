@@ -4,7 +4,7 @@ import { ErgoNetworkType } from '@rosen-bridge/scanner';
 import { compile } from '@fleet-sdk/compiler';
 
 import { RaffleServiceExtractor } from '../../lib/extractors/raffleService';
-import { createDatabase } from '../utilsFunctions.mock';
+import { createDatabase } from '../utils.mock';
 import { sampleRaffleServiceBoxes } from '../mocked/raffleService.mock';
 
 /*

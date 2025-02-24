@@ -28,14 +28,13 @@ export class InactiveRaffleExtractor extends AbstractInitializableErgoExtractor<
     dataSource: DataSource,
     id: string,
     url: string,
-    type: ErgoNetworkType,
     address: string,
     serviceErgoTree: string,
     licenseTokenId: string,
     logger?: AbstractLogger,
     initialize = true,
   ) {
-    super(type, url, address, logger, initialize, true);
+    super(ErgoNetworkType.Node, url, address, logger, initialize, true);
     this.id = id;
     this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
     this.actions = new InactiveRaffleAction(dataSource, this.logger);
@@ -77,22 +76,34 @@ export class InactiveRaffleExtractor extends AbstractInitializableErgoExtractor<
     const R7Serialized = SConstant.from(box.additionalRegisters!.R7!)
       .data as Uint8Array[];
 
-    if (Object.keys(inputExtensions![0]).length != 2) {
-      this.logger.error(
-        'Invalid create raffle transaction: the service box context-vars length is not valid.',
-      );
-      return;
+    let winnersPercentList = '';
+    let implementorErgoTree = '';
+    let creatorErgoTree = '';
+
+    try {
+      winnersPercentList =
+        (
+          SConstant.from(inputExtensions![0]['0']).data as bigint[]
+        ).toString() || '';
+    } catch (err) {
+      this.logger.error(`Error in parsing inactiveRaffle context data: ${err}`);
     }
 
-    const winnersPercentList = (
-      SConstant.from(inputExtensions![0]['0']).data as bigint[]
-    ).toString();
-    const implementorErgoTree = Buffer.from(
-      (SConstant.from(inputExtensions![0]['1']).data as Uint8Array[])[0],
-    ).toString('hex');
-    const creatorErgoTree = Buffer.from(
-      (SConstant.from(inputExtensions![0]['1']).data as Uint8Array[])[1],
-    ).toString('hex');
+    try {
+      implementorErgoTree = Buffer.from(
+        (SConstant.from(inputExtensions![0]['1']).data as Uint8Array[])[0],
+      ).toString('hex');
+    } catch (err) {
+      this.logger.error(`Error in parsing inactiveRaffle context data: ${err}`);
+    }
+
+    try {
+      creatorErgoTree = Buffer.from(
+        (SConstant.from(inputExtensions![0]['1']).data as Uint8Array[])[1],
+      ).toString('hex');
+    } catch (err) {
+      this.logger.error(`Error in parsing inactiveRaffle context data: ${err}`);
+    }
 
     const data = {
       boxId: box.boxId.toString(),

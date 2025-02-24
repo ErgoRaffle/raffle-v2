@@ -1,16 +1,16 @@
 import { describe, it, expect } from 'vitest';
-import { Network, SByte, SColl, SLong } from '@fleet-sdk/core';
+import { Network } from '@fleet-sdk/core';
 import { compile } from '@fleet-sdk/compiler';
-import { ErgoNetworkType } from '@rosen-bridge/scanner';
 
 import { InactiveRaffleExtractor } from '../../lib/extractors/inactiveRaffle';
-import { createDatabase } from '../utilsFunctions.mock';
+import { createDatabase } from '../utils.mock';
+import { serviceWallet } from '../utils.mock';
 import {
   sampleInactiveRaffleBoxes,
-  serviceWallet,
-  implementerWallet,
-  creatorWallet,
-} from './data.mock';
+  sampleInactiveRaffleExtensions,
+  sampleInactiveRaffleExtractedData,
+  sampleInactiveRaffleExtractedDataForEmptyExtension,
+} from '../mocked/inactiveRaffle.mock';
 
 /*
  * create fixtures that contains below steps data:
@@ -28,7 +28,6 @@ const createInactiveRaffleExtractorTest = async () => {
       dataSource,
       'InactiveRaffle',
       'http://127.0.0.1/',
-      ErgoNetworkType.Node,
       boxErgoTree.toAddress(Network.Testnet).toString(),
       serviceWallet.ergoTree.toString(),
       '2'.repeat(64),
@@ -55,47 +54,33 @@ describe('InactiveRaffleExtractor', () => {
       async ({ extractor }) => {
         const extractedData = await extractor.extractBoxData(
           sampleInactiveRaffleBoxes[0],
-          [
-            {
-              '0': SColl(SLong, [200n, 200n, 200n, 200n, 200n]).toHex(),
-              '1': SColl(SColl(SByte), [
-                Array.from(
-                  Buffer.from(implementerWallet.ergoTree.toString(), 'hex'),
-                ),
-                Array.from(
-                  Buffer.from(creatorWallet.ergoTree.toString(), 'hex'),
-                ),
-              ]).toHex(),
-            },
-            {},
-          ],
+          sampleInactiveRaffleExtensions,
         );
 
-        expect(extractedData).toEqual({
-          boxId: sampleInactiveRaffleBoxes[0].boxId,
-          txId: sampleInactiveRaffleBoxes[0].transactionId,
-          serialized:
-            'wIQ9GQYBAQHRcwBkASIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIi' +
-            'AQURB5ADyAHIAcCaDICJetAPsOoBGgMgsyiS4NtDjteZCvL2Fhr1TQ7+2cWgkoCs732QLXNLM/' +
-            'AgdB4lw40FQMbZocnIcAh7X0IaZt6MSmb6yE1cDfJZGHogXH9xiMrF43Y0Ndj/FhjuAMMPnqgU' +
-            '064mYgVHFiAwCpIaAgRUZXN0FFNvbWUgZGVzY3JpcHRpb25zLi4uGgIgMzMzMzMzMzMzMzMzMz' +
-            'MzMzMzMzMzMzMzMzMzMzMzMzMge8trSPEi5LKmV26w9zy4pvrbGAREDHFDs8o74DhqB5gECgEB' +
-            'AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ==',
-          raffleId:
-            '7bcb6b48f122e4b2a6576eb0f73cb8a6fadb1804440c7143b3ca3be0386a0798',
-          creatorErgoTree: creatorWallet.ergoTree.toString(),
-          implementorErgoTree: implementerWallet.ergoTree.toString(),
-          serviceErgoTree: serviceWallet.ergoTree.toString(),
-          deadline: 1000,
-          extractor: 'InactiveRaffle',
-          goal: 1000000n,
-          implementerFeePercent: 100,
-          serviceFeePercent: 100,
-          ticketPrice: 100000n,
-          txFee: 15000n,
-          winnersPercent: 200,
-          winnersPercentList: [200, 200, 200, 200, 200].toString(),
-        });
+        expect(extractedData).toEqual(sampleInactiveRaffleExtractedData);
+      },
+    );
+
+    /**
+     * @target should extract data from sample InactiveRaffle box and by empty extension data
+     * @dependencies
+     * @scenario
+     * - call the extractBoxData functions
+     * - check if InactiveRaffle box data extracted correctly
+     * @expected
+     * - InactiveRaffles should extract successfully
+     */
+    raffleServiceExtractorTest(
+      `should extract data from sample InactiveRaffle box`,
+      async ({ extractor }) => {
+        const extractedData = await extractor.extractBoxData(
+          sampleInactiveRaffleBoxes[0],
+          [],
+        );
+
+        expect(extractedData).toEqual(
+          sampleInactiveRaffleExtractedDataForEmptyExtension,
+        );
       },
     );
   });
@@ -146,7 +131,7 @@ describe('InactiveRaffleExtractor', () => {
     );
 
     /**
-     * @target should result of hasData method be false by invalid amount of tokens
+     * @target should result of hasData method be false by invalid license token-id
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -156,7 +141,7 @@ describe('InactiveRaffleExtractor', () => {
      * - InactiveRaffles box checking result must be false
      */
     raffleServiceExtractorTest(
-      `should result of hasData method be false by invalid amount of tokens`,
+      `should result of hasData method be false by invalid license token-id`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
           ...sampleInactiveRaffleBoxes[0],
