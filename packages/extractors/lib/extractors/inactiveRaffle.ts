@@ -101,7 +101,6 @@ export class InactiveRaffleExtractor extends AbstractInitializableErgoExtractor<
       serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(
         'base64',
       ),
-      extractor: this.id,
       serviceErgoTree: this.serviceErgoTree,
       implementorErgoTree: implementorErgoTree,
       creatorErgoTree: creatorErgoTree,
