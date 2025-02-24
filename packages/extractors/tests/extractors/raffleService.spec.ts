@@ -57,7 +57,6 @@ describe('RaffleServiceExtractor', () => {
           serviceFeePercent: 100,
           implementerFeePercent: 100,
           creationFee: 800n,
-          extractor: 'RaffleService',
         });
       },
     );
