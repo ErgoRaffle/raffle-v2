@@ -32,7 +32,7 @@ export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<
     logger?: AbstractLogger,
     initialize = true,
   ) {
-    super(type, url, address, logger, initialize, true);
+    super(type, url, address, logger, initialize);
     this.id = id;
     this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
     this.serviceNFTId = serviceNFTId;
