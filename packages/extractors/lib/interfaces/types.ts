@@ -4,7 +4,6 @@ export interface ExtractedBox {
   boxId: string;
   txId: string;
   serialized: string;
-  extractor: string;
 }
 
 export interface RaffleServiceBoxInterface extends ExtractedBox {
