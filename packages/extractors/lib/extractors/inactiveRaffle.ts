@@ -35,7 +35,7 @@ export class InactiveRaffleExtractor extends AbstractInitializableErgoExtractor<
     logger?: AbstractLogger,
     initialize = true,
   ) {
-    super(type, url, address, logger, initialize);
+    super(type, url, address, logger, initialize, true);
     this.id = id;
     this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
     this.actions = new InactiveRaffleAction(dataSource, this.logger);
