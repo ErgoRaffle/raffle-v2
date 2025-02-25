@@ -7,6 +7,7 @@ import {
 
 import { RaffleDetailsBoxInterface } from '../interfaces/types';
 import { RaffleDetails } from '../entities/raffleDetails';
+import { pick } from 'lodash-es';
 
 export class RaffleDetailsAction extends AbstractInitializableErgoExtractorAction<
   RaffleDetailsBoxInterface,
@@ -27,6 +28,9 @@ export class RaffleDetailsAction extends AbstractInitializableErgoExtractorActio
 
   /**
    * create the box entity from extracted data and block information
+   * @param boxes
+   * @param block
+   * @param extractor
    */
   createEntity = (
     boxes: RaffleDetailsBoxInterface[],
@@ -50,18 +54,21 @@ export class RaffleDetailsAction extends AbstractInitializableErgoExtractorActio
 
   /**
    * convert the database entity back to raw data
+   * @param entities
    */
   convertEntityToData = (
     entities: RaffleDetails[],
   ): RaffleDetailsBoxInterface[] => {
-    return entities.map((data) => ({
-      boxId: data.boxId,
-      txId: data.txId,
-      raffleId: data.raffleId,
-      extractor: data.extractor,
-      serialized: data.serialized,
-      name: data.name,
-      description: data.description,
-    }));
+    return entities.map((data) =>
+      pick(data, [
+        'boxId',
+        'txId',
+        'raffleId',
+        'extractor',
+        'serialized',
+        'name',
+        'description',
+      ]),
+    );
   };
 }

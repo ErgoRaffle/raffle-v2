@@ -2,13 +2,13 @@ import { describe, it, expect } from 'vitest';
 import { Network } from '@fleet-sdk/core';
 import { compile } from '@fleet-sdk/compiler';
 import { ErgoNetworkType } from '@rosen-bridge/scanner';
-import WinstonLogger from '@rosen-bridge/winston-logger/dist/WinstonLogger';
 
 import { GiftTokenRepoExtractor } from '../../lib/extractors/giftTokenRepo';
-import { createDatabase } from '../utilsFunctions.mock';
-import { sampleGiftTokenRepo } from './data.mock';
-
-const SAMPLE_RAFFLE_ID = 'F'.repeat(64);
+import { createDatabase } from '../utils.mock';
+import {
+  sampleGiftTokenRepo,
+  sampleGiftTokenRepoExtractedData,
+} from '../mocked/giftTokenRepo.mock';
 
 /*
  * create fixtures that contains below steps data:
@@ -21,21 +21,13 @@ const createGiftTokenRepoExtractorTest = async () => {
   const boxErgoTree = compile('{sigmaProp(true);}');
   const boxFalseErgoTree = compile('{sigmaProp(false);}');
 
-  const winstonLogger = new WinstonLogger([
-    { type: 'console', level: 'debug' },
-  ]);
-  const logger = winstonLogger.getLogger(import.meta.url);
-
   return it.extend({
     extractor: new GiftTokenRepoExtractor(
       dataSource,
       'GiftTokenRepo',
-      Network.Testnet,
       'http://127.0.0.1/',
       ErgoNetworkType.Node,
       boxErgoTree.toAddress(Network.Testnet).toString(),
-      SAMPLE_RAFFLE_ID,
-      logger,
     ),
     boxFalseErgoTree: boxFalseErgoTree,
   });
@@ -61,15 +53,7 @@ describe('GiftTokenRepoExtractor', () => {
           sampleGiftTokenRepo[0],
         );
 
-        expect(extractedData).toEqual({
-          boxId: sampleGiftTokenRepo[0].boxId,
-          txId: sampleGiftTokenRepo[0].transactionId,
-          raffleId: SAMPLE_RAFFLE_ID,
-          serialized:
-            'wMOTBxkGAQEB0XMArtBiAY9AqS8igJRS6gvIGTMV9sPau8ug3v5s2T+iRE/FZP8K0A8GEAECEAEEEAEGEQKgH4CHpw4OINKd6qXYCV' +
-            '/jCTCEVBKwk9K6dbSOMcJd/58FpnOWdzD7EAICAjbb2iA9IUOlGVeUHXo/pYh5WSHIZv9AdePubpkfDGLVAg==',
-          extractor: 'GiftTokenRepo',
-        });
+        expect(extractedData).toEqual(sampleGiftTokenRepoExtractedData);
       },
     );
   });

@@ -4,13 +4,12 @@ import {
   AbstractInitializableErgoExtractor,
   OutputBox,
   ErgoNetworkType,
-  boxHasToken,
 } from '@rosen-bridge/abstract-extractor';
 
 import { TicketAction } from '../actions/ticket';
 import { TicketBoxInterface } from '../interfaces/types';
 import { Ticket } from '../entities';
-import { ErgoAddress, Box, Network } from '@fleet-sdk/core';
+import { ErgoAddress, Box } from '@fleet-sdk/core';
 import { SByte, SColl, SConstant, serializeBox } from '@fleet-sdk/serializer';
 
 export class TicketExtractor extends AbstractInitializableErgoExtractor<
@@ -19,31 +18,20 @@ export class TicketExtractor extends AbstractInitializableErgoExtractor<
 > {
   readonly actions: TicketAction;
   private readonly id: string;
-  private readonly networkType: Network;
-  private readonly ergoTree?: string;
-  private readonly raffleId: string;
-  private readonly ticketTokenId: string;
+  private readonly ergoTree: string;
 
   constructor(
     dataSource: DataSource,
     id: string,
-    networkType: Network,
     url: string,
     type: ErgoNetworkType,
     address: string,
-    raffleId: string,
-    ticketTokenId: string,
     logger?: AbstractLogger,
     initialize = true,
   ) {
     super(type, url, address, logger, initialize);
     this.id = id;
-    this.networkType = networkType;
-    this.ergoTree = address
-      ? ErgoAddress.fromBase58(address).ergoTree.toString()
-      : undefined;
-    this.raffleId = raffleId;
-    this.ticketTokenId = ticketTokenId;
+    this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
     this.actions = new TicketAction(dataSource, this.logger);
   }
 
@@ -58,9 +46,7 @@ export class TicketExtractor extends AbstractInitializableErgoExtractor<
    * @return true if the box has the required data and false otherwise
    */
   hasData = (box: OutputBox): boolean => {
-    return (
-      box.ergoTree == this.ergoTree && boxHasToken(box, [this.ticketTokenId])
-    );
+    return box.ergoTree == this.ergoTree;
   };
 
   /**
@@ -69,27 +55,25 @@ export class TicketExtractor extends AbstractInitializableErgoExtractor<
    * @return extracted data in proper format
    */
   extractBoxData = (box: OutputBox): TicketBoxInterface | undefined => {
-    const ergoBox = box as Box;
     const donatorErgoTree = SColl(
       SByte,
       Array.from(
-        SConstant.from(ergoBox.additionalRegisters.R4!).data as Uint8Array,
+        SConstant.from(box.additionalRegisters!.R4!).data as Uint8Array,
       ),
     ).toHex();
-    const r5Register = SConstant.from(ergoBox.additionalRegisters.R5!)
+    const r5Register = SConstant.from(box.additionalRegisters!.R5!)
       .data as bigint[];
 
     const data = {
-      boxId: ergoBox.boxId.toString(),
-      txId: ergoBox.transactionId,
-      raffleId: this.raffleId,
+      boxId: box.boxId.toString(),
+      txId: box.transactionId,
+      raffleId: box.assets![0].tokenId,
       donatorErgoTree: donatorErgoTree,
       rangeStart: r5Register[0],
       rangeEnd: r5Register[1],
-      serialized: Buffer.from(serializeBox(ergoBox).toBytes()).toString(
+      serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(
         'base64',
       ),
-      extractor: this.id,
     };
 
     return data;

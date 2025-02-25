@@ -4,9 +4,8 @@ import {
   AbstractInitializableErgoExtractor,
   OutputBox,
   ErgoNetworkType,
-  boxHasToken,
 } from '@rosen-bridge/abstract-extractor';
-import { ErgoAddress, Box, Network } from '@fleet-sdk/core';
+import { ErgoAddress, Box } from '@fleet-sdk/core';
 import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 
 import { RaffleDetails, Picture } from '@ergo-raffle/extractors/lib/entities';
@@ -19,32 +18,21 @@ export class RaffleDetailsExtractor extends AbstractInitializableErgoExtractor<
 > {
   readonly actions: RaffleDetailsAction;
   private readonly id: string;
-  private readonly networkType: Network;
-  private readonly ergoTree?: string;
-  private readonly raffleId: string;
-  private readonly ticketTokenId: string;
+  private readonly ergoTree: string;
   private readonly dataSource: DataSource;
 
   constructor(
     dataSource: DataSource,
     id: string,
-    networkType: Network,
     url: string,
     type: ErgoNetworkType,
     address: string,
-    raffleId: string,
-    ticketTokenId: string,
     logger?: AbstractLogger,
     initialize = true,
   ) {
     super(type, url, address, logger, initialize);
     this.id = id;
-    this.networkType = networkType;
-    this.ergoTree = address
-      ? ErgoAddress.fromBase58(address).ergoTree.toString()
-      : undefined;
-    this.raffleId = raffleId;
-    this.ticketTokenId = ticketTokenId;
+    this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
     this.dataSource = dataSource;
     this.actions = new RaffleDetailsAction(dataSource, this.logger);
   }
@@ -60,9 +48,7 @@ export class RaffleDetailsExtractor extends AbstractInitializableErgoExtractor<
    * @return true if the box has the required data and false otherwise
    */
   hasData = (box: OutputBox): boolean => {
-    return (
-      box.ergoTree == this.ergoTree && boxHasToken(box, [this.ticketTokenId])
-    );
+    return box.ergoTree == this.ergoTree;
   };
 
   /**
@@ -71,8 +57,7 @@ export class RaffleDetailsExtractor extends AbstractInitializableErgoExtractor<
    * @return extracted data in proper format
    */
   extractBoxData = (box: OutputBox): RaffleDetailsBoxInterface | undefined => {
-    const ergoBox = box as Box;
-    const R4Serialized = SConstant.from(ergoBox.additionalRegisters.R4!)
+    const R4Serialized = SConstant.from(box.additionalRegisters!.R4!)
       .data as Uint8Array[];
     for (let i = 0; i < R4Serialized.slice(2).length; i++) {
       this.dataSource
@@ -82,7 +67,7 @@ export class RaffleDetailsExtractor extends AbstractInitializableErgoExtractor<
         .values([
           {
             orderIndex: i,
-            raffleId: this.raffleId,
+            raffleId: box.assets![0].tokenId,
             content: String.fromCharCode(...R4Serialized.slice(2)[i]),
           },
         ])
@@ -90,15 +75,14 @@ export class RaffleDetailsExtractor extends AbstractInitializableErgoExtractor<
     }
 
     const data = {
-      boxId: ergoBox.boxId.toString(),
-      txId: ergoBox.transactionId,
-      raffleId: this.raffleId,
+      boxId: box.boxId.toString(),
+      txId: box.transactionId,
+      raffleId: box.assets![0].tokenId,
       name: String.fromCharCode(...R4Serialized[0]),
       description: String.fromCharCode(...R4Serialized[1]),
-      serialized: Buffer.from(serializeBox(ergoBox).toBytes()).toString(
+      serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(
         'base64',
       ),
-      extractor: this.id,
     };
 
     return data;

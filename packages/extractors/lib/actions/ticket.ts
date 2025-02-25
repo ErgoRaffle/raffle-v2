@@ -7,6 +7,7 @@ import {
 
 import { TicketBoxInterface } from '../interfaces/types';
 import { Ticket } from '../entities/ticket';
+import { pick } from 'lodash-es';
 
 export class TicketAction extends AbstractInitializableErgoExtractorAction<
   TicketBoxInterface,
@@ -27,6 +28,9 @@ export class TicketAction extends AbstractInitializableErgoExtractorAction<
 
   /**
    * create the box entity from extracted data and block information
+   * @param boxes
+   * @param block
+   * @param extractor
    */
   createEntity = (
     boxes: TicketBoxInterface[],
@@ -51,17 +55,20 @@ export class TicketAction extends AbstractInitializableErgoExtractorAction<
 
   /**
    * convert the database entity back to raw data
+   * @param entities
    */
   convertEntityToData = (entities: Ticket[]): TicketBoxInterface[] => {
-    return entities.map((data) => ({
-      boxId: data.boxId,
-      txId: data.txId,
-      raffleId: data.raffleId,
-      extractor: data.extractor,
-      serialized: data.serialized,
-      donatorErgoTree: data.donatorErgoTree,
-      rangeStart: data.rangeStart,
-      rangeEnd: data.rangeEnd,
-    }));
+    return entities.map((data) =>
+      pick(data, [
+        'boxId',
+        'txId',
+        'raffleId',
+        'extractor',
+        'serialized',
+        'donatorErgoTree',
+        'rangeStart',
+        'rangeEnd',
+      ]),
+    );
   };
 }
