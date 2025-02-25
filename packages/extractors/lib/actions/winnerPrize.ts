@@ -7,6 +7,7 @@ import {
 
 import { WinnerPrizeBoxInterface } from '../interfaces/types';
 import { WinnerPrize } from '../entities/winnerPrize';
+import { pick } from 'lodash-es';
 
 export class WinnerPrizeAction extends AbstractInitializableErgoExtractorAction<
   WinnerPrizeBoxInterface,
@@ -15,8 +16,6 @@ export class WinnerPrizeAction extends AbstractInitializableErgoExtractorAction<
   private readonly dataSource: DataSource;
   readonly logger: AbstractLogger;
   public repository: Repository<WinnerPrize>;
-  private readonly index: number;
-  private readonly rewardPercent: number;
 
   constructor(dataSource: DataSource, logger?: AbstractLogger) {
     super(dataSource, WinnerPrize, logger);
@@ -27,6 +26,9 @@ export class WinnerPrizeAction extends AbstractInitializableErgoExtractorAction<
 
   /**
    * create the box entity from extracted data and block information
+   * @param boxes
+   * @param block
+   * @param extractor
    */
   createEntity = (
     boxes: WinnerPrizeBoxInterface[],
@@ -52,20 +54,23 @@ export class WinnerPrizeAction extends AbstractInitializableErgoExtractorAction<
 
   /**
    * convert the database entity back to raw data
+   * @param entities
    */
   convertEntityToData = (
     entities: WinnerPrize[],
   ): WinnerPrizeBoxInterface[] => {
-    return entities.map((data) => ({
-      boxId: data.boxId,
-      txId: data.txId,
-      raffleId: data.raffleId,
-      extractor: data.extractor,
-      serialized: data.serialized,
-      winnerTicketIndex: data.winnerTicketIndex,
-      giftCount: data.giftCount,
-      winnerIndex: data.winnerIndex,
-      unwrappedGiftCount: data.unwrappedGiftCount,
-    }));
+    return entities.map((data) =>
+      pick(data, [
+        'boxId',
+        'txId',
+        'raffleId',
+        'extractor',
+        'serialized',
+        'winnerTicketIndex',
+        'giftCount',
+        'winnerIndex',
+        'unwrappedGiftCount',
+      ]),
+    );
   };
 }

@@ -9,7 +9,7 @@ import {
 import { TicketRepoAction } from '../actions/ticketRepo';
 import { TicketRepoBoxInterface } from '../interfaces/types';
 import { TicketRepo } from '../entities';
-import { ErgoAddress, Box, Network } from '@fleet-sdk/core';
+import { ErgoAddress, Box } from '@fleet-sdk/core';
 import { serializeBox } from '@fleet-sdk/serializer';
 
 export class TicketRepoExtractor extends AbstractInitializableErgoExtractor<
@@ -18,28 +18,20 @@ export class TicketRepoExtractor extends AbstractInitializableErgoExtractor<
 > {
   readonly actions: TicketRepoAction;
   private readonly id: string;
-  private readonly networkType: Network;
-  private readonly ergoTree?: string;
-  private readonly raffleId: string;
+  private readonly ergoTree: string;
 
   constructor(
     dataSource: DataSource,
     id: string,
-    networkType: Network,
     url: string,
     type: ErgoNetworkType,
     address: string,
-    raffleId: string,
     logger?: AbstractLogger,
     initialize = true,
   ) {
     super(type, url, address, logger, initialize);
     this.id = id;
-    this.networkType = networkType;
-    this.ergoTree = address
-      ? ErgoAddress.fromBase58(address).ergoTree.toString()
-      : undefined;
-    this.raffleId = raffleId;
+    this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
     this.actions = new TicketRepoAction(dataSource, this.logger);
   }
 
@@ -63,15 +55,14 @@ export class TicketRepoExtractor extends AbstractInitializableErgoExtractor<
    * @return extracted data in proper format
    */
   extractBoxData = (box: OutputBox): TicketRepoBoxInterface | undefined => {
-    const ergoBox = box as Box;
+    const raffleId = box.assets![0].tokenId;
     const data = {
-      boxId: ergoBox.boxId.toString(),
-      txId: ergoBox.transactionId,
-      raffleId: this.raffleId,
-      serialized: Buffer.from(serializeBox(ergoBox).toBytes()).toString(
+      boxId: box.boxId.toString(),
+      txId: box.transactionId,
+      raffleId: raffleId,
+      serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(
         'base64',
       ),
-      extractor: this.id,
     };
 
     return data;

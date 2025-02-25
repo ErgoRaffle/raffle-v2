@@ -7,6 +7,7 @@ import {
 
 import { GiftTokenRepoBoxInterface } from '../interfaces/types';
 import { GiftTokenRepo } from '../entities/giftTokenRepo';
+import { pick } from 'lodash-es';
 
 export class GiftTokenRepoAction extends AbstractInitializableErgoExtractorAction<
   GiftTokenRepoBoxInterface,
@@ -26,6 +27,9 @@ export class GiftTokenRepoAction extends AbstractInitializableErgoExtractorActio
 
   /**
    * create the box entity from extracted data and block information
+   * @param boxes
+   * @param block
+   * @param extractor
    */
   createEntity = (
     boxes: GiftTokenRepoBoxInterface[],
@@ -47,16 +51,13 @@ export class GiftTokenRepoAction extends AbstractInitializableErgoExtractorActio
 
   /**
    * convert the database entity back to raw data
+   * @param entities
    */
   convertEntityToData = (
     entities: GiftTokenRepo[],
   ): GiftTokenRepoBoxInterface[] => {
-    return entities.map((data) => ({
-      boxId: data.boxId,
-      txId: data.txId,
-      raffleId: data.raffleId,
-      extractor: data.extractor,
-      serialized: data.serialized,
-    }));
+    return entities.map((data) =>
+      pick(data, ['boxId', 'txId', 'raffleId', 'extractor', 'serialized']),
+    );
   };
 }
