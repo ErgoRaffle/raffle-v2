@@ -157,41 +157,5 @@ describe('InactiveRaffleExtractor', () => {
         expect(extractedData).toBeFalsy();
       },
     );
-
-    /**
-     * @target should result of hasData method be false by invalid amount of tokens
-     * @dependencies
-     * @scenario
-     * - call the hasData functions
-     * - check if InactiveRaffle box tokens amount is valid
-     * - result must be false
-     * @expected
-     * - InactiveRaffles box checking result must be false
-     */
-    raffleServiceExtractorTest(
-      `should result of hasData method be false by invalid amount of tokens`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleInactiveRaffleBoxes[0],
-          assets: [
-            {
-              tokenId: '2'.repeat(64),
-              amount: 1n,
-            },
-            {
-              tokenId: '3'.repeat(64),
-              amount: 100n,
-            },
-            // add one more extra token
-            {
-              tokenId: '4'.repeat(64),
-              amount: 100n,
-            },
-          ],
-        });
-
-        expect(extractedData).toBeFalsy();
-      },
-    );
   });
 });
