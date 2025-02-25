@@ -5,8 +5,8 @@ import { compile } from '@fleet-sdk/compiler';
 import WinstonLogger from '@rosen-bridge/winston-logger/dist/WinstonLogger';
 
 import { WinnerExtractor } from '../../lib/extractors/winner';
-import { createDatabase } from '../utilsFunctions.mock';
-import { sampleWinnerBoxes } from './data.mock';
+import { createDatabase } from '../utils.mock';
+import { sampleWinnerBoxes } from '../mocked/winner.mock';
 
 /*
  * create fixtures that contains below steps data:

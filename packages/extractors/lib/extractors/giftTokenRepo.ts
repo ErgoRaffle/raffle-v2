@@ -9,8 +9,8 @@ import {
 import { GiftTokenRepoAction } from '../actions/giftTokenRepo';
 import { GiftTokenRepoBoxInterface } from '../interfaces/types';
 import { GiftTokenRepo } from '../entities';
-import { ErgoAddress, Box, Network } from '@fleet-sdk/core';
-import { serializeBox } from '@fleet-sdk/serializer';
+import { ErgoAddress, Box } from '@fleet-sdk/core';
+import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 
 export class GiftTokenRepoExtractor extends AbstractInitializableErgoExtractor<
   GiftTokenRepoBoxInterface,
@@ -18,28 +18,20 @@ export class GiftTokenRepoExtractor extends AbstractInitializableErgoExtractor<
 > {
   readonly actions: GiftTokenRepoAction;
   private readonly id: string;
-  private readonly networkType: Network;
-  private readonly ergoTree?: string;
-  private readonly raffleId: string;
+  private readonly ergoTree: string;
 
   constructor(
     dataSource: DataSource,
     id: string,
-    networkType: Network,
     url: string,
     type: ErgoNetworkType,
     address: string,
-    raffleId: string,
     logger?: AbstractLogger,
     initialize = true,
   ) {
     super(type, url, address, logger, initialize);
     this.id = id;
-    this.networkType = networkType;
-    this.ergoTree = address
-      ? ErgoAddress.fromBase58(address).ergoTree.toString()
-      : undefined;
-    this.raffleId = raffleId;
+    this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
     this.actions = new GiftTokenRepoAction(dataSource, this.logger);
   }
 
@@ -63,15 +55,15 @@ export class GiftTokenRepoExtractor extends AbstractInitializableErgoExtractor<
    * @return extracted data in proper format
    */
   extractBoxData = (box: OutputBox): GiftTokenRepoBoxInterface | undefined => {
-    const ergoBox = box as Box;
+    const raffleId = SConstant.from(box.additionalRegisters!.R8!)
+      .data as Uint8Array;
     const data = {
-      boxId: ergoBox.boxId.toString(),
-      txId: ergoBox.transactionId,
-      raffleId: this.raffleId,
-      serialized: Buffer.from(serializeBox(ergoBox).toBytes()).toString(
+      boxId: box.boxId.toString(),
+      txId: box.transactionId,
+      raffleId: Buffer.from(raffleId).toString('hex'),
+      serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(
         'base64',
       ),
-      extractor: this.id,
     };
 
     return data;

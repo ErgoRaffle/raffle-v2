@@ -4,7 +4,6 @@ export interface ExtractedBox {
   boxId: string;
   txId: string;
   serialized: string;
-  extractor: string;
 }
 
 export interface RaffleServiceBoxInterface extends ExtractedBox {
@@ -25,6 +24,7 @@ export interface InactiveRaffleBoxInterface extends ExtractedBox {
   deadline: number;
   winnersPercentList: string;
   txFee: bigint;
+  raffleId: string;
 }
 
 export interface ActiveRaffleBoxInterface extends ExtractedBox {
