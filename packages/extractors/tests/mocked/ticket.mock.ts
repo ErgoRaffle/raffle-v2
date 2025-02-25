@@ -26,7 +26,6 @@ export const sampleTicketBoxes: OutputBox[] = [
 export const sampleTicketExtractedData = {
   boxId: sampleTicketBoxes[0].boxId,
   txId: sampleTicketBoxes[0].transactionId,
-  extractor: 'Ticket',
   rangeStart: 0n,
   rangeEnd: 100n,
   donatorErgoTree:
