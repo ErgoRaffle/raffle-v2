@@ -54,9 +54,7 @@ export class InactiveRaffleExtractor extends AbstractInitializableErgoExtractor<
    */
   hasData = (box: OutputBox): boolean => {
     return (
-      box.ergoTree == this.ergoTree &&
-      (box.assets!.length == 1 || box.assets!.length == 2) &&
-      boxHasToken(box, [this.licenseTokenId])
+      box.ergoTree == this.ergoTree && boxHasToken(box, [this.licenseTokenId])
     );
   };
 
