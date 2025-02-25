@@ -24,3 +24,15 @@ export const sampleWinnerBoxes: OutputBox[] = [
     index: 3,
   },
 ];
+
+export const sampleWinnerExtractedData = {
+  boxId: sampleWinnerBoxes[0].boxId,
+  txId: sampleWinnerBoxes[0].transactionId,
+  index: 1,
+  raffleId: 'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
+  rewardPercent: 1000,
+  serialized:
+    'gI7OHBkGAQEB0XMArtBiAdKd6qXYCV/jCTCEVBKwk9K6dbSOMcJd/58FpnOWdz' +
+    'D7AQQRA9AP5qDFAYCHpw4EAgUADiCPQKkvIoCUUuoLyBkzFfbD2rvLoN7+bNk/okRPxWT/Cjbb2i' +
+    'A9IUOlGVeUHXo/pYh5WSHIZv9AdePubpkfDGLVAw==',
+};
