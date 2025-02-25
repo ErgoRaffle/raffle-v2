@@ -10,7 +10,7 @@ import {
 import { RaffleServiceAction } from '../actions/raffleService';
 import { RaffleServiceBoxInterface } from '../interfaces/types';
 import { RaffleService } from '../entities';
-import { ErgoAddress, Box, Network } from '@fleet-sdk/core';
+import { ErgoAddress, Box } from '@fleet-sdk/core';
 import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 
 export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<
@@ -19,14 +19,12 @@ export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<
 > {
   readonly actions: RaffleServiceAction;
   private readonly id: string;
-  private readonly networkType: Network;
-  private readonly ergoTree?: string;
+  private readonly ergoTree: string;
   private readonly serviceNFTId: string;
 
   constructor(
     dataSource: DataSource,
     id: string,
-    networkType: Network,
     url: string,
     type: ErgoNetworkType,
     address: string,
@@ -36,10 +34,7 @@ export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<
   ) {
     super(type, url, address, logger, initialize);
     this.id = id;
-    this.networkType = networkType;
-    this.ergoTree = address
-      ? ErgoAddress.fromBase58(address).ergoTree.toString()
-      : undefined;
+    this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
     this.serviceNFTId = serviceNFTId;
     this.actions = new RaffleServiceAction(dataSource, this.logger);
   }
@@ -66,19 +61,17 @@ export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<
    * @return extracted data in proper format
    */
   extractBoxData = (box: OutputBox): RaffleServiceBoxInterface | undefined => {
-    const ergoBox = box as Box;
-    const R4Serialized = SConstant.from(ergoBox.additionalRegisters.R4!)
+    const R4Serialized = SConstant.from(box.additionalRegisters!.R4!)
       .data as bigint[];
     const data = {
-      boxId: ergoBox.boxId.toString(),
-      txId: ergoBox.transactionId,
-      serialized: Buffer.from(serializeBox(ergoBox).toBytes()).toString(
+      boxId: box.boxId.toString(),
+      txId: box.transactionId,
+      serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(
         'base64',
       ),
       serviceFeePercent: Number(R4Serialized[0]),
       implementerFeePercent: Number(R4Serialized[1]),
       creationFee: R4Serialized[2],
-      extractor: this.id,
     };
 
     return data;

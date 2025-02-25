@@ -2,13 +2,13 @@ import { describe, it, expect } from 'vitest';
 import { Network } from '@fleet-sdk/core';
 import { compile } from '@fleet-sdk/compiler';
 import { ErgoNetworkType } from '@rosen-bridge/scanner';
-import WinstonLogger from '@rosen-bridge/winston-logger/dist/WinstonLogger';
 
 import { TicketRepoExtractor } from '../../lib/extractors/ticketRepo';
-import { createDatabase } from '../utilsFunctions.mock';
-import { sampleTicketRepo } from './data.mock';
-
-const SAMPLE_RAFFLE_ID = 'F'.repeat(64);
+import { createDatabase } from '../utils.mock';
+import {
+  sampleTicketRepo,
+  sampleTicketRepoExtractedData,
+} from '../mocked/ticketRepo.mock';
 
 /*
  * create fixtures that contains below steps data:
@@ -21,21 +21,13 @@ const createTicketRepoExtractorTest = async () => {
   const boxErgoTree = compile('{sigmaProp(true);}');
   const boxFalseErgoTree = compile('{sigmaProp(false);}');
 
-  const winstonLogger = new WinstonLogger([
-    { type: 'console', level: 'debug' },
-  ]);
-  const logger = winstonLogger.getLogger(import.meta.url);
-
   return it.extend({
     extractor: new TicketRepoExtractor(
       dataSource,
       'TicketRepo',
-      Network.Testnet,
       'http://127.0.0.1/',
       ErgoNetworkType.Node,
       boxErgoTree.toAddress(Network.Testnet).toString(),
-      SAMPLE_RAFFLE_ID,
-      logger,
     ),
     boxFalseErgoTree: boxFalseErgoTree,
   });
@@ -61,15 +53,7 @@ describe('TicketRepoExtractor', () => {
           sampleTicketRepo[0],
         );
 
-        expect(extractedData).toEqual({
-          boxId: sampleTicketRepo[0].boxId,
-          txId: sampleTicketRepo[0].transactionId,
-          raffleId: SAMPLE_RAFFLE_ID,
-          serialized:
-            'wMOTBxkGAQEB0XMArtBiAdKd6qXYCV/jCTCEVBKwk9K6dbSOMcJd/58FpnOWdzD7gJTr3AMDDg9UaWNrZXRSZXBvVG9r' +
-            'ZW4OAA4BMBBQc4LOwiPc2T0UwTAJ3cuzWF0Tmiasnrl6KwvkxjbSAQ==',
-          extractor: 'TicketRepo',
-        });
+        expect(extractedData).toEqual(sampleTicketRepoExtractedData);
       },
     );
   });

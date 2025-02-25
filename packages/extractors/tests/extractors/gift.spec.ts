@@ -5,8 +5,8 @@ import { compile } from '@fleet-sdk/compiler';
 import WinstonLogger from '@rosen-bridge/winston-logger/dist/WinstonLogger';
 
 import { GiftExtractor } from '../../lib/extractors/gift';
-import { createDatabase } from '../utilsFunctions.mock';
-import { sampleGiftBoxes } from './data.mock';
+import { createDatabase } from '../utils.mock';
+import { sampleGiftBoxes } from '../mocked/gift.mock';
 
 /*
  * create fixtures that contains below steps data:
@@ -28,12 +28,9 @@ const createGiftExtractorTest = async () => {
     extractor: new GiftExtractor(
       dataSource,
       'Gift',
-      Network.Testnet,
       'http://127.0.0.1/',
       ErgoNetworkType.Node,
       boxErgoTree.toAddress(Network.Testnet).toString(),
-      '1'.repeat(64),
-      '8f40a92f22809452ea0bc8193315f6c3dabbcba0defe6cd93fa2444fc564ff0a',
       logger,
     ),
     dataSource: dataSource,
@@ -59,17 +56,18 @@ describe('GiftExtractor', () => {
       async ({ extractor }) => {
         const extractedData = await extractor.extractBoxData(
           sampleGiftBoxes[0],
+          undefined,
+          'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
         );
 
         expect(extractedData).toEqual({
           boxId: sampleGiftBoxes[0].boxId,
           txId: sampleGiftBoxes[0].transactionId,
-          extractor: 'Gift',
           winnerIndex: 1,
           donatorErgoTree:
             '0e200f318e1cd5860000282d016ef8b4ac1d06486b2e83be2777c86772b25886ecdc',
           raffleId:
-            '1111111111111111111111111111111111111111111111111111111111111111',
+            'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
           serialized:
             'gKPDRxkGAQEB0XMArtBiAo9AqS8igJRS6gvIGTMV9sPau8ug3v5s2T+iRE/FZP8K' +
             'AaL5RHkgRHarb/jF9GH9pW6h7t+C9LsdplgcOtKeSkXtCgMOIA8xjhzVhgAAKC0B' +
@@ -116,28 +114,6 @@ describe('GiftExtractor', () => {
         const extractedData = await extractor.hasData({
           ...sampleGiftBoxes[0],
           ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
-        });
-
-        expect(extractedData).toBeFalsy();
-      },
-    );
-
-    /**
-     * @target should result of hasData method be false by invalid giftTokenId
-     * @dependencies
-     * @scenario
-     * - call the hasData functions
-     * - check if Gift box
-     * - result must be false
-     * @expected
-     * - Gifts box checking result must be false
-     */
-    giftExtractorTest(
-      `should result of hasData method be false by invalid box giftTokenId`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleGiftBoxes[0],
-          assets: [{ tokenId: '0'.repeat(64), amount: 1n }],
         });
 
         expect(extractedData).toBeFalsy();

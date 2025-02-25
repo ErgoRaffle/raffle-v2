@@ -26,6 +26,9 @@ export class ActiveRaffleAction extends AbstractInitializableErgoExtractorAction
 
   /**
    * create the box entity from extracted data and block information
+   * @param boxes
+   * @param block
+   * @param extractor
    */
   createEntity = (
     boxes: ActiveRaffleBoxInterface[],
@@ -47,6 +50,7 @@ export class ActiveRaffleAction extends AbstractInitializableErgoExtractorAction
 
   /**
    * convert the database entity back to raw data
+   * @param entities
    */
   convertEntityToData = (
     entities: ActiveRaffle[],
