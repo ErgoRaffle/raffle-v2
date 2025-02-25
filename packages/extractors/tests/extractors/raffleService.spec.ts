@@ -5,7 +5,7 @@ import { compile } from '@fleet-sdk/compiler';
 
 import { RaffleServiceExtractor } from '../../lib/extractors/raffleService';
 import { createDatabase } from '../utils.mock';
-import { sampleRaffleServiceBoxes } from '../mocked/raffleService.mock';
+import { sampleRaffleServiceBoxes } from './mocked/raffleService.mock';
 
 /*
  * create fixtures that contains below steps data:

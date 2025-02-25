@@ -10,7 +10,7 @@ import {
   sampleInactiveRaffleExtensions,
   sampleInactiveRaffleExtractedData,
   sampleInactiveRaffleExtractedDataForEmptyExtension,
-} from '../mocked/inactiveRaffle.mock';
+} from './mocked/inactiveRaffle.mock';
 
 /*
  * create fixtures that contains below steps data:
