@@ -6,19 +6,20 @@ import {
   ErgoNetworkType,
 } from '@rosen-bridge/abstract-extractor';
 
-import { ActiveRaffleAction } from '../actions/activeRaffle';
-import { ActiveRaffleBoxInterface } from '../interfaces/types';
-import { ActiveRaffle } from '../entities';
+import { RaffleGeneralAction } from '../actions/raffleGeneralAction';
+import { RaffleGeneralInterface } from '../interfaces/types';
+import { RaffleGeneralEntity } from '../entities';
 import { ErgoAddress, Box } from '@fleet-sdk/core';
 import { serializeBox } from '@fleet-sdk/serializer';
 
 export class ActiveRaffleExtractor extends AbstractInitializableErgoExtractor<
-  ActiveRaffleBoxInterface,
-  ActiveRaffle
+  RaffleGeneralInterface,
+  RaffleGeneralEntity
 > {
-  readonly actions: ActiveRaffleAction;
+  readonly actions: RaffleGeneralAction;
   private readonly id: string;
   private readonly ergoTree: string;
+  private readonly raffleLicense: string;
 
   constructor(
     dataSource: DataSource,
@@ -26,13 +27,15 @@ export class ActiveRaffleExtractor extends AbstractInitializableErgoExtractor<
     url: string,
     type: ErgoNetworkType,
     address: string,
+    raffleLicense: string,
     logger?: AbstractLogger,
     initialize = true,
   ) {
     super(type, url, address, logger, initialize);
     this.id = id;
     this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
-    this.actions = new ActiveRaffleAction(dataSource, this.logger);
+    this.actions = new RaffleGeneralAction(dataSource, this.logger);
+    this.raffleLicense = raffleLicense;
   }
 
   /**
@@ -46,7 +49,12 @@ export class ActiveRaffleExtractor extends AbstractInitializableErgoExtractor<
    * @return true if the box has the required data and false otherwise
    */
   hasData = (box: OutputBox): boolean => {
-    return box.ergoTree == this.ergoTree;
+    return (
+      box.ergoTree == this.ergoTree &&
+      box.assets!.length >= 2 &&
+      box.assets!.length <= 3 &&
+      box.assets![0].tokenId == this.raffleLicense
+    );
   };
 
   /**
@@ -54,7 +62,7 @@ export class ActiveRaffleExtractor extends AbstractInitializableErgoExtractor<
    * @param box
    * @return extracted data in proper format
    */
-  extractBoxData = (box: OutputBox): ActiveRaffleBoxInterface | undefined => {
+  extractBoxData = (box: OutputBox): RaffleGeneralInterface | undefined => {
     const data = {
       boxId: box.boxId.toString(),
       txId: box.transactionId,

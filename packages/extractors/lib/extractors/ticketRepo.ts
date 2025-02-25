@@ -6,17 +6,17 @@ import {
   ErgoNetworkType,
 } from '@rosen-bridge/abstract-extractor';
 
-import { TicketRepoAction } from '../actions/ticketRepo';
-import { TicketRepoBoxInterface } from '../interfaces/types';
-import { TicketRepo } from '../entities';
+import { RaffleGeneralAction } from '../actions/raffleGeneralAction';
+import { RaffleGeneralInterface } from '../interfaces/types';
+import { RaffleGeneralEntity } from '../entities';
 import { ErgoAddress, Box } from '@fleet-sdk/core';
 import { serializeBox } from '@fleet-sdk/serializer';
 
 export class TicketRepoExtractor extends AbstractInitializableErgoExtractor<
-  TicketRepoBoxInterface,
-  TicketRepo
+  RaffleGeneralInterface,
+  RaffleGeneralEntity
 > {
-  readonly actions: TicketRepoAction;
+  readonly actions: RaffleGeneralAction;
   private readonly id: string;
   private readonly ergoTree: string;
 
@@ -32,7 +32,7 @@ export class TicketRepoExtractor extends AbstractInitializableErgoExtractor<
     super(type, url, address, logger, initialize);
     this.id = id;
     this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
-    this.actions = new TicketRepoAction(dataSource, this.logger);
+    this.actions = new RaffleGeneralAction(dataSource, this.logger);
   }
 
   /**
@@ -46,7 +46,7 @@ export class TicketRepoExtractor extends AbstractInitializableErgoExtractor<
    * @return true if the box has the required data and false otherwise
    */
   hasData = (box: OutputBox): boolean => {
-    return box.ergoTree == this.ergoTree;
+    return box.ergoTree == this.ergoTree && box.assets?.length == 1;
   };
 
   /**
@@ -54,7 +54,7 @@ export class TicketRepoExtractor extends AbstractInitializableErgoExtractor<
    * @param box
    * @return extracted data in proper format
    */
-  extractBoxData = (box: OutputBox): TicketRepoBoxInterface | undefined => {
+  extractBoxData = (box: OutputBox): RaffleGeneralInterface | undefined => {
     const raffleId = box.assets![0].tokenId;
     const data = {
       boxId: box.boxId.toString(),

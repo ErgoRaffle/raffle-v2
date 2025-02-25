@@ -28,6 +28,7 @@ const createActiveRaffleExtractorTest = async () => {
       'http://127.0.0.1/',
       ErgoNetworkType.Node,
       boxErgoTree.toAddress(Network.Testnet).toString(),
+      '716149d5c68e4ea1ea0529b60c7029797ffb26f3d401d44f9aadd4b090593e4e',
     ),
     boxFalseErgoTree: boxFalseErgoTree,
   });
