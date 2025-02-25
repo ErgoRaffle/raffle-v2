@@ -7,6 +7,7 @@ import {
 
 import { WinnerBoxInterface } from '../interfaces/types';
 import { Winner } from '../entities/winner';
+import { pick } from 'lodash-es';
 
 export class WinnerAction extends AbstractInitializableErgoExtractorAction<
   WinnerBoxInterface,
@@ -27,6 +28,9 @@ export class WinnerAction extends AbstractInitializableErgoExtractorAction<
 
   /**
    * create the box entity from extracted data and block information
+   * @param boxes
+   * @param block
+   * @param extractor
    */
   createEntity = (
     boxes: WinnerBoxInterface[],
@@ -50,16 +54,19 @@ export class WinnerAction extends AbstractInitializableErgoExtractorAction<
 
   /**
    * convert the database entity back to raw data
+   * @param data
    */
   convertEntityToData = (entities: Winner[]): WinnerBoxInterface[] => {
-    return entities.map((data) => ({
-      boxId: data.boxId,
-      txId: data.txId,
-      raffleId: data.raffleId,
-      extractor: data.extractor,
-      serialized: data.serialized,
-      index: data.index,
-      rewardPercent: data.rewardPercent,
-    }));
+    return entities.map((data) =>
+      pick(data, [
+        'boxId',
+        'txId',
+        'raffleId',
+        'extractor',
+        'serialized',
+        'index',
+        'rewardPercent',
+      ]),
+    );
   };
 }

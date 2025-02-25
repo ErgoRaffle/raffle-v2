@@ -4,13 +4,12 @@ import {
   AbstractInitializableErgoExtractor,
   OutputBox,
   ErgoNetworkType,
-  boxHasToken,
 } from '@rosen-bridge/abstract-extractor';
 
 import { WinnerAction } from '../actions/winner';
 import { WinnerBoxInterface } from '../interfaces/types';
 import { Winner } from '../entities';
-import { ErgoAddress, Box, Network } from '@fleet-sdk/core';
+import { ErgoAddress, Box } from '@fleet-sdk/core';
 import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 
 export class WinnerExtractor extends AbstractInitializableErgoExtractor<
@@ -19,31 +18,20 @@ export class WinnerExtractor extends AbstractInitializableErgoExtractor<
 > {
   readonly actions: WinnerAction;
   private readonly id: string;
-  private readonly networkType: Network;
-  private readonly ergoTree?: string;
-  private readonly raffleId: string;
-  private readonly ticketTokenId: string;
+  private readonly ergoTree: string;
 
   constructor(
     dataSource: DataSource,
     id: string,
-    networkType: Network,
     url: string,
     type: ErgoNetworkType,
     address: string,
-    raffleId: string,
-    ticketTokenId: string,
     logger?: AbstractLogger,
     initialize = true,
   ) {
     super(type, url, address, logger, initialize);
     this.id = id;
-    this.networkType = networkType;
-    this.ergoTree = address
-      ? ErgoAddress.fromBase58(address).ergoTree.toString()
-      : undefined;
-    this.raffleId = raffleId;
-    this.ticketTokenId = ticketTokenId;
+    this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
     this.actions = new WinnerAction(dataSource, this.logger);
   }
 
@@ -58,9 +46,7 @@ export class WinnerExtractor extends AbstractInitializableErgoExtractor<
    * @return true if the box has the required data and false otherwise
    */
   hasData = (box: OutputBox): boolean => {
-    return (
-      box.ergoTree == this.ergoTree && boxHasToken(box, [this.ticketTokenId])
-    );
+    return box.ergoTree == this.ergoTree;
   };
 
   /**
@@ -69,21 +55,18 @@ export class WinnerExtractor extends AbstractInitializableErgoExtractor<
    * @return extracted data in proper format
    */
   extractBoxData = (box: OutputBox): WinnerBoxInterface | undefined => {
-    const ergoBox = box as Box;
-    const R4Serialized = SConstant.from(ergoBox.additionalRegisters.R4!)
+    const R4Serialized = SConstant.from(box.additionalRegisters!.R4!)
       .data as bigint[];
-    const index = SConstant.from(ergoBox.additionalRegisters.R5!)
-      .data as number;
+    const index = SConstant.from(box.additionalRegisters!.R5!).data as number;
     const data = {
-      boxId: ergoBox.boxId.toString(),
-      txId: ergoBox.transactionId,
-      raffleId: this.raffleId,
+      boxId: box.boxId.toString(),
+      txId: box.transactionId,
+      raffleId: box.assets![0].tokenId,
       index: index,
       rewardPercent: Number(R4Serialized[0]),
-      serialized: Buffer.from(serializeBox(ergoBox).toBytes()).toString(
+      serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(
         'base64',
       ),
-      extractor: this.id,
     };
 
     return data;

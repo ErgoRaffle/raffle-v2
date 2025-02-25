@@ -5,8 +5,11 @@ import { compile } from '@fleet-sdk/compiler';
 import WinstonLogger from '@rosen-bridge/winston-logger/dist/WinstonLogger';
 
 import { RaffleDetailsExtractor } from '../../lib/extractors/raffleDetails';
-import { createDatabase } from '../utilsFunctions.mock';
-import { sampleRaffleDetailsBoxes } from './data.mock';
+import { createDatabase } from '../utils.mock';
+import {
+  sampleRaffleDetailsBoxes,
+  sampleRaffleDetailsExtractedData,
+} from '../mocked/raffleDetails.mock';
 import { Picture } from '../../lib/entities';
 
 /*
@@ -62,21 +65,9 @@ describe('RaffleDetailsExtractor', () => {
           sampleRaffleDetailsBoxes[0],
         );
 
-        expect(extractedData).toEqual({
-          boxId: sampleRaffleDetailsBoxes[0].boxId,
-          txId: sampleRaffleDetailsBoxes[0].transactionId,
-          extractor: 'RaffleDetails',
-          name: 'Test',
-          description: 'Some descriptions...',
-          raffleId:
-            '1111111111111111111111111111111111111111111111111111111111111111',
-          serialized:
-            'wMOTBxkGAQEB0XMArtBiAdKd6qXYCV/jCTCEVBKwk9K6dbSOMcJd/58FpnOWdzD7' +
-            'AQEaBQRUZXN0FFNvbWUgZGVzY3JpcHRpb25zLi4uEXBpY3R1cmUgY29udGVudCAx' +
-            'EXBpY3R1cmUgY29udGVudCAyEXBpY3R1cmUgY29udGVudCAzNtvaID0hQ6UZV5Qd' +
-            'ej+liHlZIchm/0B14+5umR8MYtUB',
-        });
+        expect(extractedData).toEqual(sampleRaffleDetailsExtractedData);
 
+        await new Promise((r) => setTimeout(r, 100));
         expect(await dataSource.manager.count(Picture)).toEqual(3);
       },
     );
