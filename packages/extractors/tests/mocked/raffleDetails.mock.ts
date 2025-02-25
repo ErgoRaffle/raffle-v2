@@ -32,7 +32,6 @@ export const sampleRaffleDetailsBoxes: OutputBox[] = [
 export const sampleRaffleDetailsExtractedData = {
   boxId: sampleRaffleDetailsBoxes[0].boxId,
   txId: sampleRaffleDetailsBoxes[0].transactionId,
-  extractor: 'RaffleDetails',
   name: 'Test',
   description: 'Some descriptions...',
   raffleId: 'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
