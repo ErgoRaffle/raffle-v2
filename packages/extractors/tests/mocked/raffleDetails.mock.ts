@@ -35,7 +35,7 @@ export const sampleRaffleDetailsExtractedData = {
   extractor: 'RaffleDetails',
   name: 'Test',
   description: 'Some descriptions...',
-  raffleId: '1111111111111111111111111111111111111111111111111111111111111111',
+  raffleId: 'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
   serialized:
     'wMOTBxkGAQEB0XMArtBiAdKd6qXYCV/jCTCEVBKwk9K6dbSOMcJd/58FpnOWdzD7' +
     'AQEaBQRUZXN0FFNvbWUgZGVzY3JpcHRpb25zLi4uEXBpY3R1cmUgY29udGVudCAx' +
