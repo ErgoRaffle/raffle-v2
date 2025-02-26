@@ -1,3 +1,3 @@
 import 'reflect-metadata';
-export { RaffleService } from './raffleService';
-export { InactiveRaffle } from './inactiveRaffle';
+export { RaffleServiceEntity } from './raffleService';
+export { RaffleEntity } from './inactiveRaffle';

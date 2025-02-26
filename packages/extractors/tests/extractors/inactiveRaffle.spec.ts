@@ -36,7 +36,7 @@ const createInactiveRaffleExtractorTest = async () => {
   });
 };
 
-const raffleServiceExtractorTest = await createInactiveRaffleExtractorTest();
+const extractorTest = await createInactiveRaffleExtractorTest();
 
 describe('InactiveRaffleExtractor', () => {
   describe('extractBoxData', () => {
@@ -49,7 +49,7 @@ describe('InactiveRaffleExtractor', () => {
      * @expected
      * - InactiveRaffles should extract successfully
      */
-    raffleServiceExtractorTest(
+    extractorTest(
       `should extract data from sample InactiveRaffle box`,
       async ({ extractor }) => {
         const extractedData = await extractor.extractBoxData(
@@ -70,7 +70,7 @@ describe('InactiveRaffleExtractor', () => {
      * @expected
      * - InactiveRaffles should extract successfully
      */
-    raffleServiceExtractorTest(
+    extractorTest(
       `should extract data from sample InactiveRaffle box`,
       async ({ extractor }) => {
         const extractedData = await extractor.extractBoxData(
@@ -96,7 +96,7 @@ describe('InactiveRaffleExtractor', () => {
      * @expected
      * - InactiveRaffles box checking result must be true
      */
-    raffleServiceExtractorTest(
+    extractorTest(
       `should result of hasData method be true by valid box data`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData(
@@ -117,7 +117,7 @@ describe('InactiveRaffleExtractor', () => {
      * @expected
      * - InactiveRaffles box checking result must be false
      */
-    raffleServiceExtractorTest(
+    extractorTest(
       `should result of hasData method be false by invalid box address`,
       async ({ extractor, boxFalseErgoTree }) => {
         const extractedData = await extractor.hasData({
@@ -140,7 +140,7 @@ describe('InactiveRaffleExtractor', () => {
      * @expected
      * - InactiveRaffles box checking result must be false
      */
-    raffleServiceExtractorTest(
+    extractorTest(
       `should result of hasData method be false by invalid license token-id`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
@@ -168,7 +168,7 @@ describe('InactiveRaffleExtractor', () => {
      * @expected
      * - InactiveRaffles box checking result must be false
      */
-    raffleServiceExtractorTest(
+    extractorTest(
       `should result of hasData method be false when additionalRegisters is empty`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
@@ -190,7 +190,7 @@ describe('InactiveRaffleExtractor', () => {
      * @expected
      * - InactiveRaffles box checking result must be false
      */
-    raffleServiceExtractorTest(
+    extractorTest(
       `should result of hasData method be false when R4 length is not valid`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
@@ -215,7 +215,7 @@ describe('InactiveRaffleExtractor', () => {
      * @expected
      * - InactiveRaffles box checking result must be false
      */
-    raffleServiceExtractorTest(
+    extractorTest(
       `should result of hasData method be false when R7 length is not valid`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
