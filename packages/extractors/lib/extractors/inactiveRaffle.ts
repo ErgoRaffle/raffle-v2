@@ -10,13 +10,13 @@ import {
 
 import { InactiveRaffleAction } from '../actions/inactiveRaffle';
 import { InactiveRaffleBoxInterface } from '../interfaces/types';
-import { InactiveRaffle } from '../entities';
+import { RaffleEntity } from '../entities';
 import { Box, ErgoAddress } from '@fleet-sdk/core';
 import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 
 export class InactiveRaffleExtractor extends AbstractInitializableErgoExtractor<
   InactiveRaffleBoxInterface,
-  InactiveRaffle
+  RaffleEntity
 > {
   readonly actions: InactiveRaffleAction;
   private readonly id: string;
@@ -63,6 +63,7 @@ export class InactiveRaffleExtractor extends AbstractInitializableErgoExtractor<
           .length == 2
       );
     } catch (err) {
+      this.logger.error(`InactiveRaffleExtractor Error: ${err}`);
       return false;
     }
   };

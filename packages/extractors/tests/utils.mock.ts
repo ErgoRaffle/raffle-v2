@@ -4,7 +4,7 @@ import { MockChain } from '@fleet-sdk/mock-chain';
 import { migrations as scannerMigrations } from '@rosen-bridge/scanner';
 
 import { migrations } from '../lib/migrations';
-import { RaffleService, InactiveRaffle } from '../lib/entities';
+import { RaffleServiceEntity, RaffleEntity } from '../lib/entities';
 
 const chain = new MockChain(1);
 export const serviceWallet = chain.addParty(
@@ -29,7 +29,7 @@ export const createDatabase = async (): Promise<DataSource> => {
     type: 'sqlite',
     database: `:memory:`,
     dropSchema: true,
-    entities: [RaffleService, InactiveRaffle],
+    entities: [RaffleServiceEntity, RaffleEntity],
     migrations: [...migrations.sqlite, ...scannerMigrations.sqlite],
     synchronize: false,
     logging: false,
