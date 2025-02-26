@@ -50,12 +50,18 @@ export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<
    * @return true if the box has the required data and false otherwise
    */
   hasData = (box: OutputBox): boolean => {
-    return (
-      box.ergoTree == this.ergoTree &&
-      boxHasToken(box, [this.serviceNFTId]) &&
-      (SConstant.from(box.additionalRegisters!.R4!).data as bigint[]).length ==
-        4
-    );
+    try {
+      return (
+        box.ergoTree == this.ergoTree &&
+        boxHasToken(box, [this.serviceNFTId]) &&
+        box.additionalRegisters != undefined &&
+        box.additionalRegisters.R4 != undefined &&
+        (SConstant.from(box.additionalRegisters!.R4!).data as bigint[])
+          .length == 4
+      );
+    } catch (err) {
+      return false;
+    }
   };
 
   /**

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Network } from '@fleet-sdk/core';
+import { Network, SByte, SColl } from '@fleet-sdk/core';
 import { ErgoNetworkType } from '@rosen-bridge/scanner';
 import { compile } from '@fleet-sdk/compiler';
 
@@ -122,6 +122,52 @@ describe('RaffleServiceExtractor', () => {
         const extractedData = await extractor.hasData({
           ...sampleRaffleServiceBoxes[0],
           assets: [{ tokenId: '0'.repeat(64), amount: 1n }],
+        });
+
+        expect(extractedData).toBeFalsy();
+      },
+    );
+
+    /**
+     * @target should result of hasData method be false when the R4 missed
+     * @dependencies
+     * @scenario
+     * - call the hasData functions by empty additionalRegisters
+     * - check RaffleService box
+     * - result must be false
+     * @expected
+     * - RaffleServices box checking result must be false
+     */
+    raffleServiceExtractorTest(
+      `should result of hasData method be false when the R4 missed`,
+      async ({ extractor }) => {
+        const extractedData = await extractor.hasData({
+          ...sampleRaffleServiceBoxes[0],
+          additionalRegisters: {},
+        });
+
+        expect(extractedData).toBeFalsy();
+      },
+    );
+
+    /**
+     * @target should result of hasData method be false when the R4 value length is not equal to 4
+     * @dependencies
+     * @scenario
+     * - call the hasData functions by empty additionalRegisters
+     * - check RaffleService box
+     * - result must be false
+     * @expected
+     * - RaffleServices box checking result must be false
+     */
+    raffleServiceExtractorTest(
+      `should result of hasData method be false when the R4 value length is not equal to 4`,
+      async ({ extractor }) => {
+        const extractedData = await extractor.hasData({
+          ...sampleRaffleServiceBoxes[0],
+          additionalRegisters: {
+            R4: SColl(SByte, [1, 2, 3]).toHex(),
+          },
         });
 
         expect(extractedData).toBeFalsy();
