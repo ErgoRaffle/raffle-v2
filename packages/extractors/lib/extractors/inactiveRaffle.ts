@@ -53,14 +53,18 @@ export class InactiveRaffleExtractor extends AbstractInitializableErgoExtractor<
    * @return true if the box has the required data and false otherwise
    */
   hasData = (box: OutputBox): boolean => {
-    return (
-      box.ergoTree == this.ergoTree &&
-      boxHasToken(box, [this.licenseTokenId]) &&
-      (SConstant.from(box.additionalRegisters!.R4!).data as bigint[]).length ==
-        7 &&
-      (SConstant.from(box.additionalRegisters!.R7!).data as Uint8Array[])
-        .length == 2
-    );
+    try {
+      return (
+        box.ergoTree == this.ergoTree &&
+        boxHasToken(box, [this.licenseTokenId]) &&
+        (SConstant.from(box.additionalRegisters!.R4!).data as bigint[])
+          .length == 7 &&
+        (SConstant.from(box.additionalRegisters!.R7!).data as Uint8Array[])
+          .length == 2
+      );
+    } catch (err) {
+      return false;
+    }
   };
 
   /**
