@@ -8,7 +8,7 @@ import { createDatabase } from '../utils.mock';
 import {
   sampleGiftTokenRepo,
   sampleGiftTokenRepoExtractedData,
-} from '../mocked/giftTokenRepo.mock';
+} from './mocked/giftTokenRepo.mock';
 
 /*
  * create fixtures that contains below steps data:

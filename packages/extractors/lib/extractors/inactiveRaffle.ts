@@ -54,7 +54,12 @@ export class InactiveRaffleExtractor extends AbstractInitializableErgoExtractor<
    */
   hasData = (box: OutputBox): boolean => {
     return (
-      box.ergoTree == this.ergoTree && boxHasToken(box, [this.licenseTokenId])
+      box.ergoTree == this.ergoTree &&
+      boxHasToken(box, [this.licenseTokenId]) &&
+      (SConstant.from(box.additionalRegisters!.R4!).data as bigint[]).length ==
+        7 &&
+      (SConstant.from(box.additionalRegisters!.R7!).data as Uint8Array[])
+        .length == 2
     );
   };
 
@@ -77,25 +82,14 @@ export class InactiveRaffleExtractor extends AbstractInitializableErgoExtractor<
     let winnersPercentList = '';
     let implementorErgoTree = '';
     let creatorErgoTree = '';
-
     try {
       winnersPercentList =
         (
           SConstant.from(inputExtensions![0]['0']).data as bigint[]
         ).toString() || '';
-    } catch (err) {
-      this.logger.error(`Error in parsing inactiveRaffle context data: ${err}`);
-    }
-
-    try {
       implementorErgoTree = Buffer.from(
         (SConstant.from(inputExtensions![0]['1']).data as Uint8Array[])[0],
       ).toString('hex');
-    } catch (err) {
-      this.logger.error(`Error in parsing inactiveRaffle context data: ${err}`);
-    }
-
-    try {
       creatorErgoTree = Buffer.from(
         (SConstant.from(inputExtensions![0]['1']).data as Uint8Array[])[1],
       ).toString('hex');

@@ -8,7 +8,7 @@ import { createDatabase } from '../utils.mock';
 import {
   sampleTicketRepo,
   sampleTicketRepoExtractedData,
-} from '../mocked/ticketRepo.mock';
+} from './mocked/ticketRepo.mock';
 
 /*
  * create fixtures that contains below steps data:

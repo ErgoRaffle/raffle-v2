@@ -8,7 +8,7 @@ import { createDatabase } from '../utils.mock';
 import {
   sampleActiveRaffleBoxes,
   sampleActiveRaffleExtractedData,
-} from '../mocked/activeRaffle.mock';
+} from './mocked/activeRaffle.mock';
 
 /*
  * create fixtures that contains below steps data:
