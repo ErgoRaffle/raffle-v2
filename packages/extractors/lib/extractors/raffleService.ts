@@ -50,9 +50,18 @@ export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<
    * @return true if the box has the required data and false otherwise
    */
   hasData = (box: OutputBox): boolean => {
-    return (
-      box.ergoTree == this.ergoTree && boxHasToken(box, [this.serviceNFTId])
-    );
+    try {
+      return (
+        box.ergoTree == this.ergoTree &&
+        boxHasToken(box, [this.serviceNFTId]) &&
+        box.additionalRegisters != undefined &&
+        box.additionalRegisters.R4 != undefined &&
+        (SConstant.from(box.additionalRegisters!.R4!).data as bigint[])
+          .length == 4
+      );
+    } catch (err) {
+      return false;
+    }
   };
 
   /**
@@ -61,13 +70,12 @@ export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<
    * @return extracted data in proper format
    */
   extractBoxData = (box: OutputBox): RaffleServiceBoxInterface | undefined => {
-    const ergoBox = box as Box;
-    const R4Serialized = SConstant.from(ergoBox.additionalRegisters.R4!)
+    const R4Serialized = SConstant.from(box.additionalRegisters!.R4!)
       .data as bigint[];
     const data = {
-      boxId: ergoBox.boxId.toString(),
-      txId: ergoBox.transactionId,
-      serialized: Buffer.from(serializeBox(ergoBox).toBytes()).toString(
+      boxId: box.boxId.toString(),
+      txId: box.transactionId,
+      serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(
         'base64',
       ),
       serviceFeePercent: Number(R4Serialized[0]),
