@@ -10,13 +10,13 @@ import {
 
 import { InactiveRaffleAction } from '../actions/inactiveRaffle';
 import { InactiveRaffleBoxInterface } from '../interfaces/types';
-import { InactiveRaffle } from '../entities';
+import { RaffleEntity } from '../entities';
 import { Box, ErgoAddress } from '@fleet-sdk/core';
 import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 
 export class InactiveRaffleExtractor extends AbstractInitializableErgoExtractor<
   InactiveRaffleBoxInterface,
-  InactiveRaffle
+  RaffleEntity
 > {
   readonly actions: InactiveRaffleAction;
   private readonly id: string;
@@ -53,9 +53,19 @@ export class InactiveRaffleExtractor extends AbstractInitializableErgoExtractor<
    * @return true if the box has the required data and false otherwise
    */
   hasData = (box: OutputBox): boolean => {
-    return (
-      box.ergoTree == this.ergoTree && boxHasToken(box, [this.licenseTokenId])
-    );
+    try {
+      return (
+        box.ergoTree == this.ergoTree &&
+        boxHasToken(box, [this.licenseTokenId]) &&
+        (SConstant.from(box.additionalRegisters!.R4!).data as bigint[])
+          .length == 7 &&
+        (SConstant.from(box.additionalRegisters!.R7!).data as Uint8Array[])
+          .length == 2
+      );
+    } catch (err) {
+      this.logger.error(`InactiveRaffleExtractor Error: ${err}`);
+      return false;
+    }
   };
 
   /**
@@ -77,25 +87,14 @@ export class InactiveRaffleExtractor extends AbstractInitializableErgoExtractor<
     let winnersPercentList = '';
     let implementorErgoTree = '';
     let creatorErgoTree = '';
-
     try {
       winnersPercentList =
         (
           SConstant.from(inputExtensions![0]['0']).data as bigint[]
         ).toString() || '';
-    } catch (err) {
-      this.logger.error(`Error in parsing inactiveRaffle context data: ${err}`);
-    }
-
-    try {
       implementorErgoTree = Buffer.from(
         (SConstant.from(inputExtensions![0]['1']).data as Uint8Array[])[0],
       ).toString('hex');
-    } catch (err) {
-      this.logger.error(`Error in parsing inactiveRaffle context data: ${err}`);
-    }
-
-    try {
       creatorErgoTree = Buffer.from(
         (SConstant.from(inputExtensions![0]['1']).data as Uint8Array[])[1],
       ).toString('hex');

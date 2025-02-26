@@ -6,7 +6,7 @@ import {
   creatorWallet,
   implementerWallet,
   serviceWallet,
-} from '../utils.mock';
+} from '../../utils.mock';
 
 export const sampleInactiveRaffleBoxes: OutputBox[] = [
   {
