@@ -46,13 +46,16 @@ export class GiftTokenRepoExtractor extends AbstractInitializableErgoExtractor<
    * @return true if the box has the required data and false otherwise
    */
   hasData = (box: OutputBox): boolean => {
-    return (
-      box.ergoTree == this.ergoTree &&
-      box.additionalRegisters!.R8 !== undefined &&
-      Buffer.from(
-        SConstant.from(box.additionalRegisters!.R8!).data as Uint8Array,
-      ).toString('hex').length == 64
-    );
+    try {
+      return (
+        box.ergoTree == this.ergoTree &&
+        Buffer.from(
+          SConstant.from(box.additionalRegisters!.R8!).data as Uint8Array,
+        ).toString('hex').length == 64
+      );
+    } catch (err) {
+      return false;
+    }
   };
 
   /**

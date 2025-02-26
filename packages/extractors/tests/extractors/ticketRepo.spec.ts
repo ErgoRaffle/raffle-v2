@@ -100,5 +100,58 @@ describe('TicketRepoExtractor', () => {
         expect(extractedData).toBeFalsy();
       },
     );
+
+    /**
+     * @target should result of hasData method be false when assets is empty
+     * @dependencies
+     * @scenario
+     * - call the hasData functions
+     * - check if TicketRepo box assets is undefined
+     * - result must be false
+     * @expected
+     * - TicketRepos box checking result must be false
+     */
+    raffleServiceExtractorTest(
+      `should result of hasData method be false when assets is empty`,
+      async ({ extractor }) => {
+        const extractedData = await extractor.hasData({
+          ...sampleTicketRepo[0],
+          assets: undefined,
+        });
+
+        expect(extractedData).toBeFalsy();
+      },
+    );
+
+    /**
+     * @target should result of hasData method be false when assets length is more than 1
+     * @dependencies
+     * @scenario
+     * - call the hasData functions
+     * - check if TicketRepo box assets is more than 1
+     * - result must be false
+     * @expected
+     * - TicketRepos box checking result must be false
+     */
+    raffleServiceExtractorTest(
+      `should result of hasData method be false when assets length is more than 1`,
+      async ({ extractor }) => {
+        const extractedData = await extractor.hasData({
+          ...sampleTicketRepo[0],
+          assets: [
+            {
+              tokenId: '1'.repeat(64),
+              amount: 1n,
+            },
+            {
+              tokenId: '2'.repeat(64),
+              amount: 1n,
+            },
+          ],
+        });
+
+        expect(extractedData).toBeFalsy();
+      },
+    );
   });
 });

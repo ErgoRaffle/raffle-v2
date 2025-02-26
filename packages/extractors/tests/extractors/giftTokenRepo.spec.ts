@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Network } from '@fleet-sdk/core';
+import { Network, SByte, SColl } from '@fleet-sdk/core';
 import { compile } from '@fleet-sdk/compiler';
 import { ErgoNetworkType } from '@rosen-bridge/scanner';
 
@@ -95,6 +95,56 @@ describe('GiftTokenRepoExtractor', () => {
           ...sampleGiftTokenRepo[0],
           // set invalid ergoTree
           ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
+        });
+
+        expect(extractedData).toBeFalsy();
+      },
+    );
+
+    /**
+     * @target should result of hasData method be false when R8 is empty
+     * @dependencies
+     * @scenario
+     * - call the hasData functions
+     * - check if GiftTokenRepo box R8 is empty
+     * - result must be false
+     * @expected
+     * - GiftTokenRepos box checking result must be false
+     */
+    raffleServiceExtractorTest(
+      `should result of hasData method be false when R8 is empty`,
+      async ({ extractor }) => {
+        const extractedData = await extractor.hasData({
+          ...sampleGiftTokenRepo[0],
+          additionalRegisters: {
+            ...sampleGiftTokenRepo[0].additionalRegisters,
+            R8: undefined,
+          },
+        });
+
+        expect(extractedData).toBeFalsy();
+      },
+    );
+
+    /**
+     * @target should result of hasData method be false when R8 length is not valid
+     * @dependencies
+     * @scenario
+     * - call the hasData functions
+     * - check if GiftTokenRepo box R8 length is not valid
+     * - result must be false
+     * @expected
+     * - GiftTokenRepos box checking result must be false
+     */
+    raffleServiceExtractorTest(
+      `should result of hasData method be false when R8 length is not valid`,
+      async ({ extractor }) => {
+        const extractedData = await extractor.hasData({
+          ...sampleGiftTokenRepo[0],
+          additionalRegisters: {
+            ...sampleGiftTokenRepo[0].additionalRegisters,
+            R8: SColl(SByte, '1234').toHex(),
+          },
         });
 
         expect(extractedData).toBeFalsy();

@@ -103,5 +103,103 @@ describe('ActiveRaffleExtractor', () => {
         expect(extractedData).toBeFalsy();
       },
     );
+
+    /**
+     * @target should result of hasData method be false by invalid asset licenseTokenId
+     * @dependencies
+     * @scenario
+     * - call the hasData functions
+     * - check if ActiveRaffle box first asset-id is not valid
+     * - result must be false
+     * @expected
+     * - ActiveRaffles box checking result must be false
+     */
+    raffleServiceExtractorTest(
+      `should result of hasData method be false by invalid asset licenseTokenId`,
+      async ({ extractor }) => {
+        const extractedData = await extractor.hasData({
+          ...sampleActiveRaffleBoxes[0],
+          assets: [
+            {
+              // invalid licenseTokenId
+              tokenId: '1'.repeat(64),
+              amount: 1n,
+            },
+            {
+              tokenId: '2'.repeat(64),
+              amount: 1n,
+            },
+          ],
+        });
+
+        expect(extractedData).toBeFalsy();
+      },
+    );
+
+    /**
+     * @target should result of hasData method be false by assets length is less than 2
+     * @dependencies
+     * @scenario
+     * - call the hasData functions
+     * - check if ActiveRaffle box assets length is less than 2
+     * - result must be false
+     * @expected
+     * - ActiveRaffles box checking result must be false
+     */
+    raffleServiceExtractorTest(
+      `should result of hasData method be false by assets length is less than 2`,
+      async ({ extractor }) => {
+        const extractedData = await extractor.hasData({
+          ...sampleActiveRaffleBoxes[0],
+          assets: [
+            {
+              tokenId: sampleActiveRaffleBoxes[0].assets![0].tokenId,
+              amount: 1n,
+            },
+          ],
+        });
+
+        expect(extractedData).toBeFalsy();
+      },
+    );
+
+    /**
+     * @target should result of hasData method be false by assets length is more than 3
+     * @dependencies
+     * @scenario
+     * - call the hasData functions
+     * - check if ActiveRaffle box assets length is more than 3
+     * - result must be false
+     * @expected
+     * - ActiveRaffles box checking result must be false
+     */
+    raffleServiceExtractorTest(
+      `should result of hasData method be false by assets length is more than 3`,
+      async ({ extractor }) => {
+        const extractedData = await extractor.hasData({
+          ...sampleActiveRaffleBoxes[0],
+          assets: [
+            {
+              tokenId: sampleActiveRaffleBoxes[0].assets![0].tokenId,
+              amount: 1n,
+            },
+            {
+              tokenId: '2'.repeat(64),
+              amount: 1n,
+            },
+            {
+              tokenId: '3'.repeat(64),
+              amount: 1n,
+            },
+            {
+              tokenId: '4'.repeat(64),
+              amount: 1n,
+            },
+          ],
+        });
+
+        expect(extractedData).toBeFalsy();
+      },
+    );
   });
 });

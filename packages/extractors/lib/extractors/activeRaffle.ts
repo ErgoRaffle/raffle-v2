@@ -49,12 +49,16 @@ export class ActiveRaffleExtractor extends AbstractInitializableErgoExtractor<
    * @return true if the box has the required data and false otherwise
    */
   hasData = (box: OutputBox): boolean => {
-    return (
-      box.ergoTree == this.ergoTree &&
-      box.assets!.length >= 2 &&
-      box.assets!.length <= 3 &&
-      box.assets![0].tokenId == this.raffleLicense
-    );
+    try {
+      return (
+        box.ergoTree == this.ergoTree &&
+        box.assets!.length >= 2 &&
+        box.assets!.length <= 3 &&
+        box.assets![0].tokenId == this.raffleLicense
+      );
+    } catch (err) {
+      return false;
+    }
   };
 
   /**
