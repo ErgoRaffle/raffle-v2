@@ -57,7 +57,7 @@ export class WinnerExtractor extends AbstractInitializableErgoExtractor<
           undefined
       );
     } catch (err) {
-      console.log(`WinnerExtractor Error: ${err}`);
+      this.logger.error(`WinnerExtractor Error: ${err}`);
       return false;
     }
   };
