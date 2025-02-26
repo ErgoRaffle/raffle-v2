@@ -27,11 +27,9 @@ export interface InactiveRaffleBoxInterface extends ExtractedBox {
   raffleId: string;
 }
 
-export interface ActiveRaffleBoxInterface extends ExtractedBox {
+export interface RaffleGeneralInterface extends ExtractedBox {
   raffleId: string;
 }
-export type GiftTokenRepoBoxInterface = ActiveRaffleBoxInterface;
-export type TicketRepoBoxInterface = ActiveRaffleBoxInterface;
 
 export interface WinnerBoxInterface extends ExtractedBox {
   raffleId: string;

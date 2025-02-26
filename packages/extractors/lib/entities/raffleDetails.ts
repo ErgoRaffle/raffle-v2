@@ -2,7 +2,7 @@ import { AbstractErgoExtractorEntity } from '@rosen-bridge/abstract-extractor';
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('raffle_details')
-export class RaffleDetails extends AbstractErgoExtractorEntity {
+export class RaffleDetailsEntity extends AbstractErgoExtractorEntity {
   @Column({ type: 'varchar' })
   txId: string;
 
@@ -17,7 +17,7 @@ export class RaffleDetails extends AbstractErgoExtractorEntity {
 }
 
 @Entity('pictures')
-export class Picture {
+export class PictureEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
