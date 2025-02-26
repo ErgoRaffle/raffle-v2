@@ -60,6 +60,7 @@ export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<
           .length == 4
       );
     } catch (err) {
+      this.logger.error(`RaffleServiceExtractor Error: ${err}`);
       return false;
     }
   };
