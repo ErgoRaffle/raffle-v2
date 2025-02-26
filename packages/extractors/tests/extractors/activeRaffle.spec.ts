@@ -34,7 +34,7 @@ const createActiveRaffleExtractorTest = async () => {
   });
 };
 
-const raffleServiceExtractorTest = await createActiveRaffleExtractorTest();
+const extractorTest = await createActiveRaffleExtractorTest();
 
 describe('ActiveRaffleExtractor', () => {
   describe('extractBoxData', () => {
@@ -47,7 +47,7 @@ describe('ActiveRaffleExtractor', () => {
      * @expected
      * - ActiveRaffles should extract successfully
      */
-    raffleServiceExtractorTest(
+    extractorTest(
       `should extract data from sample ActiveRaffle box`,
       async ({ extractor }) => {
         const extractedData = await extractor.extractBoxData(
@@ -70,7 +70,7 @@ describe('ActiveRaffleExtractor', () => {
      * @expected
      * - ActiveRaffles box checking result must be true
      */
-    raffleServiceExtractorTest(
+    extractorTest(
       `should result of hasData method be true by valid box data`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData(
@@ -91,7 +91,7 @@ describe('ActiveRaffleExtractor', () => {
      * @expected
      * - ActiveRaffles box checking result must be false
      */
-    raffleServiceExtractorTest(
+    extractorTest(
       `should result of hasData method be false by invalid box address`,
       async ({ extractor, boxFalseErgoTree }) => {
         const extractedData = await extractor.hasData({
@@ -114,7 +114,7 @@ describe('ActiveRaffleExtractor', () => {
      * @expected
      * - ActiveRaffles box checking result must be false
      */
-    raffleServiceExtractorTest(
+    extractorTest(
       `should result of hasData method be false by invalid asset licenseTokenId`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
@@ -146,7 +146,7 @@ describe('ActiveRaffleExtractor', () => {
      * @expected
      * - ActiveRaffles box checking result must be false
      */
-    raffleServiceExtractorTest(
+    extractorTest(
       `should result of hasData method be false by assets length is less than 2`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
@@ -173,7 +173,7 @@ describe('ActiveRaffleExtractor', () => {
      * @expected
      * - ActiveRaffles box checking result must be false
      */
-    raffleServiceExtractorTest(
+    extractorTest(
       `should result of hasData method be false by assets length is more than 3`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({

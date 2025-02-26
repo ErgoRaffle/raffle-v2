@@ -33,7 +33,7 @@ const createGiftTokenRepoExtractorTest = async () => {
   });
 };
 
-const raffleServiceExtractorTest = await createGiftTokenRepoExtractorTest();
+const extractorTest = await createGiftTokenRepoExtractorTest();
 
 describe('GiftTokenRepoExtractor', () => {
   describe('extractBoxData', () => {
@@ -46,7 +46,7 @@ describe('GiftTokenRepoExtractor', () => {
      * @expected
      * - GiftTokenRepos should extract successfully
      */
-    raffleServiceExtractorTest(
+    extractorTest(
       `should extract data from sample GiftTokenRepo box`,
       async ({ extractor }) => {
         const extractedData = await extractor.extractBoxData(
@@ -69,7 +69,7 @@ describe('GiftTokenRepoExtractor', () => {
      * @expected
      * - GiftTokenRepos box checking result must be true
      */
-    raffleServiceExtractorTest(
+    extractorTest(
       `should result of hasData method be true by valid box data`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData(sampleGiftTokenRepo[0]);
@@ -88,7 +88,7 @@ describe('GiftTokenRepoExtractor', () => {
      * @expected
      * - GiftTokenRepos box checking result must be false
      */
-    raffleServiceExtractorTest(
+    extractorTest(
       `should result of hasData method be false by invalid box address`,
       async ({ extractor, boxFalseErgoTree }) => {
         const extractedData = await extractor.hasData({
@@ -111,7 +111,7 @@ describe('GiftTokenRepoExtractor', () => {
      * @expected
      * - GiftTokenRepos box checking result must be false
      */
-    raffleServiceExtractorTest(
+    extractorTest(
       `should result of hasData method be false when R8 is empty`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
@@ -136,7 +136,7 @@ describe('GiftTokenRepoExtractor', () => {
      * @expected
      * - GiftTokenRepos box checking result must be false
      */
-    raffleServiceExtractorTest(
+    extractorTest(
       `should result of hasData method be false when R8 length is not valid`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({

@@ -33,7 +33,7 @@ const createTicketRepoExtractorTest = async () => {
   });
 };
 
-const raffleServiceExtractorTest = await createTicketRepoExtractorTest();
+const extractorTest = await createTicketRepoExtractorTest();
 
 describe('TicketRepoExtractor', () => {
   describe('extractBoxData', () => {
@@ -46,7 +46,7 @@ describe('TicketRepoExtractor', () => {
      * @expected
      * - TicketRepos should extract successfully
      */
-    raffleServiceExtractorTest(
+    extractorTest(
       `should extract data from sample TicketRepo box`,
       async ({ extractor }) => {
         const extractedData = await extractor.extractBoxData(
@@ -69,7 +69,7 @@ describe('TicketRepoExtractor', () => {
      * @expected
      * - TicketRepos box checking result must be true
      */
-    raffleServiceExtractorTest(
+    extractorTest(
       `should result of hasData method be true by valid box data`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData(sampleTicketRepo[0]);
@@ -88,7 +88,7 @@ describe('TicketRepoExtractor', () => {
      * @expected
      * - TicketRepos box checking result must be false
      */
-    raffleServiceExtractorTest(
+    extractorTest(
       `should result of hasData method be false by invalid box address`,
       async ({ extractor, boxFalseErgoTree }) => {
         const extractedData = await extractor.hasData({
@@ -111,7 +111,7 @@ describe('TicketRepoExtractor', () => {
      * @expected
      * - TicketRepos box checking result must be false
      */
-    raffleServiceExtractorTest(
+    extractorTest(
       `should result of hasData method be false when assets is empty`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
@@ -133,7 +133,7 @@ describe('TicketRepoExtractor', () => {
      * @expected
      * - TicketRepos box checking result must be false
      */
-    raffleServiceExtractorTest(
+    extractorTest(
       `should result of hasData method be false when assets length is more than 1`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({

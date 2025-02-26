@@ -54,6 +54,7 @@ export class GiftTokenRepoExtractor extends AbstractInitializableErgoExtractor<
         ).toString('hex').length == 64
       );
     } catch (err) {
+      this.logger.error(`GiftTokenRepoExtractor Error: ${err}`);
       return false;
     }
   };

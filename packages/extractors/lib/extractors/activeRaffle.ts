@@ -57,6 +57,7 @@ export class ActiveRaffleExtractor extends AbstractInitializableErgoExtractor<
         box.assets![0].tokenId == this.raffleLicense
       );
     } catch (err) {
+      this.logger.error(`ActiveRaffleExtractor Error: ${err}`);
       return false;
     }
   };
