@@ -9,15 +9,13 @@ import {
 
 import { migrations } from '../lib/migrations';
 import {
-  RaffleService,
-  InactiveRaffle,
-  ActiveRaffle,
-  TicketRepo,
-  GiftTokenRepo,
-  Winner,
-  RaffleDetails,
-  Picture,
-  Gift,
+  RaffleServiceEntity,
+  RaffleEntity,
+  RaffleGeneralEntity,
+  WinnerEntity,
+  RaffleDetailsEntity,
+  PictureEntity,
+  GiftEntity,
 } from '../lib/entities';
 
 const chain = new MockChain(1);
@@ -46,15 +44,13 @@ export const createDatabase = async (): Promise<DataSource> => {
     entities: [
       BlockEntity,
       ExtractorStatusEntity,
-      RaffleService,
-      InactiveRaffle,
-      ActiveRaffle,
-      TicketRepo,
-      GiftTokenRepo,
-      Winner,
-      RaffleDetails,
-      Picture,
-      Gift,
+      RaffleServiceEntity,
+      RaffleEntity,
+      RaffleGeneralEntity,
+      WinnerEntity,
+      RaffleDetailsEntity,
+      PictureEntity,
+      GiftEntity,
     ],
     migrations: [...migrations.sqlite, ...scannerMigrations.sqlite],
     synchronize: false,

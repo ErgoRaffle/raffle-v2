@@ -6,24 +6,24 @@ import {
 } from '@rosen-bridge/abstract-extractor';
 
 import { RaffleDetailsBoxInterface } from '../interfaces/types';
-import { RaffleDetails } from '../entities/raffleDetails';
+import { RaffleDetailsEntity } from '../entities/raffleDetails';
 import { pick } from 'lodash-es';
 
 export class RaffleDetailsAction extends AbstractInitializableErgoExtractorAction<
   RaffleDetailsBoxInterface,
-  RaffleDetails
+  RaffleDetailsEntity
 > {
   private readonly dataSource: DataSource;
   readonly logger: AbstractLogger;
-  public repository: Repository<RaffleDetails>;
+  public repository: Repository<RaffleDetailsEntity>;
   private readonly index: number;
   private readonly rewardPercent: number;
 
   constructor(dataSource: DataSource, logger?: AbstractLogger) {
-    super(dataSource, RaffleDetails, logger);
+    super(dataSource, RaffleDetailsEntity, logger);
     this.dataSource = dataSource;
     this.logger = logger ? logger : new DummyLogger();
-    this.repository = dataSource.getRepository(RaffleDetails);
+    this.repository = dataSource.getRepository(RaffleDetailsEntity);
   }
 
   /**
@@ -36,7 +36,7 @@ export class RaffleDetailsAction extends AbstractInitializableErgoExtractorActio
     boxes: RaffleDetailsBoxInterface[],
     block: BlockInfo,
     extractor: string,
-  ): Omit<RaffleDetails, 'id'>[] => {
+  ): Omit<RaffleDetailsEntity, 'id'>[] => {
     return boxes.map((box) => {
       return {
         boxId: box.boxId,
@@ -57,7 +57,7 @@ export class RaffleDetailsAction extends AbstractInitializableErgoExtractorActio
    * @param entities
    */
   convertEntityToData = (
-    entities: RaffleDetails[],
+    entities: RaffleDetailsEntity[],
   ): RaffleDetailsBoxInterface[] => {
     return entities.map((data) =>
       pick(data, [

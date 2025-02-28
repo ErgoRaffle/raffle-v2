@@ -8,13 +8,13 @@ import {
 import { ErgoAddress, Box } from '@fleet-sdk/core';
 import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 
-import { RaffleDetails, Picture } from '@ergo-raffle/extractors/lib/entities';
+import { RaffleDetailsEntity, PictureEntity } from '../entities';
 import { RaffleDetailsAction } from '../actions/raffleDetails';
 import { RaffleDetailsBoxInterface } from '../interfaces/types';
 
 export class RaffleDetailsExtractor extends AbstractInitializableErgoExtractor<
   RaffleDetailsBoxInterface,
-  RaffleDetails
+  RaffleDetailsEntity
 > {
   readonly actions: RaffleDetailsAction;
   private readonly id: string;
@@ -48,7 +48,17 @@ export class RaffleDetailsExtractor extends AbstractInitializableErgoExtractor<
    * @return true if the box has the required data and false otherwise
    */
   hasData = (box: OutputBox): boolean => {
-    return box.ergoTree == this.ergoTree;
+    try {
+      return (
+        box.ergoTree == this.ergoTree &&
+        (SConstant.from(box.additionalRegisters!.R4!).data as Uint8Array[])
+          .length >= 2 &&
+        box.assets!.length == 1
+      );
+    } catch (err) {
+      this.logger.error(`RaffleDetailsExtractor Error: ${err}`);
+      return false;
+    }
   };
 
   /**
@@ -63,7 +73,7 @@ export class RaffleDetailsExtractor extends AbstractInitializableErgoExtractor<
       this.dataSource
         .createQueryBuilder()
         .insert()
-        .into(Picture)
+        .into(PictureEntity)
         .values([
           {
             orderIndex: i,
