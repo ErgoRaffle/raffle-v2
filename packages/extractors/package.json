@@ -22,7 +22,6 @@
     "typeorm:generate:sqlite": "npm run typeorm migration:generate ./lib/migrations/sqlite/sqlite -- -p "
   },
   "dependencies": {
-    "@fleet-sdk/compiler": "^0.4.2",
     "@fleet-sdk/core": "^0.4.1",
     "@fleet-sdk/serializer": "^0.4.1",
     "@rosen-bridge/abstract-extractor": "^1.0.1-967dc6f4",
@@ -38,6 +37,7 @@
     "typeorm": "0.3.20"
   },
   "devDependencies": {
+    "@fleet-sdk/compiler": "^0.4.2",
     "@fleet-sdk/mock-chain": "^0.4.2",
     "@types/json-bigint": "^1.0.4",
     "@types/lodash-es": "^4.17.12",

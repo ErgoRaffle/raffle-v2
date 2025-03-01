@@ -13,14 +13,14 @@ import {
 
 import { GiftAction } from '../actions/gift';
 import { GiftBoxInterface } from '../interfaces/types';
-import { Gift } from '../entities';
+import { GiftEntity } from '../entities';
 import { ErgoAddress, Box } from '@fleet-sdk/core';
-import { SByte, SColl, SConstant, serializeBox } from '@fleet-sdk/serializer';
+import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 import JsonBigInt from '@rosen-bridge/json-bigint';
 
 export class GiftExtractor extends AbstractInitializableErgoExtractor<
   GiftBoxInterface,
-  Gift
+  GiftEntity
 > {
   readonly actions: GiftAction;
   private readonly id: string;
@@ -52,7 +52,19 @@ export class GiftExtractor extends AbstractInitializableErgoExtractor<
    * @return true if the box has the required data and false otherwise
    */
   hasData = (box: OutputBox): boolean => {
-    return box.ergoTree == this.ergoTree;
+    try {
+      return (
+        box.ergoTree == this.ergoTree &&
+        Buffer.from(
+          SConstant.from(box.additionalRegisters!.R4!).data as Uint8Array,
+        ).toString('hex') != undefined &&
+        (SConstant.from(box.additionalRegisters!.R5!).data as number) !=
+          undefined
+      );
+    } catch (err) {
+      this.logger.error(`GiftExtractor Error: ${err}`);
+      return false;
+    }
   };
 
   /**
@@ -136,12 +148,9 @@ export class GiftExtractor extends AbstractInitializableErgoExtractor<
     inputExtensions?: InputExtension[],
     raffleId?: string,
   ): GiftBoxInterface | undefined => {
-    const donatorErgoTree = SColl(
-      SByte,
-      Array.from(
-        SConstant.from(box.additionalRegisters!.R4!).data as Uint8Array,
-      ),
-    ).toHex();
+    const donatorErgoTree = Buffer.from(
+      SConstant.from(box.additionalRegisters!.R4!).data as Uint8Array,
+    ).toString('hex');
     const index = SConstant.from(box.additionalRegisters!.R5!).data as number;
 
     const data = {

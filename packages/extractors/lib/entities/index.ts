@@ -1,10 +1,8 @@
 import 'reflect-metadata';
-export { RaffleService } from './raffleService';
-export { InactiveRaffle } from './inactiveRaffle';
-export { ActiveRaffle } from './activeRaffle';
-export { GiftTokenRepo } from './giftTokenRepo';
-export { TicketRepo } from './ticketRepo';
-export { Winner } from './winner';
-export { RaffleDetails, Picture } from './raffleDetails';
-export { Gift } from './gift';
-export { Ticket } from './ticket';
+export { RaffleServiceEntity } from './raffleService';
+export { RaffleEntity } from './inactiveRaffle';
+export { RaffleGeneralEntity } from './raffleGeneralEntity';
+export { WinnerEntity } from './winner';
+export { RaffleDetailsEntity, PictureEntity } from './raffleDetails';
+export { GiftEntity } from './gift';
+export { TicketEntity } from './ticket';

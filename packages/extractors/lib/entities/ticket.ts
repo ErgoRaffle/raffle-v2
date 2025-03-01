@@ -3,7 +3,7 @@ import { BigIntValueTransformer } from '@rosen-bridge/extended-typeorm';
 import { Entity, Column } from 'typeorm';
 
 @Entity('tickets')
-export class Ticket extends AbstractErgoExtractorEntity {
+export class TicketEntity extends AbstractErgoExtractorEntity {
   @Column({ type: 'varchar' })
   txId: string;
 

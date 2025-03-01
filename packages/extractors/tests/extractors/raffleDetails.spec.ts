@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Network } from '@fleet-sdk/core';
+import { Network, SByte, SColl } from '@fleet-sdk/core';
 import { ErgoNetworkType } from '@rosen-bridge/scanner';
 import { compile } from '@fleet-sdk/compiler';
 
@@ -8,8 +8,8 @@ import { createDatabase } from '../utils.mock';
 import {
   sampleRaffleDetailsBoxes,
   sampleRaffleDetailsExtractedData,
-} from '../mocked/raffleDetails.mock';
-import { Picture } from '../../lib/entities';
+} from './mocked/raffleDetails.mock';
+import { PictureEntity } from '../../lib/entities';
 
 /*
  * create fixtures that contains below steps data:
@@ -35,7 +35,7 @@ const createRaffleDetailsExtractorTest = async () => {
   });
 };
 
-const raffleDetailsExtractorTest = await createRaffleDetailsExtractorTest();
+const extractorTest = await createRaffleDetailsExtractorTest();
 
 describe('RaffleDetailsExtractor', () => {
   describe('extractBoxData', () => {
@@ -46,9 +46,9 @@ describe('RaffleDetailsExtractor', () => {
      * - call the extractBoxData functions
      * - check if RaffleDetails box data extracted correctly
      * @expected
-     * - RaffleDetailss should extract successfully
+     * - RaffleDetails should extract successfully
      */
-    raffleDetailsExtractorTest(
+    extractorTest(
       `should extract data from sample RaffleDetails box`,
       async ({ extractor, dataSource }) => {
         const extractedData = await extractor.extractBoxData(
@@ -58,7 +58,7 @@ describe('RaffleDetailsExtractor', () => {
         expect(extractedData).toEqual(sampleRaffleDetailsExtractedData);
 
         await new Promise((r) => setTimeout(r, 100));
-        expect(await dataSource.manager.count(Picture)).toEqual(3);
+        expect(await dataSource.manager.count(PictureEntity)).toEqual(3);
       },
     );
   });
@@ -72,9 +72,9 @@ describe('RaffleDetailsExtractor', () => {
      * - check if RaffleDetails box
      * - result must be true
      * @expected
-     * - RaffleDetailss box checking result must be true
+     * - RaffleDetails box checking result must be true
      */
-    raffleDetailsExtractorTest(
+    extractorTest(
       `should result of hasData method be true by valid box data`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData(
@@ -93,14 +93,72 @@ describe('RaffleDetailsExtractor', () => {
      * - check if RaffleDetails box
      * - result must be false
      * @expected
-     * - RaffleDetailss box checking result must be false
+     * - RaffleDetails box checking result must be false
      */
-    raffleDetailsExtractorTest(
+    extractorTest(
       `should result of hasData method be false by invalid box address`,
       async ({ extractor, boxFalseErgoTree }) => {
         const extractedData = await extractor.hasData({
           ...sampleRaffleDetailsBoxes[0],
           ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
+        });
+
+        expect(extractedData).toBeFalsy();
+      },
+    );
+
+    /**
+     * @target should result of hasData method be false when R4 length is less than 2
+     * @dependencies
+     * @scenario
+     * - call the hasData functions
+     * - check if RaffleDetails box R4 length is less than 2
+     * - result must be false
+     * @expected
+     * - RaffleDetails box checking result must be false
+     */
+    extractorTest(
+      `should result of hasData method be false when R4 length is less than 2`,
+      async ({ extractor }) => {
+        const extractedData = await extractor.hasData({
+          ...sampleRaffleDetailsBoxes[0],
+          additionalRegisters: {
+            ...sampleRaffleDetailsBoxes[0].additionalRegisters,
+            R4: SColl(SColl(SByte), [
+              Array.from(Buffer.from('abcdef')),
+            ]).toHex(),
+          },
+        });
+
+        expect(extractedData).toBeFalsy();
+      },
+    );
+
+    /**
+     * @target should result of hasData method be false when assets length is more than 1
+     * @dependencies
+     * @scenario
+     * - call the hasData functions
+     * - check if RaffleDetails box R4 assets length is more than 1
+     * - result must be false
+     * @expected
+     * - RaffleDetails box checking result must be false
+     */
+    extractorTest(
+      `should result of hasData method be false when assets length is more than 1`,
+      async ({ extractor }) => {
+        const extractedData = await extractor.hasData({
+          ...sampleRaffleDetailsBoxes[0],
+          assets: [
+            {
+              tokenId: '1'.repeat(64),
+              amount: 1n,
+            },
+            {
+              tokenId: '2'.repeat(64),
+              amount: 1n,
+            },
+          ],
         });
 
         expect(extractedData).toBeFalsy();

@@ -29,7 +29,7 @@ export const sampleTicketExtractedData = {
   rangeStart: 0n,
   rangeEnd: 100n,
   donatorErgoTree:
-    '0e205b1a88f00bc6013cc6506883b23aabba148346ca6fa64e4e3573592f4e3ad854',
+    '5b1a88f00bc6013cc6506883b23aabba148346ca6fa64e4e3573592f4e3ad854',
   raffleId: 'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
   serialized:
     'wMq6FRkGAQEB0XMArtBiAdKd6qXYCV/jCTCEVBKwk9K6dbSOMcJd/58FpnOWdzD7' +
