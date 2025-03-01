@@ -1,0 +1,74 @@
+import { DataSource, Repository } from 'typeorm';
+import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
+import {
+  AbstractInitializableErgoExtractorAction,
+  BlockInfo,
+} from '@rosen-bridge/abstract-extractor';
+
+import { SuccessRaffleBoxInterface } from '../interfaces/types';
+import { SuccessRaffleEntity } from '../entities/';
+import { pick } from 'lodash-es';
+
+export class SuccessRaffleAction extends AbstractInitializableErgoExtractorAction<
+  SuccessRaffleBoxInterface,
+  SuccessRaffleEntity
+> {
+  private readonly dataSource: DataSource;
+  readonly logger: AbstractLogger;
+  public repository: Repository<SuccessRaffleEntity>;
+  private readonly index: number;
+  private readonly rewardPercent: number;
+
+  constructor(dataSource: DataSource, logger?: AbstractLogger) {
+    super(dataSource, SuccessRaffleEntity, logger);
+    this.dataSource = dataSource;
+    this.logger = logger ? logger : new DummyLogger();
+    this.repository = dataSource.getRepository(SuccessRaffleEntity);
+  }
+
+  /**
+   * create the box entity from extracted data and block information
+   * @param boxes
+   * @param block
+   * @param extractor
+   */
+  createEntity = (
+    boxes: SuccessRaffleBoxInterface[],
+    block: BlockInfo,
+    extractor: string,
+  ): Omit<SuccessRaffleEntity, 'id'>[] => {
+    return boxes.map((box) => {
+      return {
+        boxId: box.boxId,
+        block: block.hash,
+        height: block.height,
+        serialized: box.serialized,
+        extractor: extractor,
+        txId: box.txId,
+        raffleId: box.raffleId,
+        selectedWinnersList: box.selectedWinnersList,
+        step: box.step,
+      };
+    });
+  };
+
+  /**
+   * convert the database entity back to raw data
+   * @param entities
+   */
+  convertEntityToData = (
+    entities: SuccessRaffleEntity[],
+  ): SuccessRaffleBoxInterface[] => {
+    return entities.map((data) =>
+      pick(data, [
+        'boxId',
+        'txId',
+        'raffleId',
+        'extractor',
+        'serialized',
+        'selectedWinnersList',
+        'step',
+      ]),
+    );
+  };
+}
