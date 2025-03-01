@@ -108,7 +108,7 @@ describe('InactiveRaffleExtractor', () => {
     );
 
     /**
-     * @target should result of hasData method be false by invalid box address
+     * @target should returns false with invalid box data
      * @dependencies
      * @scenario
      * - call the hasData functions
