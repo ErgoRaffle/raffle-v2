@@ -37,6 +37,9 @@ export class RaffleEntity extends AbstractErgoExtractorEntity {
   @Column('integer')
   deadline: number;
 
+  /**
+   * This field stores the percentage of winners as a string
+   */
   @Column({ type: 'varchar' })
   winnersPercentList: string;
 
