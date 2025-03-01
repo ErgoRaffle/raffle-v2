@@ -74,3 +74,9 @@ export interface SuccessRaffleBoxInterface extends ExtractedBox {
   selectedWinnersList: string;
   step: number;
 }
+
+export interface TicketRedeemBoxInterface extends ExtractedBox {
+  raffleId: string;
+  totalSoldTicket: bigint;
+  redeemedTickets: bigint;
+}
