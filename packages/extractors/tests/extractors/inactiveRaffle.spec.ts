@@ -87,7 +87,7 @@ describe('InactiveRaffleExtractor', () => {
 
   describe('hasData', () => {
     /**
-     * @target should result of hasData method be true by valid box data
+     * @target should returns true with valid box data
      * @dependencies
      * @scenario
      * - call the hasData functions
