@@ -62,7 +62,7 @@ describe('InactiveRaffleExtractor', () => {
     );
 
     /**
-     * @target should extract data from sample InactiveRaffle box and by empty extension data
+     * @target should extract data from sample InactiveRaffle box with empty extension data
      * @dependencies
      * @scenario
      * - call the extractBoxData functions
