@@ -15,8 +15,6 @@ export class GiftAction extends AbstractInitializableErgoExtractorAction<
   private readonly dataSource: DataSource;
   readonly logger: AbstractLogger;
   public repository: Repository<GiftEntity>;
-  private readonly index: number;
-  private readonly rewardPercent: number;
 
   constructor(dataSource: DataSource, logger?: AbstractLogger) {
     super(dataSource, GiftEntity, logger);
