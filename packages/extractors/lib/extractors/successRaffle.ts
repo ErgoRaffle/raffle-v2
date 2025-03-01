@@ -72,7 +72,7 @@ export class SuccessRaffleExtractor extends AbstractInitializableErgoExtractor<
     let selectedWinnersList = '';
     try {
       selectedWinnersList = (
-        SConstant.from(inputExtensions![0]['1']).data as bigint[]
+        SConstant.from(inputExtensions![0]['0']).data as bigint[]
       ).toString();
     } catch (err) {
       this.logger.error(`SuccessRaffleExtractor Error: ${err}`);
