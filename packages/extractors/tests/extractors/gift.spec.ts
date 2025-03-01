@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { Network } from '@fleet-sdk/core';
+import { Network, SInt } from '@fleet-sdk/core';
 import { ErgoNetworkType } from '@rosen-bridge/scanner';
 import { compile } from '@fleet-sdk/compiler';
 import WinstonLogger from '@rosen-bridge/winston-logger/dist/WinstonLogger';
 
 import { GiftExtractor } from '../../lib/extractors/gift';
 import { createDatabase } from '../utils.mock';
-import { sampleGiftBoxes } from '../mocked/gift.mock';
+import { sampleGiftBoxes, sampleGiftExtractedData } from './mocked/gift.mock';
 
 /*
  * create fixtures that contains below steps data:
@@ -38,7 +38,7 @@ const createGiftExtractorTest = async () => {
   });
 };
 
-const giftExtractorTest = await createGiftExtractorTest();
+const extractorTest = await createGiftExtractorTest();
 
 describe('GiftExtractor', () => {
   describe('extractBoxData', () => {
@@ -51,7 +51,7 @@ describe('GiftExtractor', () => {
      * @expected
      * - Gifts should extract successfully
      */
-    giftExtractorTest(
+    extractorTest(
       `should extract data from sample Gift box`,
       async ({ extractor }) => {
         const extractedData = await extractor.extractBoxData(
@@ -60,20 +60,7 @@ describe('GiftExtractor', () => {
           'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
         );
 
-        expect(extractedData).toEqual({
-          boxId: sampleGiftBoxes[0].boxId,
-          txId: sampleGiftBoxes[0].transactionId,
-          winnerIndex: 1,
-          donatorErgoTree:
-            '0e200f318e1cd5860000282d016ef8b4ac1d06486b2e83be2777c86772b25886ecdc',
-          raffleId:
-            'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
-          serialized:
-            'gKPDRxkGAQEB0XMArtBiAo9AqS8igJRS6gvIGTMV9sPau8ug3v5s2T+iRE/FZP8K' +
-            'AaL5RHkgRHarb/jF9GH9pW6h7t+C9LsdplgcOtKeSkXtCgMOIA8xjhzVhgAAKC0B' +
-            'bvi0rB0GSGsug74nd8hncrJYhuzcBAIFgIenDi8UaZCp5ZvWBLKmQGpl3bETTGuB' +
-            'zDRAaWfvmj2MsY/zAQ==',
-        });
+        expect(extractedData).toEqual(sampleGiftExtractedData);
       },
     );
   });
@@ -89,7 +76,7 @@ describe('GiftExtractor', () => {
      * @expected
      * - Gifts box checking result must be true
      */
-    giftExtractorTest(
+    extractorTest(
       `should result of hasData method be true by valid box data`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData(sampleGiftBoxes[0]);
@@ -108,12 +95,62 @@ describe('GiftExtractor', () => {
      * @expected
      * - Gifts box checking result must be false
      */
-    giftExtractorTest(
+    extractorTest(
       `should result of hasData method be false by invalid box address`,
       async ({ extractor, boxFalseErgoTree }) => {
         const extractedData = await extractor.hasData({
           ...sampleGiftBoxes[0],
           ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
+        });
+
+        expect(extractedData).toBeFalsy();
+      },
+    );
+
+    /**
+     * @target should result of hasData method be false by invalid R4 value
+     * @dependencies
+     * @scenario
+     * - call the hasData functions
+     * - check if Gift box owned invalid R4 value
+     * - result must be false
+     * @expected
+     * - Gifts box checking result must be false
+     */
+    extractorTest(
+      `should result of hasData method be false by invalid R4 value`,
+      async ({ extractor }) => {
+        const extractedData = await extractor.hasData({
+          ...sampleGiftBoxes[0],
+          additionalRegisters: {
+            ...sampleGiftBoxes[0].additionalRegisters,
+            R4: SInt(1).toHex(),
+          },
+        });
+
+        expect(extractedData).toBeFalsy();
+      },
+    );
+
+    /**
+     * @target should result of hasData method be false by empty R5
+     * @dependencies
+     * @scenario
+     * - call the hasData functions
+     * - check if Gift box owned empty R5
+     * - result must be false
+     * @expected
+     * - Gifts box checking result must be false
+     */
+    extractorTest(
+      `should result of hasData method be false by empty R5`,
+      async ({ extractor }) => {
+        const extractedData = await extractor.hasData({
+          ...sampleGiftBoxes[0],
+          additionalRegisters: {
+            ...sampleGiftBoxes[0].additionalRegisters,
+            R5: undefined,
+          },
         });
 
         expect(extractedData).toBeFalsy();

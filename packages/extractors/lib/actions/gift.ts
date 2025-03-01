@@ -6,21 +6,21 @@ import {
 } from '@rosen-bridge/abstract-extractor';
 
 import { GiftBoxInterface } from '../interfaces/types';
-import { Gift } from '../entities/gift';
+import { GiftEntity } from '../entities/gift';
 
 export class GiftAction extends AbstractInitializableErgoExtractorAction<
   GiftBoxInterface,
-  Gift
+  GiftEntity
 > {
   private readonly dataSource: DataSource;
   readonly logger: AbstractLogger;
-  public repository: Repository<Gift>;
+  public repository: Repository<GiftEntity>;
 
   constructor(dataSource: DataSource, logger?: AbstractLogger) {
-    super(dataSource, Gift, logger);
+    super(dataSource, GiftEntity, logger);
     this.dataSource = dataSource;
     this.logger = logger ? logger : new DummyLogger();
-    this.repository = dataSource.getRepository(Gift);
+    this.repository = dataSource.getRepository(GiftEntity);
   }
 
   /**
@@ -30,7 +30,7 @@ export class GiftAction extends AbstractInitializableErgoExtractorAction<
     boxes: GiftBoxInterface[],
     block: BlockInfo,
     extractor: string,
-  ): Omit<Gift, 'id'>[] => {
+  ): Omit<GiftEntity, 'id'>[] => {
     return boxes.map((box) => {
       return {
         boxId: box.boxId,
@@ -49,7 +49,7 @@ export class GiftAction extends AbstractInitializableErgoExtractorAction<
   /**
    * convert the database entity back to raw data
    */
-  convertEntityToData = (entities: Gift[]): GiftBoxInterface[] => {
+  convertEntityToData = (entities: GiftEntity[]): GiftBoxInterface[] => {
     return entities.map((data) => ({
       boxId: data.boxId,
       txId: data.txId,

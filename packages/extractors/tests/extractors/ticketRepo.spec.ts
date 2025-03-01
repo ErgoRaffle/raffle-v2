@@ -8,7 +8,7 @@ import { createDatabase } from '../utils.mock';
 import {
   sampleTicketRepo,
   sampleTicketRepoExtractedData,
-} from '../mocked/ticketRepo.mock';
+} from './mocked/ticketRepo.mock';
 
 /*
  * create fixtures that contains below steps data:
@@ -33,7 +33,7 @@ const createTicketRepoExtractorTest = async () => {
   });
 };
 
-const raffleServiceExtractorTest = await createTicketRepoExtractorTest();
+const extractorTest = await createTicketRepoExtractorTest();
 
 describe('TicketRepoExtractor', () => {
   describe('extractBoxData', () => {
@@ -46,7 +46,7 @@ describe('TicketRepoExtractor', () => {
      * @expected
      * - TicketRepos should extract successfully
      */
-    raffleServiceExtractorTest(
+    extractorTest(
       `should extract data from sample TicketRepo box`,
       async ({ extractor }) => {
         const extractedData = await extractor.extractBoxData(
@@ -69,7 +69,7 @@ describe('TicketRepoExtractor', () => {
      * @expected
      * - TicketRepos box checking result must be true
      */
-    raffleServiceExtractorTest(
+    extractorTest(
       `should result of hasData method be true by valid box data`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData(sampleTicketRepo[0]);
@@ -88,13 +88,66 @@ describe('TicketRepoExtractor', () => {
      * @expected
      * - TicketRepos box checking result must be false
      */
-    raffleServiceExtractorTest(
+    extractorTest(
       `should result of hasData method be false by invalid box address`,
       async ({ extractor, boxFalseErgoTree }) => {
         const extractedData = await extractor.hasData({
           ...sampleTicketRepo[0],
           // set invalid ergoTree
           ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
+        });
+
+        expect(extractedData).toBeFalsy();
+      },
+    );
+
+    /**
+     * @target should result of hasData method be false when assets is empty
+     * @dependencies
+     * @scenario
+     * - call the hasData functions
+     * - check if TicketRepo box assets is undefined
+     * - result must be false
+     * @expected
+     * - TicketRepos box checking result must be false
+     */
+    extractorTest(
+      `should result of hasData method be false when assets is empty`,
+      async ({ extractor }) => {
+        const extractedData = await extractor.hasData({
+          ...sampleTicketRepo[0],
+          assets: undefined,
+        });
+
+        expect(extractedData).toBeFalsy();
+      },
+    );
+
+    /**
+     * @target should result of hasData method be false when assets length is more than 1
+     * @dependencies
+     * @scenario
+     * - call the hasData functions
+     * - check if TicketRepo box assets is more than 1
+     * - result must be false
+     * @expected
+     * - TicketRepos box checking result must be false
+     */
+    extractorTest(
+      `should result of hasData method be false when assets length is more than 1`,
+      async ({ extractor }) => {
+        const extractedData = await extractor.hasData({
+          ...sampleTicketRepo[0],
+          assets: [
+            {
+              tokenId: '1'.repeat(64),
+              amount: 1n,
+            },
+            {
+              tokenId: '2'.repeat(64),
+              amount: 1n,
+            },
+          ],
         });
 
         expect(extractedData).toBeFalsy();

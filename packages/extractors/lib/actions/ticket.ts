@@ -6,24 +6,24 @@ import {
 } from '@rosen-bridge/abstract-extractor';
 
 import { TicketBoxInterface } from '../interfaces/types';
-import { Ticket } from '../entities/ticket';
+import { TicketEntity } from '../entities/ticket';
 import { pick } from 'lodash-es';
 
 export class TicketAction extends AbstractInitializableErgoExtractorAction<
   TicketBoxInterface,
-  Ticket
+  TicketEntity
 > {
   private readonly dataSource: DataSource;
   readonly logger: AbstractLogger;
-  public repository: Repository<Ticket>;
+  public repository: Repository<TicketEntity>;
   private readonly index: number;
   private readonly rewardPercent: number;
 
   constructor(dataSource: DataSource, logger?: AbstractLogger) {
-    super(dataSource, Ticket, logger);
+    super(dataSource, TicketEntity, logger);
     this.dataSource = dataSource;
     this.logger = logger ? logger : new DummyLogger();
-    this.repository = dataSource.getRepository(Ticket);
+    this.repository = dataSource.getRepository(TicketEntity);
   }
 
   /**
@@ -36,7 +36,7 @@ export class TicketAction extends AbstractInitializableErgoExtractorAction<
     boxes: TicketBoxInterface[],
     block: BlockInfo,
     extractor: string,
-  ): Omit<Ticket, 'id'>[] => {
+  ): Omit<TicketEntity, 'id'>[] => {
     return boxes.map((box) => {
       return {
         boxId: box.boxId,
@@ -57,7 +57,7 @@ export class TicketAction extends AbstractInitializableErgoExtractorAction<
    * convert the database entity back to raw data
    * @param entities
    */
-  convertEntityToData = (entities: Ticket[]): TicketBoxInterface[] => {
+  convertEntityToData = (entities: TicketEntity[]): TicketBoxInterface[] => {
     return entities.map((data) =>
       pick(data, [
         'boxId',

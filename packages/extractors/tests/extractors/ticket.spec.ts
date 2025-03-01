@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Network } from '@fleet-sdk/core';
+import { Network, SColl, SLong } from '@fleet-sdk/core';
 import { ErgoNetworkType } from '@rosen-bridge/scanner';
 import { compile } from '@fleet-sdk/compiler';
 
@@ -8,7 +8,7 @@ import { createDatabase } from '../utils.mock';
 import {
   sampleTicketBoxes,
   sampleTicketExtractedData,
-} from '../mocked/ticket.mock';
+} from './mocked/ticket.mock';
 
 /*
  * create fixtures that contains below steps data:
@@ -34,7 +34,7 @@ const createTicketExtractorTest = async () => {
   });
 };
 
-const ticketExtractorTest = await createTicketExtractorTest();
+const extractorTest = await createTicketExtractorTest();
 
 describe('TicketExtractor', () => {
   describe('extractBoxData', () => {
@@ -47,7 +47,7 @@ describe('TicketExtractor', () => {
      * @expected
      * - Tickets should extract successfully
      */
-    ticketExtractorTest(
+    extractorTest(
       `should extract data from sample Ticket box`,
       async ({ extractor }) => {
         const extractedData = await extractor.extractBoxData(
@@ -70,7 +70,7 @@ describe('TicketExtractor', () => {
      * @expected
      * - Tickets box checking result must be true
      */
-    ticketExtractorTest(
+    extractorTest(
       `should result of hasData method be true by valid box data`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData(sampleTicketBoxes[0]);
@@ -89,12 +89,62 @@ describe('TicketExtractor', () => {
      * @expected
      * - Tickets box checking result must be false
      */
-    ticketExtractorTest(
+    extractorTest(
       `should result of hasData method be false by invalid box address`,
       async ({ extractor, boxFalseErgoTree }) => {
         const extractedData = await extractor.hasData({
           ...sampleTicketBoxes[0],
           ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
+        });
+
+        expect(extractedData).toBeFalsy();
+      },
+    );
+
+    /**
+     * @target should result of hasData method be false by invalid R4 value
+     * @dependencies
+     * @scenario
+     * - call the hasData functions
+     * - check if Ticket box R4 value is not valid
+     * - result must be false
+     * @expected
+     * - Tickets box checking result must be false
+     */
+    extractorTest(
+      `should result of hasData method be false by invalid R4 value`,
+      async ({ extractor }) => {
+        const extractedData = await extractor.hasData({
+          ...sampleTicketBoxes[0],
+          additionalRegisters: {
+            ...sampleTicketBoxes[0].additionalRegisters,
+            R4: SLong(1n).toHex(),
+          },
+        });
+
+        expect(extractedData).toBeFalsy();
+      },
+    );
+
+    /**
+     * @target should result of hasData method be false by invalid R5 length
+     * @dependencies
+     * @scenario
+     * - call the hasData functions
+     * - check if Ticket box R5 length is not valid
+     * - result must be false
+     * @expected
+     * - Tickets box checking result must be false
+     */
+    extractorTest(
+      `should result of hasData method be false by invalid R5 length`,
+      async ({ extractor }) => {
+        const extractedData = await extractor.hasData({
+          ...sampleTicketBoxes[0],
+          additionalRegisters: {
+            ...sampleTicketBoxes[0].additionalRegisters,
+            R5: SColl(SLong, []).toHex(),
+          },
         });
 
         expect(extractedData).toBeFalsy();

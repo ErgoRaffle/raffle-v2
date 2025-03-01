@@ -2,7 +2,7 @@ import { AbstractErgoExtractorEntity } from '@rosen-bridge/abstract-extractor';
 import { Entity, Column } from 'typeorm';
 
 @Entity('winner_prizes')
-export class WinnerPrize extends AbstractErgoExtractorEntity {
+export class WinnerPrizeEntity extends AbstractErgoExtractorEntity {
   @Column({ type: 'varchar' })
   txId: string;
 

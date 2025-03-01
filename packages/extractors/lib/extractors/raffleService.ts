@@ -9,13 +9,13 @@ import {
 
 import { RaffleServiceAction } from '../actions/raffleService';
 import { RaffleServiceBoxInterface } from '../interfaces/types';
-import { RaffleService } from '../entities';
+import { RaffleServiceEntity } from '../entities';
 import { ErgoAddress, Box } from '@fleet-sdk/core';
 import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 
 export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<
   RaffleServiceBoxInterface,
-  RaffleService
+  RaffleServiceEntity
 > {
   readonly actions: RaffleServiceAction;
   private readonly id: string;
@@ -50,9 +50,19 @@ export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<
    * @return true if the box has the required data and false otherwise
    */
   hasData = (box: OutputBox): boolean => {
-    return (
-      box.ergoTree == this.ergoTree && boxHasToken(box, [this.serviceNFTId])
-    );
+    try {
+      return (
+        box.ergoTree == this.ergoTree &&
+        boxHasToken(box, [this.serviceNFTId]) &&
+        box.additionalRegisters != undefined &&
+        box.additionalRegisters.R4 != undefined &&
+        (SConstant.from(box.additionalRegisters!.R4!).data as bigint[])
+          .length == 4
+      );
+    } catch (err) {
+      this.logger.error(`RaffleServiceExtractor Error: ${err}`);
+      return false;
+    }
   };
 
   /**

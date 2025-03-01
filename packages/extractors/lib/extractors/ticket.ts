@@ -8,13 +8,13 @@ import {
 
 import { TicketAction } from '../actions/ticket';
 import { TicketBoxInterface } from '../interfaces/types';
-import { Ticket } from '../entities';
+import { TicketEntity } from '../entities';
 import { ErgoAddress, Box } from '@fleet-sdk/core';
-import { SByte, SColl, SConstant, serializeBox } from '@fleet-sdk/serializer';
+import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 
 export class TicketExtractor extends AbstractInitializableErgoExtractor<
   TicketBoxInterface,
-  Ticket
+  TicketEntity
 > {
   readonly actions: TicketAction;
   private readonly id: string;
@@ -46,7 +46,19 @@ export class TicketExtractor extends AbstractInitializableErgoExtractor<
    * @return true if the box has the required data and false otherwise
    */
   hasData = (box: OutputBox): boolean => {
-    return box.ergoTree == this.ergoTree;
+    try {
+      return (
+        box.ergoTree == this.ergoTree &&
+        Buffer.from(
+          SConstant.from(box.additionalRegisters!.R4!).data as Uint8Array,
+        ).toString('hex') != undefined &&
+        (SConstant.from(box.additionalRegisters!.R5!).data as bigint[])
+          .length == 4
+      );
+    } catch (err) {
+      this.logger.error(`TicketExtractor Error: ${err}`);
+      return false;
+    }
   };
 
   /**
@@ -55,12 +67,9 @@ export class TicketExtractor extends AbstractInitializableErgoExtractor<
    * @return extracted data in proper format
    */
   extractBoxData = (box: OutputBox): TicketBoxInterface | undefined => {
-    const donatorErgoTree = SColl(
-      SByte,
-      Array.from(
-        SConstant.from(box.additionalRegisters!.R4!).data as Uint8Array,
-      ),
-    ).toHex();
+    const donatorErgoTree = Buffer.from(
+      SConstant.from(box.additionalRegisters!.R4!).data as Uint8Array,
+    ).toString('hex');
     const r5Register = SConstant.from(box.additionalRegisters!.R5!)
       .data as bigint[];
 

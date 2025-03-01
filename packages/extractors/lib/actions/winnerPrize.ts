@@ -6,22 +6,22 @@ import {
 } from '@rosen-bridge/abstract-extractor';
 
 import { WinnerPrizeBoxInterface } from '../interfaces/types';
-import { WinnerPrize } from '../entities/winnerPrize';
+import { WinnerPrizeEntity } from '../entities/';
 import { pick } from 'lodash-es';
 
 export class WinnerPrizeAction extends AbstractInitializableErgoExtractorAction<
   WinnerPrizeBoxInterface,
-  WinnerPrize
+  WinnerPrizeEntity
 > {
   private readonly dataSource: DataSource;
   readonly logger: AbstractLogger;
-  public repository: Repository<WinnerPrize>;
+  public repository: Repository<WinnerPrizeEntity>;
 
   constructor(dataSource: DataSource, logger?: AbstractLogger) {
-    super(dataSource, WinnerPrize, logger);
+    super(dataSource, WinnerPrizeEntity, logger);
     this.dataSource = dataSource;
     this.logger = logger ? logger : new DummyLogger();
-    this.repository = dataSource.getRepository(WinnerPrize);
+    this.repository = dataSource.getRepository(WinnerPrizeEntity);
   }
 
   /**
@@ -34,7 +34,7 @@ export class WinnerPrizeAction extends AbstractInitializableErgoExtractorAction<
     boxes: WinnerPrizeBoxInterface[],
     block: BlockInfo,
     extractor: string,
-  ): Omit<WinnerPrize, 'id'>[] => {
+  ): Omit<WinnerPrizeEntity, 'id'>[] => {
     return boxes.map((box) => {
       return {
         boxId: box.boxId,
@@ -57,7 +57,7 @@ export class WinnerPrizeAction extends AbstractInitializableErgoExtractorAction<
    * @param entities
    */
   convertEntityToData = (
-    entities: WinnerPrize[],
+    entities: WinnerPrizeEntity[],
   ): WinnerPrizeBoxInterface[] => {
     return entities.map((data) =>
       pick(data, [

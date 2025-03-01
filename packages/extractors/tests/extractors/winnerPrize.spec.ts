@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Network } from '@fleet-sdk/core';
+import { Network, SColl, SLong } from '@fleet-sdk/core';
 import { ErgoNetworkType } from '@rosen-bridge/scanner';
 import { compile } from '@fleet-sdk/compiler';
 
@@ -8,7 +8,7 @@ import { createDatabase } from '../utils.mock';
 import {
   sampleWinnerPrizeBoxes,
   sampleWinnerPrizeExtractedData,
-} from '../mocked/winnerPrize.mock';
+} from './mocked/winnerPrize.mock';
 
 /*
  * create fixtures that contains below steps data:
@@ -34,7 +34,7 @@ const createWinnerPrizeExtractorTest = async () => {
   });
 };
 
-const winnerPrizeExtractorTest = await createWinnerPrizeExtractorTest();
+const extractorTest = await createWinnerPrizeExtractorTest();
 
 describe('WinnerPrizeExtractor', () => {
   describe('extractBoxData', () => {
@@ -47,7 +47,7 @@ describe('WinnerPrizeExtractor', () => {
      * @expected
      * - WinnerPrizes should extract successfully
      */
-    winnerPrizeExtractorTest(
+    extractorTest(
       `should extract data from sample WinnerPrize box`,
       async ({ extractor }) => {
         const extractedData = await extractor.extractBoxData(
@@ -70,7 +70,7 @@ describe('WinnerPrizeExtractor', () => {
      * @expected
      * - WinnerPrizes box checking result must be true
      */
-    winnerPrizeExtractorTest(
+    extractorTest(
       `should result of hasData method be true by valid box data`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData(
@@ -91,12 +91,148 @@ describe('WinnerPrizeExtractor', () => {
      * @expected
      * - WinnerPrizes box checking result must be false
      */
-    winnerPrizeExtractorTest(
+    extractorTest(
       `should result of hasData method be false by invalid box address`,
       async ({ extractor, boxFalseErgoTree }) => {
         const extractedData = await extractor.hasData({
           ...sampleWinnerPrizeBoxes[0],
           ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
+        });
+
+        expect(extractedData).toBeFalsy();
+      },
+    );
+
+    /**
+     * @target should result of hasData method be false by R4 length is not valid
+     * @dependencies
+     * @scenario
+     * - call the hasData functions
+     * - check if WinnerPrize box R4 length is not valid
+     * - result must be false
+     * @expected
+     * - WinnerPrizes box checking result must be false
+     */
+    extractorTest(
+      `should result of hasData method be false by R4 length is not valid`,
+      async ({ extractor }) => {
+        const extractedData = await extractor.hasData({
+          ...sampleWinnerPrizeBoxes[0],
+          additionalRegisters: {
+            ...sampleWinnerPrizeBoxes[0].additionalRegisters,
+            R4: SColl(SLong, []).toHex(),
+          },
+        });
+
+        expect(extractedData).toBeFalsy();
+      },
+    );
+
+    /**
+     * @target should result of hasData method be false by R5 is empty
+     * @dependencies
+     * @scenario
+     * - call the hasData functions
+     * - check if WinnerPrize box R5 is empty
+     * - result must be false
+     * @expected
+     * - WinnerPrizes box checking result must be false
+     */
+    extractorTest(
+      `should result of hasData method be false by R5 is empty`,
+      async ({ extractor }) => {
+        const extractedData = await extractor.hasData({
+          ...sampleWinnerPrizeBoxes[0],
+          additionalRegisters: {
+            ...sampleWinnerPrizeBoxes[0].additionalRegisters,
+            R5: undefined,
+          },
+        });
+
+        expect(extractedData).toBeFalsy();
+      },
+    );
+
+    /**
+     * @target should result of hasData method be false by R6 is empty
+     * @dependencies
+     * @scenario
+     * - call the hasData functions
+     * - check if WinnerPrize box R6 is empty
+     * - result must be false
+     * @expected
+     * - WinnerPrizes box checking result must be false
+     */
+    extractorTest(
+      `should result of hasData method be false by R6 is empty`,
+      async ({ extractor }) => {
+        const extractedData = await extractor.hasData({
+          ...sampleWinnerPrizeBoxes[0],
+          additionalRegisters: {
+            ...sampleWinnerPrizeBoxes[0].additionalRegisters,
+            R6: undefined,
+          },
+        });
+
+        expect(extractedData).toBeFalsy();
+      },
+    );
+
+    /**
+     * @target should result of hasData method be false by empty assets
+     * @dependencies
+     * @scenario
+     * - call the hasData functions
+     * - check if WinnerPrize box assets is empty
+     * - result must be false
+     * @expected
+     * - WinnerPrizes box checking result must be false
+     */
+    extractorTest(
+      `should result of hasData method be false by empty assets`,
+      async ({ extractor }) => {
+        const extractedData = await extractor.hasData({
+          ...sampleWinnerPrizeBoxes[0],
+          assets: undefined,
+        });
+
+        expect(extractedData).toBeFalsy();
+      },
+    );
+
+    /**
+     * @target should result of hasData method be false by more than 3 assets
+     * @dependencies
+     * @scenario
+     * - call the hasData functions
+     * - check if WinnerPrize box owned more than 3 assets
+     * - result must be false
+     * @expected
+     * - WinnerPrizes box checking result must be false
+     */
+    extractorTest(
+      `should result of hasData method be false by more than 3 assets`,
+      async ({ extractor }) => {
+        const extractedData = await extractor.hasData({
+          ...sampleWinnerPrizeBoxes[0],
+          assets: [
+            {
+              tokenId: '1'.repeat(64),
+              amount: 1n,
+            },
+            {
+              tokenId: '2'.repeat(64),
+              amount: 1n,
+            },
+            {
+              tokenId: '3'.repeat(64),
+              amount: 1n,
+            },
+            {
+              tokenId: '4'.repeat(64),
+              amount: 1n,
+            },
+          ],
         });
 
         expect(extractedData).toBeFalsy();

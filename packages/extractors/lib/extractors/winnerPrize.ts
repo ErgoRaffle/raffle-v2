@@ -8,13 +8,13 @@ import {
 
 import { WinnerPrizeAction } from '../actions/winnerPrize';
 import { WinnerPrizeBoxInterface } from '../interfaces/types';
-import { WinnerPrize } from '../entities';
+import { WinnerPrizeEntity } from '../entities';
 import { ErgoAddress, Box } from '@fleet-sdk/core';
 import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 
 export class WinnerPrizeExtractor extends AbstractInitializableErgoExtractor<
   WinnerPrizeBoxInterface,
-  WinnerPrize
+  WinnerPrizeEntity
 > {
   readonly actions: WinnerPrizeAction;
   private readonly id: string;
@@ -46,7 +46,22 @@ export class WinnerPrizeExtractor extends AbstractInitializableErgoExtractor<
    * @return true if the box has the required data and false otherwise
    */
   hasData = (box: OutputBox): boolean => {
-    return box.ergoTree == this.ergoTree;
+    try {
+      return (
+        box.ergoTree == this.ergoTree &&
+        (SConstant.from(box.additionalRegisters!.R4!).data as bigint[])
+          .length == 3 &&
+        (SConstant.from(box.additionalRegisters!.R5!).data as number) !=
+          undefined &&
+        Number(SConstant.from(box.additionalRegisters!.R6!).data as bigint) !=
+          undefined &&
+        box.assets!.length > 1 &&
+        box.assets!.length <= 3
+      );
+    } catch (err) {
+      this.logger.error(`WinnerPrizeExtractor Error: ${err}`);
+      return false;
+    }
   };
 
   /**

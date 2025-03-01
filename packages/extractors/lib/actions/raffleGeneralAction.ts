@@ -5,24 +5,23 @@ import {
   BlockInfo,
 } from '@rosen-bridge/abstract-extractor';
 
-import { TicketRepoBoxInterface } from '../interfaces/types';
-import { TicketRepo } from '../entities/ticketRepo';
+import { RaffleGeneralInterface } from '../interfaces/types';
+import { RaffleGeneralEntity } from '../entities';
 import { pick } from 'lodash-es';
 
-export class TicketRepoAction extends AbstractInitializableErgoExtractorAction<
-  TicketRepoBoxInterface,
-  TicketRepo
+export class RaffleGeneralAction extends AbstractInitializableErgoExtractorAction<
+  RaffleGeneralInterface,
+  RaffleGeneralEntity
 > {
   private readonly dataSource: DataSource;
   readonly logger: AbstractLogger;
-  public repository: Repository<TicketRepo>;
-  private readonly prefix = 'TicketRepo';
+  public repository: Repository<RaffleGeneralEntity>;
 
   constructor(dataSource: DataSource, logger?: AbstractLogger) {
-    super(dataSource, TicketRepo, logger);
+    super(dataSource, RaffleGeneralEntity, logger);
     this.dataSource = dataSource;
     this.logger = logger ? logger : new DummyLogger();
-    this.repository = dataSource.getRepository(TicketRepo);
+    this.repository = dataSource.getRepository(RaffleGeneralEntity);
   }
 
   /**
@@ -32,10 +31,10 @@ export class TicketRepoAction extends AbstractInitializableErgoExtractorAction<
    * @param extractor
    */
   createEntity = (
-    boxes: TicketRepoBoxInterface[],
+    boxes: RaffleGeneralInterface[],
     block: BlockInfo,
     extractor: string,
-  ): Omit<TicketRepo, 'id'>[] => {
+  ): Omit<RaffleGeneralEntity, 'id'>[] => {
     return boxes.map((box) => {
       return {
         boxId: box.boxId,
@@ -53,7 +52,9 @@ export class TicketRepoAction extends AbstractInitializableErgoExtractorAction<
    * convert the database entity back to raw data
    * @param entities
    */
-  convertEntityToData = (entities: TicketRepo[]): TicketRepoBoxInterface[] => {
+  convertEntityToData = (
+    entities: RaffleGeneralEntity[],
+  ): RaffleGeneralInterface[] => {
     return entities.map((data) =>
       pick(data, ['boxId', 'txId', 'raffleId', 'extractor', 'serialized']),
     );
