@@ -71,7 +71,6 @@ export class SuccessRaffleExtractor extends AbstractInitializableErgoExtractor<
   ): SuccessRaffleBoxInterface | undefined => {
     let selectedWinnersList = '';
     try {
-      this.logger.error(`======> ${JSON.stringify(inputExtensions![0])}`);
       selectedWinnersList = (
         SConstant.from(inputExtensions![0]['1']).data as bigint[]
       ).toString();
