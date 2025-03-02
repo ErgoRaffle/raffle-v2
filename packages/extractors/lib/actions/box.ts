@@ -5,16 +5,16 @@ import {
   BlockInfo,
 } from '@rosen-bridge/abstract-extractor';
 
-import { WinnerBoxInterface } from '../interfaces/types';
-import { WinnerEntity } from '../entities/winner';
+import { BoxInterface } from '../interfaces/types';
+import { BoxEntity } from '../entities';
 import { pick } from 'lodash-es';
 
-export class WinnerAction extends AbstractInitializableErgoExtractorAction<
-  WinnerBoxInterface,
-  WinnerEntity
+export class BoxAction extends AbstractInitializableErgoExtractorAction<
+  BoxInterface,
+  BoxEntity
 > {
   constructor(dataSource: DataSource, logger?: AbstractLogger) {
-    super(dataSource, WinnerEntity, logger);
+    super(dataSource, BoxEntity, logger);
   }
 
   /**
@@ -24,10 +24,10 @@ export class WinnerAction extends AbstractInitializableErgoExtractorAction<
    * @param extractor
    */
   createEntity = (
-    boxes: WinnerBoxInterface[],
+    boxes: BoxInterface[],
     block: BlockInfo,
     extractor: string,
-  ): Omit<WinnerEntity, 'id'>[] => {
+  ): Omit<BoxEntity, 'id'>[] => {
     return boxes.map((box) => {
       return {
         boxId: box.boxId,
@@ -37,8 +37,6 @@ export class WinnerAction extends AbstractInitializableErgoExtractorAction<
         extractor: extractor,
         txId: box.txId,
         raffleId: box.raffleId,
-        index: box.index,
-        rewardPercent: box.rewardPercent,
       };
     });
   };
@@ -47,17 +45,9 @@ export class WinnerAction extends AbstractInitializableErgoExtractorAction<
    * convert the database entity back to raw data
    * @param data
    */
-  convertEntityToData = (entities: WinnerEntity[]): WinnerBoxInterface[] => {
+  convertEntityToData = (entities: BoxEntity[]): BoxInterface[] => {
     return entities.map((data) =>
-      pick(data, [
-        'boxId',
-        'txId',
-        'raffleId',
-        'extractor',
-        'serialized',
-        'index',
-        'rewardPercent',
-      ]),
+      pick(data, ['boxId', 'txId', 'raffleId', 'extractor', 'serialized']),
     );
   };
 }

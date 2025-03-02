@@ -38,7 +38,7 @@ const extractorTest = await createWinnerExtractorTest();
 describe('WinnerExtractor', () => {
   describe('extractBoxData', () => {
     /**
-     * @target should extract data from sample Winner box
+     * @target should successfully extract data from the sample Winner box
      * @dependencies
      * @scenario
      * - call the extractBoxData functions
@@ -47,7 +47,7 @@ describe('WinnerExtractor', () => {
      * - Winners should extract successfully
      */
     extractorTest(
-      `should extract data from sample Winner box`,
+      `should successfully extract data from the sample Winner box`,
       async ({ extractor }) => {
         const extractedData = await extractor.extractBoxData(
           sampleWinnerBoxes[0],
@@ -60,7 +60,7 @@ describe('WinnerExtractor', () => {
 
   describe('hasData', () => {
     /**
-     * @target should result of hasData method be true by valid box data
+     * @target should return true for hasData method when the box data is valid
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -70,7 +70,7 @@ describe('WinnerExtractor', () => {
      * - Winners box checking result must be true
      */
     extractorTest(
-      `should result of hasData method be true by valid box data`,
+      `should return true for hasData method when the box data is valid`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData(sampleWinnerBoxes[0]);
 
@@ -79,7 +79,7 @@ describe('WinnerExtractor', () => {
     );
 
     /**
-     * @target should result of hasData method be false by invalid box address
+     * @target should return false for hasData method when the box address is invalid
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -89,7 +89,7 @@ describe('WinnerExtractor', () => {
      * - Winners box checking result must be false
      */
     extractorTest(
-      `should result of hasData method be false by invalid box address`,
+      `should return false for hasData method when the box address is invalid`,
       async ({ extractor, boxFalseErgoTree }) => {
         const extractedData = await extractor.hasData({
           ...sampleWinnerBoxes[0],
@@ -101,7 +101,7 @@ describe('WinnerExtractor', () => {
     );
 
     /**
-     * @target should result of hasData method be false when assets is empty
+     * @target should return false for hasData method when the assets array is empty
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -111,7 +111,7 @@ describe('WinnerExtractor', () => {
      * - Winners box checking result must be false
      */
     extractorTest(
-      `should result of hasData method be false when assets is empty`,
+      `should return false for hasData method when the assets array is empty`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
           ...sampleWinnerBoxes[0],
@@ -123,7 +123,7 @@ describe('WinnerExtractor', () => {
     );
 
     /**
-     * @target should result of hasData method be false when assets length is more than 2
+     * @target should return false for hasData method when the assets array length exceeds 2
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -133,7 +133,7 @@ describe('WinnerExtractor', () => {
      * - Winners box checking result must be false
      */
     extractorTest(
-      `should result of hasData method be false when assets length is more than 2`,
+      `should return false for hasData method when the assets array length exceeds 2`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
           ...sampleWinnerBoxes[0],
@@ -158,7 +158,7 @@ describe('WinnerExtractor', () => {
     );
 
     /**
-     * @target should result of hasData method be false when R4 length is not valid
+     * @target should return false for hasData method when the length of R4 is invalid
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -168,7 +168,7 @@ describe('WinnerExtractor', () => {
      * - Winners box checking result must be false
      */
     extractorTest(
-      `should result of hasData method be false when R4 length is not valid`,
+      `should return false for hasData method when the length of R4 is invalid`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
           ...sampleWinnerBoxes[0],
@@ -183,7 +183,7 @@ describe('WinnerExtractor', () => {
     );
 
     /**
-     * @target should result of hasData method be false when R5 is missed
+     * @target should return false for hasData method when R5 is missing
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -193,7 +193,7 @@ describe('WinnerExtractor', () => {
      * - Winners box checking result must be false
      */
     extractorTest(
-      `should result of hasData method be false when R5 is missed`,
+      `should return false for hasData method when R5 is missing`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
           ...sampleWinnerBoxes[0],
