@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class Postgres1739711065101 implements MigrationInterface {
-  name = 'Postgres1739711065101';
+export class Postgres1740392065101 implements MigrationInterface {
+  name = 'Postgres1740392065101';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
