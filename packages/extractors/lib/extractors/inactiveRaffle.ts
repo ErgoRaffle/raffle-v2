@@ -100,6 +100,7 @@ export class InactiveRaffleExtractor extends AbstractInitializableErgoExtractor<
       ).toString('hex');
     } catch (err) {
       this.logger.error(`Error in parsing inactiveRaffle context data: ${err}`);
+      return undefined;
     }
 
     const data = {
