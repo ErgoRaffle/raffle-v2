@@ -13,9 +13,6 @@ export class WinnerAction extends AbstractInitializableErgoExtractorAction<
   WinnerBoxInterface,
   WinnerEntity
 > {
-  private readonly index: number;
-  private readonly rewardPercent: number;
-
   constructor(dataSource: DataSource, logger?: AbstractLogger) {
     super(dataSource, WinnerEntity, logger);
   }
