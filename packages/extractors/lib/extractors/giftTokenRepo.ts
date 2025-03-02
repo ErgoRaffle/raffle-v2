@@ -6,15 +6,15 @@ import {
   ErgoNetworkType,
 } from '@rosen-bridge/abstract-extractor';
 
-import { RaffleGeneralAction } from '../actions/raffleGeneralAction';
+import { RaffleGeneralAction } from '../actions/box';
 import { RaffleGeneralInterface } from '../interfaces/types';
-import { RaffleGeneralEntity } from '../entities';
+import { BoxEntity } from '../entities';
 import { ErgoAddress, Box } from '@fleet-sdk/core';
 import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 
 export class GiftTokenRepoExtractor extends AbstractInitializableErgoExtractor<
   RaffleGeneralInterface,
-  RaffleGeneralEntity
+  BoxEntity
 > {
   readonly actions: RaffleGeneralAction;
   private readonly id: string;
