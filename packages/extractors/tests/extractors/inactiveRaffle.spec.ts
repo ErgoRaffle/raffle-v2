@@ -9,7 +9,6 @@ import {
   sampleInactiveRaffleBoxes,
   sampleInactiveRaffleExtensions,
   sampleInactiveRaffleExtractedData,
-  sampleInactiveRaffleExtractedDataForEmptyExtension,
 } from './mocked/inactiveRaffle.mock';
 
 /*
@@ -78,9 +77,7 @@ describe('InactiveRaffleExtractor', () => {
           [],
         );
 
-        expect(extractedData).toEqual(
-          sampleInactiveRaffleExtractedDataForEmptyExtension,
-        );
+        expect(extractedData).toEqual(undefined);
       },
     );
   });
