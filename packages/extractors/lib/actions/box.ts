@@ -5,12 +5,12 @@ import {
   BlockInfo,
 } from '@rosen-bridge/abstract-extractor';
 
-import { RaffleGeneralInterface } from '../interfaces/types';
+import { BoxInterface } from '../interfaces/types';
 import { BoxEntity } from '../entities';
 import { pick } from 'lodash-es';
 
-export class RaffleGeneralAction extends AbstractInitializableErgoExtractorAction<
-  RaffleGeneralInterface,
+export class BoxAction extends AbstractInitializableErgoExtractorAction<
+  BoxInterface,
   BoxEntity
 > {
   constructor(dataSource: DataSource, logger?: AbstractLogger) {
@@ -24,7 +24,7 @@ export class RaffleGeneralAction extends AbstractInitializableErgoExtractorActio
    * @param extractor
    */
   createEntity = (
-    boxes: RaffleGeneralInterface[],
+    boxes: BoxInterface[],
     block: BlockInfo,
     extractor: string,
   ): Omit<BoxEntity, 'id'>[] => {
@@ -45,7 +45,7 @@ export class RaffleGeneralAction extends AbstractInitializableErgoExtractorActio
    * convert the database entity back to raw data
    * @param entities
    */
-  convertEntityToData = (entities: BoxEntity[]): RaffleGeneralInterface[] => {
+  convertEntityToData = (entities: BoxEntity[]): BoxInterface[] => {
     return entities.map((data) =>
       pick(data, ['boxId', 'txId', 'raffleId', 'extractor', 'serialized']),
     );
