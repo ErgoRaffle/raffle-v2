@@ -9,13 +9,13 @@ import {
 
 import { RaffleServiceAction } from '../actions/raffleService';
 import { RaffleServiceBoxInterface } from '../interfaces/types';
-import { RaffleService } from '../entities';
+import { RaffleServiceEntity } from '../entities';
 import { ErgoAddress, Box } from '@fleet-sdk/core';
 import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 
 export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<
   RaffleServiceBoxInterface,
-  RaffleService
+  RaffleServiceEntity
 > {
   readonly actions: RaffleServiceAction;
   private readonly id: string;
@@ -60,6 +60,7 @@ export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<
           .length == 4
       );
     } catch (err) {
+      this.logger.error(`RaffleServiceExtractor Error: ${err}`);
       return false;
     }
   };
