@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class Postgres1740823115639 implements MigrationInterface {
-  name = 'Postgres1740823115639';
+export class Postgres1740896772976 implements MigrationInterface {
+  name = 'Postgres1740896772976';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
@@ -18,8 +18,8 @@ export class Postgres1740823115639 implements MigrationInterface {
                 "raffleId" character varying NOT NULL,
                 "totalSoldTicket" bigint NOT NULL,
                 "redeemedTickets" bigint NOT NULL,
-                CONSTRAINT "UQ_8af029133c3f43460e165ce3a6b" UNIQUE ("boxId", "extractor"),
-                CONSTRAINT "PK_61a8e182ca690cb78a7a42d703b" PRIMARY KEY ("id")
+                CONSTRAINT "UQ_3b61e1d13c6b9c7c3203ca96282" UNIQUE ("boxId", "extractor"),
+                CONSTRAINT "PK_00c286feb3c545bd6dbfa08a1e6" PRIMARY KEY ("id")
             )
         `);
   }
