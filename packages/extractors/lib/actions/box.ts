@@ -43,7 +43,7 @@ export class BoxAction extends AbstractInitializableErgoExtractorAction<
 
   /**
    * convert the database entity back to raw data
-   * @param data
+   * @param entities
    */
   convertEntityToData = (entities: BoxEntity[]): BoxInterface[] => {
     return entities.map((data) =>
