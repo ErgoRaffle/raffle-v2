@@ -37,6 +37,8 @@
     "typeorm": "0.3.20"
   },
   "devDependencies": {
+    "@fleet-sdk/compiler": "^0.4.2",
+    "@fleet-sdk/mock-chain": "^0.4.2",
     "@types/json-bigint": "^1.0.4",
     "@types/lodash-es": "^4.17.12",
     "@types/node": "^20.11.9",

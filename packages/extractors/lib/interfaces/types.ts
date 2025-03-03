@@ -26,3 +26,7 @@ export interface InactiveRaffleBoxInterface extends ExtractedBox {
   txFee: bigint;
   raffleId: string;
 }
+
+export interface BoxInterface extends ExtractedBox {
+  raffleId: string;
+}
