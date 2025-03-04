@@ -1,5 +1,5 @@
-import { DataSource, Repository } from 'typeorm';
-import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
+import { DataSource } from 'typeorm';
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import {
   AbstractInitializableErgoExtractorAction,
   BlockInfo,
@@ -13,17 +13,8 @@ export class TicketRedeemAction extends AbstractInitializableErgoExtractorAction
   TicketRedeemBoxInterface,
   TicketRedeemEntity
 > {
-  private readonly dataSource: DataSource;
-  readonly logger: AbstractLogger;
-  public repository: Repository<TicketRedeemEntity>;
-  private readonly index: number;
-  private readonly rewardPercent: number;
-
   constructor(dataSource: DataSource, logger?: AbstractLogger) {
     super(dataSource, TicketRedeemEntity, logger);
-    this.dataSource = dataSource;
-    this.logger = logger ? logger : new DummyLogger();
-    this.repository = dataSource.getRepository(TicketRedeemEntity);
   }
 
   /**
