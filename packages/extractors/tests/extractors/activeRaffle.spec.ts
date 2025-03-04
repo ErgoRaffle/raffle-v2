@@ -39,7 +39,7 @@ const extractorTest = await createActiveRaffleExtractorTest();
 describe('ActiveRaffleExtractor', () => {
   describe('extractBoxData', () => {
     /**
-     * @target should extract data from sample ActiveRaffle box
+     * @target should successfully extract data from a sample ActiveRaffle box
      * @dependencies
      * @scenario
      * - call the extractBoxData functions
@@ -48,7 +48,7 @@ describe('ActiveRaffleExtractor', () => {
      * - ActiveRaffles should extract successfully
      */
     extractorTest(
-      `should extract data from sample ActiveRaffle box`,
+      `should successfully extract data from a sample ActiveRaffle box`,
       async ({ extractor }) => {
         const extractedData = await extractor.extractBoxData(
           sampleActiveRaffleBoxes[0],
@@ -61,7 +61,7 @@ describe('ActiveRaffleExtractor', () => {
 
   describe('hasData', () => {
     /**
-     * @target should result of hasData method be true by valid box data
+     * @target should return true when the box contains valid data
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -71,7 +71,7 @@ describe('ActiveRaffleExtractor', () => {
      * - ActiveRaffles box checking result must be true
      */
     extractorTest(
-      `should result of hasData method be true by valid box data`,
+      `should return true when the box contains valid data`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData(
           sampleActiveRaffleBoxes[0],
@@ -82,7 +82,7 @@ describe('ActiveRaffleExtractor', () => {
     );
 
     /**
-     * @target should result of hasData method be false by invalid box address
+     * @target should return false when provided with an invalid box address
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -92,7 +92,7 @@ describe('ActiveRaffleExtractor', () => {
      * - ActiveRaffles box checking result must be false
      */
     extractorTest(
-      `should result of hasData method be false by invalid box address`,
+      `should return false when provided with an invalid box address`,
       async ({ extractor, boxFalseErgoTree }) => {
         const extractedData = await extractor.hasData({
           ...sampleActiveRaffleBoxes[0],
@@ -105,7 +105,7 @@ describe('ActiveRaffleExtractor', () => {
     );
 
     /**
-     * @target should result of hasData method be false by invalid asset licenseTokenId
+     * @target should return false when the asset's licenseTokenId is invalid
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -115,7 +115,7 @@ describe('ActiveRaffleExtractor', () => {
      * - ActiveRaffles box checking result must be false
      */
     extractorTest(
-      `should result of hasData method be false by invalid asset licenseTokenId`,
+      `should return false when the asset's licenseTokenId is invalid`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
           ...sampleActiveRaffleBoxes[0],
@@ -137,7 +137,7 @@ describe('ActiveRaffleExtractor', () => {
     );
 
     /**
-     * @target should result of hasData method be false by assets length is less than 2
+     * @target should return false when the assets list contains fewer than 2 item
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -147,7 +147,7 @@ describe('ActiveRaffleExtractor', () => {
      * - ActiveRaffles box checking result must be false
      */
     extractorTest(
-      `should result of hasData method be false by assets length is less than 2`,
+      `should return false when the assets list contains fewer than 2 item`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
           ...sampleActiveRaffleBoxes[0],
@@ -164,7 +164,7 @@ describe('ActiveRaffleExtractor', () => {
     );
 
     /**
-     * @target should result of hasData method be false by assets length is more than 3
+     * @target should return false when the assets list contains more than 3 items
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -174,7 +174,7 @@ describe('ActiveRaffleExtractor', () => {
      * - ActiveRaffles box checking result must be false
      */
     extractorTest(
-      `should result of hasData method be false by assets length is more than 3`,
+      `should return false when the assets list contains more than 3 items`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
           ...sampleActiveRaffleBoxes[0],

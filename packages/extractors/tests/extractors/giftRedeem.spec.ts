@@ -39,7 +39,7 @@ const extractorTest = await createGiftRedeemExtractorTest();
 describe('GiftRedeemExtractor', () => {
   describe('extractBoxData', () => {
     /**
-     * @target should extract data from sample GiftRedeem box
+     * @target should successfully extract data from a sample GiftRedeem box
      * @dependencies
      * @scenario
      * - call the extractBoxData functions
@@ -48,7 +48,7 @@ describe('GiftRedeemExtractor', () => {
      * - GiftRedeems should extract successfully
      */
     extractorTest(
-      `should extract data from sample GiftRedeem box`,
+      `should successfully extract data from a sample GiftRedeem box`,
       async ({ extractor }) => {
         const extractedData = await extractor.extractBoxData(
           sampleGiftRedeemBoxes[0],
@@ -61,7 +61,7 @@ describe('GiftRedeemExtractor', () => {
 
   describe('hasData', () => {
     /**
-     * @target should result of hasData method be true by valid box data
+     * @target should return true when valid box data is provided
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -71,7 +71,7 @@ describe('GiftRedeemExtractor', () => {
      * - GiftRedeems box checking result must be true
      */
     extractorTest(
-      `should result of hasData method be true by valid box data`,
+      `should return true when valid box data is provided`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData(sampleGiftRedeemBoxes[0]);
 
@@ -80,7 +80,7 @@ describe('GiftRedeemExtractor', () => {
     );
 
     /**
-     * @target should result of hasData method be false by invalid box address
+     * @target should return false when an invalid box address is provided
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -90,7 +90,7 @@ describe('GiftRedeemExtractor', () => {
      * - GiftRedeems box checking result must be false
      */
     extractorTest(
-      `should result of hasData method be false by invalid box address`,
+      `should return false when an invalid box address is provided`,
       async ({ extractor, boxFalseErgoTree }) => {
         const extractedData = await extractor.hasData({
           ...sampleGiftRedeemBoxes[0],
@@ -102,7 +102,7 @@ describe('GiftRedeemExtractor', () => {
     );
 
     /**
-     * @target should result of hasData method be false by R6 is empty
+     * @target should return false when R6 is empty
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -112,7 +112,7 @@ describe('GiftRedeemExtractor', () => {
      * - GiftRedeems box checking result must be false
      */
     extractorTest(
-      `should result of hasData method be false by R6 is empty`,
+      `should return false when R6 is empty`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
           ...sampleGiftRedeemBoxes[0],
@@ -127,7 +127,7 @@ describe('GiftRedeemExtractor', () => {
     );
 
     /**
-     * @target should result of hasData method be false by empty assets
+     * @target should return false when assets are empty
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -137,7 +137,7 @@ describe('GiftRedeemExtractor', () => {
      * - GiftRedeems box checking result must be false
      */
     extractorTest(
-      `should result of hasData method be false by empty assets`,
+      `should return false when assets are empty`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
           ...sampleGiftRedeemBoxes[0],
@@ -149,7 +149,7 @@ describe('GiftRedeemExtractor', () => {
     );
 
     /**
-     * @target should result of hasData method be false by more than 3 assets
+     * @target should return false when more than 3 assets are provided
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -159,7 +159,7 @@ describe('GiftRedeemExtractor', () => {
      * - GiftRedeems box checking result must be false
      */
     extractorTest(
-      `should result of hasData method be false by more than 3 assets`,
+      `should return false when more than 3 assets are provided`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
           ...sampleGiftRedeemBoxes[0],

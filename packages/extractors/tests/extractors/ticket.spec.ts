@@ -39,7 +39,7 @@ const extractorTest = await createTicketExtractorTest();
 describe('TicketExtractor', () => {
   describe('extractBoxData', () => {
     /**
-     * @target should extract data from sample Ticket box
+     * @target should successfully extract data from a sample ticket box
      * @dependencies
      * @scenario
      * - call the extractBoxData functions
@@ -48,7 +48,7 @@ describe('TicketExtractor', () => {
      * - Tickets should extract successfully
      */
     extractorTest(
-      `should extract data from sample Ticket box`,
+      `should successfully extract data from a sample ticket box`,
       async ({ extractor }) => {
         const extractedData = await extractor.extractBoxData(
           sampleTicketBoxes[0],
@@ -61,7 +61,7 @@ describe('TicketExtractor', () => {
 
   describe('hasData', () => {
     /**
-     * @target should result of hasData method be true by valid box data
+     * @target should return true when valid box data is provided
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -71,7 +71,7 @@ describe('TicketExtractor', () => {
      * - Tickets box checking result must be true
      */
     extractorTest(
-      `should result of hasData method be true by valid box data`,
+      `should return true when valid box data is provided`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData(sampleTicketBoxes[0]);
 
@@ -80,7 +80,7 @@ describe('TicketExtractor', () => {
     );
 
     /**
-     * @target should result of hasData method be false by invalid box address
+     * @target should return false when an invalid box address is provided
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -90,7 +90,7 @@ describe('TicketExtractor', () => {
      * - Tickets box checking result must be false
      */
     extractorTest(
-      `should result of hasData method be false by invalid box address`,
+      `should return false when an invalid box address is provided`,
       async ({ extractor, boxFalseErgoTree }) => {
         const extractedData = await extractor.hasData({
           ...sampleTicketBoxes[0],
@@ -102,7 +102,7 @@ describe('TicketExtractor', () => {
     );
 
     /**
-     * @target should result of hasData method be false by invalid R4 value
+     * @target should return false when an invalid R4 value is provided
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -112,7 +112,7 @@ describe('TicketExtractor', () => {
      * - Tickets box checking result must be false
      */
     extractorTest(
-      `should result of hasData method be false by invalid R4 value`,
+      `should return false when an invalid R4 value is provided`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
           ...sampleTicketBoxes[0],
@@ -127,7 +127,7 @@ describe('TicketExtractor', () => {
     );
 
     /**
-     * @target should result of hasData method be false by invalid R5 length
+     * @target should return false when an invalid R5 length is provided
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -137,7 +137,7 @@ describe('TicketExtractor', () => {
      * - Tickets box checking result must be false
      */
     extractorTest(
-      `should result of hasData method be false by invalid R5 length`,
+      `should return false when an invalid R5 length is provided`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
           ...sampleTicketBoxes[0],
