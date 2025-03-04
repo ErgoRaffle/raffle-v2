@@ -38,7 +38,7 @@ const extractorTest = await createSuccessRaffleExtractorTest();
 describe('SuccessRaffleExtractor', () => {
   describe('extractBoxData', () => {
     /**
-     * @target should extract data from sample SuccessRaffle box
+     * @target should successfully extract data from a valid SuccessRaffle box
      * @dependencies
      * @scenario
      * - call the extractBoxData functions
@@ -47,7 +47,7 @@ describe('SuccessRaffleExtractor', () => {
      * - SuccessRaffles should extract successfully
      */
     extractorTest(
-      `should extract data from sample SuccessRaffle box`,
+      `should successfully extract data from a valid SuccessRaffle box`,
       async ({ extractor }) => {
         const extractedData = await extractor.extractBoxData(
           sampleSuccessRaffleBoxes[0],
@@ -59,7 +59,7 @@ describe('SuccessRaffleExtractor', () => {
     );
 
     /**
-     * @target should extract data from sample SuccessRaffle box and by empty extension data
+     * @target should extract data from a SuccessRaffle box with empty extension data
      * @dependencies
      * @scenario
      * - call the extractBoxData functions
@@ -68,7 +68,7 @@ describe('SuccessRaffleExtractor', () => {
      * - SuccessRaffles should extract successfully
      */
     extractorTest(
-      `should extract data from sample SuccessRaffle box and by empty extension data`,
+      `should extract data from a SuccessRaffle box with empty extension data`,
       async ({ extractor }) => {
         const extractedData = await extractor.extractBoxData(
           sampleSuccessRaffleBoxes[0],
@@ -84,7 +84,7 @@ describe('SuccessRaffleExtractor', () => {
 
   describe('hasData', () => {
     /**
-     * @target should result of hasData method be true by valid box data
+     * @target should return true for valid box data
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -94,7 +94,7 @@ describe('SuccessRaffleExtractor', () => {
      * - SuccessRaffles box checking result must be true
      */
     extractorTest(
-      `should result of hasData method be true by valid box data`,
+      `should return true for valid box data`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData(
           sampleSuccessRaffleBoxes[0],
@@ -105,7 +105,7 @@ describe('SuccessRaffleExtractor', () => {
     );
 
     /**
-     * @target should result of hasData method be false by invalid box address
+     * @target should return false for invalid box address
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -115,7 +115,7 @@ describe('SuccessRaffleExtractor', () => {
      * - SuccessRaffles box checking result must be false
      */
     extractorTest(
-      `should result of hasData method be false by invalid box address`,
+      `should return false for invalid box address`,
       async ({ extractor, boxFalseErgoTree }) => {
         const extractedData = await extractor.hasData({
           ...sampleSuccessRaffleBoxes[0],
@@ -128,7 +128,7 @@ describe('SuccessRaffleExtractor', () => {
     );
 
     /**
-     * @target should result of hasData method be false by invalid assets length
+     * @target should return false for invalid assets length
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -138,7 +138,7 @@ describe('SuccessRaffleExtractor', () => {
      * - SuccessRaffles box checking result must be false
      */
     extractorTest(
-      `should result of hasData method be false by invalid assets length`,
+      `should return false for invalid assets length`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
           ...sampleSuccessRaffleBoxes[0],
@@ -155,7 +155,7 @@ describe('SuccessRaffleExtractor', () => {
     );
 
     /**
-     * @target should result of hasData method be false when additionalRegisters is empty
+     * @target should return false when additionalRegisters is empty
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -165,7 +165,7 @@ describe('SuccessRaffleExtractor', () => {
      * - SuccessRaffles box checking result must be false
      */
     extractorTest(
-      `should result of hasData method be false when additionalRegisters is empty`,
+      `should return false when additionalRegisters is empty`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
           ...sampleSuccessRaffleBoxes[0],
@@ -177,7 +177,7 @@ describe('SuccessRaffleExtractor', () => {
     );
 
     /**
-     * @target should result of hasData method be false when R8 is empty
+     * @target should return false when R8 is empty
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -187,7 +187,7 @@ describe('SuccessRaffleExtractor', () => {
      * - SuccessRaffles box checking result must be false
      */
     extractorTest(
-      `should result of hasData method be false when R8 is empty`,
+      `should return false when R8 is empty`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
           ...sampleSuccessRaffleBoxes[0],
