@@ -6,17 +6,17 @@ import {
   ErgoNetworkType,
 } from '@rosen-bridge/abstract-extractor';
 
-import { RaffleGeneralAction } from '../actions/raffleGeneralAction';
-import { RaffleGeneralInterface } from '../interfaces/types';
-import { RaffleGeneralEntity } from '../entities';
+import { BoxAction } from '../actions/box';
+import { BoxInterface } from '../interfaces/types';
+import { BoxEntity } from '../entities';
 import { ErgoAddress, Box } from '@fleet-sdk/core';
 import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 
 export class GiftTokenRepoExtractor extends AbstractInitializableErgoExtractor<
-  RaffleGeneralInterface,
-  RaffleGeneralEntity
+  BoxInterface,
+  BoxEntity
 > {
-  readonly actions: RaffleGeneralAction;
+  readonly actions: BoxAction;
   private readonly id: string;
   private readonly ergoTree: string;
 
@@ -32,7 +32,7 @@ export class GiftTokenRepoExtractor extends AbstractInitializableErgoExtractor<
     super(type, url, address, logger, initialize);
     this.id = id;
     this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
-    this.actions = new RaffleGeneralAction(dataSource, this.logger);
+    this.actions = new BoxAction(dataSource, this.logger);
   }
 
   /**
@@ -64,7 +64,7 @@ export class GiftTokenRepoExtractor extends AbstractInitializableErgoExtractor<
    * @param box
    * @return extracted data in proper format
    */
-  extractBoxData = (box: OutputBox): RaffleGeneralInterface | undefined => {
+  extractBoxData = (box: OutputBox): BoxInterface | undefined => {
     const raffleId = SConstant.from(box.additionalRegisters!.R8!)
       .data as Uint8Array;
     const data = {

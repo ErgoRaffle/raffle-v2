@@ -97,27 +97,3 @@ export const sampleInactiveRaffleExtensions: InputExtension[] = [
   },
   {},
 ];
-
-export const sampleInactiveRaffleExtractedDataForEmptyExtension = {
-  boxId: sampleInactiveRaffleBoxes[0].boxId,
-  txId: sampleInactiveRaffleBoxes[0].transactionId,
-  serialized:
-    'wIQ9GQYBAQHRcwBkASIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIi' +
-    'AQURB5ADyAHIAcCaDICJetAPsOoBGgMgsyiS4NtDjteZCvL2Fhr1TQ7+2cWgkoCs732QLXNLM/' +
-    'AgdB4lw40FQMbZocnIcAh7X0IaZt6MSmb6yE1cDfJZGHogXH9xiMrF43Y0Ndj/FhjuAMMPnqgU' +
-    '064mYgVHFiAwCpIaAgRUZXN0FFNvbWUgZGVzY3JpcHRpb25zLi4uGgIgMzMzMzMzMzMzMzMzMz' +
-    'MzMzMzMzMzMzMzMzMzMzMzMzMge8trSPEi5LKmV26w9zy4pvrbGAREDHFDs8o74DhqB5gECgEB' +
-    'AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ==',
-  raffleId: '7bcb6b48f122e4b2a6576eb0f73cb8a6fadb1804440c7143b3ca3be0386a0798',
-  creatorErgoTree: '',
-  implementorErgoTree: '',
-  serviceErgoTree: serviceWallet.ergoTree.toString(),
-  deadline: 1000,
-  goal: 1000000n,
-  implementerFeePercent: 100,
-  serviceFeePercent: 100,
-  ticketPrice: 100000n,
-  txFee: 15000n,
-  winnersPercent: 200,
-  winnersPercentList: '',
-};

@@ -34,6 +34,26 @@ export const sampleRaffleDetailsExtractedData = {
   txId: sampleRaffleDetailsBoxes[0].transactionId,
   name: 'Test',
   description: 'Some descriptions...',
+  pictures: [
+    {
+      content: 'picture content 1',
+      orderIndex: 0,
+      raffleId:
+        'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
+    },
+    {
+      content: 'picture content 2',
+      orderIndex: 1,
+      raffleId:
+        'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
+    },
+    {
+      content: 'picture content 3',
+      orderIndex: 2,
+      raffleId:
+        'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
+    },
+  ],
   raffleId: 'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
   serialized:
     'wMOTBxkGAQEB0XMArtBiAdKd6qXYCV/jCTCEVBKwk9K6dbSOMcJd/58FpnOWdzD7' +

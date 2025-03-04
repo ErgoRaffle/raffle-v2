@@ -1,27 +1,20 @@
-import { DataSource, Repository } from 'typeorm';
-import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
+import { DataSource } from 'typeorm';
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import {
   AbstractInitializableErgoExtractorAction,
   BlockInfo,
 } from '@rosen-bridge/abstract-extractor';
 
-import { RaffleGeneralInterface } from '../interfaces/types';
-import { RaffleGeneralEntity } from '../entities';
+import { BoxInterface } from '../interfaces/types';
+import { BoxEntity } from '../entities';
 import { pick } from 'lodash-es';
 
-export class RaffleGeneralAction extends AbstractInitializableErgoExtractorAction<
-  RaffleGeneralInterface,
-  RaffleGeneralEntity
+export class BoxAction extends AbstractInitializableErgoExtractorAction<
+  BoxInterface,
+  BoxEntity
 > {
-  private readonly dataSource: DataSource;
-  readonly logger: AbstractLogger;
-  public repository: Repository<RaffleGeneralEntity>;
-
   constructor(dataSource: DataSource, logger?: AbstractLogger) {
-    super(dataSource, RaffleGeneralEntity, logger);
-    this.dataSource = dataSource;
-    this.logger = logger ? logger : new DummyLogger();
-    this.repository = dataSource.getRepository(RaffleGeneralEntity);
+    super(dataSource, BoxEntity, logger);
   }
 
   /**
@@ -31,10 +24,10 @@ export class RaffleGeneralAction extends AbstractInitializableErgoExtractorActio
    * @param extractor
    */
   createEntity = (
-    boxes: RaffleGeneralInterface[],
+    boxes: BoxInterface[],
     block: BlockInfo,
     extractor: string,
-  ): Omit<RaffleGeneralEntity, 'id'>[] => {
+  ): Omit<BoxEntity, 'id'>[] => {
     return boxes.map((box) => {
       return {
         boxId: box.boxId,
@@ -52,9 +45,7 @@ export class RaffleGeneralAction extends AbstractInitializableErgoExtractorActio
    * convert the database entity back to raw data
    * @param entities
    */
-  convertEntityToData = (
-    entities: RaffleGeneralEntity[],
-  ): RaffleGeneralInterface[] => {
+  convertEntityToData = (entities: BoxEntity[]): BoxInterface[] => {
     return entities.map((data) =>
       pick(data, ['boxId', 'txId', 'raffleId', 'extractor', 'serialized']),
     );
