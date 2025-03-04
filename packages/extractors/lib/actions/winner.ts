@@ -45,7 +45,7 @@ export class WinnerAction extends AbstractInitializableErgoExtractorAction<
 
   /**
    * convert the database entity back to raw data
-   * @param data
+   * @param entities
    */
   convertEntityToData = (entities: WinnerEntity[]): WinnerBoxInterface[] => {
     return entities.map((data) =>

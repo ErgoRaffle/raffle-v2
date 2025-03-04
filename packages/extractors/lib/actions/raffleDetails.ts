@@ -6,15 +6,18 @@ import {
 } from '@rosen-bridge/abstract-extractor';
 
 import { RaffleDetailsBoxInterface } from '../interfaces/types';
-import { RaffleDetailsEntity } from '../entities/raffleDetails';
+import { PictureEntity, RaffleDetailsEntity } from '../entities/raffleDetails';
 import { pick } from 'lodash-es';
 
 export class RaffleDetailsAction extends AbstractInitializableErgoExtractorAction<
   RaffleDetailsBoxInterface,
   RaffleDetailsEntity
 > {
+  private readonly dataSource: DataSource;
+
   constructor(dataSource: DataSource, logger?: AbstractLogger) {
     super(dataSource, RaffleDetailsEntity, logger);
+    this.dataSource = dataSource;
   }
 
   /**
@@ -29,6 +32,11 @@ export class RaffleDetailsAction extends AbstractInitializableErgoExtractorActio
     extractor: string,
   ): Omit<RaffleDetailsEntity, 'id'>[] => {
     return boxes.map((box) => {
+      // Store related pictures
+      if (box.pictures != undefined) {
+        this.dataSource.manager.insert(PictureEntity, box.pictures);
+      }
+
       return {
         boxId: box.boxId,
         block: block.hash,

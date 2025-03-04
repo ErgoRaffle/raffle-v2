@@ -57,6 +57,12 @@ describe('RaffleDetailsExtractor', () => {
 
         expect(extractedData).toEqual(sampleRaffleDetailsExtractedData);
 
+        await extractor.actions.storeBoxes(
+          [extractedData!],
+          { height: 1, hash: '0' },
+          'RaffleDetails',
+        );
+
         await new Promise((r) => setTimeout(r, 100));
         expect(await dataSource.manager.count(PictureEntity)).toEqual(3);
       },
@@ -65,7 +71,7 @@ describe('RaffleDetailsExtractor', () => {
 
   describe('hasData', () => {
     /**
-     * @target should return true for hasData method when the box data is valid
+     * @target should return true when the box data is valid
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -75,7 +81,7 @@ describe('RaffleDetailsExtractor', () => {
      * - RaffleDetails box checking result must be true
      */
     extractorTest(
-      `should return true for hasData method when the box data is valid`,
+      `should return true when the box data is valid`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData(
           sampleRaffleDetailsBoxes[0],
@@ -86,7 +92,7 @@ describe('RaffleDetailsExtractor', () => {
     );
 
     /**
-     * @target should return false for hasData method when the box address is invalid
+     * @target should return false when the box address is invalid
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -96,7 +102,7 @@ describe('RaffleDetailsExtractor', () => {
      * - RaffleDetails box checking result must be false
      */
     extractorTest(
-      `should return false for hasData method when the box address is invalid`,
+      `should return false when the box address is invalid`,
       async ({ extractor, boxFalseErgoTree }) => {
         const extractedData = await extractor.hasData({
           ...sampleRaffleDetailsBoxes[0],
@@ -108,7 +114,7 @@ describe('RaffleDetailsExtractor', () => {
     );
 
     /**
-     * @target should return false for hasData method when the length of R4 is less than 2
+     * @target should return false when the length of R4 is less than 2
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -118,7 +124,7 @@ describe('RaffleDetailsExtractor', () => {
      * - RaffleDetails box checking result must be false
      */
     extractorTest(
-      `should return false for hasData method when the length of R4 is less than 2`,
+      `should return false when the length of R4 is less than 2`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
           ...sampleRaffleDetailsBoxes[0],
@@ -135,7 +141,7 @@ describe('RaffleDetailsExtractor', () => {
     );
 
     /**
-     * @target should return false for hasData method when the assets array length is greater than 1
+     * @target should return false when the assets array length is greater than 1
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -145,7 +151,7 @@ describe('RaffleDetailsExtractor', () => {
      * - RaffleDetails box checking result must be false
      */
     extractorTest(
-      `should return false for hasData method when the assets array length is greater than 1`,
+      `should return false when the assets array length is greater than 1`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
           ...sampleRaffleDetailsBoxes[0],
