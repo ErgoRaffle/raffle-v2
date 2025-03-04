@@ -27,7 +27,7 @@ export interface InactiveRaffleBoxInterface extends ExtractedBox {
   raffleId: string;
 }
 
-export interface RaffleGeneralInterface extends ExtractedBox {
+export interface BoxInterface extends ExtractedBox {
   raffleId: string;
 }
 
@@ -37,10 +37,17 @@ export interface WinnerBoxInterface extends ExtractedBox {
   rewardPercent: number;
 }
 
+export interface PictureInterface {
+  orderIndex: number;
+  raffleId: string;
+  content: string;
+}
+
 export interface RaffleDetailsBoxInterface extends ExtractedBox {
   raffleId: string;
   name: string;
   description: string;
+  pictures?: PictureInterface[];
 }
 
 export interface GiftBoxInterface extends ExtractedBox {

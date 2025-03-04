@@ -8,7 +8,7 @@ import {
 import { ErgoAddress, Box } from '@fleet-sdk/core';
 import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 
-import { RaffleDetailsEntity, PictureEntity } from '../entities';
+import { RaffleDetailsEntity } from '../entities';
 import { RaffleDetailsAction } from '../actions/raffleDetails';
 import { RaffleDetailsBoxInterface } from '../interfaces/types';
 
@@ -69,20 +69,11 @@ export class RaffleDetailsExtractor extends AbstractInitializableErgoExtractor<
   extractBoxData = (box: OutputBox): RaffleDetailsBoxInterface | undefined => {
     const R4Serialized = SConstant.from(box.additionalRegisters!.R4!)
       .data as Uint8Array[];
-    for (let i = 0; i < R4Serialized.slice(2).length; i++) {
-      this.dataSource
-        .createQueryBuilder()
-        .insert()
-        .into(PictureEntity)
-        .values([
-          {
-            orderIndex: i,
-            raffleId: box.assets![0].tokenId,
-            content: String.fromCharCode(...R4Serialized.slice(2)[i]),
-          },
-        ])
-        .execute();
-    }
+    const pictures = R4Serialized.slice(2).map((picInfo, i) => ({
+      orderIndex: i,
+      raffleId: box.assets![0].tokenId,
+      content: String.fromCharCode(...picInfo),
+    }));
 
     const data = {
       boxId: box.boxId.toString(),
@@ -90,6 +81,7 @@ export class RaffleDetailsExtractor extends AbstractInitializableErgoExtractor<
       raffleId: box.assets![0].tokenId,
       name: String.fromCharCode(...R4Serialized[0]),
       description: String.fromCharCode(...R4Serialized[1]),
+      pictures: pictures,
       serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(
         'base64',
       ),
