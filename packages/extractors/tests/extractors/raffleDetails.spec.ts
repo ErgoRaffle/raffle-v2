@@ -40,7 +40,7 @@ const extractorTest = await createRaffleDetailsExtractorTest();
 describe('RaffleDetailsExtractor', () => {
   describe('extractBoxData', () => {
     /**
-     * @target should extract data from sample RaffleDetails box
+     * @target should successfully extract data from the sample RaffleDetails box
      * @dependencies
      * @scenario
      * - call the extractBoxData functions
@@ -49,13 +49,19 @@ describe('RaffleDetailsExtractor', () => {
      * - RaffleDetails should extract successfully
      */
     extractorTest(
-      `should extract data from sample RaffleDetails box`,
+      `should successfully extract data from the sample RaffleDetails box`,
       async ({ extractor, dataSource }) => {
         const extractedData = await extractor.extractBoxData(
           sampleRaffleDetailsBoxes[0],
         );
 
         expect(extractedData).toEqual(sampleRaffleDetailsExtractedData);
+
+        await extractor.actions.storeBoxes(
+          [extractedData!],
+          { height: 1, hash: '0' },
+          'RaffleDetails',
+        );
 
         await new Promise((r) => setTimeout(r, 100));
         expect(await dataSource.manager.count(PictureEntity)).toEqual(3);
@@ -65,7 +71,7 @@ describe('RaffleDetailsExtractor', () => {
 
   describe('hasData', () => {
     /**
-     * @target should result of hasData method be true by valid box data
+     * @target should return true when the box data is valid
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -75,7 +81,7 @@ describe('RaffleDetailsExtractor', () => {
      * - RaffleDetails box checking result must be true
      */
     extractorTest(
-      `should result of hasData method be true by valid box data`,
+      `should return true when the box data is valid`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData(
           sampleRaffleDetailsBoxes[0],
@@ -86,7 +92,7 @@ describe('RaffleDetailsExtractor', () => {
     );
 
     /**
-     * @target should result of hasData method be false by invalid box address
+     * @target should return false when the box address is invalid
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -96,7 +102,7 @@ describe('RaffleDetailsExtractor', () => {
      * - RaffleDetails box checking result must be false
      */
     extractorTest(
-      `should result of hasData method be false by invalid box address`,
+      `should return false when the box address is invalid`,
       async ({ extractor, boxFalseErgoTree }) => {
         const extractedData = await extractor.hasData({
           ...sampleRaffleDetailsBoxes[0],
@@ -108,7 +114,7 @@ describe('RaffleDetailsExtractor', () => {
     );
 
     /**
-     * @target should result of hasData method be false when R4 length is less than 2
+     * @target should return false when the length of R4 is less than 2
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -118,7 +124,7 @@ describe('RaffleDetailsExtractor', () => {
      * - RaffleDetails box checking result must be false
      */
     extractorTest(
-      `should result of hasData method be false when R4 length is less than 2`,
+      `should return false when the length of R4 is less than 2`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
           ...sampleRaffleDetailsBoxes[0],
@@ -135,7 +141,7 @@ describe('RaffleDetailsExtractor', () => {
     );
 
     /**
-     * @target should result of hasData method be false when assets length is more than 1
+     * @target should return false when the assets array length is greater than 1
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -145,7 +151,7 @@ describe('RaffleDetailsExtractor', () => {
      * - RaffleDetails box checking result must be false
      */
     extractorTest(
-      `should result of hasData method be false when assets length is more than 1`,
+      `should return false when the assets array length is greater than 1`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
           ...sampleRaffleDetailsBoxes[0],
