@@ -38,7 +38,7 @@ const extractorTest = await createTicketRepoExtractorTest();
 describe('TicketRepoExtractor', () => {
   describe('extractBoxData', () => {
     /**
-     * @target should extract data from sample TicketRepo box
+     * @target should successfully extract data from a sample TicketRepo box
      * @dependencies
      * @scenario
      * - call the extractBoxData functions
@@ -47,7 +47,7 @@ describe('TicketRepoExtractor', () => {
      * - TicketRepos should extract successfully
      */
     extractorTest(
-      `should extract data from sample TicketRepo box`,
+      `should successfully extract data from a sample TicketRepo box`,
       async ({ extractor }) => {
         const extractedData = await extractor.extractBoxData(
           sampleTicketRepo[0],
@@ -60,7 +60,7 @@ describe('TicketRepoExtractor', () => {
 
   describe('hasData', () => {
     /**
-     * @target should result of hasData method be true by valid box data
+     * @target should return true for hasData method when the box contains valid data
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -70,7 +70,7 @@ describe('TicketRepoExtractor', () => {
      * - TicketRepos box checking result must be true
      */
     extractorTest(
-      `should result of hasData method be true by valid box data`,
+      `should return true for hasData method when the box contains valid data`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData(sampleTicketRepo[0]);
 
@@ -79,7 +79,7 @@ describe('TicketRepoExtractor', () => {
     );
 
     /**
-     * @target should result of hasData method be false by invalid box address
+     * @target should return false for hasData method when provided with an invalid box address
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -89,7 +89,7 @@ describe('TicketRepoExtractor', () => {
      * - TicketRepos box checking result must be false
      */
     extractorTest(
-      `should result of hasData method be false by invalid box address`,
+      `should return false for hasData method when provided with an invalid box address`,
       async ({ extractor, boxFalseErgoTree }) => {
         const extractedData = await extractor.hasData({
           ...sampleTicketRepo[0],
@@ -102,17 +102,17 @@ describe('TicketRepoExtractor', () => {
     );
 
     /**
-     * @target should result of hasData method be false when assets is empty
+     * @target should return false for hasData method when the assets list is empty
      * @dependencies
-     * @scenario
      * - call the hasData functions
      * - check if TicketRepo box assets is undefined
      * - result must be false
+     * @scenario
      * @expected
      * - TicketRepos box checking result must be false
      */
     extractorTest(
-      `should result of hasData method be false when assets is empty`,
+      `should return false for hasData method when the assets list is empty`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
           ...sampleTicketRepo[0],
@@ -124,7 +124,7 @@ describe('TicketRepoExtractor', () => {
     );
 
     /**
-     * @target should result of hasData method be false when assets length is more than 1
+     * @target should return false for hasData method when the assets list contains more than one item
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -134,7 +134,7 @@ describe('TicketRepoExtractor', () => {
      * - TicketRepos box checking result must be false
      */
     extractorTest(
-      `should result of hasData method be false when assets length is more than 1`,
+      `should return false for hasData method when the assets list contains more than one item`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
           ...sampleTicketRepo[0],

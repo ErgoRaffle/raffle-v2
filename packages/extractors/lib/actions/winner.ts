@@ -1,5 +1,5 @@
-import { DataSource, Repository } from 'typeorm';
-import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
+import { DataSource } from 'typeorm';
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import {
   AbstractInitializableErgoExtractorAction,
   BlockInfo,
@@ -13,17 +13,8 @@ export class WinnerAction extends AbstractInitializableErgoExtractorAction<
   WinnerBoxInterface,
   WinnerEntity
 > {
-  private readonly dataSource: DataSource;
-  readonly logger: AbstractLogger;
-  public repository: Repository<WinnerEntity>;
-  private readonly index: number;
-  private readonly rewardPercent: number;
-
   constructor(dataSource: DataSource, logger?: AbstractLogger) {
     super(dataSource, WinnerEntity, logger);
-    this.dataSource = dataSource;
-    this.logger = logger ? logger : new DummyLogger();
-    this.repository = dataSource.getRepository(WinnerEntity);
   }
 
   /**
@@ -54,7 +45,7 @@ export class WinnerAction extends AbstractInitializableErgoExtractorAction<
 
   /**
    * convert the database entity back to raw data
-   * @param data
+   * @param entities
    */
   convertEntityToData = (entities: WinnerEntity[]): WinnerBoxInterface[] => {
     return entities.map((data) =>

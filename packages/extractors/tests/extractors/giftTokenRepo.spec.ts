@@ -38,7 +38,7 @@ const extractorTest = await createGiftTokenRepoExtractorTest();
 describe('GiftTokenRepoExtractor', () => {
   describe('extractBoxData', () => {
     /**
-     * @target should extract data from sample GiftTokenRepo box
+     * @target should successfully extract data from a sample GiftTokenRepo box
      * @dependencies
      * @scenario
      * - call the extractBoxData functions
@@ -47,7 +47,7 @@ describe('GiftTokenRepoExtractor', () => {
      * - GiftTokenRepos should extract successfully
      */
     extractorTest(
-      `should extract data from sample GiftTokenRepo box`,
+      `should successfully extract data from a sample GiftTokenRepo box`,
       async ({ extractor }) => {
         const extractedData = await extractor.extractBoxData(
           sampleGiftTokenRepo[0],
@@ -60,7 +60,7 @@ describe('GiftTokenRepoExtractor', () => {
 
   describe('hasData', () => {
     /**
-     * @target should result of hasData method be true by valid box data
+     * @target should return true when the box contains valid data
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -70,7 +70,7 @@ describe('GiftTokenRepoExtractor', () => {
      * - GiftTokenRepos box checking result must be true
      */
     extractorTest(
-      `should result of hasData method be true by valid box data`,
+      `should return true when the box contains valid data`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData(sampleGiftTokenRepo[0]);
 
@@ -79,7 +79,7 @@ describe('GiftTokenRepoExtractor', () => {
     );
 
     /**
-     * @target should result of hasData method be false by invalid box address
+     * @target should return false when provided with an invalid box address
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -89,7 +89,7 @@ describe('GiftTokenRepoExtractor', () => {
      * - GiftTokenRepos box checking result must be false
      */
     extractorTest(
-      `should result of hasData method be false by invalid box address`,
+      `should return false when provided with an invalid box address`,
       async ({ extractor, boxFalseErgoTree }) => {
         const extractedData = await extractor.hasData({
           ...sampleGiftTokenRepo[0],
@@ -102,7 +102,7 @@ describe('GiftTokenRepoExtractor', () => {
     );
 
     /**
-     * @target should result of hasData method be false when R8 is empty
+     * @target should return false when R8 is empty
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -112,7 +112,7 @@ describe('GiftTokenRepoExtractor', () => {
      * - GiftTokenRepos box checking result must be false
      */
     extractorTest(
-      `should result of hasData method be false when R8 is empty`,
+      `should return false when R8 is empty`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
           ...sampleGiftTokenRepo[0],
@@ -127,7 +127,7 @@ describe('GiftTokenRepoExtractor', () => {
     );
 
     /**
-     * @target should result of hasData method be false when R8 length is not valid
+     * @target should return false when R8 length is not valid
      * @dependencies
      * @scenario
      * - call the hasData functions
@@ -137,7 +137,7 @@ describe('GiftTokenRepoExtractor', () => {
      * - GiftTokenRepos box checking result must be false
      */
     extractorTest(
-      `should result of hasData method be false when R8 length is not valid`,
+      `should return false when R8 length is not valid`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
           ...sampleGiftTokenRepo[0],

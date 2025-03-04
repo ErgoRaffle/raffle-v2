@@ -1,12 +1,12 @@
-import { DataSource, Repository } from 'typeorm';
-import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
+import { DataSource } from 'typeorm';
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import {
   AbstractInitializableErgoExtractorAction,
   BlockInfo,
 } from '@rosen-bridge/abstract-extractor';
 
 import { RaffleDetailsBoxInterface } from '../interfaces/types';
-import { RaffleDetailsEntity } from '../entities/raffleDetails';
+import { PictureEntity, RaffleDetailsEntity } from '../entities/raffleDetails';
 import { pick } from 'lodash-es';
 
 export class RaffleDetailsAction extends AbstractInitializableErgoExtractorAction<
@@ -14,16 +14,10 @@ export class RaffleDetailsAction extends AbstractInitializableErgoExtractorActio
   RaffleDetailsEntity
 > {
   private readonly dataSource: DataSource;
-  readonly logger: AbstractLogger;
-  public repository: Repository<RaffleDetailsEntity>;
-  private readonly index: number;
-  private readonly rewardPercent: number;
 
   constructor(dataSource: DataSource, logger?: AbstractLogger) {
     super(dataSource, RaffleDetailsEntity, logger);
     this.dataSource = dataSource;
-    this.logger = logger ? logger : new DummyLogger();
-    this.repository = dataSource.getRepository(RaffleDetailsEntity);
   }
 
   /**
@@ -38,6 +32,11 @@ export class RaffleDetailsAction extends AbstractInitializableErgoExtractorActio
     extractor: string,
   ): Omit<RaffleDetailsEntity, 'id'>[] => {
     return boxes.map((box) => {
+      // Store related pictures
+      if (box.pictures != undefined) {
+        this.dataSource.manager.insert(PictureEntity, box.pictures);
+      }
+
       return {
         boxId: box.boxId,
         block: block.hash,
