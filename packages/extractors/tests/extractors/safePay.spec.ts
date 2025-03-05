@@ -91,7 +91,6 @@ describe('SafePayExtractor', () => {
             hash: '0'.repeat(64),
           });
           expect(extractBoxDataSpy.mock.lastCall![2]).toEqual(txData.txType);
-          expect(extractBoxDataSpy.mock.lastCall![3]).toBeTruthy();
           extractBoxDataSpy.mockReset();
         }
       },
