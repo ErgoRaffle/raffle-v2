@@ -10,6 +10,7 @@ import { Sqlite1739877562133 } from '../migrations/sqlite/1739877562133-sqlite';
 import { Sqlite1740812389338 } from '../migrations/sqlite/1740812389338-sqlite';
 import { Sqlite1740814926217 } from '../migrations/sqlite/1740814926217-sqlite';
 import { Sqlite1740896672982 } from '../migrations/sqlite/1740896672982-sqlite';
+import { Sqlite1740897040526 } from '../migrations/sqlite/1740897040526-sqlite';
 // postgres migrations
 import { Postgres1739623115850 } from '../migrations/postgres/1739623115850-postgres';
 import { Postgres1740392065101 } from '../migrations/postgres/1740392065101-postgres';
@@ -22,6 +23,7 @@ import { Postgres1739877568072 } from '../migrations/postgres/1739877568072-post
 import { Postgres1740812408283 } from '../migrations/postgres/1740812408283-postgres';
 import { Postgres1740815102615 } from '../migrations/postgres/1740815102615-postgres';
 import { Postgres1740896772976 } from '../migrations/postgres/1740896772976-postgres';
+import { Postgres1740897033385 } from '../migrations/postgres/1740897033385-postgres';
 
 export const migrations = {
   sqlite: [
@@ -36,6 +38,7 @@ export const migrations = {
     Sqlite1740812389338,
     Sqlite1740814926217,
     Sqlite1740896672982,
+    Sqlite1740897040526,
   ],
   postgres: [
     Postgres1739623115850,
@@ -49,5 +52,6 @@ export const migrations = {
     Postgres1740812408283,
     Postgres1740815102615,
     Postgres1740896772976,
+    Postgres1740897033385,
   ],
 };
