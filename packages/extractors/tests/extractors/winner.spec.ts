@@ -115,7 +115,7 @@ describe('WinnerExtractor', () => {
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
           ...sampleWinnerBoxes[0],
-          assets: undefined,
+          assets: [],
         });
 
         expect(extractedData).toBeFalsy();
