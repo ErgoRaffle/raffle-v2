@@ -7,6 +7,7 @@ import {
 
 import { RaffleDetailsBoxInterface } from '../interfaces/types';
 import { PictureEntity, RaffleDetailsEntity } from '../entities/raffleDetails';
+import { pick } from 'lodash-es';
 
 export class RaffleDetailsAction extends AbstractInitializableErgoExtractorAction<
   RaffleDetailsBoxInterface,
@@ -26,7 +27,7 @@ export class RaffleDetailsAction extends AbstractInitializableErgoExtractorActio
    * @param block
    * @param extractor
    */
-  protected insertEntities = async (
+  insertEntities = async (
     queryRunner: QueryRunner,
     boxesToInsert: RaffleDetailsBoxInterface[],
     block: BlockInfo,
@@ -38,7 +39,6 @@ export class RaffleDetailsAction extends AbstractInitializableErgoExtractorActio
     for (const box of boxesToInsert) {
       // Store related pictures
       if (box.pictures != undefined) {
-        console.log(box.pictures);
         await picRepository.insert(box.pictures);
       }
     }
@@ -60,20 +60,17 @@ export class RaffleDetailsAction extends AbstractInitializableErgoExtractorActio
     extractor: string,
   ) => {
     const repository = queryRunner.manager.getRepository(RaffleDetailsEntity);
+    const picRepository = queryRunner.manager.getRepository(PictureEntity);
 
     // Delete old pictures
-    await queryRunner.manager.delete(PictureEntity, {
-      raffleId: updateBox.raffleId,
-    });
+    await picRepository.delete({ raffleId: updateBox.raffleId });
     // Store related pictures
-    const picRepository = queryRunner.manager.getRepository(PictureEntity);
     if (updateBox.pictures != undefined) {
-      console.log(updateBox.pictures);
       await picRepository.insert(updateBox.pictures);
     }
 
     const box = this.createEntity([updateBox], block, extractor)[0];
-    await repository.update(
+    repository.update(
       {
         boxId: box.boxId,
         extractor: extractor,
@@ -106,5 +103,25 @@ export class RaffleDetailsAction extends AbstractInitializableErgoExtractorActio
         description: box.description,
       };
     });
+  };
+
+  /**
+   * convert the database entity back to raw data
+   * @param entities
+   */
+  convertEntityToData = (
+    entities: RaffleDetailsEntity[],
+  ): RaffleDetailsBoxInterface[] => {
+    return entities.map((data) =>
+      pick(data, [
+        'boxId',
+        'txId',
+        'raffleId',
+        'extractor',
+        'serialized',
+        'name',
+        'description',
+      ]),
+    );
   };
 }
