@@ -1,4 +1,4 @@
-import { DataSource } from 'typeorm';
+import { DataSource, QueryRunner } from 'typeorm';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import {
   AbstractInitializableErgoExtractorAction,
@@ -7,7 +7,6 @@ import {
 
 import { RaffleDetailsBoxInterface } from '../interfaces/types';
 import { PictureEntity, RaffleDetailsEntity } from '../entities/raffleDetails';
-import { pick } from 'lodash-es';
 
 export class RaffleDetailsAction extends AbstractInitializableErgoExtractorAction<
   RaffleDetailsBoxInterface,
@@ -19,6 +18,29 @@ export class RaffleDetailsAction extends AbstractInitializableErgoExtractorActio
     super(dataSource, RaffleDetailsEntity, logger);
     this.dataSource = dataSource;
   }
+
+  updateEntity = async (
+    queryRunner: QueryRunner,
+    updateBox: RaffleDetailsBoxInterface,
+    block: BlockInfo,
+    extractor: string,
+  ) => {
+    const repository = queryRunner.manager.getRepository(RaffleDetailsEntity);
+
+    // delete old pictures
+    await queryRunner.manager.delete(PictureEntity, {
+      raffleId: updateBox.raffleId,
+    });
+
+    const box = this.createEntity([updateBox], block, extractor)[0];
+    await repository.update(
+      {
+        boxId: box.boxId,
+        extractor: extractor,
+      },
+      box,
+    );
+  };
 
   /**
    * create the box entity from extracted data and block information
@@ -49,25 +71,5 @@ export class RaffleDetailsAction extends AbstractInitializableErgoExtractorActio
         description: box.description,
       };
     });
-  };
-
-  /**
-   * convert the database entity back to raw data
-   * @param entities
-   */
-  convertEntityToData = (
-    entities: RaffleDetailsEntity[],
-  ): RaffleDetailsBoxInterface[] => {
-    return entities.map((data) =>
-      pick(data, [
-        'boxId',
-        'txId',
-        'raffleId',
-        'extractor',
-        'serialized',
-        'name',
-        'description',
-      ]),
-    );
   };
 }
