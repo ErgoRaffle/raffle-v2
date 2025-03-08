@@ -6,7 +6,7 @@ import {
 } from '@rosen-bridge/abstract-extractor';
 
 import { RaffleDetailsBoxInterface } from '../interfaces/types';
-import { PictureEntity, RaffleDetailsEntity } from '../entities/raffleDetails';
+import { PictureEntity, RaffleDetailsEntity } from '../entities';
 import { pick } from 'lodash-es';
 
 export class RaffleDetailsAction extends AbstractInitializableErgoExtractorAction<
