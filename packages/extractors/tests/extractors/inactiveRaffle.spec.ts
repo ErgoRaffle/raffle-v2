@@ -170,7 +170,7 @@ describe('InactiveRaffleExtractor', () => {
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
           ...sampleInactiveRaffleBoxes[0],
-          additionalRegisters: undefined,
+          additionalRegisters: {},
         });
 
         expect(extractedData).toBeFalsy();

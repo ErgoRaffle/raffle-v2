@@ -40,7 +40,7 @@ const extractorTest = await createRaffleDetailsExtractorTest();
 describe('RaffleDetailsExtractor', () => {
   describe('extractBoxData', () => {
     /**
-     * @target should successfully extract data from the sample RaffleDetails box
+     * @target should successfully extract data from the sample RaffleDetails box and insert and then update related pictures
      * @dependencies
      * @scenario
      * - call the extractBoxData functions
@@ -49,9 +49,9 @@ describe('RaffleDetailsExtractor', () => {
      * - RaffleDetails should extract successfully
      */
     extractorTest(
-      `should successfully extract data from the sample RaffleDetails box`,
+      `should successfully extract data from the sample RaffleDetails box and insert and then update related pictures`,
       async ({ extractor, dataSource }) => {
-        const extractedData = await extractor.extractBoxData(
+        let extractedData = await extractor.extractBoxData(
           sampleRaffleDetailsBoxes[0],
         );
 
@@ -65,6 +65,35 @@ describe('RaffleDetailsExtractor', () => {
 
         await new Promise((r) => setTimeout(r, 100));
         expect(await dataSource.manager.count(PictureEntity)).toEqual(3);
+
+        // update related pictures
+        extractedData = await extractor.extractBoxData({
+          ...sampleRaffleDetailsBoxes[0],
+          additionalRegisters: {
+            R4: SColl(SColl(SByte), [
+              Array.from(Buffer.from('Test')),
+              Array.from(Buffer.from('Some descriptions...')),
+              Array.from(Buffer.from('picture content 1')),
+              Array.from(Buffer.from('picture content 2')),
+              Array.from(Buffer.from('updated picture content 3')),
+            ]).toHex(),
+          },
+        });
+        await extractor.actions.storeBoxes(
+          [extractedData!],
+          { height: 1, hash: '0' },
+          'RaffleDetails',
+        );
+        expect(await dataSource.manager.count(PictureEntity)).toEqual(3);
+
+        await new Promise((r) => setTimeout(r, 100));
+        const updatedPictureExists =
+          (
+            await dataSource.manager
+              .getRepository(PictureEntity)
+              .find({ where: { content: 'updated picture content 3' } })
+          ).length == 1;
+        expect(updatedPictureExists).toBeTruthy();
       },
     );
   });
