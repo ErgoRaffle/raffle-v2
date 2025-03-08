@@ -1,5 +1,11 @@
 import { AbstractErgoExtractorEntity } from '@rosen-bridge/abstract-extractor';
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 
 @Entity('raffle_details')
 export class RaffleDetailsEntity extends AbstractErgoExtractorEntity {
@@ -29,4 +35,8 @@ export class PictureEntity {
 
   @Column({ type: 'varchar' })
   content: string;
+
+  @ManyToOne(() => RaffleDetailsEntity, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'raffleId' })
+  details: RaffleDetailsEntity;
 }
