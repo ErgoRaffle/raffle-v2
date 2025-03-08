@@ -116,7 +116,7 @@ describe('TicketRepoExtractor', () => {
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
           ...sampleTicketRepo[0],
-          assets: undefined,
+          assets: [],
         });
 
         expect(extractedData).toBeFalsy();
