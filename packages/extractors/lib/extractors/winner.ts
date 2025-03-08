@@ -51,6 +51,7 @@ export class WinnerExtractor extends AbstractInitializableErgoExtractor<
         box.ergoTree == this.ergoTree &&
         box.assets!.length >= 1 &&
         box.assets!.length <= 2 &&
+        box.additionalRegisters != undefined &&
         box.additionalRegisters.R4 != undefined &&
         (SConstant.from(box.additionalRegisters.R4).data as bigint[]).length ==
           3 &&
