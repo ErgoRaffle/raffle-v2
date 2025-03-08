@@ -19,6 +19,40 @@ export class RaffleDetailsAction extends AbstractInitializableErgoExtractorActio
     this.dataSource = dataSource;
   }
 
+  /**
+   * insert entities extracted from a block to database
+   * @param queryRunner
+   * @param boxesToInsert
+   * @param block
+   * @param extractor
+   */
+  protected insertEntities = async (
+    queryRunner: QueryRunner,
+    boxesToInsert: RaffleDetailsBoxInterface[],
+    block: BlockInfo,
+    extractor: string,
+  ) => {
+    const repository = queryRunner.manager.getRepository(RaffleDetailsEntity);
+
+    const picRepository = queryRunner.manager.getRepository(PictureEntity);
+    for (const box of boxesToInsert) {
+      // Store related pictures
+      if (box.pictures != undefined) {
+        console.log(box.pictures);
+        await picRepository.insert(box.pictures);
+      }
+    }
+
+    await repository.insert(this.createEntity(boxesToInsert, block, extractor));
+  };
+
+  /**
+   * update entities related to a box
+   * @param queryRunner
+   * @param updateBox
+   * @param block
+   * @param extractor
+   */
   updateEntity = async (
     queryRunner: QueryRunner,
     updateBox: RaffleDetailsBoxInterface,
@@ -27,10 +61,16 @@ export class RaffleDetailsAction extends AbstractInitializableErgoExtractorActio
   ) => {
     const repository = queryRunner.manager.getRepository(RaffleDetailsEntity);
 
-    // delete old pictures
+    // Delete old pictures
     await queryRunner.manager.delete(PictureEntity, {
       raffleId: updateBox.raffleId,
     });
+    // Store related pictures
+    const picRepository = queryRunner.manager.getRepository(PictureEntity);
+    if (updateBox.pictures != undefined) {
+      console.log(updateBox.pictures);
+      await picRepository.insert(updateBox.pictures);
+    }
 
     const box = this.createEntity([updateBox], block, extractor)[0];
     await repository.update(
@@ -54,11 +94,6 @@ export class RaffleDetailsAction extends AbstractInitializableErgoExtractorActio
     extractor: string,
   ): Omit<RaffleDetailsEntity, 'id'>[] => {
     return boxes.map((box) => {
-      // Store related pictures
-      if (box.pictures != undefined) {
-        this.dataSource.manager.insert(PictureEntity, box.pictures);
-      }
-
       return {
         boxId: box.boxId,
         block: block.hash,
