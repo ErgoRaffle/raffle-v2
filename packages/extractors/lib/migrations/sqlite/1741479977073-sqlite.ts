@@ -27,75 +27,13 @@ export class Sqlite1741479977073 implements MigrationInterface {
                 "raffleId" varchar NOT NULL,
                 "orderIndex" integer NOT NULL,
                 "content" varchar NOT NULL,
-                "detailsId" integer
-            )
-        `);
-    await queryRunner.query(`
-            CREATE TABLE "temporary_pictures" (
-                "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-                "raffleId" varchar NOT NULL,
-                "orderIndex" integer NOT NULL,
-                "content" varchar NOT NULL,
                 "detailsId" integer,
                 CONSTRAINT "FK_ea5e985a736fbe539353bbf10c0" FOREIGN KEY ("detailsId") REFERENCES "raffle_details" ("id") ON DELETE CASCADE ON UPDATE NO ACTION
             )
         `);
-    await queryRunner.query(`
-            INSERT INTO "temporary_pictures"(
-                    "id",
-                    "raffleId",
-                    "orderIndex",
-                    "content",
-                    "detailsId"
-                )
-            SELECT "id",
-                "raffleId",
-                "orderIndex",
-                "content",
-                "detailsId"
-            FROM "pictures"
-        `);
-    await queryRunner.query(`
-            DROP TABLE "pictures"
-        `);
-    await queryRunner.query(`
-            ALTER TABLE "temporary_pictures"
-                RENAME TO "pictures"
-        `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`
-            ALTER TABLE "pictures"
-                RENAME TO "temporary_pictures"
-        `);
-    await queryRunner.query(`
-            CREATE TABLE "pictures" (
-                "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-                "raffleId" varchar NOT NULL,
-                "orderIndex" integer NOT NULL,
-                "content" varchar NOT NULL,
-                "detailsId" integer
-            )
-        `);
-    await queryRunner.query(`
-            INSERT INTO "pictures"(
-                    "id",
-                    "raffleId",
-                    "orderIndex",
-                    "content",
-                    "detailsId"
-                )
-            SELECT "id",
-                "raffleId",
-                "orderIndex",
-                "content",
-                "detailsId"
-            FROM "temporary_pictures"
-        `);
-    await queryRunner.query(`
-            DROP TABLE "temporary_pictures"
-        `);
     await queryRunner.query(`
             DROP TABLE "pictures"
         `);
