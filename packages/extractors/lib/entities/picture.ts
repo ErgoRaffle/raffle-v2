@@ -22,6 +22,6 @@ export class PictureEntity {
   content: string;
 
   @ManyToOne(() => RaffleDetailsEntity, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'raffleId' })
+  @JoinColumn()
   details: RaffleDetailsEntity;
 }

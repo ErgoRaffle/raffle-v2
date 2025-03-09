@@ -5,7 +5,10 @@ import {
   BlockInfo,
 } from '@rosen-bridge/abstract-extractor';
 
-import { RaffleDetailsBoxInterface } from '../interfaces/types';
+import {
+  PictureInterface,
+  RaffleDetailsBoxInterface,
+} from '../interfaces/types';
 import { PictureEntity, RaffleDetailsEntity } from '../entities';
 import { pick } from 'lodash-es';
 
@@ -36,12 +39,14 @@ export class RaffleDetailsAction extends AbstractInitializableErgoExtractorActio
     const repository = queryRunner.manager.getRepository(RaffleDetailsEntity);
 
     const picRepository = queryRunner.manager.getRepository(PictureEntity);
+    const pictures: PictureInterface[] = [];
     for (const box of boxesToInsert) {
       // Store related pictures
       if (box.pictures != undefined) {
-        await picRepository.insert(box.pictures);
+        pictures.push(...box.pictures);
       }
     }
+    if (pictures.length > 0) await picRepository.insert(pictures);
 
     await repository.insert(this.createEntity(boxesToInsert, block, extractor));
   };

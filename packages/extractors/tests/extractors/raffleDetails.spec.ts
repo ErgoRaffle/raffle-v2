@@ -63,7 +63,6 @@ describe('RaffleDetailsExtractor', () => {
           'RaffleDetails',
         );
 
-        await new Promise((r) => setTimeout(r, 100));
         expect(await dataSource.manager.count(PictureEntity)).toEqual(3);
 
         // update related pictures
@@ -85,15 +84,13 @@ describe('RaffleDetailsExtractor', () => {
           'RaffleDetails',
         );
         expect(await dataSource.manager.count(PictureEntity)).toEqual(3);
-
-        await new Promise((r) => setTimeout(r, 100));
-        const updatedPictureExists =
+        expect(
           (
             await dataSource.manager
               .getRepository(PictureEntity)
               .find({ where: { content: 'updated picture content 3' } })
-          ).length == 1;
-        expect(updatedPictureExists).toBeTruthy();
+          ).length,
+        ).toEqual(1);
       },
     );
   });
