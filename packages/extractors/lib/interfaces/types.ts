@@ -30,3 +30,9 @@ export interface InactiveRaffleBoxInterface extends ExtractedBox {
 export interface BoxInterface extends ExtractedBox {
   raffleId: string;
 }
+
+export interface WinnerBoxInterface extends ExtractedBox {
+  raffleId: string;
+  index: number;
+  rewardPercent: number;
+}
