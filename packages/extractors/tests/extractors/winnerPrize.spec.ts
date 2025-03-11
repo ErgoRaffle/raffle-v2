@@ -193,7 +193,7 @@ describe('WinnerPrizeExtractor', () => {
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
           ...sampleWinnerPrizeBoxes[0],
-          assets: undefined,
+          assets: [],
         });
 
         expect(extractedData).toBeFalsy();

@@ -29,7 +29,7 @@ export class SuccessRaffleExtractor extends AbstractInitializableErgoExtractor<
     logger?: AbstractLogger,
     initialize = true,
   ) {
-    super(ErgoNetworkType.Node, url, address, logger, initialize, true);
+    super(ErgoNetworkType.Node, url, address, logger, initialize);
     this.id = id;
     this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
     this.actions = new SuccessRaffleAction(dataSource, this.logger);
