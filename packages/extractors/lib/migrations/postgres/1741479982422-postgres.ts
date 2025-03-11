@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class Postgres1739779034480 implements MigrationInterface {
-  name = 'Postgres1739779034480';
+export class Postgres1741479982422 implements MigrationInterface {
+  name = 'Postgres1741479982422';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
@@ -28,12 +28,20 @@ export class Postgres1739779034480 implements MigrationInterface {
                 "raffleId" character varying NOT NULL,
                 "orderIndex" integer NOT NULL,
                 "content" character varying NOT NULL,
+                "detailsId" integer,
                 CONSTRAINT "PK_7aa5e10dd31983e9f05b9f1fc85" PRIMARY KEY ("id")
             )
+        `);
+    await queryRunner.query(`
+            ALTER TABLE "pictures"
+            ADD CONSTRAINT "FK_ea5e985a736fbe539353bbf10c0" FOREIGN KEY ("detailsId") REFERENCES "raffle_details"("id") ON DELETE CASCADE ON UPDATE NO ACTION
         `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`
+            ALTER TABLE "pictures" DROP CONSTRAINT "FK_ea5e985a736fbe539353bbf10c0"
+        `);
     await queryRunner.query(`
             DROP TABLE "pictures"
         `);

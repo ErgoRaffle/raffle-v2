@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class Sqlite1739779028617 implements MigrationInterface {
-  name = 'Sqlite1739779028617';
+export class Sqlite1741479977073 implements MigrationInterface {
+  name = 'Sqlite1741479977073';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
@@ -26,7 +26,9 @@ export class Sqlite1739779028617 implements MigrationInterface {
                 "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
                 "raffleId" varchar NOT NULL,
                 "orderIndex" integer NOT NULL,
-                "content" varchar NOT NULL
+                "content" varchar NOT NULL,
+                "detailsId" integer,
+                CONSTRAINT "FK_ea5e985a736fbe539353bbf10c0" FOREIGN KEY ("detailsId") REFERENCES "raffle_details" ("id") ON DELETE CASCADE ON UPDATE NO ACTION
             )
         `);
   }

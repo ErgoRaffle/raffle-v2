@@ -44,6 +44,7 @@ export interface PictureInterface {
 }
 
 export interface RaffleDetailsBoxInterface extends ExtractedBox {
+  id?: number;
   raffleId: string;
   name: string;
   description: string;
