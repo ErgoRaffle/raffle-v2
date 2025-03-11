@@ -51,9 +51,10 @@ export class RaffleDetailsExtractor extends AbstractInitializableErgoExtractor<
     try {
       return (
         box.ergoTree == this.ergoTree &&
-        (SConstant.from(box.additionalRegisters!.R4!).data as Uint8Array[])
+        box.additionalRegisters.R4 != undefined &&
+        (SConstant.from(box.additionalRegisters.R4).data as Uint8Array[])
           .length >= 2 &&
-        box.assets!.length == 1
+        box.assets.length == 1
       );
     } catch (err) {
       this.logger.error(`RaffleDetailsExtractor Error: ${err}`);
@@ -69,18 +70,20 @@ export class RaffleDetailsExtractor extends AbstractInitializableErgoExtractor<
   extractBoxData = (box: OutputBox): RaffleDetailsBoxInterface | undefined => {
     const R4Serialized = SConstant.from(box.additionalRegisters!.R4!)
       .data as Uint8Array[];
-    const pictures = R4Serialized.slice(2).map((picInfo, i) => ({
-      orderIndex: i,
-      raffleId: box.assets![0].tokenId,
-      content: String.fromCharCode(...picInfo),
-    }));
+    const pictures = R4Serialized.slice(2).map((picInfo, i) => {
+      return {
+        orderIndex: i,
+        raffleId: box.assets![0].tokenId,
+        content: Buffer.from(picInfo).toString(),
+      };
+    });
 
     const data = {
       boxId: box.boxId.toString(),
       txId: box.transactionId,
       raffleId: box.assets![0].tokenId,
-      name: String.fromCharCode(...R4Serialized[0]),
-      description: String.fromCharCode(...R4Serialized[1]),
+      name: Buffer.from(R4Serialized[0]).toString(),
+      description: Buffer.from(R4Serialized[1]).toString(),
       pictures: pictures,
       serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(
         'base64',
