@@ -169,7 +169,7 @@ describe('SuccessRaffleExtractor', () => {
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
           ...sampleSuccessRaffleBoxes[0],
-          additionalRegisters: undefined,
+          additionalRegisters: {},
         });
 
         expect(extractedData).toBeFalsy();

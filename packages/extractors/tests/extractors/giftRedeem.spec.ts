@@ -141,7 +141,7 @@ describe('GiftRedeemExtractor', () => {
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
           ...sampleGiftRedeemBoxes[0],
-          assets: undefined,
+          assets: [],
         });
 
         expect(extractedData).toBeFalsy();
