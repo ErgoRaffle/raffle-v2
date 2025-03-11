@@ -2,21 +2,20 @@ import { DataSource } from 'typeorm';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import {
   AbstractInitializableErgoExtractor,
+  TxExtra,
+} from '@rosen-bridge/abstract-extractor';
+import {
   OutputBox,
   ErgoNetworkType,
-  BlockInfo,
   Transaction,
-  SpendInfo,
-  CallbackType,
   InputExtension,
-} from '@rosen-bridge/abstract-extractor';
+} from '@rosen-bridge/scanner-interfaces';
 
 import { GiftAction } from '../actions/gift';
 import { GiftBoxInterface } from '../interfaces/types';
 import { GiftEntity } from '../entities';
 import { ErgoAddress, Box } from '@fleet-sdk/core';
 import { SConstant, serializeBox } from '@fleet-sdk/serializer';
-import JsonBigInt from '@rosen-bridge/json-bigint';
 
 export class GiftExtractor extends AbstractInitializableErgoExtractor<
   GiftBoxInterface,
@@ -67,74 +66,10 @@ export class GiftExtractor extends AbstractInitializableErgoExtractor<
     }
   };
 
-  /**
-   * process a list of transactions in a block and store required information
-   * @param txs list of transactions in the block
-   * @param block
-   * @return true if the process is completed successfully and false otherwise
-   */
-  override processTransactions = async (
-    txs: Transaction[],
-    block: BlockInfo,
-  ) => {
-    try {
-      const boxes: Array<GiftBoxInterface> = [];
-      const spentInfos: Array<SpendInfo> = [];
-      for (const tx of txs) {
-        for (const output of tx.outputs) {
-          if (!this.hasData(output)) {
-            continue;
-          }
-          this.logger.debug(`Trying to extract data from box ${output.boxId}`);
-          const extractedData = this.extractBoxData(
-            output,
-            undefined,
-            tx.outputs![0].assets![0].tokenId,
-          );
-          if (extractedData) {
-            this.logger.debug(
-              `Extracted data ${JsonBigInt.stringify(extractedData)} from box ${
-                output.boxId
-              }`,
-            );
-            boxes.push(extractedData);
-          }
-        }
-        let boxIndex = 1;
-        for (const input of tx.inputs) {
-          spentInfos.push({ txId: tx.id, boxId: input.boxId, index: boxIndex });
-          boxIndex += 1;
-        }
-      }
-
-      if (boxes.length > 0) {
-        if (!(await this.actions.storeBoxes(boxes, block, this.getId()))) {
-          this.logger.warn(
-            `Data insertion failed for ${this.getId()} at the block ${
-              block.height
-            }`,
-          );
-          return false;
-        }
-        this.triggerCallbacks(CallbackType.Insert, boxes);
-      }
-      const spentData = await this.actions.spendBoxes(
-        spentInfos,
-        block,
-        this.getId(),
-      );
-      if (spentData.length > 0) {
-        this.triggerCallbacks(CallbackType.Spend, spentData);
-      }
-    } catch (e) {
-      this.logger.error(
-        `Processing transactions failed for ${this.getId()} at the block ${
-          block.height
-        } with error: ${e}`,
-      );
-      return false;
-    }
-    return true;
+  getTransactionExtraData = (tx: Transaction) => {
+    return {
+      raffleId: tx.outputs[0].assets[0].tokenId || '',
+    };
   };
 
   /**
@@ -145,19 +80,16 @@ export class GiftExtractor extends AbstractInitializableErgoExtractor<
    */
   extractBoxData = (
     box: OutputBox,
-    inputExtensions?: InputExtension[],
-    raffleId?: string,
+    inputExtensions: InputExtension[],
+    txExtra?: TxExtra,
   ): GiftBoxInterface | undefined => {
-    const donatorErgoTree = Buffer.from(
-      SConstant.from(box.additionalRegisters!.R4!).data as Uint8Array,
-    ).toString('hex');
     const index = SConstant.from(box.additionalRegisters!.R5!).data as number;
 
     const data = {
       boxId: box.boxId.toString(),
       txId: box.transactionId,
-      raffleId: raffleId || '',
-      donatorErgoTree: donatorErgoTree,
+      raffleId: txExtra?.raffleId || '',
+      donatorErgoTree: inputExtensions[0]['0'] || '',
       winnerIndex: index,
       serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(
         'base64',

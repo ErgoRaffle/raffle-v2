@@ -1,10 +1,7 @@
 import { DataSource } from 'typeorm';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
-import {
-  AbstractInitializableErgoExtractor,
-  OutputBox,
-  ErgoNetworkType,
-} from '@rosen-bridge/abstract-extractor';
+import { AbstractInitializableErgoExtractor } from '@rosen-bridge/abstract-extractor';
+import { OutputBox, ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 import { ErgoAddress, Box } from '@fleet-sdk/core';
 import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 
