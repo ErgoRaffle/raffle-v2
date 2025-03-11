@@ -53,11 +53,10 @@ export class WinnerExtractor extends AbstractInitializableErgoExtractor<
         box.assets!.length <= 2 &&
         box.additionalRegisters != undefined &&
         box.additionalRegisters.R4 != undefined &&
-        (SConstant.from(box.additionalRegisters!.R4!).data as bigint[])
-          .length == 3 &&
+        (SConstant.from(box.additionalRegisters.R4).data as bigint[]).length ==
+          3 &&
         box.additionalRegisters.R5 != undefined &&
-        (SConstant.from(box.additionalRegisters!.R5!).data as number) !=
-          undefined
+        (SConstant.from(box.additionalRegisters.R5).data as number) != undefined
       );
     } catch (err) {
       this.logger.error(`WinnerExtractor Error: ${err}`);
