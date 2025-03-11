@@ -5,10 +5,7 @@ import {
   BlockInfo,
 } from '@rosen-bridge/abstract-extractor';
 
-import {
-  PictureInterface,
-  RaffleDetailsBoxInterface,
-} from '../interfaces/types';
+import { RaffleDetailsBoxInterface } from '../interfaces/types';
 import { PictureEntity, RaffleDetailsEntity } from '../entities';
 import { pick } from 'lodash-es';
 
@@ -37,18 +34,27 @@ export class RaffleDetailsAction extends AbstractInitializableErgoExtractorActio
     extractor: string,
   ) => {
     const repository = queryRunner.manager.getRepository(RaffleDetailsEntity);
+    const insertedBoxes = await repository.insert(
+      this.createEntity(boxesToInsert, block, extractor),
+    );
 
+    // insert related pictures
+    const ids = insertedBoxes.identifiers.map((d) => d['id']);
     const picRepository = queryRunner.manager.getRepository(PictureEntity);
-    const pictures: PictureInterface[] = [];
-    for (const box of boxesToInsert) {
-      // Store related pictures
+    const pictures = [];
+    for (let i = 0; i < boxesToInsert.length; i++) {
+      const box = boxesToInsert[i];
       if (box.pictures != undefined) {
-        pictures.push(...box.pictures);
+        for (const pic of box.pictures) {
+          const raffleDetailsObject = new RaffleDetailsEntity();
+          raffleDetailsObject.id = ids[i];
+          pictures.push({ ...pic, details: raffleDetailsObject });
+        }
       }
     }
-    if (pictures.length > 0) await picRepository.insert(pictures);
-
-    await repository.insert(this.createEntity(boxesToInsert, block, extractor));
+    if (pictures.length > 0)
+      // Store related pictures
+      await picRepository.insert(pictures);
   };
 
   /**
@@ -67,21 +73,25 @@ export class RaffleDetailsAction extends AbstractInitializableErgoExtractorActio
     const repository = queryRunner.manager.getRepository(RaffleDetailsEntity);
     const picRepository = queryRunner.manager.getRepository(PictureEntity);
 
-    // Delete old pictures
-    await picRepository.delete({ raffleId: updateBox.raffleId });
-    // Store related pictures
-    if (updateBox.pictures != undefined) {
-      await picRepository.insert(updateBox.pictures);
-    }
-
     const box = this.createEntity([updateBox], block, extractor)[0];
-    repository.update(
+    await repository.update(
       {
         boxId: box.boxId,
         extractor: extractor,
       },
       box,
     );
+
+    // Delete old pictures
+    await picRepository.delete({ raffleId: updateBox.raffleId });
+    // Store related pictures
+    if (updateBox.pictures != undefined) {
+      const pictures = updateBox.pictures.map((pic) => ({
+        ...pic,
+        details: updateBox,
+      }));
+      await picRepository.insert(pictures);
+    }
   };
 
   /**
