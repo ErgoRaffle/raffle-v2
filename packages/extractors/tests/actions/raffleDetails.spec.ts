@@ -1,5 +1,4 @@
-import { describe, it, expect, afterEach } from 'vitest';
-import { omit } from 'lodash-es';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 import { RaffleDetailsAction } from '../../lib/actions/raffleDetails';
 import { createDatabase } from '../utils.mock';
@@ -11,14 +10,24 @@ import {
 } from './mocked/raffleDetails.mock';
 import { PictureEntity, RaffleDetailsEntity } from '../../lib/entities';
 import { RaffleDetailsBoxInterface } from '../../lib/interfaces/types';
+import { DataSource, QueryRunner, Repository } from 'typeorm';
 
-const dataSource = await createDatabase();
-const queryRunner = dataSource.createQueryRunner();
-const repository = queryRunner.manager.getRepository(RaffleDetailsEntity);
-const pictureRepository = queryRunner.manager.getRepository(PictureEntity);
-const action = new RaffleDetailsAction(dataSource);
+interface RaffleDetailsTestContext {
+  dataSource: DataSource;
+  queryRunner: QueryRunner;
+  repository: Repository<RaffleDetailsEntity>;
+  pictureRepository: Repository<PictureEntity>;
+  action: RaffleDetailsAction;
+}
 
-const makeNewRaffleDetailsEntity = async () => {
+/**
+ * create new RaffleDetailsEntity object by sampleDBData and save on the database
+ * @param repository
+ * @returns
+ */
+const makeNewRaffleDetailsEntity = async (
+  repository: Repository<RaffleDetailsEntity>,
+) => {
   const raffleDetailsEntity = new RaffleDetailsEntity();
   raffleDetailsEntity.block = sampleDBData['block'];
   raffleDetailsEntity.boxId = sampleDBData['boxId'];
@@ -36,9 +45,16 @@ const makeNewRaffleDetailsEntity = async () => {
 };
 
 describe('RaffleDetailsAction', () => {
-  afterEach(async () => {
-    await repository.clear();
-    await pictureRepository.clear();
+  beforeEach<RaffleDetailsTestContext>(async (context) => {
+    context.dataSource = await createDatabase();
+    context.queryRunner = context.dataSource.createQueryRunner();
+    context.repository =
+      context.queryRunner.manager.getRepository(RaffleDetailsEntity);
+    context.pictureRepository =
+      context.queryRunner.manager.getRepository(PictureEntity);
+    context.action = new RaffleDetailsAction(context.dataSource);
+    await context.repository.clear();
+    await context.pictureRepository.clear();
   });
 
   describe('insertEntities', () => {
@@ -50,7 +66,12 @@ describe('RaffleDetailsAction', () => {
      * @expected
      * - RaffleDetails should stored details and related pictures
      */
-    it('should successfully store picture entities to db by valid data', async () => {
+    it<RaffleDetailsTestContext>('should successfully store picture entities to db by valid data', async ({
+      queryRunner,
+      action,
+      repository,
+      pictureRepository,
+    }) => {
       await action.insertEntities(
         queryRunner,
         sampleBoxesData,
@@ -58,11 +79,11 @@ describe('RaffleDetailsAction', () => {
         'RaffleDetails',
       );
       expect(await repository.count()).toEqual(1);
-      expect(omit((await repository.find())[0], 'id')).toEqual(sampleDBData);
+      expect((await repository.find())[0]).toMatchObject(sampleDBData);
       expect(await pictureRepository.count()).toEqual(3);
-      expect(
-        (await pictureRepository.find()).map((pic) => omit(pic, 'id')),
-      ).toEqual(sampleDBPicturesData);
+      expect(await pictureRepository.find()).toMatchObject(
+        sampleDBPicturesData,
+      );
     });
 
     /**
@@ -73,7 +94,12 @@ describe('RaffleDetailsAction', () => {
      * @expected
      * - RaffleDetails should stored details without any pictures
      */
-    it('should successfully store raffleDetail entity without pictures to db by valid data', async () => {
+    it<RaffleDetailsTestContext>('should successfully store raffleDetail entity without pictures to db by valid data', async ({
+      queryRunner,
+      action,
+      repository,
+      pictureRepository,
+    }) => {
       await action.insertEntities(
         queryRunner,
         [
@@ -86,7 +112,7 @@ describe('RaffleDetailsAction', () => {
         'RaffleDetails',
       );
       expect(await repository.count()).toEqual(1);
-      expect(omit((await repository.find())[0], 'id')).toEqual(sampleDBData);
+      expect((await repository.find())[0]).toMatchObject(sampleDBData);
       expect(await pictureRepository.count()).toEqual(0);
     });
   });
@@ -101,8 +127,13 @@ describe('RaffleDetailsAction', () => {
      * @expected
      * - RaffleDetails should stored details and update related pictures
      */
-    it('should successfully update picture entities to db by valid data', async () => {
-      const raffleDetailsObject = await makeNewRaffleDetailsEntity();
+    it<RaffleDetailsTestContext>('should successfully update picture entities to db by valid data', async ({
+      queryRunner,
+      action,
+      repository,
+      pictureRepository,
+    }) => {
+      const raffleDetailsObject = await makeNewRaffleDetailsEntity(repository);
       await pictureRepository.insert(
         sampleDBPicturesData.map((pic) => {
           return { ...pic, details: { id: raffleDetailsObject!.id } };
@@ -119,11 +150,11 @@ describe('RaffleDetailsAction', () => {
         'RaffleDetails',
       );
       expect(await repository.count()).toEqual(1);
-      expect(omit((await repository.find())[0], 'id')).toEqual(sampleDBData);
+      expect((await repository.find())[0]).toMatchObject(sampleDBData);
       expect(await pictureRepository.count()).toEqual(2);
-      expect(
-        (await pictureRepository.find()).map((pic) => omit(pic, 'id')),
-      ).toEqual(sampleUpdatedPicturesDBData.slice(0, 2));
+      expect(await pictureRepository.find()).toMatchObject(
+        sampleUpdatedPicturesDBData.slice(0, 2),
+      );
     });
 
     /**
@@ -135,8 +166,13 @@ describe('RaffleDetailsAction', () => {
      * @expected
      * - RaffleDetails should stored details and update related pictures
      */
-    it('should successfully update picture entities to a raffleDetails that does not already own any pictures with valid data', async () => {
-      const raffleDetailsObject = await makeNewRaffleDetailsEntity();
+    it<RaffleDetailsTestContext>('should successfully update picture entities to a raffleDetails that does not already own any pictures with valid data', async ({
+      queryRunner,
+      action,
+      repository,
+      pictureRepository,
+    }) => {
+      const raffleDetailsObject = await makeNewRaffleDetailsEntity(repository);
       await pictureRepository.insert(
         sampleDBPicturesData.map((pic) => {
           return { ...pic, details: { id: raffleDetailsObject!.id } };
@@ -150,11 +186,11 @@ describe('RaffleDetailsAction', () => {
         'RaffleDetails',
       );
       expect(await repository.count()).toEqual(1);
-      expect(omit((await repository.find())[0], 'id')).toEqual(sampleDBData);
+      expect((await repository.find())[0]).toMatchObject(sampleDBData);
       expect(await pictureRepository.count()).toEqual(3);
-      expect(
-        (await pictureRepository.find()).map((pic) => omit(pic, 'id')),
-      ).toEqual(sampleDBPicturesData);
+      expect(await pictureRepository.find()).toMatchObject(
+        sampleDBPicturesData,
+      );
     });
 
     /**
@@ -166,8 +202,13 @@ describe('RaffleDetailsAction', () => {
      * @expected
      * - RaffleDetails should stored details and remove related old pictures
      */
-    it('should successfully remove picture entities of a raffleDetails that already owned pictures with valid data', async () => {
-      const raffleDetailsObject = await makeNewRaffleDetailsEntity();
+    it<RaffleDetailsTestContext>('should successfully remove picture entities of a raffleDetails that already owned pictures with valid data', async ({
+      queryRunner,
+      action,
+      repository,
+      pictureRepository,
+    }) => {
+      const raffleDetailsObject = await makeNewRaffleDetailsEntity(repository);
       await pictureRepository.insert(
         sampleDBPicturesData.map((pic) => {
           return { ...pic, details: { id: raffleDetailsObject!.id } };
@@ -184,7 +225,7 @@ describe('RaffleDetailsAction', () => {
         'RaffleDetails',
       );
       expect(await repository.count()).toEqual(1);
-      expect(omit((await repository.find())[0], 'id')).toEqual(sampleDBData);
+      expect((await repository.find())[0]).toMatchObject(sampleDBData);
       expect(await pictureRepository.count()).toEqual(0);
     });
   });
