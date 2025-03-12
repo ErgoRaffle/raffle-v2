@@ -1,12 +1,16 @@
 import { describe, it, expect } from 'vitest';
-import { Network, SInt } from '@fleet-sdk/core';
+import { Network } from '@fleet-sdk/core';
 import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 import { compile } from '@fleet-sdk/compiler';
 import WinstonLogger from '@rosen-bridge/winston-logger/dist/WinstonLogger';
 
 import { GiftExtractor } from '../../lib/extractors/gift';
 import { createDatabase } from '../utils.mock';
-import { sampleGiftBoxes, sampleGiftExtractedData } from './mocked/gift.mock';
+import {
+  sampleGiftBoxes,
+  sampleGiftExtension,
+  sampleGiftExtractedData,
+} from './mocked/gift.mock';
 
 /*
  * create fixtures that contains below steps data:
@@ -56,12 +60,7 @@ describe('GiftExtractor', () => {
       async ({ extractor }) => {
         const extractedData = await extractor.extractBoxData(
           sampleGiftBoxes[0],
-          [
-            {
-              '0': '0f318e1cd5860000282d016ef8b4ac1d06486b2e83be2777c86772b25886ecdc',
-            },
-            {},
-          ],
+          sampleGiftExtension,
           {
             raffleId:
               'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
@@ -109,31 +108,6 @@ describe('GiftExtractor', () => {
         const extractedData = await extractor.hasData({
           ...sampleGiftBoxes[0],
           ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
-        });
-
-        expect(extractedData).toBeFalsy();
-      },
-    );
-
-    /**
-     * @target should return false with an invalid R4 value
-     * @dependencies
-     * @scenario
-     * - call the hasData functions
-     * - check if Gift box owned invalid R4 value
-     * - result must be false
-     * @expected
-     * - Gifts box checking result must be false
-     */
-    extractorTest(
-      `should return false with an invalid R4 value`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleGiftBoxes[0],
-          additionalRegisters: {
-            ...sampleGiftBoxes[0].additionalRegisters,
-            R4: SInt(1).toHex(),
-          },
         });
 
         expect(extractedData).toBeFalsy();
