@@ -67,7 +67,7 @@ describe('TicketExtractor', () => {
      * - call the extractBoxData functions
      * - check if Ticket box data extracted correctly
      * @expected
-     * - Tickets should fail
+     * - Tickets should not extract successfully
      */
     extractorTest(
       `should fail extract data from a sample ticket box and by empty extension value`,
