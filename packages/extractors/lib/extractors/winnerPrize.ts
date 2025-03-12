@@ -80,7 +80,7 @@ export class WinnerPrizeExtractor extends AbstractInitializableErgoExtractor<
     const data = {
       boxId: box.boxId.toString(),
       txId: box.transactionId,
-      raffleId: box.assets![0].tokenId,
+      raffleId: box.assets[0].tokenId,
       winnerTicketIndex: Number(r4Register[0]),
       giftCount: Number(r4Register[1]),
       winnerIndex: winnerIndex,
