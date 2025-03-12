@@ -1,12 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { Network, SColl, SLong } from '@fleet-sdk/core';
-import { ErgoNetworkType } from '@rosen-bridge/scanner';
+import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 import { compile } from '@fleet-sdk/compiler';
 
 import { TicketExtractor } from '../../lib/extractors/ticket';
 import { createDatabase } from '../utils.mock';
 import {
   sampleTicketBoxes,
+  sampleTicketExtension,
   sampleTicketExtractedData,
 } from './mocked/ticket.mock';
 
@@ -52,9 +53,31 @@ describe('TicketExtractor', () => {
       async ({ extractor }) => {
         const extractedData = await extractor.extractBoxData(
           sampleTicketBoxes[0],
+          sampleTicketExtension,
         );
 
         expect(extractedData).toEqual(sampleTicketExtractedData);
+      },
+    );
+
+    /**
+     * @target should fail extract data from a sample ticket box and by empty extension value
+     * @dependencies
+     * @scenario
+     * - call the extractBoxData functions
+     * - check if Ticket box data extracted correctly
+     * @expected
+     * - Tickets should not extract successfully
+     */
+    extractorTest(
+      `should fail extract data from a sample ticket box and by empty extension value`,
+      async ({ extractor }) => {
+        const extractedData = await extractor.extractBoxData(
+          sampleTicketBoxes[0],
+          [],
+        );
+
+        expect(extractedData).toEqual(undefined);
       },
     );
   });
@@ -95,31 +118,6 @@ describe('TicketExtractor', () => {
         const extractedData = await extractor.hasData({
           ...sampleTicketBoxes[0],
           ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
-        });
-
-        expect(extractedData).toBeFalsy();
-      },
-    );
-
-    /**
-     * @target should return false when an invalid R4 value is provided
-     * @dependencies
-     * @scenario
-     * - call the hasData functions
-     * - check if Ticket box R4 value is not valid
-     * - result must be false
-     * @expected
-     * - Tickets box checking result must be false
-     */
-    extractorTest(
-      `should return false when an invalid R4 value is provided`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleTicketBoxes[0],
-          additionalRegisters: {
-            ...sampleTicketBoxes[0].additionalRegisters,
-            R4: SLong(1n).toHex(),
-          },
         });
 
         expect(extractedData).toBeFalsy();

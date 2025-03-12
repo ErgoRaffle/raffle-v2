@@ -5,7 +5,7 @@ import { compile } from '@fleet-sdk/compiler';
 import { SafePayExtractor } from '../../lib/extractors/safePay';
 import { createDatabase } from '../utils.mock';
 import * as safePayMocks from './mocked/safePay.mock';
-import { ErgoNetworkType } from '@rosen-bridge/scanner';
+import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 
 /*
  * create fixtures that contains below steps data:
@@ -61,8 +61,9 @@ describe('SafePayExtractor', () => {
     extractorTest(
       `should extract data from a sample SafePay box successfully`,
       async ({ extractor }) => {
-        const extractedData = await extractor.extractBoxData(
+        const extractedData = extractor.extractBoxData(
           safePayMocks.sampleSafePayBoxes[0],
+          [],
         );
 
         expect(extractedData).toEqual(safePayMocks.sampleSafePayExtractedData);
@@ -90,7 +91,7 @@ describe('SafePayExtractor', () => {
             height: txData.tx.outputs[0].creationHeight,
             hash: '0'.repeat(64),
           });
-          expect(extractBoxDataSpy.mock.lastCall![2]).toEqual(txData.txType);
+          expect(extractBoxDataSpy.mock.lastCall![3]).toEqual(txData.txType);
           extractBoxDataSpy.mockReset();
         }
       },

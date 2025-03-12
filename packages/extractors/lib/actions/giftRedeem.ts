@@ -1,9 +1,7 @@
 import { DataSource } from 'typeorm';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
-import {
-  AbstractInitializableErgoExtractorAction,
-  BlockInfo,
-} from '@rosen-bridge/abstract-extractor';
+import { AbstractInitializableErgoExtractorAction } from '@rosen-bridge/abstract-extractor';
+import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
 
 import { GiftRedeemBoxInterface } from '../interfaces/types';
 import { GiftRedeemEntity } from '../entities';

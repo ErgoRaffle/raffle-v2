@@ -1,4 +1,4 @@
-import { InputExtension, OutputBox } from '@rosen-bridge/abstract-extractor';
+import { InputExtension, OutputBox } from '@rosen-bridge/scanner-interfaces';
 import { SColl, SByte, SLong } from '@fleet-sdk/core';
 import { creatorWallet, implementerWallet } from '../../utils.mock';
 

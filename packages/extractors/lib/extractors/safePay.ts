@@ -2,12 +2,9 @@ import { DataSource } from 'typeorm';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import {
   AbstractInitializableErgoExtractor,
-  OutputBox,
-  ErgoNetworkType,
-  BlockInfo,
   SpendInfo,
   CallbackType,
-  InputExtension,
+  TxExtra,
 } from '@rosen-bridge/abstract-extractor';
 import { ErgoAddress, Box } from '@fleet-sdk/core';
 import { serializeBox } from '@fleet-sdk/serializer';
@@ -15,7 +12,13 @@ import { serializeBox } from '@fleet-sdk/serializer';
 import { SafePayEntity } from '../entities';
 import { SafePayAction } from '../actions/safePay';
 import { SafePayBoxInterface } from '../interfaces/types';
-import { Transaction } from '@rosen-bridge/scanner';
+import {
+  Transaction,
+  OutputBox,
+  ErgoNetworkType,
+  BlockInfo,
+  InputExtension,
+} from '@rosen-bridge/scanner-interfaces';
 import JsonBigInt from '@rosen-bridge/json-bigint';
 
 export class SafePayExtractor extends AbstractInitializableErgoExtractor<
@@ -81,6 +84,7 @@ export class SafePayExtractor extends AbstractInitializableErgoExtractor<
       const boxes: Array<SafePayBoxInterface> = [];
       const spentInfos: Array<SpendInfo> = [];
       for (const tx of txs) {
+        const inputExtensions = tx.inputs.map((input) => input.extension || {});
         for (const output of tx.outputs) {
           if (!this.hasData(output)) {
             continue;
@@ -123,7 +127,8 @@ export class SafePayExtractor extends AbstractInitializableErgoExtractor<
           }
           const extractedData = this.extractBoxData(
             output,
-            undefined,
+            inputExtensions,
+            this.getTransactionExtraData(tx),
             txType,
             raffleId,
           );
@@ -136,11 +141,7 @@ export class SafePayExtractor extends AbstractInitializableErgoExtractor<
             boxes.push(extractedData);
           }
         }
-        let boxIndex = 1;
-        for (const input of tx.inputs) {
-          spentInfos.push({ txId: tx.id, boxId: input.boxId, index: boxIndex });
-          boxIndex += 1;
-        }
+        spentInfos.push(...this.getTransactionSpendInfo(tx));
       }
 
       if (boxes.length > 0) {
@@ -189,7 +190,8 @@ export class SafePayExtractor extends AbstractInitializableErgoExtractor<
    */
   extractBoxData = (
     box: OutputBox,
-    inputExtensions?: InputExtension[],
+    inputExtensions: InputExtension[],
+    txExtra?: TxExtra,
     txType?: string,
     raffleId?: string,
   ): SafePayBoxInterface | undefined => {

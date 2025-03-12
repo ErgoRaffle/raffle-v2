@@ -1,5 +1,4 @@
-import { Transaction } from '@rosen-bridge/abstract-extractor';
-import { OutputBox } from '@rosen-bridge/scanner';
+import { Transaction, OutputBox } from '@rosen-bridge/scanner-interfaces';
 
 export const sampleSafePayBoxes: OutputBox[] = [
   {

@@ -1,9 +1,7 @@
 import { DataSource, Repository } from 'typeorm';
 import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
-import {
-  AbstractInitializableErgoExtractorAction,
-  BlockInfo,
-} from '@rosen-bridge/abstract-extractor';
+import { AbstractInitializableErgoExtractorAction } from '@rosen-bridge/abstract-extractor';
+import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
 
 import { SafePayBoxInterface } from '../interfaces/types';
 import { SafePayEntity } from '../entities';

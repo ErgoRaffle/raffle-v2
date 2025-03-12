@@ -2,11 +2,13 @@ import { DataSource } from 'typeorm';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import {
   AbstractInitializableErgoExtractor,
+  boxHasToken,
+} from '@rosen-bridge/abstract-extractor';
+import {
   OutputBox,
   ErgoNetworkType,
-  boxHasToken,
   InputExtension,
-} from '@rosen-bridge/abstract-extractor';
+} from '@rosen-bridge/scanner-interfaces';
 
 import { InactiveRaffleAction } from '../actions/inactiveRaffle';
 import { InactiveRaffleBoxInterface } from '../interfaces/types';

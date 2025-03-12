@@ -1,10 +1,11 @@
 import { DataSource } from 'typeorm';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { AbstractInitializableErgoExtractor } from '@rosen-bridge/abstract-extractor';
 import {
-  AbstractInitializableErgoExtractor,
   OutputBox,
   ErgoNetworkType,
-} from '@rosen-bridge/abstract-extractor';
+  InputExtension,
+} from '@rosen-bridge/scanner-interfaces';
 
 import { TicketAction } from '../actions/ticket';
 import { TicketBoxInterface } from '../interfaces/types';
@@ -49,11 +50,9 @@ export class TicketExtractor extends AbstractInitializableErgoExtractor<
     try {
       return (
         box.ergoTree == this.ergoTree &&
-        Buffer.from(
-          SConstant.from(box.additionalRegisters!.R4!).data as Uint8Array,
-        ).toString('hex') != undefined &&
-        (SConstant.from(box.additionalRegisters!.R5!).data as bigint[])
-          .length == 4
+        box.additionalRegisters.R5 != undefined &&
+        (SConstant.from(box.additionalRegisters.R5).data as bigint[]).length ==
+          4
       );
     } catch (err) {
       this.logger.error(`TicketExtractor Error: ${err}`);
@@ -66,17 +65,28 @@ export class TicketExtractor extends AbstractInitializableErgoExtractor<
    * @param box
    * @return extracted data in proper format
    */
-  extractBoxData = (box: OutputBox): TicketBoxInterface | undefined => {
-    const donatorErgoTree = Buffer.from(
-      SConstant.from(box.additionalRegisters!.R4!).data as Uint8Array,
-    ).toString('hex');
-    const r5Register = SConstant.from(box.additionalRegisters!.R5!)
+  extractBoxData = (
+    box: OutputBox,
+    inputExtensions: InputExtension[],
+  ): TicketBoxInterface | undefined => {
+    let donatorErgoTree = '';
+    try {
+      donatorErgoTree = Buffer.from(
+        SConstant.from(inputExtensions[0]['0']).data as Uint8Array,
+      ).toString('hex');
+    } catch (err) {
+      this.logger.warn(
+        `TicketExtractor failed on extracting data due to invalid or missing inputExtension: ${err}`,
+      );
+      return undefined;
+    }
+    const r5Register = SConstant.from(box.additionalRegisters.R5!)
       .data as bigint[];
 
     const data = {
       boxId: box.boxId.toString(),
       txId: box.transactionId,
-      raffleId: box.assets![0].tokenId,
+      raffleId: box.assets[0].tokenId,
       donatorErgoTree: donatorErgoTree,
       rangeStart: r5Register[0],
       rangeEnd: r5Register[1],
