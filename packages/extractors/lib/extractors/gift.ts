@@ -68,8 +68,7 @@ export class GiftExtractor extends AbstractInitializableErgoExtractor<
   };
 
   /**
-   * extract transaction extra information
-   * override this function if there is extra needed information
+   * extract raffle-Id information
    * @param tx
    * @returns
    */
