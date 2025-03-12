@@ -54,10 +54,6 @@ export class GiftExtractor extends AbstractInitializableErgoExtractor<
     try {
       return (
         box.ergoTree == this.ergoTree &&
-        box.additionalRegisters.R4 != undefined &&
-        Buffer.from(
-          SConstant.from(box.additionalRegisters.R4).data as Uint8Array,
-        ).toString('hex') != undefined &&
         box.additionalRegisters.R5 != undefined &&
         (SConstant.from(box.additionalRegisters.R5).data as number) != undefined
       );
@@ -89,13 +85,21 @@ export class GiftExtractor extends AbstractInitializableErgoExtractor<
     inputExtensions: InputExtension[],
     txExtra?: TxExtra,
   ): GiftBoxInterface | undefined => {
-    const index = SConstant.from(box.additionalRegisters!.R5!).data as number;
-
+    const index = SConstant.from(box.additionalRegisters.R5!).data as number;
+    let donatorErgoTree = '';
+    try {
+      donatorErgoTree = Buffer.from(
+        SConstant.from(inputExtensions[0]['0']).data as Uint8Array,
+      ).toString('hex');
+    } catch (err) {
+      this.logger.error(`GiftExtractor Error: ${err}`);
+      return undefined;
+    }
     const data = {
       boxId: box.boxId.toString(),
       txId: box.transactionId,
       raffleId: txExtra?.raffleId || '',
-      donatorErgoTree: inputExtensions[0]['0'] || '',
+      donatorErgoTree: donatorErgoTree,
       winnerIndex: index,
       serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(
         'base64',
