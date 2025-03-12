@@ -20,30 +20,6 @@ interface RaffleDetailsTestContext {
   action: RaffleDetailsAction;
 }
 
-/**
- * create new RaffleDetailsEntity object by sampleDBData and save on the database
- * @param repository
- * @returns
- */
-const makeNewRaffleDetailsEntity = async (
-  repository: Repository<RaffleDetailsEntity>,
-) => {
-  const raffleDetailsEntity = new RaffleDetailsEntity();
-  raffleDetailsEntity.block = sampleDBData['block'];
-  raffleDetailsEntity.boxId = sampleDBData['boxId'];
-  raffleDetailsEntity.name = sampleDBData['name'];
-  raffleDetailsEntity.description = sampleDBData['description'];
-  raffleDetailsEntity.extractor = sampleDBData['extractor'];
-  raffleDetailsEntity.height = sampleDBData['height'];
-  raffleDetailsEntity.raffleId = sampleDBData['raffleId'];
-  raffleDetailsEntity.serialized = sampleDBData['serialized'];
-  raffleDetailsEntity.spendBlock = sampleDBData['spendBlock'];
-  raffleDetailsEntity.spendHeight = sampleDBData['spendHeight'];
-  raffleDetailsEntity.txId = sampleDBData['txId'];
-  const result = await repository.manager.save(raffleDetailsEntity);
-  return await repository.findOne({ where: { id: result.id } });
-};
-
 describe('RaffleDetailsAction', () => {
   beforeEach<RaffleDetailsTestContext>(async (context) => {
     context.dataSource = await createDatabase();
@@ -53,8 +29,6 @@ describe('RaffleDetailsAction', () => {
     context.pictureRepository =
       context.queryRunner.manager.getRepository(PictureEntity);
     context.action = new RaffleDetailsAction(context.dataSource);
-    await context.repository.clear();
-    await context.pictureRepository.clear();
   });
 
   describe('insertEntities', () => {
@@ -133,10 +107,13 @@ describe('RaffleDetailsAction', () => {
       repository,
       pictureRepository,
     }) => {
-      const raffleDetailsObject = await makeNewRaffleDetailsEntity(repository);
+      const raffleDetailsObject = await repository.manager.save(
+        RaffleDetailsEntity,
+        sampleDBData,
+      );
       await pictureRepository.insert(
         sampleDBPicturesData.map((pic) => {
-          return { ...pic, details: { id: raffleDetailsObject!.id } };
+          return { ...pic, details: raffleDetailsObject };
         }),
       );
 
@@ -172,10 +149,13 @@ describe('RaffleDetailsAction', () => {
       repository,
       pictureRepository,
     }) => {
-      const raffleDetailsObject = await makeNewRaffleDetailsEntity(repository);
+      const raffleDetailsObject = await repository.manager.save(
+        RaffleDetailsEntity,
+        sampleDBData,
+      );
       await pictureRepository.insert(
         sampleDBPicturesData.map((pic) => {
-          return { ...pic, details: { id: raffleDetailsObject!.id } };
+          return { ...pic, details: raffleDetailsObject };
         }),
       );
 
@@ -208,10 +188,13 @@ describe('RaffleDetailsAction', () => {
       repository,
       pictureRepository,
     }) => {
-      const raffleDetailsObject = await makeNewRaffleDetailsEntity(repository);
+      const raffleDetailsObject = await repository.manager.save(
+        RaffleDetailsEntity,
+        sampleDBData,
+      );
       await pictureRepository.insert(
         sampleDBPicturesData.map((pic) => {
-          return { ...pic, details: { id: raffleDetailsObject!.id } };
+          return { ...pic, details: raffleDetailsObject };
         }),
       );
 
