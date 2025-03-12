@@ -1,4 +1,4 @@
-import { OutputBox } from '@rosen-bridge/scanner';
+import { OutputBox } from '@rosen-bridge/scanner-interfaces';
 
 export const sampleGiftRedeemBoxes: OutputBox[] = [
   {

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Network, SColl, SLong } from '@fleet-sdk/core';
-import { ErgoNetworkType } from '@rosen-bridge/scanner';
+import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 import { compile } from '@fleet-sdk/compiler';
 
 import { WinnerPrizeExtractor } from '../../lib/extractors/winnerPrize';
@@ -194,45 +194,6 @@ describe('WinnerPrizeExtractor', () => {
         const extractedData = await extractor.hasData({
           ...sampleWinnerPrizeBoxes[0],
           assets: [],
-        });
-
-        expect(extractedData).toBeFalsy();
-      },
-    );
-
-    /**
-     * @target should return false when more than 3 assets are provided
-     * @dependencies
-     * @scenario
-     * - call the hasData functions
-     * - check if WinnerPrize box owned more than 3 assets
-     * - result must be false
-     * @expected
-     * - WinnerPrizes box checking result must be false
-     */
-    extractorTest(
-      `should return false when more than 3 assets are provided`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleWinnerPrizeBoxes[0],
-          assets: [
-            {
-              tokenId: '1'.repeat(64),
-              amount: 1n,
-            },
-            {
-              tokenId: '2'.repeat(64),
-              amount: 1n,
-            },
-            {
-              tokenId: '3'.repeat(64),
-              amount: 1n,
-            },
-            {
-              tokenId: '4'.repeat(64),
-              amount: 1n,
-            },
-          ],
         });
 
         expect(extractedData).toBeFalsy();

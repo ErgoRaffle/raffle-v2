@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Network } from '@fleet-sdk/core';
-import { ErgoNetworkType } from '@rosen-bridge/scanner';
+import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 import { compile } from '@fleet-sdk/compiler';
 
 import { GiftRedeemExtractor } from '../../lib/extractors/giftRedeem';
@@ -163,6 +163,7 @@ describe('GiftRedeemExtractor', () => {
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
           ...sampleGiftRedeemBoxes[0],
+          additionalRegisters: {},
           assets: [
             {
               tokenId: '1'.repeat(64),
