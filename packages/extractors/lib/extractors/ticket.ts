@@ -1,10 +1,11 @@
 import { DataSource } from 'typeorm';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { AbstractInitializableErgoExtractor } from '@rosen-bridge/abstract-extractor';
 import {
-  AbstractInitializableErgoExtractor,
   OutputBox,
   ErgoNetworkType,
-} from '@rosen-bridge/abstract-extractor';
+  InputExtension,
+} from '@rosen-bridge/scanner-interfaces';
 
 import { TicketAction } from '../actions/ticket';
 import { TicketBoxInterface } from '../interfaces/types';
@@ -49,11 +50,13 @@ export class TicketExtractor extends AbstractInitializableErgoExtractor<
     try {
       return (
         box.ergoTree == this.ergoTree &&
+        box.additionalRegisters.R4 != undefined &&
         Buffer.from(
-          SConstant.from(box.additionalRegisters!.R4!).data as Uint8Array,
+          SConstant.from(box.additionalRegisters.R4).data as Uint8Array,
         ).toString('hex') != undefined &&
-        (SConstant.from(box.additionalRegisters!.R5!).data as bigint[])
-          .length == 4
+        box.additionalRegisters.R5 != undefined &&
+        (SConstant.from(box.additionalRegisters.R5).data as bigint[]).length ==
+          4
       );
     } catch (err) {
       this.logger.error(`TicketExtractor Error: ${err}`);
@@ -66,10 +69,11 @@ export class TicketExtractor extends AbstractInitializableErgoExtractor<
    * @param box
    * @return extracted data in proper format
    */
-  extractBoxData = (box: OutputBox): TicketBoxInterface | undefined => {
-    const donatorErgoTree = Buffer.from(
-      SConstant.from(box.additionalRegisters!.R4!).data as Uint8Array,
-    ).toString('hex');
+  extractBoxData = (
+    box: OutputBox,
+    inputExtensions: InputExtension[],
+  ): TicketBoxInterface | undefined => {
+    const donatorErgoTree = inputExtensions[0]['0'];
     const r5Register = SConstant.from(box.additionalRegisters!.R5!)
       .data as bigint[];
 

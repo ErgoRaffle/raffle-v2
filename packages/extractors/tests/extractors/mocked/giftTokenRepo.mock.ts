@@ -1,4 +1,4 @@
-import { OutputBox } from '@rosen-bridge/abstract-extractor';
+import { OutputBox } from '@rosen-bridge/scanner-interfaces';
 
 export const sampleGiftTokenRepo: OutputBox[] = [
   {
