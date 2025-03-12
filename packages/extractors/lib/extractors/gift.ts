@@ -92,7 +92,9 @@ export class GiftExtractor extends AbstractInitializableErgoExtractor<
         SConstant.from(inputExtensions[0]['0']).data as Uint8Array,
       ).toString('hex');
     } catch (err) {
-      this.logger.warn(`GiftExtractor Error: ${err}`);
+      this.logger.warn(
+        `GiftExtractor failed on extracting data due to invalid or missing inputExtension: ${err}`,
+      );
       return undefined;
     }
     const data = {
