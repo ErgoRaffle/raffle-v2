@@ -16,6 +16,7 @@ export class GiftRedeemExtractor extends AbstractInitializableErgoExtractor<
   readonly actions: GiftRedeemAction;
   private readonly id: string;
   private readonly ergoTree: string;
+  private readonly licenseRaffleId: string;
 
   constructor(
     dataSource: DataSource,
@@ -23,12 +24,14 @@ export class GiftRedeemExtractor extends AbstractInitializableErgoExtractor<
     url: string,
     type: ErgoNetworkType,
     address: string,
+    licenseRaffleId: string,
     logger?: AbstractLogger,
     initialize = true,
   ) {
     super(type, url, address, logger, initialize);
     this.id = id;
     this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
+    this.licenseRaffleId = licenseRaffleId;
     this.actions = new GiftRedeemAction(dataSource, this.logger);
   }
 
@@ -49,7 +52,8 @@ export class GiftRedeemExtractor extends AbstractInitializableErgoExtractor<
         box.additionalRegisters.R6 != undefined &&
         (SConstant.from(box.additionalRegisters.R6).data as number) !=
           undefined &&
-        box.assets.length > 1
+        box.assets.length > 1 &&
+        box.assets[0].tokenId == this.licenseRaffleId
       );
     } catch (err) {
       this.logger.error(`GiftRedeemExtractor Error: ${err}`);

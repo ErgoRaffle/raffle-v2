@@ -7,6 +7,7 @@ import { TicketExtractor } from '../../lib/extractors/ticket';
 import { createDatabase } from '../utils.mock';
 import {
   sampleTicketBoxes,
+  sampleTicketExtension,
   sampleTicketExtractedData,
 } from './mocked/ticket.mock';
 
@@ -52,15 +53,31 @@ describe('TicketExtractor', () => {
       async ({ extractor }) => {
         const extractedData = await extractor.extractBoxData(
           sampleTicketBoxes[0],
-          [
-            {
-              '0': '5b1a88f00bc6013cc6506883b23aabba148346ca6fa64e4e3573592f4e3ad854',
-            },
-            {},
-          ],
+          sampleTicketExtension,
         );
 
         expect(extractedData).toEqual(sampleTicketExtractedData);
+      },
+    );
+
+    /**
+     * @target should fail extract data from a sample ticket box and by empty extension value
+     * @dependencies
+     * @scenario
+     * - call the extractBoxData functions
+     * - check if Ticket box data extracted correctly
+     * @expected
+     * - Tickets should not extract successfully
+     */
+    extractorTest(
+      `should fail extract data from a sample ticket box and by empty extension value`,
+      async ({ extractor }) => {
+        const extractedData = await extractor.extractBoxData(
+          sampleTicketBoxes[0],
+          [],
+        );
+
+        expect(extractedData).toEqual(undefined);
       },
     );
   });

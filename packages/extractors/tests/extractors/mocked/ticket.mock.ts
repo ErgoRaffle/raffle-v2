@@ -1,4 +1,6 @@
-import { OutputBox } from '@rosen-bridge/scanner-interfaces';
+import { InputExtension, OutputBox } from '@rosen-bridge/scanner-interfaces';
+import { donatorWallet } from '../../utils.mock';
+import { SByte, SColl } from '@fleet-sdk/serializer';
 
 export const sampleTicketBoxes: OutputBox[] = [
   {
@@ -28,11 +30,20 @@ export const sampleTicketExtractedData = {
   txId: sampleTicketBoxes[0].transactionId,
   rangeStart: 0n,
   rangeEnd: 100n,
-  donatorErgoTree:
-    '5b1a88f00bc6013cc6506883b23aabba148346ca6fa64e4e3573592f4e3ad854',
+  donatorErgoTree: donatorWallet.ergoTree.toString(),
   raffleId: 'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
   serialized:
     'wMq6FRkGAQEB0XMArtBiAdKd6qXYCV/jCTCEVBKwk9K6dbSOMcJd/58FpnOWdzD7' +
     'ZAIOIFsaiPALxgE8xlBog7I6q7oUg0bKb6ZOTjVzWS9OOthUEQQAyAGA2sQJ5qDF' +
     'AdlhpLZhs+bZQXrdi2fTYoiGC06QWr1HgEpEJyNy2KP1AQ==',
 };
+
+export const sampleTicketExtension: InputExtension[] = [
+  {
+    '0': SColl(
+      SByte,
+      Array.from(Buffer.from(donatorWallet.ergoTree.toString(), 'hex')),
+    ).toHex(),
+  },
+  {},
+];
