@@ -1,5 +1,5 @@
 import { SByte, SColl } from '@fleet-sdk/serializer';
-import { OutputBox } from '@rosen-bridge/scanner';
+import { OutputBox } from '@rosen-bridge/scanner-interfaces';
 
 export const sampleRaffleDetailsBoxes: OutputBox[] = [
   {
