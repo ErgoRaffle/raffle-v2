@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Network, SInt } from '@fleet-sdk/core';
-import { ErgoNetworkType } from '@rosen-bridge/scanner';
+import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 import { compile } from '@fleet-sdk/compiler';
 import WinstonLogger from '@rosen-bridge/winston-logger/dist/WinstonLogger';
 
@@ -56,8 +56,16 @@ describe('GiftExtractor', () => {
       async ({ extractor }) => {
         const extractedData = await extractor.extractBoxData(
           sampleGiftBoxes[0],
-          undefined,
-          'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
+          [
+            {
+              '0': '0f318e1cd5860000282d016ef8b4ac1d06486b2e83be2777c86772b25886ecdc',
+            },
+            {},
+          ],
+          {
+            raffleId:
+              'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
+          },
         );
 
         expect(extractedData).toEqual(sampleGiftExtractedData);

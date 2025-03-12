@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Network, SByte, SColl } from '@fleet-sdk/core';
-import { ErgoNetworkType } from '@rosen-bridge/scanner';
+import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 import { compile } from '@fleet-sdk/compiler';
 
 import { RaffleServiceExtractor } from '../../lib/extractors/raffleService';
