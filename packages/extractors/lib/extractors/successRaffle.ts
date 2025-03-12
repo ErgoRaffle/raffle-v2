@@ -1,11 +1,11 @@
 import { DataSource } from 'typeorm';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { AbstractInitializableErgoExtractor } from '@rosen-bridge/abstract-extractor';
 import {
-  AbstractInitializableErgoExtractor,
   OutputBox,
   ErgoNetworkType,
   InputExtension,
-} from '@rosen-bridge/abstract-extractor';
+} from '@rosen-bridge/scanner-interfaces';
 
 import { SuccessRaffleAction } from '../actions/successRaffle';
 import { SuccessRaffleBoxInterface } from '../interfaces/types';
@@ -49,10 +49,9 @@ export class SuccessRaffleExtractor extends AbstractInitializableErgoExtractor<
     try {
       return (
         box.ergoTree == this.ergoTree &&
-        box.assets!.length > 1 &&
-        box.assets!.length <= 3 &&
-        (SConstant.from(box.additionalRegisters!.R8!).data as number) !=
-          undefined
+        box.assets.length > 1 &&
+        box.additionalRegisters.R8 != undefined &&
+        (SConstant.from(box.additionalRegisters.R8).data as number) != undefined
       );
     } catch (err) {
       this.logger.error(`SuccessRaffleExtractor Error: ${err}`);
@@ -67,18 +66,18 @@ export class SuccessRaffleExtractor extends AbstractInitializableErgoExtractor<
    */
   extractBoxData = (
     box: OutputBox,
-    inputExtensions?: InputExtension[],
+    inputExtensions: InputExtension[],
   ): SuccessRaffleBoxInterface | undefined => {
     let selectedWinnersList = '';
     try {
       selectedWinnersList = (
-        SConstant.from(inputExtensions![0]['0']).data as bigint[]
+        SConstant.from(inputExtensions[0]['0']).data as bigint[]
       ).toString();
     } catch (err) {
       this.logger.error(`SuccessRaffleExtractor Error: ${err}`);
     }
 
-    const step = SConstant.from(box.additionalRegisters!.R8!).data as number;
+    const step = SConstant.from(box.additionalRegisters.R8!).data as number;
     const data = {
       boxId: box.boxId.toString(),
       txId: box.transactionId,
