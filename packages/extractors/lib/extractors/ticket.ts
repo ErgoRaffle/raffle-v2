@@ -69,7 +69,12 @@ export class TicketExtractor extends AbstractInitializableErgoExtractor<
     box: OutputBox,
     inputExtensions: InputExtension[],
   ): TicketBoxInterface | undefined => {
-    const donatorErgoTree = inputExtensions[0]['0'];
+    let donatorErgoTree = '';
+    try {
+      donatorErgoTree = inputExtensions[0]['0'];
+    } catch (err) {
+      this.logger.error(`TicketExtractor Error: ${err}`);
+    }
     const r5Register = SConstant.from(box.additionalRegisters!.R5!)
       .data as bigint[];
 
