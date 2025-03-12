@@ -71,17 +71,22 @@ export class TicketExtractor extends AbstractInitializableErgoExtractor<
   ): TicketBoxInterface | undefined => {
     let donatorErgoTree = '';
     try {
-      donatorErgoTree = inputExtensions[0]['0'];
+      donatorErgoTree = Buffer.from(
+        SConstant.from(inputExtensions[0]['0']).data as Uint8Array,
+      ).toString('hex');
     } catch (err) {
-      this.logger.error(`TicketExtractor Error: ${err}`);
+      this.logger.warn(
+        `TicketExtractor failed on extracting data due to invalid or missing inputExtension: ${err}`,
+      );
+      return undefined;
     }
-    const r5Register = SConstant.from(box.additionalRegisters!.R5!)
+    const r5Register = SConstant.from(box.additionalRegisters.R5!)
       .data as bigint[];
 
     const data = {
       boxId: box.boxId.toString(),
       txId: box.transactionId,
-      raffleId: box.assets![0].tokenId,
+      raffleId: box.assets[0].tokenId,
       donatorErgoTree: donatorErgoTree,
       rangeStart: r5Register[0],
       rangeEnd: r5Register[1],
