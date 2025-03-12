@@ -50,10 +50,6 @@ export class TicketExtractor extends AbstractInitializableErgoExtractor<
     try {
       return (
         box.ergoTree == this.ergoTree &&
-        box.additionalRegisters.R4 != undefined &&
-        Buffer.from(
-          SConstant.from(box.additionalRegisters.R4).data as Uint8Array,
-        ).toString('hex') != undefined &&
         box.additionalRegisters.R5 != undefined &&
         (SConstant.from(box.additionalRegisters.R5).data as bigint[]).length ==
           4
