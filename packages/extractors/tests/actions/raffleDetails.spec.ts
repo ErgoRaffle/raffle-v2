@@ -212,4 +212,63 @@ describe('RaffleDetailsAction', () => {
       expect(await pictureRepository.count()).toEqual(0);
     });
   });
+
+  describe('deleteBlockEntities', () => {
+    /**
+     * @target should successfully delete picture entities related to deleted raffleDetails of certain block
+     * @dependencies
+     * @scenario
+     * - call the deleteBlockEntities functions
+     * @expected
+     * - RaffleDetails should stored details and related pictures
+     */
+    it<RaffleDetailsTestContext>('should successfully delete picture entities related to deleted raffleDetails of certain block', async ({
+      action,
+      repository,
+      pictureRepository,
+    }) => {
+      const raffleDetailsObject = await repository.manager.save(
+        RaffleDetailsEntity,
+        sampleDBData,
+      );
+      await pictureRepository.insert(
+        sampleDBPicturesData.map((pic) => {
+          return { ...pic, details: raffleDetailsObject };
+        }),
+      );
+
+      await action.deleteBlockBoxes(
+        raffleDetailsObject.block,
+        raffleDetailsObject.extractor,
+      );
+      expect(await repository.count()).toEqual(0);
+      expect(await pictureRepository.count()).toEqual(0);
+    });
+
+    /**
+     * @target should successfully delete raffleDetails of certain block without any related pictures
+     * @dependencies
+     * @scenario
+     * - call the deleteBlockEntities functions
+     * @expected
+     * - RaffleDetails should stored details and related pictures
+     */
+    it<RaffleDetailsTestContext>('should successfully delete raffleDetails of certain block without any related pictures', async ({
+      action,
+      repository,
+      pictureRepository,
+    }) => {
+      const raffleDetailsObject = await repository.manager.save(
+        RaffleDetailsEntity,
+        sampleDBData,
+      );
+
+      await action.deleteBlockBoxes(
+        raffleDetailsObject.block,
+        raffleDetailsObject.extractor,
+      );
+      expect(await repository.count()).toEqual(0);
+      expect(await pictureRepository.count()).toEqual(0);
+    });
+  });
 });
