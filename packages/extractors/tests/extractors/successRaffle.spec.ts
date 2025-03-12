@@ -28,6 +28,7 @@ const createSuccessRaffleExtractorTest = async () => {
       'SuccessRaffle',
       'http://127.0.0.1/',
       boxErgoTree.toAddress(Network.Testnet).toString(),
+      '716149d5c68e4ea1ea0529b60c7029797ffb26f3d401d44f9aadd4b090593e4e',
     ),
     boxFalseErgoTree: boxFalseErgoTree,
   });
@@ -145,6 +146,38 @@ describe('SuccessRaffleExtractor', () => {
           assets: [
             {
               tokenId: '3'.repeat(64),
+              amount: 1n,
+            },
+          ],
+        });
+
+        expect(extractedData).toBeFalsy();
+      },
+    );
+
+    /**
+     * @target should return false when the asset's licenseTokenId is invalid
+     * @dependencies
+     * @scenario
+     * - call the hasData functions
+     * - check if SuccessRaffle box first asset-id is not valid
+     * - result must be false
+     * @expected
+     * - SuccessRaffles box checking result must be false
+     */
+    extractorTest(
+      `should return false when the asset's licenseTokenId is invalid`,
+      async ({ extractor }) => {
+        const extractedData = await extractor.hasData({
+          ...sampleSuccessRaffleBoxes[0],
+          assets: [
+            {
+              // invalid licenseTokenId
+              tokenId: '1'.repeat(64),
+              amount: 1n,
+            },
+            {
+              tokenId: '2'.repeat(64),
               amount: 1n,
             },
           ],

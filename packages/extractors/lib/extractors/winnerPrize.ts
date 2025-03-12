@@ -1,10 +1,7 @@
 import { DataSource } from 'typeorm';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
-import {
-  AbstractInitializableErgoExtractor,
-  OutputBox,
-  ErgoNetworkType,
-} from '@rosen-bridge/abstract-extractor';
+import { AbstractInitializableErgoExtractor } from '@rosen-bridge/abstract-extractor';
+import { OutputBox, ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 
 import { WinnerPrizeAction } from '../actions/winnerPrize';
 import { WinnerPrizeBoxInterface } from '../interfaces/types';
@@ -49,14 +46,16 @@ export class WinnerPrizeExtractor extends AbstractInitializableErgoExtractor<
     try {
       return (
         box.ergoTree == this.ergoTree &&
-        (SConstant.from(box.additionalRegisters!.R4!).data as bigint[])
-          .length == 3 &&
-        (SConstant.from(box.additionalRegisters!.R5!).data as number) !=
+        box.additionalRegisters.R4 != undefined &&
+        (SConstant.from(box.additionalRegisters.R4).data as bigint[]).length ==
+          3 &&
+        box.additionalRegisters.R5 != undefined &&
+        (SConstant.from(box.additionalRegisters.R5).data as number) !=
           undefined &&
-        Number(SConstant.from(box.additionalRegisters!.R6!).data as bigint) !=
+        box.additionalRegisters.R6 != undefined &&
+        Number(SConstant.from(box.additionalRegisters.R6).data as bigint) !=
           undefined &&
-        box.assets!.length > 1 &&
-        box.assets!.length <= 3
+        box.assets.length > 1
       );
     } catch (err) {
       this.logger.error(`WinnerPrizeExtractor Error: ${err}`);
@@ -70,18 +69,18 @@ export class WinnerPrizeExtractor extends AbstractInitializableErgoExtractor<
    * @return extracted data in proper format
    */
   extractBoxData = (box: OutputBox): WinnerPrizeBoxInterface | undefined => {
-    const r4Register = SConstant.from(box.additionalRegisters!.R4!)
+    const r4Register = SConstant.from(box.additionalRegisters.R4!)
       .data as bigint[];
-    const winnerIndex = SConstant.from(box.additionalRegisters!.R5!)
+    const winnerIndex = SConstant.from(box.additionalRegisters.R5!)
       .data as number;
     const unwrappedGiftCount = Number(
-      SConstant.from(box.additionalRegisters!.R6!).data as bigint,
+      SConstant.from(box.additionalRegisters.R6!).data as bigint,
     );
 
     const data = {
       boxId: box.boxId.toString(),
       txId: box.transactionId,
-      raffleId: box.assets![0].tokenId,
+      raffleId: box.assets[0].tokenId,
       winnerTicketIndex: Number(r4Register[0]),
       giftCount: Number(r4Register[1]),
       winnerIndex: winnerIndex,

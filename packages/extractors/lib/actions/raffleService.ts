@@ -1,10 +1,8 @@
 import { DataSource } from 'typeorm';
 import { pick } from 'lodash-es';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
-import {
-  AbstractInitializableErgoExtractorAction,
-  BlockInfo,
-} from '@rosen-bridge/abstract-extractor';
+import { AbstractInitializableErgoExtractorAction } from '@rosen-bridge/abstract-extractor';
+import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
 
 import { RaffleServiceBoxInterface } from '../interfaces/types';
 import { RaffleServiceEntity } from '../entities';

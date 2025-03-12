@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Network } from '@fleet-sdk/core';
-import { ErgoNetworkType } from '@rosen-bridge/scanner';
+import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 import { compile } from '@fleet-sdk/compiler';
 
 import { GiftRedeemExtractor } from '../../lib/extractors/giftRedeem';
@@ -28,6 +28,7 @@ const createGiftRedeemExtractorTest = async () => {
       'http://127.0.0.1/',
       ErgoNetworkType.Node,
       boxErgoTree.toAddress(Network.Testnet).toString(),
+      '716149d5c68e4ea1ea0529b60c7029797ffb26f3d401d44f9aadd4b090593e4e',
     ),
     dataSource: dataSource,
     boxFalseErgoTree: boxFalseErgoTree,
@@ -127,6 +128,38 @@ describe('GiftRedeemExtractor', () => {
     );
 
     /**
+     * @target should return false when the asset's licenseTokenId is invalid
+     * @dependencies
+     * @scenario
+     * - call the hasData functions
+     * - check if GiftRedeem box first asset-id is not valid
+     * - result must be false
+     * @expected
+     * - GiftRedeems box checking result must be false
+     */
+    extractorTest(
+      `should return false when the asset's licenseTokenId is invalid`,
+      async ({ extractor }) => {
+        const extractedData = await extractor.hasData({
+          ...sampleGiftRedeemBoxes[0],
+          assets: [
+            {
+              // invalid licenseTokenId
+              tokenId: '1'.repeat(64),
+              amount: 1n,
+            },
+            {
+              tokenId: '2'.repeat(64),
+              amount: 1n,
+            },
+          ],
+        });
+
+        expect(extractedData).toBeFalsy();
+      },
+    );
+
+    /**
      * @target should return false when assets are empty
      * @dependencies
      * @scenario
@@ -142,45 +175,6 @@ describe('GiftRedeemExtractor', () => {
         const extractedData = await extractor.hasData({
           ...sampleGiftRedeemBoxes[0],
           assets: [],
-        });
-
-        expect(extractedData).toBeFalsy();
-      },
-    );
-
-    /**
-     * @target should return false when more than 3 assets are provided
-     * @dependencies
-     * @scenario
-     * - call the hasData functions
-     * - check if GiftRedeem box owned more than 3 assets
-     * - result must be false
-     * @expected
-     * - GiftRedeems box checking result must be false
-     */
-    extractorTest(
-      `should return false when more than 3 assets are provided`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleGiftRedeemBoxes[0],
-          assets: [
-            {
-              tokenId: '1'.repeat(64),
-              amount: 1n,
-            },
-            {
-              tokenId: '2'.repeat(64),
-              amount: 1n,
-            },
-            {
-              tokenId: '3'.repeat(64),
-              amount: 1n,
-            },
-            {
-              tokenId: '4'.repeat(64),
-              amount: 1n,
-            },
-          ],
         });
 
         expect(extractedData).toBeFalsy();
