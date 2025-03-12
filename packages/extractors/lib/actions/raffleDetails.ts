@@ -3,9 +3,11 @@ import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { AbstractInitializableErgoExtractorAction } from '@rosen-bridge/abstract-extractor';
 import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
 
-import { RaffleDetailsBoxInterface } from '../interfaces/types';
+import {
+  PictureInterface,
+  RaffleDetailsBoxInterface,
+} from '../interfaces/types';
 import { PictureEntity, RaffleDetailsEntity } from '../entities';
-import { pick } from 'lodash-es';
 
 export class RaffleDetailsAction extends AbstractInitializableErgoExtractorAction<
   RaffleDetailsBoxInterface,
@@ -119,22 +121,58 @@ export class RaffleDetailsAction extends AbstractInitializableErgoExtractorActio
   };
 
   /**
+   * delete all data extracted from a block
+   * @param queryRunner
+   * @param extractor
+   * @param block
+   * @returns
+   */
+  protected deleteBlockEntities = async (
+    queryRunner: QueryRunner,
+    extractor: string,
+    block: string,
+  ): Promise<RaffleDetailsBoxInterface[]> => {
+    const repository = queryRunner.manager.getRepository(RaffleDetailsEntity);
+    const picRepository = queryRunner.manager.getRepository(PictureEntity);
+    const deletedDetails = await repository.find({
+      where: { extractor: extractor, block: block },
+    });
+    const pictures = await picRepository.find({
+      where: { details: deletedDetails[0] },
+    });
+    deletedDetails.forEach(
+      async (details) =>
+        await picRepository.delete({
+          details: details,
+        }),
+    );
+    await repository.delete({
+      extractor: extractor,
+      block: block,
+    });
+    return this.convertEntityToData(deletedDetails, pictures);
+  };
+
+  /**
    * convert the database entity back to raw data
    * @param entities
    */
   convertEntityToData = (
     entities: RaffleDetailsEntity[],
+    pictures?: PictureEntity[],
   ): RaffleDetailsBoxInterface[] => {
-    return entities.map((data) =>
-      pick(data, [
-        'boxId',
-        'txId',
-        'raffleId',
-        'extractor',
-        'serialized',
-        'name',
-        'description',
-      ]),
-    );
+    return entities.map((data) => {
+      const details = {
+        boxId: data.boxId,
+        txId: data.txId,
+        raffleId: data.raffleId,
+        extractor: data.extractor,
+        serialized: data.serialized,
+        name: data.name,
+        description: data.description,
+        pictures: pictures as PictureInterface[],
+      };
+      return details;
+    });
   };
 }
