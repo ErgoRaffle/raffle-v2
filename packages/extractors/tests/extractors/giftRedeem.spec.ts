@@ -132,10 +132,10 @@ describe('GiftRedeemExtractor', () => {
      * @dependencies
      * @scenario
      * - call the hasData functions
-     * - check if WinnerPrize box first asset-id is not valid
+     * - check if GiftRedeem box first asset-id is not valid
      * - result must be false
      * @expected
-     * - WinnerPrizes box checking result must be false
+     * - GiftRedeems box checking result must be false
      */
     extractorTest(
       `should return false when the asset's licenseTokenId is invalid`,
