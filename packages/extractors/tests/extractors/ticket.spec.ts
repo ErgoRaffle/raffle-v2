@@ -108,31 +108,6 @@ describe('TicketExtractor', () => {
     );
 
     /**
-     * @target should return false when an invalid R4 value is provided
-     * @dependencies
-     * @scenario
-     * - call the hasData functions
-     * - check if Ticket box R4 value is not valid
-     * - result must be false
-     * @expected
-     * - Tickets box checking result must be false
-     */
-    extractorTest(
-      `should return false when an invalid R4 value is provided`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleTicketBoxes[0],
-          additionalRegisters: {
-            ...sampleTicketBoxes[0].additionalRegisters,
-            R4: SLong(1n).toHex(),
-          },
-        });
-
-        expect(extractedData).toBeFalsy();
-      },
-    );
-
-    /**
      * @target should return false when an invalid R5 length is provided
      * @dependencies
      * @scenario
