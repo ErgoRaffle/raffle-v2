@@ -32,6 +32,11 @@ export const creatorWallet = chain.addParty(
   'creator',
 );
 
+export const donatorWallet = chain.addParty(
+  '0008cd02d9d15a5f83022a63614d1761f0f4bbd6bf5d01906c78b3f06cd02ede7ba76cc4',
+  'creator',
+);
+
 /**
  * generate dataSource and related database
  *  used for test datasource

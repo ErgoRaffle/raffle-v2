@@ -1,4 +1,6 @@
-import { OutputBox } from '@rosen-bridge/scanner-interfaces';
+import { InputExtension, OutputBox } from '@rosen-bridge/scanner-interfaces';
+import { donatorWallet } from '../../utils.mock';
+import { SByte, SColl } from '@fleet-sdk/serializer';
 
 export const sampleGiftBoxes: OutputBox[] = [
   {
@@ -33,8 +35,7 @@ export const sampleGiftExtractedData = {
   boxId: sampleGiftBoxes[0].boxId,
   txId: sampleGiftBoxes[0].transactionId,
   winnerIndex: 1,
-  donatorErgoTree:
-    '0f318e1cd5860000282d016ef8b4ac1d06486b2e83be2777c86772b25886ecdc',
+  donatorErgoTree: donatorWallet.ergoTree.toString(),
   raffleId: 'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
   serialized:
     'gKPDRxkGAQEB0XMArtBiAo9AqS8igJRS6gvIGTMV9sPau8ug3v5s2T+iRE/FZP8K' +
@@ -42,3 +43,13 @@ export const sampleGiftExtractedData = {
     'bvi0rB0GSGsug74nd8hncrJYhuzcBAIFgIenDi8UaZCp5ZvWBLKmQGpl3bETTGuB' +
     'zDRAaWfvmj2MsY/zAQ==',
 };
+
+export const sampleGiftExtension: InputExtension[] = [
+  {
+    '0': SColl(
+      SByte,
+      Array.from(Buffer.from(donatorWallet.ergoTree.toString(), 'hex')),
+    ).toHex(),
+  },
+  {},
+] as InputExtension[];
