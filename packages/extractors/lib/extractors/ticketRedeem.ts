@@ -1,10 +1,7 @@
 import { DataSource } from 'typeorm';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
-import {
-  AbstractInitializableErgoExtractor,
-  OutputBox,
-  ErgoNetworkType,
-} from '@rosen-bridge/abstract-extractor';
+import { AbstractInitializableErgoExtractor } from '@rosen-bridge/abstract-extractor';
+import { OutputBox, ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 
 import { TicketRedeemAction } from '../actions/ticketRedeem';
 import { TicketRedeemBoxInterface } from '../interfaces/types';
@@ -19,6 +16,7 @@ export class TicketRedeemExtractor extends AbstractInitializableErgoExtractor<
   readonly actions: TicketRedeemAction;
   private readonly id: string;
   private readonly ergoTree: string;
+  private readonly licenseRaffleId: string;
 
   constructor(
     dataSource: DataSource,
@@ -26,12 +24,14 @@ export class TicketRedeemExtractor extends AbstractInitializableErgoExtractor<
     url: string,
     type: ErgoNetworkType,
     address: string,
+    licenseRaffleId: string,
     logger?: AbstractLogger,
     initialize = true,
   ) {
     super(type, url, address, logger, initialize);
     this.id = id;
     this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
+    this.licenseRaffleId = licenseRaffleId;
     this.actions = new TicketRedeemAction(dataSource, this.logger);
   }
 
@@ -49,12 +49,14 @@ export class TicketRedeemExtractor extends AbstractInitializableErgoExtractor<
     try {
       return (
         box.ergoTree == this.ergoTree &&
-        (SConstant.from(box.additionalRegisters!.R4!).data as bigint[])
-          .length == 3 &&
-        (SConstant.from(box.additionalRegisters!.R5!).data as bigint) !=
+        box.additionalRegisters.R4 != undefined &&
+        (SConstant.from(box.additionalRegisters.R4).data as bigint[]).length ==
+          3 &&
+        box.additionalRegisters.R5 != undefined &&
+        (SConstant.from(box.additionalRegisters.R5).data as bigint) !=
           undefined &&
-        box.assets!.length > 1 &&
-        box.assets!.length <= 3
+        box.assets.length > 1 &&
+        box.assets[0].tokenId == this.licenseRaffleId
       );
     } catch (err) {
       this.logger.error(`TicketRedeemExtractor Error: ${err}`);
@@ -68,15 +70,15 @@ export class TicketRedeemExtractor extends AbstractInitializableErgoExtractor<
    * @return extracted data in proper format
    */
   extractBoxData = (box: OutputBox): TicketRedeemBoxInterface | undefined => {
-    const r4Register = SConstant.from(box.additionalRegisters!.R4!)
+    const r4Register = SConstant.from(box.additionalRegisters.R4!)
       .data as bigint[];
-    const redeemedTickets = SConstant.from(box.additionalRegisters!.R5!)
+    const redeemedTickets = SConstant.from(box.additionalRegisters.R5!)
       .data as bigint;
 
     const data = {
       boxId: box.boxId.toString(),
       txId: box.transactionId,
-      raffleId: box.assets![1].tokenId,
+      raffleId: box.assets[1].tokenId,
       totalSoldTicket: r4Register[0],
       redeemedTickets: redeemedTickets,
       serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(
