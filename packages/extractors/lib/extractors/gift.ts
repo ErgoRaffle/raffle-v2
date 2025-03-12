@@ -88,9 +88,12 @@ export class GiftExtractor extends AbstractInitializableErgoExtractor<
     const index = SConstant.from(box.additionalRegisters.R5!).data as number;
     let donatorErgoTree = '';
     try {
-      donatorErgoTree = Buffer.from(inputExtensions[0]['0']).toString();
+      donatorErgoTree = Buffer.from(
+        SConstant.from(inputExtensions[0]['0']).data as Uint8Array,
+      ).toString('hex');
     } catch (err) {
       this.logger.error(`GiftExtractor Error: ${err}`);
+      return undefined;
     }
     const data = {
       boxId: box.boxId.toString(),
