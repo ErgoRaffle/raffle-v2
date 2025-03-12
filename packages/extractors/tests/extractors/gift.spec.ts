@@ -70,6 +70,31 @@ describe('GiftExtractor', () => {
         expect(extractedData).toEqual(sampleGiftExtractedData);
       },
     );
+
+    /**
+     * @target should fail extracting data from a sample gift box and by empty extension value
+     * @dependencies
+     * @scenario
+     * - call the extractBoxData functions
+     * - check if Gift box data extracted correctly
+     * @expected
+     * - Gifts should not extract successfully
+     */
+    extractorTest(
+      `should fail extracting data from a sample gift box and by empty extension value`,
+      async ({ extractor }) => {
+        const extractedData = await extractor.extractBoxData(
+          sampleGiftBoxes[0],
+          [],
+          {
+            raffleId:
+              'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
+          },
+        );
+
+        expect(extractedData).toEqual(undefined);
+      },
+    );
   });
 
   describe('hasData', () => {

@@ -34,7 +34,7 @@ export class Postgres1741479982422 implements MigrationInterface {
         `);
     await queryRunner.query(`
             ALTER TABLE "pictures"
-            ADD CONSTRAINT "FK_ea5e985a736fbe539353bbf10c0" FOREIGN KEY ("detailsId") REFERENCES "raffle_details"("id") ON DELETE CASCADE ON UPDATE NO ACTION
+            ADD CONSTRAINT "FK_ea5e985a736fbe539353bbf10c0" FOREIGN KEY ("detailsId") REFERENCES "raffle_details"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
         `);
   }
 

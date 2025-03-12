@@ -28,7 +28,7 @@ export class Sqlite1741479977073 implements MigrationInterface {
                 "orderIndex" integer NOT NULL,
                 "content" varchar NOT NULL,
                 "detailsId" integer,
-                CONSTRAINT "FK_ea5e985a736fbe539353bbf10c0" FOREIGN KEY ("detailsId") REFERENCES "raffle_details" ("id") ON DELETE CASCADE ON UPDATE NO ACTION
+                CONSTRAINT "FK_ea5e985a736fbe539353bbf10c0" FOREIGN KEY ("detailsId") REFERENCES "raffle_details" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION
             )
         `);
   }
