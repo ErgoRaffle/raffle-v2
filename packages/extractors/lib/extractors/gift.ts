@@ -54,11 +54,12 @@ export class GiftExtractor extends AbstractInitializableErgoExtractor<
     try {
       return (
         box.ergoTree == this.ergoTree &&
+        box.additionalRegisters.R4 != undefined &&
         Buffer.from(
-          SConstant.from(box.additionalRegisters!.R4!).data as Uint8Array,
+          SConstant.from(box.additionalRegisters.R4).data as Uint8Array,
         ).toString('hex') != undefined &&
-        (SConstant.from(box.additionalRegisters!.R5!).data as number) !=
-          undefined
+        box.additionalRegisters.R5 != undefined &&
+        (SConstant.from(box.additionalRegisters.R5).data as number) != undefined
       );
     } catch (err) {
       this.logger.error(`GiftExtractor Error: ${err}`);
@@ -66,6 +67,12 @@ export class GiftExtractor extends AbstractInitializableErgoExtractor<
     }
   };
 
+  /**
+   * extract transaction extra information
+   * override this function if there is extra needed information
+   * @param tx
+   * @returns
+   */
   getTransactionExtraData = (tx: Transaction) => {
     return {
       raffleId: tx.outputs[0].assets[0].tokenId || '',
