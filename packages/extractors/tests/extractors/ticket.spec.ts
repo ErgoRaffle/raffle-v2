@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Network, SColl, SLong } from '@fleet-sdk/core';
-import { ErgoNetworkType } from '@rosen-bridge/scanner';
+import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 import { compile } from '@fleet-sdk/compiler';
 
 import { TicketExtractor } from '../../lib/extractors/ticket';
@@ -52,6 +52,12 @@ describe('TicketExtractor', () => {
       async ({ extractor }) => {
         const extractedData = await extractor.extractBoxData(
           sampleTicketBoxes[0],
+          [
+            {
+              '0': '5b1a88f00bc6013cc6506883b23aabba148346ca6fa64e4e3573592f4e3ad854',
+            },
+            {},
+          ],
         );
 
         expect(extractedData).toEqual(sampleTicketExtractedData);
