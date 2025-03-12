@@ -86,7 +86,7 @@ export class SuccessRaffleExtractor extends AbstractInitializableErgoExtractor<
     const data = {
       boxId: box.boxId.toString(),
       txId: box.transactionId,
-      raffleId: box.assets![0].tokenId,
+      raffleId: box.assets[0].tokenId,
       serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(
         'base64',
       ),
