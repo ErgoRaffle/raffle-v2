@@ -78,7 +78,7 @@ describe('GiftExtractor', () => {
      * - call the extractBoxData functions
      * - check if Gift box data extracted correctly
      * @expected
-     * - Gifts should extract successfully
+     * - Gifts should fail
      */
     extractorTest(
       `should fail extracting data from a sample gift box and by empty extension value`,
