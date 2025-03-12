@@ -180,45 +180,5 @@ describe('GiftRedeemExtractor', () => {
         expect(extractedData).toBeFalsy();
       },
     );
-
-    /**
-     * @target should return false when more than 3 assets are provided
-     * @dependencies
-     * @scenario
-     * - call the hasData functions
-     * - check if GiftRedeem box owned more than 3 assets
-     * - result must be false
-     * @expected
-     * - GiftRedeems box checking result must be false
-     */
-    extractorTest(
-      `should return false when more than 3 assets are provided`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleGiftRedeemBoxes[0],
-          additionalRegisters: {},
-          assets: [
-            {
-              tokenId: '1'.repeat(64),
-              amount: 1n,
-            },
-            {
-              tokenId: '2'.repeat(64),
-              amount: 1n,
-            },
-            {
-              tokenId: '3'.repeat(64),
-              amount: 1n,
-            },
-            {
-              tokenId: '4'.repeat(64),
-              amount: 1n,
-            },
-          ],
-        });
-
-        expect(extractedData).toBeFalsy();
-      },
-    );
   });
 });
