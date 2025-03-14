@@ -1,4 +1,4 @@
-import { DataSource, QueryRunner } from 'typeorm';
+import { DataSource, In, QueryRunner } from 'typeorm';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import {
   AbstractInitializableErgoExtractorAction,
@@ -139,15 +139,16 @@ export class RaffleDetailsAction extends AbstractInitializableErgoExtractorActio
     const deletedDetails = await repository.find({
       where: { extractor: extractor, block: block },
     });
-    const pictures = await picRepository.find({
-      where: { details: deletedDetails[0] },
+    const pictures: PictureEntity[][] = [];
+    deletedDetails.forEach(async (details) => {
+      const detailsPictures = await picRepository.find({
+        where: { details: details },
+      });
+      pictures.push(detailsPictures);
     });
-    deletedDetails.forEach(
-      async (details) =>
-        await picRepository.delete({
-          details: details,
-        }),
-    );
+    await picRepository.delete({
+      details: In(deletedDetails.map((rf) => rf.id)),
+    });
     await repository.delete({
       extractor: extractor,
       block: block,
@@ -161,9 +162,9 @@ export class RaffleDetailsAction extends AbstractInitializableErgoExtractorActio
    */
   convertEntityToData = (
     entities: RaffleDetailsEntity[],
-    pictures?: PictureEntity[],
+    pictures?: PictureEntity[][],
   ): RaffleDetailsBoxInterface[] => {
-    return entities.map((data) => {
+    return entities.map((data, index) => {
       const details = {
         boxId: data.boxId,
         txId: data.txId,
@@ -172,7 +173,7 @@ export class RaffleDetailsAction extends AbstractInitializableErgoExtractorActio
         serialized: data.serialized,
         name: data.name,
         description: data.description,
-        pictures: pictures as PictureInterface[],
+        pictures: pictures ? (pictures[index] as PictureInterface[]) : [],
       };
       return details;
     });
