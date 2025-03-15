@@ -98,7 +98,6 @@ export enum TxType {
   Unknown = 'Unknown',
   ServiceAndImplementerFees = 'ServiceAndImplementerFees',
   LicenseRedeem = 'LicenseRedeem',
-  SuccessPrizeCreation = 'SuccessPrizeCreation',
   GiftUnwrap = 'GiftUnwrap',
   GiftReturn = 'GiftReturn',
   TicketRedeem = 'TicketRedeem',
