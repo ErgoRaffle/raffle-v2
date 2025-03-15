@@ -20,21 +20,21 @@ export class SuccessRaffleExtractor extends AbstractInitializableErgoExtractor<
   readonly actions: SuccessRaffleAction;
   private readonly id: string;
   private readonly ergoTree: string;
-  private readonly licenseRaffleId: string;
+  private readonly raffleLicenseId: string;
 
   constructor(
     dataSource: DataSource,
     id: string,
     url: string,
     address: string,
-    licenseRaffleId: string,
+    raffleLicenseId: string,
     logger?: AbstractLogger,
     initialize = true,
   ) {
     super(ErgoNetworkType.Node, url, address, logger, initialize);
     this.id = id;
     this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
-    this.licenseRaffleId = licenseRaffleId;
+    this.raffleLicenseId = raffleLicenseId;
     this.actions = new SuccessRaffleAction(dataSource, this.logger);
   }
 
@@ -56,7 +56,7 @@ export class SuccessRaffleExtractor extends AbstractInitializableErgoExtractor<
         box.additionalRegisters.R8 != undefined &&
         (SConstant.from(box.additionalRegisters.R8).data as number) !=
           undefined &&
-        box.assets[0].tokenId == this.licenseRaffleId
+        box.assets[0].tokenId == this.raffleLicenseId
       );
     } catch (err) {
       this.logger.error(`SuccessRaffleExtractor Error: ${err}`);
