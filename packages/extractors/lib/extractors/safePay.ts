@@ -2,8 +2,6 @@ import { DataSource } from 'typeorm';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import {
   AbstractInitializableErgoExtractor,
-  SpendInfo,
-  CallbackType,
   TxExtra,
 } from '@rosen-bridge/abstract-extractor';
 import { ErgoAddress, Box } from '@fleet-sdk/core';
@@ -16,10 +14,8 @@ import {
   Transaction,
   OutputBox,
   ErgoNetworkType,
-  BlockInfo,
   InputExtension,
 } from '@rosen-bridge/scanner-interfaces';
-import JsonBigInt from '@rosen-bridge/json-bigint';
 
 export class SafePayExtractor extends AbstractInitializableErgoExtractor<
   SafePayBoxInterface,
@@ -71,107 +67,53 @@ export class SafePayExtractor extends AbstractInitializableErgoExtractor<
   getId = () => `${this.id}`;
 
   /**
-   * process a list of transactions in a block and store required information
-   * @param txs list of transactions in the block
-   * @param block
-   * @return true if the process is completed successfully and false otherwise
+   * create spend info array for the transaction
+   * @param tx
+   * @returns spend info array of the transaction
    */
-  override processTransactions = async (
-    txs: Transaction[],
-    block: BlockInfo,
-  ) => {
-    try {
-      const boxes: Array<SafePayBoxInterface> = [];
-      const spentInfos: Array<SpendInfo> = [];
-      for (const tx of txs) {
-        const inputExtensions = tx.inputs.map((input) => input.extension || {});
-        for (const output of tx.outputs) {
-          if (!this.hasData(output)) {
-            continue;
-          }
-          this.logger.debug(`Trying to extract data from box ${output.boxId}`);
-          let txType: string = 'unknown';
-          let raffleId: string = 'unknown';
-          if (tx.outputs[0].ergoTree == this.serviceErgoTree) {
-            txType = 'LicenseRedeem';
-          } else if (tx.outputs[0].ergoTree == this.successRaffleErgoTree) {
-            txType = 'Success';
-            try {
-              raffleId = tx.outputs[0].assets![1].tokenId;
-            } catch (err) {
-              this.logger.error(`SafePayExtractor Error: ${err}`);
-            }
-          } else if (tx.outputs[0].ergoTree == this.winnerPrizeErgoTree) {
-            txType = 'GiftUnwrap';
-            try {
-              raffleId = tx.outputs[0].assets![0].tokenId;
-            } catch (err) {
-              this.logger.error(`SafePayExtractor Error: ${err}`);
-            }
-          } else if (tx.outputs[0].ergoTree == this.winnerErgoTree) {
-            txType = 'GiftReturn';
-            try {
-              raffleId = tx.outputs[0].assets![0].tokenId;
-            } catch (err) {
-              this.logger.error(`SafePayExtractor Error: ${err}`);
-            }
-          } else if (tx.outputs[0].ergoTree == this.ticketRedeemErgoTree) {
-            txType = 'TicketRedeem';
-            try {
-              raffleId = tx.outputs[0].assets![0].tokenId;
-            } catch (err) {
-              this.logger.error(`SafePayExtractor Error: ${err}`);
-            }
-          } else if (tx.outputs[0].boxId == output.boxId) {
-            txType = 'FinalPrize';
-          }
-          const extractedData = this.extractBoxData(
-            output,
-            inputExtensions,
-            this.getTransactionExtraData(tx),
-            txType,
-            raffleId,
-          );
-          if (extractedData) {
-            this.logger.debug(
-              `Extracted data ${JsonBigInt.stringify(extractedData)} from box ${
-                output.boxId
-              }`,
-            );
-            boxes.push(extractedData);
-          }
-        }
-        spentInfos.push(...this.getTransactionSpendInfo(tx));
+  getTransactionExtraData = (tx: Transaction) => {
+    let parsingRaffleIdRaisedError = '';
+    let txType: string = 'unknown';
+    let raffleId: string = 'unknown';
+    if (tx.outputs[0].ergoTree == this.serviceErgoTree) {
+      txType = 'LicenseRedeem';
+    } else if (tx.outputs[0].ergoTree == this.successRaffleErgoTree) {
+      txType = 'Success';
+      try {
+        raffleId = tx.outputs[0].assets![1].tokenId;
+      } catch (err) {
+        parsingRaffleIdRaisedError = `SafePayExtractor parsing raffle-id error: ${err}`;
       }
-
-      if (boxes.length > 0) {
-        if (!(await this.actions.storeBoxes(boxes, block, this.getId()))) {
-          this.logger.warn(
-            `Data insertion failed for ${this.getId()} at the block ${
-              block.height
-            }`,
-          );
-          return false;
-        }
-        this.triggerCallbacks(CallbackType.Insert, boxes);
+    } else if (tx.outputs[0].ergoTree == this.winnerPrizeErgoTree) {
+      txType = 'GiftUnwrap';
+      try {
+        raffleId = tx.outputs[0].assets![0].tokenId;
+      } catch (err) {
+        parsingRaffleIdRaisedError = `SafePayExtractor parsing raffle-id error: ${err}`;
       }
-      const spentData = await this.actions.spendBoxes(
-        spentInfos,
-        block,
-        this.getId(),
-      );
-      if (spentData.length > 0) {
-        this.triggerCallbacks(CallbackType.Spend, spentData);
+    } else if (tx.outputs[0].ergoTree == this.winnerErgoTree) {
+      txType = 'GiftReturn';
+      try {
+        raffleId = tx.outputs[0].assets![0].tokenId;
+      } catch (err) {
+        parsingRaffleIdRaisedError = `SafePayExtractor parsing raffle-id error: ${err}`;
       }
-    } catch (e) {
-      this.logger.error(
-        `Processing transactions failed for ${this.getId()} at the block ${
-          block.height
-        } with error: ${e}`,
-      );
-      return false;
+    } else if (tx.outputs[0].ergoTree == this.ticketRedeemErgoTree) {
+      txType = 'TicketRedeem';
+      try {
+        raffleId = tx.outputs[0].assets![0].tokenId;
+      } catch (err) {
+        parsingRaffleIdRaisedError = `SafePayExtractor parsing raffle-id error: ${err}`;
+      }
+    } else if (tx.inputs.length == 1) {
+      txType = 'FinalPrize';
     }
-    return true;
+
+    return {
+      parsingRaffleIdRaisedError: parsingRaffleIdRaisedError,
+      raffleId: raffleId,
+      txType: txType,
+    };
   };
 
   /**
@@ -192,14 +134,16 @@ export class SafePayExtractor extends AbstractInitializableErgoExtractor<
     box: OutputBox,
     inputExtensions: InputExtension[],
     txExtra?: TxExtra,
-    txType?: string,
-    raffleId?: string,
   ): SafePayBoxInterface | undefined => {
+    if (txExtra && txExtra.parsingRaffleIdRaisedError != '') {
+      this.logger.warn(txExtra.parsingRaffleIdRaisedError);
+      return undefined;
+    }
     const data = {
       boxId: box.boxId.toString(),
       txId: box.transactionId,
-      raffleId: raffleId || 'unknown',
-      txType: txType || 'unknown',
+      raffleId: txExtra?.raffleId || 'unknown',
+      txType: txExtra?.txType || 'unknown',
       serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(
         'base64',
       ),

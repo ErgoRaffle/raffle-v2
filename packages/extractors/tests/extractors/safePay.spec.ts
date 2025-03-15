@@ -1,4 +1,4 @@
-import { vi, describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { Network } from '@fleet-sdk/core';
 import { compile } from '@fleet-sdk/compiler';
 
@@ -6,6 +6,7 @@ import { SafePayExtractor } from '../../lib/extractors/safePay';
 import { createDatabase } from '../utils.mock';
 import * as safePayMocks from './mocked/safePay.mock';
 import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
+import { TxExtra } from '@rosen-bridge/abstract-extractor';
 
 /*
  * create fixtures that contains below steps data:
@@ -71,12 +72,12 @@ describe('SafePayExtractor', () => {
     );
   });
 
-  describe('processTransactions', () => {
+  describe('getTransactionExtraData', () => {
     /**
      * @target should return value be equals to the expected value by different transactions successfully
      * @dependencies
      * @scenario
-     * - call the processTransactions functions
+     * - call the getTransactionExtraData functions
      * - check if the extractBoxData call correctly
      * - result must be false
      * @expected
@@ -86,13 +87,10 @@ describe('SafePayExtractor', () => {
       `should return value be equals to the expected value by different transactions successfully`,
       async ({ extractor }) => {
         for (const txData of safePayMocks.sampleSafePayTxs) {
-          const extractBoxDataSpy = vi.spyOn(extractor, 'extractBoxData');
-          await extractor.processTransactions([txData.tx], {
-            height: txData.tx.outputs[0].creationHeight,
-            hash: '0'.repeat(64),
-          });
-          expect(extractBoxDataSpy.mock.lastCall![3]).toEqual(txData.txType);
-          extractBoxDataSpy.mockReset();
+          const txExtraData: TxExtra = extractor.getTransactionExtraData(
+            txData.tx,
+          );
+          expect(txExtraData.txType).toEqual(txData.txType);
         }
       },
     );
