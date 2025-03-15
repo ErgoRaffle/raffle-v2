@@ -246,6 +246,46 @@ describe('RaffleDetailsAction', () => {
     });
 
     /**
+     * @target should successfully delete picture entities of two deleted raffleDetails of certain block
+     * @dependencies
+     * @scenario
+     * - call the deleteBlockEntities functions
+     * @expected
+     * - RaffleDetails should stored details and related pictures
+     */
+    it<RaffleDetailsTestContext>('should successfully delete picture entities of two deleted raffleDetails of certain block', async ({
+      action,
+      repository,
+      pictureRepository,
+    }) => {
+      const raffleDetailsObject1 = await repository.manager.save(
+        RaffleDetailsEntity,
+        sampleDBData,
+      );
+      await pictureRepository.insert(
+        sampleDBPicturesData.map((pic) => {
+          return { ...pic, details: raffleDetailsObject1 };
+        }),
+      );
+      const raffleDetailsObject2 = await repository.manager.save(
+        RaffleDetailsEntity,
+        sampleDBData,
+      );
+      await pictureRepository.insert(
+        sampleDBPicturesData.map((pic) => {
+          return { ...pic, details: raffleDetailsObject2 };
+        }),
+      );
+
+      await action.deleteBlockBoxes(
+        raffleDetailsObject1.block,
+        raffleDetailsObject1.extractor,
+      );
+      expect(await repository.count()).toEqual(0);
+      expect(await pictureRepository.count()).toEqual(0);
+    });
+
+    /**
      * @target should successfully delete raffleDetails of certain block without any related pictures
      * @dependencies
      * @scenario
