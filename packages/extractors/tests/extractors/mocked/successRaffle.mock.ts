@@ -57,8 +57,3 @@ export const sampleSuccessRaffleExtensions: InputExtension[] = [
   },
   {},
 ];
-
-export const sampleSuccessRaffleExtractedDataForEmptyExtension = {
-  ...sampleSuccessRaffleExtractedData,
-  selectedWinnersList: '',
-};
