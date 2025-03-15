@@ -16,7 +16,7 @@ export class TicketRedeemExtractor extends AbstractInitializableErgoExtractor<
   readonly actions: TicketRedeemAction;
   private readonly id: string;
   private readonly ergoTree: string;
-  private readonly licenseRaffleId: string;
+  private readonly raffleLicenseId: string;
 
   constructor(
     dataSource: DataSource,
@@ -24,14 +24,14 @@ export class TicketRedeemExtractor extends AbstractInitializableErgoExtractor<
     url: string,
     type: ErgoNetworkType,
     address: string,
-    licenseRaffleId: string,
+    raffleLicenseId: string,
     logger?: AbstractLogger,
     initialize = true,
   ) {
     super(type, url, address, logger, initialize);
     this.id = id;
     this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
-    this.licenseRaffleId = licenseRaffleId;
+    this.raffleLicenseId = raffleLicenseId;
     this.actions = new TicketRedeemAction(dataSource, this.logger);
   }
 
@@ -56,7 +56,7 @@ export class TicketRedeemExtractor extends AbstractInitializableErgoExtractor<
         (SConstant.from(box.additionalRegisters.R5).data as bigint) !=
           undefined &&
         box.assets.length > 1 &&
-        box.assets[0].tokenId == this.licenseRaffleId
+        box.assets[0].tokenId == this.raffleLicenseId
       );
     } catch (err) {
       this.logger.error(`TicketRedeemExtractor Error: ${err}`);
