@@ -9,7 +9,7 @@ import { serializeBox } from '@fleet-sdk/serializer';
 
 import { SafePayEntity } from '../entities';
 import { SafePayAction } from '../actions/safePay';
-import { SafePayBoxInterface } from '../interfaces/types';
+import { SafePayBoxInterface, TxType } from '../interfaces/types';
 import {
   Transaction,
   OutputBox,
@@ -37,7 +37,7 @@ export class SafePayExtractor extends AbstractInitializableErgoExtractor<
     type: ErgoNetworkType,
     address: string,
     serviceAddress: string,
-    successRaffleAddress: string,
+    successAddress: string,
     winnerPrizeAddress: string,
     winnerAddress: string,
     ticketRedeemAddress: string,
@@ -52,7 +52,7 @@ export class SafePayExtractor extends AbstractInitializableErgoExtractor<
     this.serviceErgoTree =
       ErgoAddress.fromBase58(serviceAddress).ergoTree.toString();
     this.successRaffleErgoTree =
-      ErgoAddress.fromBase58(successRaffleAddress).ergoTree.toString();
+      ErgoAddress.fromBase58(successAddress).ergoTree.toString();
     this.winnerPrizeErgoTree =
       ErgoAddress.fromBase58(winnerPrizeAddress).ergoTree.toString();
     this.winnerErgoTree =
@@ -67,46 +67,41 @@ export class SafePayExtractor extends AbstractInitializableErgoExtractor<
   getId = () => `${this.id}`;
 
   /**
-   * create spend info array for the transaction
+   * extract transaction raffle-id and tx-type extra information
    * @param tx
-   * @returns spend info array of the transaction
+   * @returns raffle-id and tx-type
    */
   getTransactionExtraData = (tx: Transaction) => {
     let parsingRaffleIdRaisedError = '';
-    let txType: string = 'unknown';
+    let txType: TxType = TxType.Unknown;
     let raffleId: string = 'unknown';
     if (tx.outputs[0].ergoTree == this.serviceErgoTree) {
-      txType = 'LicenseRedeem';
+      txType = TxType.LicenseRedeem;
     } else if (tx.outputs[0].ergoTree == this.successRaffleErgoTree) {
-      txType = 'Success';
+      txType = TxType.ServiceAndImplementerFees;
       try {
         raffleId = tx.outputs[0].assets![1].tokenId;
       } catch (err) {
         parsingRaffleIdRaisedError = `SafePayExtractor parsing raffle-id error: ${err}`;
       }
     } else if (tx.outputs[0].ergoTree == this.winnerPrizeErgoTree) {
-      txType = 'GiftUnwrap';
-      try {
-        raffleId = tx.outputs[0].assets![0].tokenId;
-      } catch (err) {
-        parsingRaffleIdRaisedError = `SafePayExtractor parsing raffle-id error: ${err}`;
-      }
+      txType = TxType.GiftUnwrap;
     } else if (tx.outputs[0].ergoTree == this.winnerErgoTree) {
-      txType = 'GiftReturn';
+      txType = TxType.GiftReturn;
       try {
         raffleId = tx.outputs[0].assets![0].tokenId;
       } catch (err) {
         parsingRaffleIdRaisedError = `SafePayExtractor parsing raffle-id error: ${err}`;
       }
     } else if (tx.outputs[0].ergoTree == this.ticketRedeemErgoTree) {
-      txType = 'TicketRedeem';
+      txType = TxType.TicketRedeem;
       try {
         raffleId = tx.outputs[0].assets![0].tokenId;
       } catch (err) {
         parsingRaffleIdRaisedError = `SafePayExtractor parsing raffle-id error: ${err}`;
       }
     } else if (tx.inputs.length == 1) {
-      txType = 'FinalPrize';
+      txType = TxType.FinalPrize;
     }
 
     return {
@@ -142,8 +137,8 @@ export class SafePayExtractor extends AbstractInitializableErgoExtractor<
     const data = {
       boxId: box.boxId.toString(),
       txId: box.transactionId,
-      raffleId: txExtra?.raffleId || 'unknown',
-      txType: txExtra?.txType || 'unknown',
+      raffleId: txExtra != undefined ? txExtra.raffleId : 'Unknown',
+      txType: txExtra != undefined ? txExtra.txType : TxType.Unknown,
       serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(
         'base64',
       ),

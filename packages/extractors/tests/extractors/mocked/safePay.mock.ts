@@ -20,8 +20,8 @@ export const sampleSafePayBoxes: OutputBox[] = [
 export const sampleSafePayExtractedData = {
   boxId: sampleSafePayBoxes[0].boxId,
   txId: sampleSafePayBoxes[0].transactionId,
-  txType: 'unknown',
-  raffleId: 'unknown',
+  txType: 'Unknown',
+  raffleId: 'Unknown',
   serialized:
     'gMn+PRkGAQEB0XMA7P9hAAIOIO22YtAJsWgSor0v/RuSa5ZdYgQK3pJB/cS4gj' +
     'epnf6+BYCHpw469S3xzwVNKFFjpfW4si57BXn6aINdK+i/ep2Kp8SzKwE=',
@@ -30,7 +30,7 @@ export const sampleSafePayExtractedData = {
 export const sampleSafePayTxs: { tx: Transaction; txType: string }[] = [
   // success transactions
   {
-    txType: 'Success',
+    txType: 'ServiceAndImplementerFees',
     tx: {
       id: 'a235297b97de9b47d75846dca68d0f7b752d831f08133ea211c502b586a670df',
       inputs: [
