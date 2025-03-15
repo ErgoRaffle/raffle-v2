@@ -8,7 +8,6 @@ import {
   sampleSuccessRaffleBoxes,
   sampleSuccessRaffleExtensions,
   sampleSuccessRaffleExtractedData,
-  sampleSuccessRaffleExtractedDataForEmptyExtension,
 } from './mocked/successRaffle.mock';
 
 /*
@@ -60,7 +59,7 @@ describe('SuccessRaffleExtractor', () => {
     );
 
     /**
-     * @target should extract data from a SuccessRaffle box with empty extension data
+     * @target should return undefined when selectedWinnersList value is invalid
      * @dependencies
      * @scenario
      * - call the extractBoxData functions
@@ -69,16 +68,14 @@ describe('SuccessRaffleExtractor', () => {
      * - SuccessRaffles should extract successfully
      */
     extractorTest(
-      `should extract data from a SuccessRaffle box with empty extension data`,
+      `should return undefined when selectedWinnersList value is invalid`,
       async ({ extractor }) => {
-        const extractedData = await extractor.extractBoxData(
+        const extractedData = extractor.extractBoxData(
           sampleSuccessRaffleBoxes[0],
           [],
         );
 
-        expect(extractedData).toEqual(
-          sampleSuccessRaffleExtractedDataForEmptyExtension,
-        );
+        expect(extractedData).toEqual(undefined);
       },
     );
   });
