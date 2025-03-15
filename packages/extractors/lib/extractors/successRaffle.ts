@@ -79,7 +79,10 @@ export class SuccessRaffleExtractor extends AbstractInitializableErgoExtractor<
         SConstant.from(inputExtensions[0]['0']).data as bigint[]
       ).toString();
     } catch (err) {
-      this.logger.error(`SuccessRaffleExtractor Error: ${err}`);
+      this.logger.warn(
+        `SuccessRaffleExtractor failed on extracting data due to invalid or missing inputExtension: ${err}`,
+      );
+      return undefined;
     }
 
     const step = SConstant.from(box.additionalRegisters.R8!).data as number;
