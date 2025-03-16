@@ -168,7 +168,11 @@ export class RaffleDetailsAction extends AbstractInitializableErgoExtractorActio
         serialized: data.serialized,
         name: data.name,
         description: data.description,
-        pictures: pictures[index],
+        pictures: pictures[index].map((pic) => ({
+          raffleId: pic.raffleId,
+          orderIndex: pic.orderIndex,
+          content: pic.content,
+        })),
       };
       return details;
     });
