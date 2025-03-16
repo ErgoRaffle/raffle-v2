@@ -3,10 +3,7 @@ import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { AbstractInitializableErgoExtractorAction } from '@rosen-bridge/abstract-extractor';
 import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
 
-import {
-  PictureInterface,
-  RaffleDetailsBoxInterface,
-} from '../interfaces/types';
+import { RaffleDetailsBoxInterface } from '../interfaces/types';
 import { PictureEntity, RaffleDetailsEntity } from '../entities';
 
 export class RaffleDetailsAction extends AbstractInitializableErgoExtractorAction<
@@ -160,7 +157,7 @@ export class RaffleDetailsAction extends AbstractInitializableErgoExtractorActio
    */
   convertEntityToData = (
     entities: RaffleDetailsEntity[],
-    pictures?: PictureEntity[][],
+    pictures: PictureEntity[][] = [],
   ): RaffleDetailsBoxInterface[] => {
     return entities.map((data, index) => {
       const details = {
@@ -171,7 +168,7 @@ export class RaffleDetailsAction extends AbstractInitializableErgoExtractorActio
         serialized: data.serialized,
         name: data.name,
         description: data.description,
-        pictures: pictures ? (pictures[index] as PictureInterface[]) : [],
+        pictures: pictures[index],
       };
       return details;
     });
