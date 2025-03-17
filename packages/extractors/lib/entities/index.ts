@@ -5,3 +5,4 @@ export { BoxEntity } from './box';
 export { WinnerEntity } from './winner';
 export { RaffleDetailsEntity } from './raffleDetails';
 export { PictureEntity } from './picture';
+export { GiftEntity } from './gift';

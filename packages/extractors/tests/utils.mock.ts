@@ -15,6 +15,7 @@ import {
   WinnerEntity,
   RaffleDetailsEntity,
   PictureEntity,
+  GiftEntity,
 } from '../lib/entities';
 
 const chain = new MockChain(1);
@@ -28,6 +29,11 @@ export const implementerWallet = chain.addParty(
 );
 export const creatorWallet = chain.addParty(
   '0008cd02d9d15a5f83022a63614d1761f0f4bbd6bf5d01906c78b3f06cd02ede7ba76b2c',
+  'creator',
+);
+
+export const donatorWallet = chain.addParty(
+  '0008cd02d9d15a5f83022a63614d1761f0f4bbd6bf5d01906c78b3f06cd02ede7ba76cc4',
   'creator',
 );
 
@@ -49,6 +55,7 @@ export const createDatabase = async (): Promise<DataSource> => {
       WinnerEntity,
       RaffleDetailsEntity,
       PictureEntity,
+      GiftEntity,
     ],
     migrations: [...migrations.sqlite, ...scannerMigrations.sqlite],
     synchronize: false,

@@ -3,29 +3,25 @@ import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { AbstractInitializableErgoExtractorAction } from '@rosen-bridge/abstract-extractor';
 import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
 
-import { BoxInterface } from '../interfaces/types';
-import { BoxEntity } from '../entities';
-import { pick } from 'lodash-es';
+import { GiftBoxInterface } from '../interfaces/types';
+import { GiftEntity } from '../entities/gift';
 
-export class BoxAction extends AbstractInitializableErgoExtractorAction<
-  BoxInterface,
-  BoxEntity
+export class GiftAction extends AbstractInitializableErgoExtractorAction<
+  GiftBoxInterface,
+  GiftEntity
 > {
   constructor(dataSource: DataSource, logger?: AbstractLogger) {
-    super(dataSource, BoxEntity, logger);
+    super(dataSource, GiftEntity, logger);
   }
 
   /**
    * create the box entity from extracted data and block information
-   * @param boxes
-   * @param block
-   * @param extractor
    */
   createEntity = (
-    boxes: BoxInterface[],
+    boxes: GiftBoxInterface[],
     block: BlockInfo,
     extractor: string,
-  ): Omit<BoxEntity, 'id'>[] => {
+  ): Omit<GiftEntity, 'id'>[] => {
     return boxes.map((box) => {
       return {
         boxId: box.boxId,
@@ -35,17 +31,24 @@ export class BoxAction extends AbstractInitializableErgoExtractorAction<
         extractor: extractor,
         txId: box.txId,
         raffleId: box.raffleId,
+        donatorErgoTree: box.donatorErgoTree,
+        winnerIndex: box.winnerIndex,
       };
     });
   };
 
   /**
    * convert the database entity back to raw data
-   * @param entities
    */
-  convertEntityToData = (entities: BoxEntity[]): BoxInterface[] => {
-    return entities.map((data) =>
-      pick(data, ['boxId', 'txId', 'raffleId', 'extractor', 'serialized']),
-    );
+  convertEntityToData = (entities: GiftEntity[]): GiftBoxInterface[] => {
+    return entities.map((data) => ({
+      boxId: data.boxId,
+      txId: data.txId,
+      raffleId: data.raffleId,
+      extractor: data.extractor,
+      serialized: data.serialized,
+      donatorErgoTree: data.donatorErgoTree,
+      winnerIndex: data.winnerIndex,
+    }));
   };
 }

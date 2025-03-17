@@ -50,3 +50,9 @@ export interface RaffleDetailsBoxInterface extends ExtractedBox {
   description: string;
   pictures?: PictureInterface[];
 }
+
+export interface GiftBoxInterface extends ExtractedBox {
+  raffleId: string;
+  donatorErgoTree: string;
+  winnerIndex: number;
+}

@@ -2,10 +2,9 @@ import { DataSource } from 'typeorm';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import {
   AbstractInitializableErgoExtractor,
-  OutputBox,
   boxHasToken,
-  ErgoNetworkType,
 } from '@rosen-bridge/abstract-extractor';
+import { OutputBox, ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 
 import { RaffleServiceAction } from '../actions/raffleService';
 import { RaffleServiceBoxInterface } from '../interfaces/types';
