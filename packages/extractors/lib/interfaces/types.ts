@@ -56,3 +56,10 @@ export interface GiftBoxInterface extends ExtractedBox {
   donatorErgoTree: string;
   winnerIndex: number;
 }
+
+export interface TicketBoxInterface extends ExtractedBox {
+  raffleId: string;
+  donatorErgoTree: string;
+  rangeStart: bigint;
+  rangeEnd: bigint;
+}
