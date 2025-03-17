@@ -88,3 +88,18 @@ export interface TicketRedeemBoxInterface extends ExtractedBox {
   totalSoldTicket: bigint;
   redeemedTickets: bigint;
 }
+
+export interface SafePayBoxInterface extends ExtractedBox {
+  raffleId: string;
+  txType: string;
+}
+
+export enum TxType {
+  Unknown = 'Unknown',
+  ServiceAndImplementerFees = 'ServiceAndImplementerFees',
+  LicenseRedeem = 'LicenseRedeem',
+  GiftUnwrap = 'GiftUnwrap',
+  GiftReturn = 'GiftReturn',
+  TicketRedeem = 'TicketRedeem',
+  FinalPrize = 'FinalPrize',
+}

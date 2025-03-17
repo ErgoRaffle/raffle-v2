@@ -1,8 +1,8 @@
 import { AbstractErgoExtractorEntity } from '@rosen-bridge/abstract-extractor';
 import { Entity, Column } from 'typeorm';
 
-@Entity('gift')
-export class GiftEntity extends AbstractErgoExtractorEntity {
+@Entity('safe_pay')
+export class SafePayEntity extends AbstractErgoExtractorEntity {
   @Column({ type: 'varchar' })
   txId: string;
 
@@ -10,8 +10,5 @@ export class GiftEntity extends AbstractErgoExtractorEntity {
   raffleId: string;
 
   @Column({ type: 'varchar' })
-  donatorErgoTree: string;
-
-  @Column({ type: 'integer' })
-  winnerIndex: number;
+  txType: string;
 }
