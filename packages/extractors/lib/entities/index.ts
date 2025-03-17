@@ -3,3 +3,5 @@ export { RaffleServiceEntity } from './raffleService';
 export { RaffleEntity } from './inactiveRaffle';
 export { BoxEntity } from './box';
 export { WinnerEntity } from './winner';
+export { RaffleDetailsEntity } from './raffleDetails';
+export { PictureEntity } from './picture';

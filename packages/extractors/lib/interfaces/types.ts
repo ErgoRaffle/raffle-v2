@@ -36,3 +36,17 @@ export interface WinnerBoxInterface extends ExtractedBox {
   index: number;
   rewardPercent: number;
 }
+
+export interface PictureInterface {
+  orderIndex: number;
+  raffleId: string;
+  content: string;
+}
+
+export interface RaffleDetailsBoxInterface extends ExtractedBox {
+  id?: number;
+  raffleId: string;
+  name: string;
+  description: string;
+  pictures?: PictureInterface[];
+}

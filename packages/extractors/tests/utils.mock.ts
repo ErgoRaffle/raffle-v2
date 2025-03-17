@@ -1,10 +1,21 @@
 import { DataSource } from 'typeorm';
 import { MockChain } from '@fleet-sdk/mock-chain';
 
-import { migrations as scannerMigrations } from '@rosen-bridge/scanner';
+import {
+  BlockEntity,
+  ExtractorStatusEntity,
+  migrations as scannerMigrations,
+} from '@rosen-bridge/scanner';
 
 import { migrations } from '../lib/migrations';
-import { RaffleServiceEntity, RaffleEntity } from '../lib/entities';
+import {
+  RaffleServiceEntity,
+  RaffleEntity,
+  BoxEntity,
+  WinnerEntity,
+  RaffleDetailsEntity,
+  PictureEntity,
+} from '../lib/entities';
 
 const chain = new MockChain(1);
 export const serviceWallet = chain.addParty(
@@ -29,7 +40,16 @@ export const createDatabase = async (): Promise<DataSource> => {
     type: 'sqlite',
     database: `:memory:`,
     dropSchema: true,
-    entities: [RaffleServiceEntity, RaffleEntity],
+    entities: [
+      BlockEntity,
+      ExtractorStatusEntity,
+      RaffleServiceEntity,
+      RaffleEntity,
+      BoxEntity,
+      WinnerEntity,
+      RaffleDetailsEntity,
+      PictureEntity,
+    ],
     migrations: [...migrations.sqlite, ...scannerMigrations.sqlite],
     synchronize: false,
     logging: false,
