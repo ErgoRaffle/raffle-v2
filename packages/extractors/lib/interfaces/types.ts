@@ -71,3 +71,8 @@ export interface WinnerPrizeBoxInterface extends ExtractedBox {
   winnerIndex: number;
   unwrappedGiftCount: number;
 }
+
+export interface GiftRedeemBoxInterface extends ExtractedBox {
+  raffleId: string;
+  step: number;
+}
