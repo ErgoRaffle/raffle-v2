@@ -17,6 +17,7 @@ import {
   PictureEntity,
   GiftEntity,
   TicketEntity,
+  WinnerPrizeEntity,
 } from '../lib/entities';
 
 const chain = new MockChain(1);
@@ -58,6 +59,7 @@ export const createDatabase = async (): Promise<DataSource> => {
       PictureEntity,
       GiftEntity,
       TicketEntity,
+      WinnerPrizeEntity,
     ],
     migrations: [...migrations.sqlite, ...scannerMigrations.sqlite],
     synchronize: false,

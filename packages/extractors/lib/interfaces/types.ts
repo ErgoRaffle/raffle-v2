@@ -63,3 +63,11 @@ export interface TicketBoxInterface extends ExtractedBox {
   rangeStart: bigint;
   rangeEnd: bigint;
 }
+
+export interface WinnerPrizeBoxInterface extends ExtractedBox {
+  raffleId: string;
+  winnerTicketIndex: number;
+  giftCount: number;
+  winnerIndex: number;
+  unwrappedGiftCount: number;
+}
