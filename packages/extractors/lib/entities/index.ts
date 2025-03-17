@@ -9,3 +9,4 @@ export { GiftEntity } from './gift';
 export { TicketEntity } from './ticket';
 export { WinnerPrizeEntity } from './winnerPrize';
 export { GiftRedeemEntity } from './giftRedeem';
+export { SuccessRaffleEntity } from './successRaffle';
