@@ -5,7 +5,7 @@ export class Sqlite1739868074824 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-            CREATE TABLE "tickets" (
+            CREATE TABLE "ticket" (
                 "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
                 "boxId" varchar NOT NULL,
                 "block" varchar NOT NULL,
@@ -26,7 +26,7 @@ export class Sqlite1739868074824 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-            DROP TABLE "tickets"
+            DROP TABLE "ticket"
         `);
   }
 }
