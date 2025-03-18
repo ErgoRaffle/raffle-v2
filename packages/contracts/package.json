@@ -8,7 +8,7 @@
   "main": "dist/lib/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "mkdir -p dist/ && node --trace-warnings --loader ts-node/esm --loader extensionless ./cli/index.ts build configs.json",
+    "build": "mkdir -p dist/ && tsx --trace-warnings ./cli/index.ts build configs.json",
     "build-testnet": "npm run build -- --testnet",
     "coverage": "npm run test -- --coverage",
     "lint": "eslint --fix . && npm run prettify",
@@ -17,9 +17,9 @@
     "test": "NODE_OPTIONS=--loader=extensionless vitest",
     "test:related": "NODE_OPTIONS=--loader=extensionless vitest related --run",
     "type-check": "tsc --noEmit",
-    "compile-contracts": "node --loader ts-node/esm --loader extensionless ./cli/index.ts compile-contracts",
-    "make-input-template": "node --loader ts-node/esm --loader extensionless ./cli/index.ts make-input-template",
-    "make-build-template": "node --loader ts-node/esm --loader extensionless ./cli/index.ts make-input-template --for-build"
+    "compile-contracts": "tsx ./cli/index.ts compile-contracts",
+    "make-input-template": "tsx ./cli/index.ts make-input-template",
+    "make-build-template": "tsx ./cli/index.ts make-input-template --for-build"
   },
   "devDependencies": {
     "@fleet-sdk/mock-chain": "^0.4.2",
