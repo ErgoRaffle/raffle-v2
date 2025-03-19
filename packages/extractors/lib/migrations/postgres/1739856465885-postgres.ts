@@ -5,7 +5,7 @@ export class Postgres1739856465885 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-            CREATE TABLE "gift" (
+            CREATE TABLE "gifts" (
                 "id" SERIAL NOT NULL,
                 "boxId" character varying NOT NULL,
                 "block" character varying NOT NULL,
@@ -26,7 +26,7 @@ export class Postgres1739856465885 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-            DROP TABLE "gift"
+            DROP TABLE "gifts"
         `);
   }
 }

@@ -23,7 +23,7 @@ export class Postgres1741479982422 implements MigrationInterface {
             )
         `);
     await queryRunner.query(`
-            CREATE TABLE "picture" (
+            CREATE TABLE "pictures" (
                 "id" SERIAL NOT NULL,
                 "raffleId" character varying NOT NULL,
                 "orderIndex" integer NOT NULL,
@@ -33,17 +33,17 @@ export class Postgres1741479982422 implements MigrationInterface {
             )
         `);
     await queryRunner.query(`
-            ALTER TABLE "picture"
+            ALTER TABLE "pictures"
             ADD CONSTRAINT "FK_ea5e985a736fbe539353bbf10c0" FOREIGN KEY ("detailsId") REFERENCES "raffle_details"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
         `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-            ALTER TABLE "picture" DROP CONSTRAINT "FK_ea5e985a736fbe539353bbf10c0"
+            ALTER TABLE "pictures" DROP CONSTRAINT "FK_ea5e985a736fbe539353bbf10c0"
         `);
     await queryRunner.query(`
-            DROP TABLE "picture"
+            DROP TABLE "pictures"
         `);
     await queryRunner.query(`
             DROP TABLE "raffle_details"

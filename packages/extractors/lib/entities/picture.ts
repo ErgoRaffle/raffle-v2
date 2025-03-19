@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 import { RaffleDetailsEntity } from './raffleDetails';
 
-@Entity('picture')
+@Entity('pictures')
 export class PictureEntity {
   @PrimaryGeneratedColumn()
   id: number;
