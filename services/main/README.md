@@ -1,4 +1,4 @@
-# main
+# main service
 
 ## Table of contents
 
@@ -6,6 +6,8 @@
 - [Usage](#usage)
 
 ## Introduction
+
+This package contains ErgoRaffle background jobs
 
 ## Usage
 
