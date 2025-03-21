@@ -1,0 +1,8 @@
+api:
+  port: 8800
+  host: 127.0.0.1
+logs:
+  maxSize: 20m
+  maxFilesCount: 14d
+  path: ./logs/
+  level: info
