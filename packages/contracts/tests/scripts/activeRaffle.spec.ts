@@ -101,6 +101,12 @@ const createActiveRaffleEndTest = (
     goal,
     ticketPrice,
   );
+  activeRaffleBoxForSuccessEnd.setContextExtension({
+    0: SColl(SColl(SByte), [
+      Array.from(Buffer.from(creator.ergoTree, 'hex')),
+      Array.from(Buffer.from(implementer.ergoTree, 'hex')),
+    ]),
+  });
 
   const activeRaffleBoxForFailureEnd = boxFactory.createActiveRaffleBoxMock(
     creator.ergoTree,

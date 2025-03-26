@@ -657,7 +657,16 @@ export const executeFeePaymentTx = (
   activeRaffleBox: testUtils.OutputBox,
   raffleDetailsBox: testUtils.OutputBox,
   boxFactory: testUtils.RaffleBoxFactory,
+  serviceErgoTree: string,
+  implementerErgoTree: string,
 ) => {
+  const inputActiveRaffle = new ErgoUnsignedInput(activeRaffleBox);
+  inputActiveRaffle.setContextExtension({
+    0: SColl(SColl(SByte), [
+      Array.from(Buffer.from(serviceErgoTree, 'hex')),
+      Array.from(Buffer.from(implementerErgoTree, 'hex')),
+    ]),
+  });
   const oracleBox = boxFactory.createMockedOracleUTxO(testUtils.FEE);
   const r4 = SConstant.from(activeRaffleBox.additionalRegisters.R4!)
     .data as bigint[];
@@ -727,7 +736,7 @@ export const executeFeePaymentTx = (
   );
 
   const rewardTx = new TransactionBuilder(boxFactory.chain.height)
-    .from([activeRaffleBox, raffleDetailsBox])
+    .from([inputActiveRaffle, raffleDetailsBox])
     .to([successRaffleOutputBox, serviceFeeBox, implementerFeeBox])
     .withDataFrom([oracleBox])
     .configureSelector((selector) => {

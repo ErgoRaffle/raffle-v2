@@ -236,6 +236,8 @@ describe('Raffle', () => {
           activeRaffle,
           raffleDetails,
           boxFactory,
+          ownerErgoTree,
+          implementerErgoTree
         );
         expect(feePaymentTx.success).true;
 
