@@ -547,7 +547,12 @@ export const executeTicketRedeemTx = (
   ticketRedeem: testUtils.OutputBox,
   ticket: testUtils.OutputBox,
   boxFactory: testUtils.RaffleBoxFactory,
+  donatorErgoTree: string
 ) => {
+  const inputTicket = new ErgoUnsignedInput(ticket);
+  inputTicket.setContextExtension({
+    0: SColl(SByte, donatorErgoTree),
+  });
   const r4 = SConstant.from(ticketRedeem.additionalRegisters.R4!)
     .data as bigint[];
   const redeemedTickets = SConstant.from(ticketRedeem.additionalRegisters.R5!)
@@ -592,7 +597,7 @@ export const executeTicketRedeemTx = (
   );
 
   const ticketRedeemTx = new TransactionBuilder(boxFactory.chain.height)
-    .from([ticketRedeem, ticket])
+    .from([ticketRedeem, inputTicket])
     .to([ticketRedeemOutputBox, redeemedDonation])
     .configureSelector((selector) => {
       selector.defineStrategy((inputs) => inputs);

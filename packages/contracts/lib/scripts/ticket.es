@@ -6,6 +6,8 @@
   //   R5[Coll[Long]]: [RangeStart, RangeEnd, TicketPrice, Deadline]
   // Tokens:
   //   0: Ticket
+  // Context (ticket redeem):
+  //   0: Coll[Byte]: DonatorErgoTree
   //
   // Spent in 2 transactions:
   //   - Ticket redeem
@@ -57,6 +59,7 @@
       blake2b256(safePayBox.propositionBytes) == safePayScriptHash,
       safePayBox.R4[Coll[Byte]] == SELF.R4[Coll[Byte]],
       safePayBox.R5[Long].get == txFee,
+      blake2b256(getVar[Coll[Byte]](0).get) == SELF.R4[Coll[Byte]].get,
       redeemedDonation,
 
       // Transaction constraints

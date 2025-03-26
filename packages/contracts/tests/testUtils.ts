@@ -1371,7 +1371,7 @@ export class RaffleBoxFactory {
     ticketTokenId: string,
     r5: bigint[],
   ) {
-    const donateTicketBox = mockUTxO({
+    const donateTicketBox = new ErgoUnsignedInput(mockUTxO({
       value: FEE * 3n,
       ergoTree: this.contractsAddresses['ticket'],
       additionalRegisters: {
@@ -1382,7 +1382,7 @@ export class RaffleBoxFactory {
         R5: SColl(SLong, r5).toHex(),
       },
       assets: [{ tokenId: ticketTokenId, amount: ticketCount }],
-    });
+    }));
     return donateTicketBox;
   }
 
