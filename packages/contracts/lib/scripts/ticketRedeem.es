@@ -9,6 +9,8 @@
   //   0: RaffleLicense
   //   1: Ticket
   //   2: CollectingToken (if token-goal raffle)
+  // Context (license redeem):
+  //   0: Coll[Byte]: ServiceErgoTree
   //
   // Spent in 2 transactions:
   //   - Ticket redeem
@@ -67,6 +69,7 @@
       serviceFee.value == SELF.value - txFee,
       serviceFee.R4[Coll[Byte]].get == serviceFeeErgoTreeHash,
       serviceFee.R5[Long].get == txFee,
+      blake2b256(getVar[Coll[Byte]](0).get) == serviceFeeErgoTreeHash,
       if(!isErgGoal) serviceFee.tokens(0) == SELF.tokens(2) else true,
 
       // Transaction constraints

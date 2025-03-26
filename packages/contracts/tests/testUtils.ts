@@ -1494,7 +1494,7 @@ export class RaffleBoxFactory {
     licenseTokenId: string = LICENSE_TOKEN_ID,
     licenseTokenCount: bigint = 1n,
   ) {
-    const ticketRedeemBox = mockUTxO({
+    const ticketRedeemBox = new ErgoUnsignedInput(mockUTxO({
       value: value,
       ergoTree: this.contractsAddresses['ticketRedeem'],
       additionalRegisters: {
@@ -1515,7 +1515,7 @@ export class RaffleBoxFactory {
         },
         ...(collectingToken ? [collectingToken] : []),
       ],
-    });
+    }));
 
     return ticketRedeemBox;
   }
