@@ -293,19 +293,20 @@ describe('Raffle', () => {
             prizeBoxes[0].additionalRegisters.R4!,
           ).data as bigint[];
           const winnerTicket = tickets.selectByWinnerIndex(prizeBoxR4[0]);
+          const donatorIndex = Number(prizeBoxR4[0] / ticketCount);
+          const winnerAddress = (donatorWallets as KeyedMockChainParty[])[
+            donatorIndex
+          ].ergoTree;
+          
           const giftUnwrappedTx = executeGiftUnwrapTx(
             prizeBoxes[0],
             winnersGifts[i],
             winnerTicket,
             boxFactory,
+            winnerAddress
           );
           expect(giftUnwrappedTx.success).true;
           prizeBoxes[0] = giftUnwrappedTx.outputs[0];
-
-          const donatorIndex = Number(prizeBoxR4[0] / ticketCount);
-          const winnerAddress = (donatorWallets as KeyedMockChainParty[])[
-            donatorIndex
-          ].ergoTree;
 
           const giftSafePayBox = giftUnwrappedTx.outputs[1];
           const giftSafeWithdrawTx = executeSafeWithdrawTransaction(

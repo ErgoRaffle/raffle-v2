@@ -227,11 +227,13 @@ describe('Raffle', () => {
         // Step 7: Returning two gifts of the first winner
         let giftRedeem = failureTx.outputs[0];
         for (let i = 0; i < 2; i++) {
+          const giftGiverErgoTree = (giftGiverWallets as KeyedMockChainParty[])[i].ergoTree
           const giftRedeemTx = executeGiftReturnTx(
             giftRedeem,
             winner1,
             winner1Gifts[i],
             boxFactory,
+            giftGiverErgoTree
           );
           expect(giftRedeemTx.success).true;
           winner1 = giftRedeemTx.outputs[0];
@@ -239,7 +241,7 @@ describe('Raffle', () => {
           const giftSafePayBox = giftRedeemTx.outputs[1];
           const giftSafeWithdrawTx = executeSafeWithdrawTransaction(
             giftSafePayBox,
-            (giftGiverWallets as KeyedMockChainParty[])[i].ergoTree,
+            giftGiverErgoTree,
             boxFactory,
           );
           expect(giftSafeWithdrawTx.success).true;

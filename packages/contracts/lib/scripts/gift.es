@@ -8,6 +8,10 @@
   // Tokens:
   //   0: GiftToken
   //   1: Gift
+  // Context (gift unwrap):
+  //   C0: Coll[Byte]: WinnerErgoTree
+  // Context (gift return):
+  //   C0: Coll[Byte]: DonatorErgoTree
   //
   // Spent in 4 transactions:
   //   - Gift unwrap
@@ -36,6 +40,7 @@
     val winnerTicket = CONTEXT.dataInputs(0)
     sigmaProp(allOf(Coll(
       safePayBox.R4[Coll[Byte]].get == winnerTicket.R4[Coll[Byte]].get,
+      blake2b256(getVar[Coll[Byte]](0).get) == winnerTicket.R4[Coll[Byte]].get,
       txConstraints
     )))
   } else {
@@ -43,6 +48,7 @@
     // [Winner, Gift] + [(DataInput)GiftRedeem] --> [Winner, returnedGift]
     sigmaProp(allOf(Coll(
       safePayBox.R4[Coll[Byte]].get == SELF.R4[Coll[Byte]].get,
+      blake2b256(getVar[Coll[Byte]](0).get) == SELF.R4[Coll[Byte]].get,
       txConstraints
     )))  
   }

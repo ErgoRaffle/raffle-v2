@@ -416,7 +416,12 @@ export const executeGiftReturnTx = (
   winner: testUtils.OutputBox,
   gift: testUtils.OutputBox,
   boxFactory: testUtils.RaffleBoxFactory,
+  giftGiverErgoTree: string
 ) => {
+  const inputGiftBox = new ErgoUnsignedInput(gift)
+  inputGiftBox.setContextExtension({
+    0: SColl(SByte, Array.from(Buffer.from(giftGiverErgoTree, 'hex')))
+  })
   const ticketTokenId = winner.assets[0].tokenId;
   const giftTokenId = winner.assets[1].tokenId;
   const winnerR4 = SConstant.from(winner.additionalRegisters.R4!)
@@ -440,7 +445,7 @@ export const executeGiftReturnTx = (
     SConstant.from(gift.additionalRegisters.R4!).data as Uint8Array,
   );
   const giftReturnTx = new TransactionBuilder(boxFactory.chain.height)
-    .from([winner, gift])
+    .from([winner, inputGiftBox])
     .to([outWinner, redeemedGift])
     .withDataFrom([giftRedeem])
     .configureSelector((selector) => {
@@ -870,7 +875,12 @@ export const executeGiftUnwrapTx = (
   giftForWinnerBox: testUtils.OutputBox,
   ticketBox: testUtils.OutputBox,
   boxFactory: testUtils.RaffleBoxFactory,
+  winnerErgoTree: string
 ) => {
+  const inputGiftBox = new ErgoUnsignedInput(giftForWinnerBox)
+  inputGiftBox.setContextExtension({
+    0: SColl(SByte, Array.from(Buffer.from(winnerErgoTree, 'hex')))
+  })
   const winnerPrizeR4 = SConstant.from(winnerPrizeBox.additionalRegisters.R4!)
     .data as bigint[];
   const winnerIndex = SConstant.from(winnerPrizeBox.additionalRegisters.R5!)
@@ -903,7 +913,7 @@ export const executeGiftUnwrapTx = (
   );
 
   const giftUnwrapTx = new TransactionBuilder(boxFactory.chain.height)
-    .from([winnerPrizeBox, giftForWinnerBox])
+    .from([winnerPrizeBox, inputGiftBox])
     .to([prizeOutputBox, unwrappedGiftBox])
     .configureSelector((selector) => {
       selector.defineStrategy((inputs) => inputs);

@@ -1019,7 +1019,7 @@ export class RaffleBoxFactory {
     giftTokenAmount: bigint = 1n,
     extraGiftTokens: TokenAmount<bigint>[] = [],
   ) {
-    const giftForWinnerOutputBox = mockUTxO({
+    const giftForWinnerOutputBox = new ErgoUnsignedInput(mockUTxO({
       value: value,
       ergoTree: this.contractsAddresses['gift'],
       additionalRegisters: {
@@ -1037,7 +1037,7 @@ export class RaffleBoxFactory {
         },
         ...extraGiftTokens,
       ],
-    });
+    }));
 
     return giftForWinnerOutputBox;
   }
