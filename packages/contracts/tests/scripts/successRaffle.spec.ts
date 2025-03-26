@@ -1,7 +1,7 @@
 import { it, describe, expect } from 'vitest';
 import { ErgoUnsignedInput, TransactionBuilder } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
-import { SColl, SLong, SConstant } from '@fleet-sdk/serializer';
+import { SColl, SLong, SConstant, SByte } from '@fleet-sdk/serializer';
 
 import * as testUtils from '../testUtils';
 import * as constants from '../../constants';
@@ -1156,6 +1156,9 @@ describe('successRaffle', () => {
           implementerFeePercent,
           serviceR4[2],
         );
+        successRaffleForLicenseRedeemBox.setContextExtension({
+          0: SColl(SByte, creator.ergoTree),
+        });
 
         const creatorFund = boxFactory.createSafePayOutputBox(
           successRaffleForLicenseRedeemBox.value - testUtils.FEE,
@@ -1208,6 +1211,9 @@ describe('successRaffle', () => {
           implementerFeePercent,
           serviceR4[2],
         );
+        successRaffleForLicenseRedeemBox.setContextExtension({
+          0: SColl(SByte, creator.ergoTree),
+        });
 
         const creatorFund = boxFactory.createSafePayOutputBox(
           successRaffleForLicenseRedeemBox.value - testUtils.FEE,

@@ -628,9 +628,13 @@ export const executeReturnRaffleLicenseTx = (
     endedRaffle.assets[2] ? [endedRaffle.assets[2]] : [],
     blake2b256(Buffer.from(changeAddress, 'hex')),
   );
+  const inputEndedRaffle = new ErgoUnsignedInput(endedRaffle);
+  inputEndedRaffle.setContextExtension({
+    0: SColl(SByte, changeAddress),
+  });
 
-  const ticketRedeemTx = new TransactionBuilder(boxFactory.chain.height)
-    .from([service, endedRaffle])
+  const licenseRedeemTx = new TransactionBuilder(boxFactory.chain.height)
+    .from([service, inputEndedRaffle])
     .to([serviceOutputBox, changeBox])
     .configureSelector((selector) => {
       selector.defineStrategy((inputs) => inputs);
@@ -639,7 +643,7 @@ export const executeReturnRaffleLicenseTx = (
     .payFee(testUtils.FEE)
     .build();
 
-  return boxFactory.chain.executeAndReturnOutputs(ticketRedeemTx);
+  return boxFactory.chain.executeAndReturnOutputs(licenseRedeemTx);
 };
 
 /**
