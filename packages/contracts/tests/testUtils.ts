@@ -851,7 +851,7 @@ export class RaffleBoxFactory {
     ticketTokenId = TICKET_TOKEN_ID,
     giftTokenId = GIFT_TOKEN_ID,
   ) {
-    const winnerPrizeBox = mockUTxO({
+    const winnerPrizeBox = new ErgoUnsignedInput(mockUTxO({
       value: value,
       ergoTree: this.contractsAddresses['winnerPrize'],
       assets: [
@@ -877,7 +877,7 @@ export class RaffleBoxFactory {
         R5: SInt(winnerIndex).toHex(),
         R6: SLong(unwrappedGiftCount).toHex(),
       },
-    });
+    }));
     return winnerPrizeBox;
   }
 

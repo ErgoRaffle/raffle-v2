@@ -9,6 +9,8 @@
   //   0: Ticket
   //   1: GiftToken
   //   2: CollectingToken (if token-goal raffle)
+  // Context:
+  //   0: Coll[Byte]: WinnerErgoTree
   //
   // Spent in 2 transactions:
   //   - Gift unwrap
@@ -75,6 +77,7 @@
       if(SELF.tokens.size == 3) finalPrize.tokens(0) == SELF.tokens(2) else true,
       finalPrize.R4[Coll[Byte]].get == winnerTicket.R4[Coll[Byte]].get,
       finalPrize.R5[Long].get == txFee,
+      blake2b256(getVar[Coll[Byte]](0).get) == winnerTicket.R4[Coll[Byte]].get,
 
       // Transaction constraints
       isTicketCorrect,

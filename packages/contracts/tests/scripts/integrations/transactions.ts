@@ -940,7 +940,12 @@ export const executeFinalPrizeTx = (
   winnerPrizeBox: testUtils.OutputBox,
   ticketBox: testUtils.OutputBox,
   boxFactory: testUtils.RaffleBoxFactory,
+  winnerErgoTree: string
 ) => {
+  const inputWinnerPrizeBox = new ErgoUnsignedInput(winnerPrizeBox)
+  inputWinnerPrizeBox.setContextExtension({
+    0: SColl(SByte, Array.from(Buffer.from(winnerErgoTree, 'hex')))
+  })
   const finalPrizeSpendingBox = boxFactory.createSafePayOutputBox(
     BigInt(winnerPrizeBox.value) - testUtils.FEE,
     winnerPrizeBox.assets.length > 2 ? [winnerPrizeBox.assets[2]] : [],
@@ -948,7 +953,7 @@ export const executeFinalPrizeTx = (
   );
 
   const finalPrizeTx = new TransactionBuilder(boxFactory.chain.height)
-    .from([winnerPrizeBox])
+    .from([inputWinnerPrizeBox])
     .to([finalPrizeSpendingBox])
     .configureSelector((selector) => {
       selector.defineStrategy((inputs) => inputs);
