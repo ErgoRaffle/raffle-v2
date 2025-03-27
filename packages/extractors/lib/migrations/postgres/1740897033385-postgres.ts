@@ -15,8 +15,7 @@ export class Postgres1740897033385 implements MigrationInterface {
                 "extractor" character varying NOT NULL,
                 "serialized" character varying NOT NULL,
                 "txId" character varying NOT NULL,
-                "raffleId" character varying NOT NULL,
-                "txType" character varying NOT NULL,
+                "recipient" character varying NOT NULL,
                 CONSTRAINT "UQ_6e3731698d1ef95eb1b8f78c687" UNIQUE ("boxId", "extractor"),
                 CONSTRAINT "PK_2c13dfad534ac329832c8e93527" PRIMARY KEY ("id")
             )
