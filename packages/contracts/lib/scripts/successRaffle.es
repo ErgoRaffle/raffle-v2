@@ -122,7 +122,7 @@
       projectFund.value == SELF.value - txFee,
       projectFund.R4[Coll[Byte]].get == projectErgoTreeHash,
       projectFund.R5[Long].get == txFee,
-      blake2b256(projectErgoTree) == projectErgoTreeHash,
+      blake2b256(projectErgoTree) == projectFund.R4[Coll[Byte]].get,
       if(!isErgGoal) projectFund.tokens(0) == SELF.tokens(2) else true,
 
       // Transaction constraints

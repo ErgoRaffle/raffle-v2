@@ -77,7 +77,7 @@
       if(SELF.tokens.size == 3) finalPrize.tokens(0) == SELF.tokens(2) else true,
       finalPrize.R4[Coll[Byte]].get == winnerTicket.R4[Coll[Byte]].get,
       finalPrize.R5[Long].get == txFee,
-      blake2b256(getVar[Coll[Byte]](0).get) == winnerTicket.R4[Coll[Byte]].get,
+      blake2b256(getVar[Coll[Byte]](0).get) == finalPrize.R4[Coll[Byte]].get,
 
       // Transaction constraints
       isTicketCorrect,

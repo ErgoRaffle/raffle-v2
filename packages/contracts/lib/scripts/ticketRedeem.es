@@ -69,7 +69,7 @@
       serviceFee.value == SELF.value - txFee,
       serviceFee.R4[Coll[Byte]].get == serviceFeeErgoTreeHash,
       serviceFee.R5[Long].get == txFee,
-      blake2b256(getVar[Coll[Byte]](0).get) == serviceFeeErgoTreeHash,
+      blake2b256(getVar[Coll[Byte]](0).get) == serviceFee.R4[Coll[Byte]].get,
       if(!isErgGoal) serviceFee.tokens(0) == SELF.tokens(2) else true,
 
       // Transaction constraints

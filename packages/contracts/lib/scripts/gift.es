@@ -32,7 +32,8 @@
     blake2b256(safePayBox.propositionBytes) == safePayScriptHash &&
     safePayBox.value == SELF.value - txFee &&
     safePayBox.tokens == SELF.tokens.slice(1, SELF.tokens.size) &&
-    safePayBox.R5[Long].get == txFee
+    safePayBox.R5[Long].get == txFee &&
+    blake2b256(getVar[Coll[Byte]](0).get) == safePayBox.R4[Coll[Byte]].get
 
   if(blake2b256(INPUTS(0).propositionBytes) == winnerPrizeScriptHash){
     // Gift unwrap
@@ -40,7 +41,6 @@
     val winnerTicket = CONTEXT.dataInputs(0)
     sigmaProp(allOf(Coll(
       safePayBox.R4[Coll[Byte]].get == winnerTicket.R4[Coll[Byte]].get,
-      blake2b256(getVar[Coll[Byte]](0).get) == winnerTicket.R4[Coll[Byte]].get,
       txConstraints
     )))
   } else {
@@ -48,7 +48,6 @@
     // [Winner, Gift] + [(DataInput)GiftRedeem] --> [Winner, returnedGift]
     sigmaProp(allOf(Coll(
       safePayBox.R4[Coll[Byte]].get == SELF.R4[Coll[Byte]].get,
-      blake2b256(getVar[Coll[Byte]](0).get) == SELF.R4[Coll[Byte]].get,
       txConstraints
     )))  
   }

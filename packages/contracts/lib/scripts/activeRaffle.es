@@ -138,11 +138,11 @@
       blake2b256(serviceFee.propositionBytes) == safePayScriptHash,
       serviceFee.R4[Coll[Byte]].get == serviceErgoTreeHash,
       serviceFee.R5[Long].get == txFee,
-      blake2b256(serviceErgoTree) == serviceErgoTreeHash,
+      blake2b256(serviceErgoTree) == serviceFee.R4[Coll[Byte]].get,
       blake2b256(implementerFee.propositionBytes) == safePayScriptHash,
       implementerFee.R4[Coll[Byte]].get == implementorErgoTreeHash,
       implementerFee.R5[Long].get == txFee,
-      blake2b256(implementerErgoTree) == implementorErgoTreeHash,
+      blake2b256(implementerErgoTree) == implementerFee.R4[Coll[Byte]].get,
 
       // Transaction constraints
       splittingRaisedFund,

@@ -59,7 +59,7 @@
       blake2b256(safePayBox.propositionBytes) == safePayScriptHash,
       safePayBox.R4[Coll[Byte]] == SELF.R4[Coll[Byte]],
       safePayBox.R5[Long].get == txFee,
-      blake2b256(getVar[Coll[Byte]](0).get) == SELF.R4[Coll[Byte]].get,
+      blake2b256(getVar[Coll[Byte]](0).get) == safePayBox.R4[Coll[Byte]].get,
       redeemedDonation,
 
       // Transaction constraints
