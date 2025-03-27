@@ -1,7 +1,7 @@
 import { it, describe, expect } from 'vitest';
 import { TokenAmount, TransactionBuilder } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
-import { SConstant } from '@fleet-sdk/serializer';
+import { SByte, SColl, SConstant } from '@fleet-sdk/serializer';
 
 import * as testUtils from '../testUtils';
 import {
@@ -106,6 +106,9 @@ const createRaffleGiftTest = (extraGiftTokens: TokenAmount<bigint>[] = []) => {
     1n,
     extraGiftTokens,
   );
+  giftBox.setContextExtension({
+    0: SColl(SByte, Array.from(Buffer.from(creator.ergoTree, 'hex'))),
+  });
 
   // Create giftBox input box
   const giftOutputBoxTokens = giftBox.assets.slice(1, giftBox.assets.length);

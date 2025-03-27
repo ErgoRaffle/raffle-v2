@@ -1,5 +1,5 @@
 import { it, describe, expect } from 'vitest';
-import { SConstant } from '@fleet-sdk/serializer';
+import { SByte, SColl, SConstant } from '@fleet-sdk/serializer';
 import { TransactionBuilder } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
 
@@ -77,6 +77,9 @@ const createWinnerPrizeTest = () => {
     1n,
     winnerGiftTokensAmount,
   );
+  winnerPrizeBoxForFinalPrize.setContextExtension({
+    0: SColl(SByte, Array.from(Buffer.from(someone.ergoTree, 'hex'))),
+  });
 
   // create final prize box
   const finalPrizeBox = boxFactory.createSafePayOutputBox(
@@ -664,7 +667,7 @@ describe('winnerPrize', () => {
      */
     winnerPrizeTest(
       'should successfully create the final prize for the winner ticket(token-goal)',
-      ({ boxFactory, ticketBox }) => {
+      ({ boxFactory, ticketBox, someoneWallet }) => {
         const totalPrize = 20_000_000n;
         const winnerRewardPercent = 200n;
         const winnerTicketIndex = 1n;
@@ -683,6 +686,12 @@ describe('winnerPrize', () => {
             amount: 100n,
           },
         );
+        winnerPrizeBoxForFinalPrize.setContextExtension({
+          0: SColl(
+            SByte,
+            Array.from(Buffer.from(someoneWallet.ergoTree, 'hex')),
+          ),
+        });
 
         // create final prize box
         const finalPrizeBox = boxFactory.createSafePayOutputBox(
@@ -861,7 +870,7 @@ describe('winnerPrize', () => {
      */
     winnerPrizeTest(
       "should fail if final prize doesn't contain all collecting tokens",
-      ({ boxFactory, ticketBox }) => {
+      ({ boxFactory, ticketBox, someoneWallet }) => {
         const totalPrize = 20_000_000n;
         const winnerRewardPercent = 200n;
         const winnerTicketIndex = 1n;
@@ -893,6 +902,12 @@ describe('winnerPrize', () => {
           ],
           SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array,
         );
+        winnerPrizeBoxForFinalPrize.setContextExtension({
+          0: SColl(
+            SByte,
+            Array.from(Buffer.from(someoneWallet.ergoTree, 'hex')),
+          ),
+        });
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([winnerPrizeBoxForFinalPrize])
