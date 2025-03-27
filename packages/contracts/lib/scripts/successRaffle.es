@@ -11,9 +11,11 @@
   //   0: RaffleLicense
   //   1: Ticket
   //   2: CollectingToken (if token-goal raffle)
-  // Context:
+  // Context (winner prize creation):
   //   C0: Coll[Long]: SelectedWinnersList
   //   C1: Long: WinnerTicketIndex
+  // Context (license redeem):
+  //   C0: Coll[Byte]: ProjectErgoTree
   //
   // Spent in 2 transactions:
   //   - Winner prize creation
@@ -105,6 +107,7 @@
     val projectFund = OUTPUTS(1)
     val txFee = SELF.R4[Coll[Long]].get(2)
     val projectErgoTreeHash = SELF.R6[Coll[Byte]].get
+    val projectErgoTree = getVar[Coll[Byte]](0).get
     val hasStolenTickets = OUTPUTS.exists{
       (box: Box) => 
         box.tokens.exists{(token: (Coll[Byte], Long)) => token._1 == SELF.tokens(1)._1}
@@ -119,6 +122,7 @@
       projectFund.value == SELF.value - txFee,
       projectFund.R4[Coll[Byte]].get == projectErgoTreeHash,
       projectFund.R5[Long].get == txFee,
+      blake2b256(projectErgoTree) == projectFund.R4[Coll[Byte]].get,
       if(!isErgGoal) projectFund.tokens(0) == SELF.tokens(2) else true,
 
       // Transaction constraints

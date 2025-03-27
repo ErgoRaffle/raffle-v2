@@ -1,7 +1,7 @@
 import { it, describe, expect } from 'vitest';
 import { TransactionBuilder, TokenAmount } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
-import { SConstant } from '@fleet-sdk/serializer';
+import { SByte, SColl, SConstant } from '@fleet-sdk/serializer';
 
 import * as testUtils from '../testUtils';
 import * as constants from '../../constants';
@@ -107,6 +107,9 @@ const createTicketRedeemTest = (collectingToken?: TokenAmount<bigint>) => {
     10n,
     collectingToken,
   );
+  ticketRedeemBoxForLicenseRedeem.setContextExtension({
+    0: SColl(SByte, Array.from(Buffer.from(creator.ergoTree, 'hex'))),
+  });
   const serviceBox = boxFactory.createServiceBoxMock(
     creator.ergoTree,
     999_999_999n,
