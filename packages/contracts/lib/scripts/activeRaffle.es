@@ -11,7 +11,7 @@
   //   1: Ticket
   //   2: CollectingToken (if token-goal raffle)
   // Context (donation):
-  //   C0: Coll[Byte]: DonatorErgoTree
+  //   C0: Coll[Coll[Byte]]: [DonatorErgoTree]
   // Context (successful end):
   //   C0: Coll[Coll[Byte]]: [ServiceErgoTree, ImplementerErgoTree]
   //
@@ -70,7 +70,7 @@
       blake2b256(ticket.propositionBytes) == ticketScriptHash,
       ticket.value >= 3 * txFee,
       ticket.tokens(0)._1 == SELF.tokens(1)._1,
-      ticket.R4[Coll[Byte]].get == blake2b256(getVar[Coll[Byte]](0).get),
+      ticket.R4[Coll[Byte]].get == blake2b256(getVar[Coll[Coll[Byte]]](0).get(0)),
       ticket.R5[Coll[Long]].get == Coll[Long](
         totalSoldTickets, 
         totalSoldTickets + onSaleTickets, 

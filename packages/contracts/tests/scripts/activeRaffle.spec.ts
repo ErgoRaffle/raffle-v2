@@ -84,7 +84,7 @@ const createActiveRaffleEndTest = (
   );
 
   activeRaffleBoxForDonate.setContextExtension({
-    0: SColl(SByte, Array.from(Buffer.from(donator.ergoTree, 'hex'))),
+    0: SColl(SColl(SByte), [Array.from(Buffer.from(donator.ergoTree, 'hex'))]),
   });
 
   const activeRaffleBoxForSuccessEnd = boxFactory.createActiveRaffleBoxMock(
