@@ -82,14 +82,25 @@ export class SafePayExtractor extends AbstractInitializableErgoExtractor<
   ): SafePayBoxInterface | undefined => {
     let recipient = '';
     try {
-      const inputData = SConstant.from(inputExtensions[0]['0']).data;
       if (txExtra!.firstOutputErgoTree == this.successRaffleErgoTree) {
-        const recipients = (inputData as Uint8Array[]).map((ergoTree) =>
-          Buffer.from(ergoTree).toString('hex'),
-        );
+        const recipients = (
+          /**
+           * In fee-payment transaction, recipient addresses (service and 
+           * implementer addresses) are available at active raffle extension. 
+           * Active raffle is the first input of this transaction,
+           */
+          SConstant.from(inputExtensions[0]['0']).data as Uint8Array[]
+        ).map((ergoTree) => Buffer.from(ergoTree).toString('hex'));
         recipient = box.index == 1 ? recipients[0] : recipients[1];
       } else {
-        recipient = Buffer.from(inputData as Uint8Array).toString('hex');
+        recipient = Buffer.from(
+          /**
+           * In license-redeem, gift-unwrap, final-prize, gift-return and 
+           * ticket-redeem transactions the second input contains the recipient
+           * address
+           */
+          SConstant.from(inputExtensions[1]['0']).data as Uint8Array,
+        ).toString('hex');
       }
     } catch (e) {
       this.logger.warn(
