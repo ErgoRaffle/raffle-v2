@@ -101,7 +101,31 @@ describe('SafePayExtractor', () => {
       },
     );
 
-        /**
+    /**
+     * @target should extract data from a final prize transaction
+     * @dependencies
+     * @scenario
+     * - call the extractBoxData function with final prize box
+     * - check safe pay extracted data
+     * @expected
+     * - to extract recipient from the second input box extension
+     */
+    extractorTest(
+      `should extract data from a sample safe pay creation transaction`,
+      async ({ extractor }) => {
+        const extractedData = extractor.extractBoxData(
+          safePayMocks.finalPrizeTx.outputs[0],
+          safePayMocks.finalPrizeTx.inputs.map(
+            (input) => input.extension as InputExtension,
+          ),
+          { firstOutputErgoTree: '' },
+        );
+
+        expect(extractedData).toEqual(safePayMocks.finalPrizeExtractedData);
+      },
+    );
+
+    /**
      * @target should extract data from a sample safe pay creation transaction
      * @dependencies
      * @scenario
@@ -111,7 +135,7 @@ describe('SafePayExtractor', () => {
      * - to extract recipient from the second input box extension
      */
     extractorTest(
-      `should extract data from a sample SafePay box successfully 3333`,
+      `should extract data from a sample safe pay creation transaction`,
       async ({ extractor }) => {
         const extractedData = extractor.extractBoxData(
           safePayMocks.sampleSafePayTx.outputs[1],

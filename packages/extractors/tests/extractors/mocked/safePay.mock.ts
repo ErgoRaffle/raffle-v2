@@ -114,12 +114,68 @@ export const feePaymentTx = {
   size: 1600n,
 };
 
+export const finalPrizeExtractedData = {
+  boxId: '8a0160409c949952f4b1d7d5771c9e6d4167ef81be33dbb71ead2ff21b27f04e',
+  txId: '01b5b7af3e49077f1861c5b2511295a6d992aa480af087ca0c19088657bc7b16',
+  recipient:
+    '0008cd036540c579e977b8d827dd04240d4893e136de7b466f5e2cca730c3faf6a479fa7',
+  serialized:
+    'gIvWbRk8AgQABADYAdYBsqVzAADRloMEAZPLwnIB5ManBA6SwXIBmcGn5ManBQWT22MIcgHbYwink8WnxbKkcwEAzLxnAAIOIFsaiPALxgE8xlBog7I6q7oUg0bKb6ZOTjVzWS9OOthUBYCHpw4BtbevPkkHfxhhxbJREpWm2ZKqSArwh8oMGQiGV7x7FgA=',
+};
+
+export const finalPrizeTx: Transaction = {
+  id: '01b5b7af3e49077f1861c5b2511295a6d992aa480af087ca0c19088657bc7b16',
+  inputs: [
+    {
+      boxId: 'bc564aeaa6836f85d3e2272c7d3366a8e622774de5ca9be3caad477a30f5af46',
+      extension: {
+        '0': '0e240008cd036540c579e977b8d827dd04240d4893e136de7b466f5e2cca730c3faf6a479fa7',
+      },
+    },
+  ],
+  dataInputs: [
+    {
+      boxId: 'a9c575f15b19afff7d69851b49284058d2309bb062f9ab939129871d0810c5f0',
+    },
+  ],
+  outputs: [
+    {
+      boxId: '8a0160409c949952f4b1d7d5771c9e6d4167ef81be33dbb71ead2ff21b27f04e',
+      value: 230000000n,
+      ergoTree:
+        '193c0204000400d801d601b2a5730000d19683040193cbc27201e4c6a7040e92c1720199c1a7e4c6a7050593db63087201db6308a793c5a7c5b2a4730100',
+      assets: [],
+      creationHeight: 1695308,
+      additionalRegisters: {
+        R4: '0e205b1a88f00bc6013cc6506883b23aabba148346ca6fa64e4e3573592f4e3ad854',
+        R5: '058087a70e',
+      },
+      transactionId:
+        '01b5b7af3e49077f1861c5b2511295a6d992aa480af087ca0c19088657bc7b16',
+      index: 0,
+    },
+    {
+      boxId: 'd71efd533ac419830409225e8e8c47f3efe4afa7a6e4f355c5b06a1d79141015',
+      value: 15000000n,
+      ergoTree:
+        '1005040004000e36100204a00b08cd0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798ea02d192a39a8cc7a701730073011001020402d19683030193a38cc7b2a57300000193c2b2a57301007473027303830108cdeeac93b1a57304',
+      assets: [],
+      creationHeight: 1695308,
+      additionalRegisters: {},
+      transactionId:
+        '01b5b7af3e49077f1861c5b2511295a6d992aa480af087ca0c19088657bc7b16',
+      index: 1,
+    },
+  ],
+};
+
 export const sampleSafePayExtractedData = {
   boxId: '85f8510acc8a2c0e1b8c5c8c810621a60ddd43b6dca1f41decc77d72d33d1d70',
   txId: 'cbd6926047761879423ae7b2c2d31725243a2b081d6019acce5ed402e5e351eb',
   recipient:
     '0008cd036540c579e977b8d827dd04240d4893e136de7b466f5e2cca730c3faf6a479fa7',
-  serialized:'wN+vQBk8AgQABADYAdYBsqVzAADRloMEAZPLwnIB5ManBA6SwXIBmcGn5ManBQWT22MIcgHbYwink8WnxbKkcwEAzLxnAaL5RHkgRHarb/jF9GH9pW6h7t+C9LsdplgcOtKeSkXtCgIOIFsaiPALxgE8xlBog7I6q7oUg0bKb6ZOTjVzWS9OOthUBYCHpw7L1pJgR3YYeUI657LC0xclJDorCB1gGazOXtQC5eNR6wE='
+  serialized:
+    'wN+vQBk8AgQABADYAdYBsqVzAADRloMEAZPLwnIB5ManBA6SwXIBmcGn5ManBQWT22MIcgHbYwink8WnxbKkcwEAzLxnAaL5RHkgRHarb/jF9GH9pW6h7t+C9LsdplgcOtKeSkXtCgIOIFsaiPALxgE8xlBog7I6q7oUg0bKb6ZOTjVzWS9OOthUBYCHpw7L1pJgR3YYeUI657LC0xclJDorCB1gGazOXtQC5eNR6wE=',
 };
 
 export const sampleSafePayTx: Transaction = {

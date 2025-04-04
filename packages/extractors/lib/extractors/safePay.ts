@@ -83,21 +83,28 @@ export class SafePayExtractor extends AbstractInitializableErgoExtractor<
     let recipient = '';
     try {
       if (txExtra!.firstOutputErgoTree == this.successRaffleErgoTree) {
-        const recipients = (
-          /**
-           * In fee-payment transaction, recipient addresses (service and 
-           * implementer addresses) are available at active raffle extension. 
-           * Active raffle is the first input of this transaction,
-           */
-          SConstant.from(inputExtensions[0]['0']).data as Uint8Array[]
-        ).map((ergoTree) => Buffer.from(ergoTree).toString('hex'));
+        const recipients = /**
+         * In fee-payment transaction, recipient addresses (service and
+         * implementer addresses) are available at active raffle extension.
+         * Active raffle is the first input of this transaction,
+         */
+        (SConstant.from(inputExtensions[0]['0']).data as Uint8Array[]).map(
+          (ergoTree) => Buffer.from(ergoTree).toString('hex'),
+        );
         recipient = box.index == 1 ? recipients[0] : recipients[1];
+      } else if (box.index == 0) {
+        recipient = Buffer.from(
+          /**
+           * In final-prize transaction the safe pay is the only output and the
+           * recipient address exists in first input (winner prize) extension
+           */
+          SConstant.from(inputExtensions[0]['0']).data as Uint8Array,
+        ).toString('hex');
       } else {
         recipient = Buffer.from(
           /**
-           * In license-redeem, gift-unwrap, final-prize, gift-return and 
-           * ticket-redeem transactions the second input contains the recipient
-           * address
+           * In license-redeem, gift-unwrap, gift-return and ticket-redeem
+           * transactions the second input contains the recipient address
            */
           SConstant.from(inputExtensions[1]['0']).data as Uint8Array,
         ).toString('hex');

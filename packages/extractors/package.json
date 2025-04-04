@@ -14,7 +14,6 @@
     "lint": "eslint --fix . && npm run prettify",
     "prettify": "prettier --write . --ignore-path ./.gitignore",
     "release": "npm run build && npm publish --access public",
-    "start": "ts-node src/index.ts",
     "test": "NODE_OPTIONS=--loader=extensionless vitest",
     "type-check": "tsc --noEmit",
     "typeorm": "NODE_OPTIONS=--experimental-specifier-resolution=node typeorm-ts-node-esm",
