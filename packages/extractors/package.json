@@ -16,7 +16,7 @@
     "release": "npm run build && npm publish --access public",
     "test": "NODE_OPTIONS='--import tsx' vitest",
     "type-check": "tsc --noEmit",
-    "typeorm": "NODE_OPTIONS=--experimental-specifier-resolution=node typeorm-ts-node-esm",
+    "typeorm": "NODE_OPTIONS='--import tsx' typeorm-ts-node-esm",
     "typeorm:generate:postgres": "npm run typeorm migration:generate ./lib/migrations/postgres/postgres -- -p ",
     "typeorm:generate:sqlite": "npm run typeorm migration:generate ./lib/migrations/sqlite/sqlite -- -p "
   },
