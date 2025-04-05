@@ -88,3 +88,7 @@ export interface TicketRedeemBoxInterface extends ExtractedBox {
   totalSoldTicket: bigint;
   redeemedTickets: bigint;
 }
+
+export interface SafePayBoxInterface extends ExtractedBox {
+  recipient: string;
+}
