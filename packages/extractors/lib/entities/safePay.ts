@@ -7,8 +7,5 @@ export class SafePayEntity extends AbstractErgoExtractorEntity {
   txId: string;
 
   @Column({ type: 'varchar' })
-  raffleId: string;
-
-  @Column({ type: 'varchar' })
-  txType: string;
+  recipient: string;
 }

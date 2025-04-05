@@ -851,7 +851,7 @@ export class RaffleBoxFactory {
     ticketTokenId = TICKET_TOKEN_ID,
     giftTokenId = GIFT_TOKEN_ID,
   ) {
-    const winnerPrizeBox = mockUTxO({
+    const winnerPrizeBox = new ErgoUnsignedInput(mockUTxO({
       value: value,
       ergoTree: this.contractsAddresses['winnerPrize'],
       assets: [
@@ -877,7 +877,7 @@ export class RaffleBoxFactory {
         R5: SInt(winnerIndex).toHex(),
         R6: SLong(unwrappedGiftCount).toHex(),
       },
-    });
+    }));
     return winnerPrizeBox;
   }
 
@@ -1019,7 +1019,7 @@ export class RaffleBoxFactory {
     giftTokenAmount: bigint = 1n,
     extraGiftTokens: TokenAmount<bigint>[] = [],
   ) {
-    const giftForWinnerOutputBox = mockUTxO({
+    const giftForWinnerOutputBox = new ErgoUnsignedInput(mockUTxO({
       value: value,
       ergoTree: this.contractsAddresses['gift'],
       additionalRegisters: {
@@ -1037,7 +1037,7 @@ export class RaffleBoxFactory {
         },
         ...extraGiftTokens,
       ],
-    });
+    }));
 
     return giftForWinnerOutputBox;
   }
@@ -1371,7 +1371,7 @@ export class RaffleBoxFactory {
     ticketTokenId: string,
     r5: bigint[],
   ) {
-    const donateTicketBox = mockUTxO({
+    const donateTicketBox = new ErgoUnsignedInput(mockUTxO({
       value: FEE * 3n,
       ergoTree: this.contractsAddresses['ticket'],
       additionalRegisters: {
@@ -1382,7 +1382,7 @@ export class RaffleBoxFactory {
         R5: SColl(SLong, r5).toHex(),
       },
       assets: [{ tokenId: ticketTokenId, amount: ticketCount }],
-    });
+    }));
     return donateTicketBox;
   }
 
@@ -1494,7 +1494,7 @@ export class RaffleBoxFactory {
     licenseTokenId: string = LICENSE_TOKEN_ID,
     licenseTokenCount: bigint = 1n,
   ) {
-    const ticketRedeemBox = mockUTxO({
+    const ticketRedeemBox = new ErgoUnsignedInput(mockUTxO({
       value: value,
       ergoTree: this.contractsAddresses['ticketRedeem'],
       additionalRegisters: {
@@ -1515,7 +1515,7 @@ export class RaffleBoxFactory {
         },
         ...(collectingToken ? [collectingToken] : []),
       ],
-    });
+    }));
 
     return ticketRedeemBox;
   }

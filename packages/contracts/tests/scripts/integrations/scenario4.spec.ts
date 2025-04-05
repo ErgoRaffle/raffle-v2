@@ -236,6 +236,8 @@ describe('Raffle', () => {
           activeRaffle,
           raffleDetails,
           boxFactory,
+          ownerErgoTree,
+          implementerErgoTree
         );
         expect(feePaymentTx.success).true;
 
@@ -290,19 +292,19 @@ describe('Raffle', () => {
             prizeBoxes[0].additionalRegisters.R4!,
           ).data as bigint[];
           const winnerTicket = tickets.selectByWinnerIndex(prizeBoxR4[0]);
+          const donatorIndex = Number(prizeBoxR4[0] / ticketCount);
+          const winnerAddress = (donatorWallets as KeyedMockChainParty[])[
+            donatorIndex
+          ].ergoTree;
           const giftUnwrappedTx = executeGiftUnwrapTx(
             prizeBoxes[i],
             winnersGifts[i],
             winnerTicket,
             boxFactory,
+            winnerAddress
           );
           expect(giftUnwrappedTx.success).true;
           prizeBoxes[i] = giftUnwrappedTx.outputs[0];
-
-          const donatorIndex = Number(prizeBoxR4[0] / ticketCount);
-          const winnerAddress = (donatorWallets as KeyedMockChainParty[])[
-            donatorIndex
-          ].ergoTree;
 
           const giftSafePayBox = giftUnwrappedTx.outputs[1];
           const giftSafeWithdrawTx = executeSafeWithdrawTransaction(
@@ -319,17 +321,19 @@ describe('Raffle', () => {
             prizeBoxes[i].additionalRegisters.R4!,
           ).data as bigint[];
           const winnerTicket = tickets.selectByWinnerIndex(prizeBoxR4[0]);
-          const finalPrizeTx = executeFinalPrizeTx(
-            prizeBoxes[i],
-            winnerTicket,
-            boxFactory,
-          );
-          expect(finalPrizeTx.success).true;
-
           const donatorIndex = Number(prizeBoxR4[0] / ticketCount);
           const winnerAddress = (donatorWallets as KeyedMockChainParty[])[
             donatorIndex
           ].ergoTree;
+
+          const finalPrizeTx = executeFinalPrizeTx(
+            prizeBoxes[i],
+            winnerTicket,
+            boxFactory,
+            winnerAddress
+          );
+          expect(finalPrizeTx.success).true;
+
 
           const prizeSafePayBox = finalPrizeTx.outputs[0];
           const prizeSafeWithdrawTx = executeSafeWithdrawTransaction(

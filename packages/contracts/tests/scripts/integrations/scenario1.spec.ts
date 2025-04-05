@@ -227,11 +227,15 @@ describe('Raffle', () => {
         // Step 7: Returning two gifts of the first winner
         let giftRedeem = failureTx.outputs[0];
         for (let i = 0; i < 2; i++) {
+          const giftGiverErgoTree = (giftGiverWallets as KeyedMockChainParty[])[
+            i
+          ].ergoTree;
           const giftRedeemTx = executeGiftReturnTx(
             giftRedeem,
             winner1,
             winner1Gifts[i],
             boxFactory,
+            giftGiverErgoTree,
           );
           expect(giftRedeemTx.success).true;
           winner1 = giftRedeemTx.outputs[0];
@@ -239,7 +243,7 @@ describe('Raffle', () => {
           const giftSafePayBox = giftRedeemTx.outputs[1];
           const giftSafeWithdrawTx = executeSafeWithdrawTransaction(
             giftSafePayBox,
-            (giftGiverWallets as KeyedMockChainParty[])[i].ergoTree,
+            giftGiverErgoTree,
             boxFactory,
           );
           expect(giftSafeWithdrawTx.success).true;
@@ -266,10 +270,13 @@ describe('Raffle', () => {
         // Step 10: Redeem two tickets to donators
         let ticketRedeem = forwardToTicketRedeemTx.outputs[0];
         for (let i = 0; i < tickets.length; i++) {
+          const donatorErgoTree = (donatorWallets as KeyedMockChainParty[])[i]
+            .ergoTree;
           const ticketRedeemTx = executeTicketRedeemTx(
             ticketRedeem,
             tickets[i],
             boxFactory,
+            donatorErgoTree,
           );
           ticketRedeem = ticketRedeemTx.outputs[0];
           expect(ticketRedeemTx.success).true;
@@ -277,7 +284,7 @@ describe('Raffle', () => {
           const donationSafePayBox = ticketRedeemTx.outputs[1];
           const donationSafeWithdrawTx = executeSafeWithdrawTransaction(
             donationSafePayBox,
-            (donatorWallets as KeyedMockChainParty[])[i].ergoTree,
+            donatorErgoTree,
             boxFactory,
           );
           expect(donationSafeWithdrawTx.success).true;
