@@ -1,7 +1,7 @@
 import { it, describe, expect } from 'vitest';
 import { TransactionBuilder, TokenAmount } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
-import { SConstant } from '@fleet-sdk/serializer';
+import { SByte, SColl, SConstant } from '@fleet-sdk/serializer';
 
 import * as testUtils from '../testUtils';
 import * as constants from '../../constants';
@@ -54,6 +54,9 @@ const createRaffleTicketTest = (collectingToken?: TokenAmount<bigint>) => {
     testUtils.TICKET_TOKEN_ID,
     [0n, 1n, ticketPrice, 1000n], // from-ticket-range, to-ticket-range, ticket-price, deadline
   );
+  ticketBox.setContextExtension({
+    0: SColl(SByte, Array.from(Buffer.from(someone.ergoTree, 'hex'))),
+  });
 
   let redeemedDonationValue =
     BigInt(ticketBox.value.toString()) -

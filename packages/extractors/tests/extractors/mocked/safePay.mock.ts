@@ -1,508 +1,262 @@
-import { Transaction, OutputBox } from '@rosen-bridge/scanner-interfaces';
+import { Transaction } from '@rosen-bridge/scanner-interfaces';
 
-export const sampleSafePayBoxes: OutputBox[] = [
+export const feePaymentSafePayExtractedData = [
   {
-    boxId: 'fed50fd5a30a2b1cdc5cb4d830a013df367b837b6b8ca34fe35f343f4ee6dd4c',
-    value: 130000000n,
-    ergoTree: '1906010101d17300',
-    assets: [],
-    creationHeight: 1605612,
-    additionalRegisters: {
-      R4: '0e20edb662d009b16812a2bd2ffd1b926b965d62040ade9241fdc4b88237a99dfebe',
-      R5: '058087a70e',
-    },
-    transactionId:
-      '3af52df1cf054d285163a5f5b8b22e7b0579fa68835d2be8bf7a9d8aa7c4b32b',
-    index: 1,
+    boxId: '7ef8a29ed512e74be874a584cf8109446d9938e7738403a130a16747a86a06d5',
+    txId: '52b06d144cd7f4a5169c3a84fe43c151c7626f76d89d73586f99cc0d9508a401',
+    recipient:
+      '0008cd0329deeedf0e44a4564d3d7552b230e66463591371fc44d5bfcb1c16a0fd69f60f',
+    serialized:
+      'gMn+PRk8AgQABADYAdYBsqVzAADRloMEAZPLwnIB5ManBA6SwXIBmcGn5ManBQWT22MIcgHbYwink8WnxbKkcwEAzLxnAAIOIO22YtAJsWgSor0v/RuSa5ZdYgQK3pJB/cS4gjepnf6+BYCHpw5SsG0UTNf0pRacOoT+Q8FRx2Jvdtidc1hvmcwNlQikAQE=',
+  },
+  {
+    boxId: '589833f28d5d48c800ab8875dadd0d9b73e8de428083766d16393417047b0699',
+    txId: '52b06d144cd7f4a5169c3a84fe43c151c7626f76d89d73586f99cc0d9508a401',
+    recipient:
+      '0008cd03b8b4b552caf9dbd5173eb5b1e441dc8f47630abe01105009f2716fee8e834506',
+    serialized:
+      'gMn+PRk8AgQABADYAdYBsqVzAADRloMEAZPLwnIB5ManBA6SwXIBmcGn5ManBQWT22MIcgHbYwink8WnxbKkcwEAzLxnAAIOILiU+u9vlEZH2skw0ZVoCAij/XxmAwgZbyoPTpTcjA+oBYCHpw5SsG0UTNf0pRacOoT+Q8FRx2Jvdtidc1hvmcwNlQikAQI=',
   },
 ];
 
-export const sampleSafePayExtractedData = {
-  boxId: sampleSafePayBoxes[0].boxId,
-  txId: sampleSafePayBoxes[0].transactionId,
-  txType: 'Unknown',
-  raffleId: 'Unknown',
-  serialized:
-    'gMn+PRkGAQEB0XMA7P9hAAIOIO22YtAJsWgSor0v/RuSa5ZdYgQK3pJB/cS4gj' +
-    'epnf6+BYCHpw469S3xzwVNKFFjpfW4si57BXn6aINdK+i/ep2Kp8SzKwE=',
+export const feePaymentTx = {
+  id: '52b06d144cd7f4a5169c3a84fe43c151c7626f76d89d73586f99cc0d9508a401',
+  inputs: [
+    {
+      boxId: 'ea0b75f423f4cbf4b615f12ff248e8b95c8aecdc3bde98a09a2a22edea23a998',
+      extension: {
+        '0': '1a02240008cd0329deeedf0e44a4564d3d7552b230e66463591371fc44d5bfcb1c16a0fd69f60f240008cd03b8b4b552caf9dbd5173eb5b1e441dc8f47630abe01105009f2716fee8e834506',
+      },
+    },
+    {
+      boxId: 'a2a6230332a358fe57d92ef908297c3a00785ce0180d3858e802f36dd0f7b9fc',
+      extension: {},
+    },
+  ],
+  dataInputs: [
+    {
+      boxId: 'f11f4b9a69112c36d9f39ac2366ada2a7cb4bb832d3c01d63c18c169eee1614c',
+    },
+  ],
+  outputs: [
+    {
+      boxId: '2227515e47e21e8b97a7fd2edf3dee5c4354d9022fe119b1d7b3c4a680faa988',
+      value: 1845000000n,
+      ergoTree:
+        '1981062704040400040204020400040005d00f040004020502040004000402040404040400040004020402040204000402040004000420040004000402040404000e2074e4d58add8c75f6f60c04bc20f077270f3083b0fa0c199d8f2e356b5e10e9b1040204000e20000fefb945bee92640a53bf22f972158c170870ab72961ff542ab834c6a4118504000404010104020402d805d601e4c6a70804d602e4c6a70504d603db6308a7d604b17203d6059372047300959072017202d80cd606b2a5730100d607db63087206d608b27203730200d609e4c6a70411d60ab2a4730300d60b9d9cb27209730400b2e4c6720a04117305007306d60ce4c67206071ad60db2e4c6a7071a730700d60ee4e30011d60fb0720e830002d9010f4d0eb38c720f017a8c720f02d610e4e30105d6117e9a99b272097308007e720105730906d19683110193c27206c2a793b27207730a00b27203730b0093b27207730c00720893b17207720495720592c1720699c1a7720bd802d612b2db63087206730d00d613b27203730e00eded938c7212018c721301928c721202998c721302720b93c17206c1a793e4c672060411720993e4c672060504720293e4c67206060ee4c6a7060e93b2720c730f00cb720d93b2e4c6b2a4731000071a731100cb720f93b2720c731200cbb3720f7a721093e4c6720608049a72017313938cb2db6308720a731400018c72080193e4c6720a0504720193b2e4c6b2a573150004117316007210939a9e9a9e7bb4720d731773187211721172117eb1b5720ed90112058f72127210067e72100693b1b5720ed901120593721272107319d804d606db6308b2a5731a00d607b2a5731b00d608b2e4c6a70411731c00d609e4c67207040ed196830a01938cb27206731d0001731e938cb27206731f00018cb272037320000193cbc27207732193c1720799c1a77208937209e4c6a7060e93e4c672070505720893cbe4e3000e720995ef720593b2db63087207732200b272037323007324efaea5d9010a63aedb6308720ad9010c4d0e938c720c018cb272037325000193c5a7c5b2a4732600',
+      assets: [
+        {
+          tokenId:
+            'df4beade44143b716c32f1bb8d6238dd01600a18f8619a4bc3b7fb34cfa4753d',
+          amount: 1n,
+        },
+        {
+          tokenId:
+            '6394efce52392141d67cdc70d9474ff85fea07df49530e85b9d26fbe43362bc4',
+          amount: 999999899n,
+        },
+      ],
+      creationHeight: 1695308,
+      additionalRegisters: {
+        R4: '11038088debe01c8018087a70e',
+        R5: '0402',
+        R6: '0e20d217c8109e3bb5535c96d04875649efdb07b211b59bd0d1c62681baa8b8e0f11',
+        R7: '1a0220f11f4b9a69112c36d9f39ac2366ada2a7cb4bb832d3c01d63c18c169eee1614c200e5751c026e543b2e8ab2eb06099daa1d1e5df47778f7787faab45cdf12fe3a8',
+        R8: '0402',
+      },
+      transactionId:
+        '52b06d144cd7f4a5169c3a84fe43c151c7626f76d89d73586f99cc0d9508a401',
+      index: 0,
+    },
+    {
+      boxId: '7ef8a29ed512e74be874a584cf8109446d9938e7738403a130a16747a86a06d5',
+      value: 130000000n,
+      ergoTree:
+        '193c0204000400d801d601b2a5730000d19683040193cbc27201e4c6a7040e92c1720199c1a7e4c6a7050593db63087201db6308a793c5a7c5b2a4730100',
+      assets: [],
+      creationHeight: 1695308,
+      additionalRegisters: {
+        R4: '0e20edb662d009b16812a2bd2ffd1b926b965d62040ade9241fdc4b88237a99dfebe',
+        R5: '058087a70e',
+      },
+      transactionId:
+        '52b06d144cd7f4a5169c3a84fe43c151c7626f76d89d73586f99cc0d9508a401',
+      index: 1,
+    },
+    {
+      boxId: '589833f28d5d48c800ab8875dadd0d9b73e8de428083766d16393417047b0699',
+      value: 130000000n,
+      ergoTree:
+        '193c0204000400d801d601b2a5730000d19683040193cbc27201e4c6a7040e92c1720199c1a7e4c6a7050593db63087201db6308a793c5a7c5b2a4730100',
+      assets: [],
+      creationHeight: 1695308,
+      additionalRegisters: {
+        R4: '0e20b894faef6f944647dac930d195680808a3fd7c660308196f2a0f4e94dc8c0fa8',
+        R5: '058087a70e',
+      },
+      transactionId:
+        '52b06d144cd7f4a5169c3a84fe43c151c7626f76d89d73586f99cc0d9508a401',
+      index: 2,
+    },
+    {
+      boxId: '88653ce1800742abfe2bea91042beae5099aa3351bfe71fe807711c2e1e71173',
+      value: 15000000n,
+      ergoTree:
+        '1005040004000e36100204a00b08cd0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798ea02d192a39a8cc7a701730073011001020402d19683030193a38cc7b2a57300000193c2b2a57301007473027303830108cdeeac93b1a57304',
+      assets: [],
+      creationHeight: 1695308,
+      additionalRegisters: {},
+      transactionId:
+        '52b06d144cd7f4a5169c3a84fe43c151c7626f76d89d73586f99cc0d9508a401',
+      index: 3,
+    },
+  ],
+  size: 1600n,
 };
 
-export const sampleSafePayTxs: { tx: Transaction; txType: string }[] = [
-  // success transactions
-  {
-    txType: 'ServiceAndImplementerFees',
-    tx: {
-      id: 'a235297b97de9b47d75846dca68d0f7b752d831f08133ea211c502b586a670df',
-      inputs: [
-        {
-          boxId:
-            '2b51655ef71308751641999437263640584a0c22aa2bb68f5da75c40bea20762',
-        },
-        {
-          boxId:
-            '4f444639b431ec30f6a4b96d6a42bb3489f422c98043c47670a84b0a3a495edd',
-        },
-      ],
-      dataInputs: [
-        {
-          boxId:
-            '0bfaaa390c6faafd6a27a1c6a7179b6c04913bec7c6376d9b699c1847dfb08e4',
-        },
-      ],
-      outputs: [
-        {
-          boxId:
-            '45f9478564cbdfe3078ccd6b34a5cc426635d715ca915c483c5b5414d6acb46b',
-          value: 1845000000n,
-          ergoTree: '1908010404d191a37300',
-          assets: [
-            {
-              tokenId:
-                '716149d5c68e4ea1ea0529b60c7029797ffb26f3d401d44f9aadd4b090593e4e',
-              amount: 1n,
-            },
-            {
-              tokenId:
-                'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
-              amount: 999999899n,
-            },
-          ],
-          creationHeight: 1615925,
-          additionalRegisters: {
-            R4: '11038088debe01c8018087a70e',
-            R5: '0402',
-            R6: '0e20d217c8109e3bb5535c96d04875649efdb07b211b59bd0d1c62681baa8b8e0f11',
-            R7: '1a02200bfaaa390c6faafd6a27a1c6a7179b6c04913bec7c6376d9b699c1847dfb08e4200e5751c026e543b2e8ab2eb06099daa1d1e5df47778f7787faab45cdf12fe3a8',
-            R8: '0402',
-          },
-          transactionId:
-            'a235297b97de9b47d75846dca68d0f7b752d831f08133ea211c502b586a670df',
-          index: 0,
-        },
-        {
-          boxId:
-            'cafbdf98033224043bf9f49198cc3b058fa77daff2410726cdb0b7496b7cb937',
-          value: 130000000n,
-          ergoTree: '1906010101d17300',
-          assets: [],
-          creationHeight: 1615925,
-          additionalRegisters: {
-            R4: '0e20edb662d009b16812a2bd2ffd1b926b965d62040ade9241fdc4b88237a99dfebe',
-            R5: '058087a70e',
-          },
-          transactionId:
-            'a235297b97de9b47d75846dca68d0f7b752d831f08133ea211c502b586a670df',
-          index: 1,
-        },
-        {
-          boxId:
-            'fb9f82bcd9681285042fb6b8158ca77dec7f161da620211edfc5d8e5654934a1',
-          value: 130000000n,
-          ergoTree: '1906010101d17300',
-          assets: [],
-          creationHeight: 1615925,
-          additionalRegisters: {
-            R4: '0e20b894faef6f944647dac930d195680808a3fd7c660308196f2a0f4e94dc8c0fa8',
-            R5: '058087a70e',
-          },
-          transactionId:
-            'a235297b97de9b47d75846dca68d0f7b752d831f08133ea211c502b586a670df',
-          index: 2,
-        },
-        {
-          boxId:
-            'df9d0492268eaf98dd1ca856a80cf2e74c866abaf4fa19c29ba15913a3161a29',
-          value: 15000000n,
-          ergoTree:
-            '1005040004000e36100204a00b08cd0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798ea02d192a39a8cc7a701730073011001020402d19683030193a38cc7b2a57300000193c2b2a57301007473027303830108cdeeac93b1a57304',
-          assets: [],
-          creationHeight: 1615925,
-          additionalRegisters: {},
-          transactionId:
-            'a235297b97de9b47d75846dca68d0f7b752d831f08133ea211c502b586a670df',
-          index: 3,
-        },
-      ],
+export const finalPrizeExtractedData = {
+  boxId: '8a0160409c949952f4b1d7d5771c9e6d4167ef81be33dbb71ead2ff21b27f04e',
+  txId: '01b5b7af3e49077f1861c5b2511295a6d992aa480af087ca0c19088657bc7b16',
+  recipient:
+    '0008cd036540c579e977b8d827dd04240d4893e136de7b466f5e2cca730c3faf6a479fa7',
+  serialized:
+    'gIvWbRk8AgQABADYAdYBsqVzAADRloMEAZPLwnIB5ManBA6SwXIBmcGn5ManBQWT22MIcgHbYwink8WnxbKkcwEAzLxnAAIOIFsaiPALxgE8xlBog7I6q7oUg0bKb6ZOTjVzWS9OOthUBYCHpw4BtbevPkkHfxhhxbJREpWm2ZKqSArwh8oMGQiGV7x7FgA=',
+};
+
+export const finalPrizeTx: Transaction = {
+  id: '01b5b7af3e49077f1861c5b2511295a6d992aa480af087ca0c19088657bc7b16',
+  inputs: [
+    {
+      boxId: 'bc564aeaa6836f85d3e2272c7d3366a8e622774de5ca9be3caad477a30f5af46',
+      extension: {
+        '0': '0e240008cd036540c579e977b8d827dd04240d4893e136de7b466f5e2cca730c3faf6a479fa7',
+      },
     },
-  },
-  {
-    txType: 'GiftUnwrap',
-    tx: {
-      id: '698fe794f58e4a6f1fea1857bf2ad3924ed41edcabf1eaf6cda8930a63de5a8c',
-      inputs: [
-        {
-          boxId:
-            '20d0f44bb1b1a1d7c9125cf7443b372efecb3bc7c34e02b8250bba275dc58a3f',
-        },
-        {
-          boxId:
-            '903b617432e1448c578459f7bec07184c733665cd8c2801cb7de83670823219f',
-        },
-      ],
-      dataInputs: [
-        {
-          boxId:
-            '9fd19fa994e0b1ed5c21f85349d954ae94f33172cda58e5b6e4b6b65adfb92b9',
-        },
-      ],
-      outputs: [
-        {
-          boxId:
-            '6d8fb6cb85f0538c20c65be2e594f9bd30dfac7ad20607c46729769290251a6e',
-          value: 245000000n,
-          ergoTree: '1908010406d191a37300',
-          assets: [
-            {
-              tokenId:
-                'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
-              amount: 1n,
-            },
-            {
-              tokenId:
-                '8f40a92f22809452ea0bc8193315f6c3dabbcba0defe6cd93fa2444fc564ff0a',
-              amount: 2000n,
-            },
-          ],
-          creationHeight: 1615925,
-          additionalRegisters: {
-            R4: '110320028087a70e',
-            R5: '0402',
-            R6: '0502',
-          },
-          transactionId:
-            '698fe794f58e4a6f1fea1857bf2ad3924ed41edcabf1eaf6cda8930a63de5a8c',
-          index: 0,
-        },
-        {
-          boxId:
-            '939520249eda2e6f0c2b0e438aadac389a19772bcc5a90bc731325c687c51a5e',
-          value: 135000000n,
-          ergoTree: '1906010101d17300',
-          assets: [
-            {
-              tokenId:
-                'a2f94479204476ab6ff8c5f461fda56ea1eedf82f4bb1da6581c3ad29e4a45ed',
-              amount: 10n,
-            },
-          ],
-          creationHeight: 1615925,
-          additionalRegisters: {
-            R4: '0e205b1a88f00bc6013cc6506883b23aabba148346ca6fa64e4e3573592f4e3ad854',
-            R5: '058087a70e',
-          },
-          transactionId:
-            '698fe794f58e4a6f1fea1857bf2ad3924ed41edcabf1eaf6cda8930a63de5a8c',
-          index: 1,
-        },
-        {
-          boxId:
-            '60ca29d29ccf1030719aed45a7f53a6bafed461e26948fb21191d381c28b2f23',
-          value: 15000000n,
-          ergoTree:
-            '1005040004000e36100204a00b08cd0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798ea02d192a39a8cc7a701730073011001020402d19683030193a38cc7b2a57300000193c2b2a57301007473027303830108cdeeac93b1a57304',
-          assets: [],
-          creationHeight: 1615925,
-          additionalRegisters: {},
-          transactionId:
-            '698fe794f58e4a6f1fea1857bf2ad3924ed41edcabf1eaf6cda8930a63de5a8c',
-          index: 2,
-        },
-      ],
+  ],
+  dataInputs: [
+    {
+      boxId: 'a9c575f15b19afff7d69851b49284058d2309bb062f9ab939129871d0810c5f0',
     },
-  },
-  {
-    txType: 'FinalPrize',
-    tx: {
-      id: 'e95db744c82a3bf9d9965ae630144460af1dab0175b1bb52bd6824101fb41498',
-      inputs: [
-        {
-          boxId:
-            '6d8fb6cb85f0538c20c65be2e594f9bd30dfac7ad20607c46729769290251a6e',
-        },
-      ],
-      dataInputs: [
-        {
-          boxId:
-            '9fd19fa994e0b1ed5c21f85349d954ae94f33172cda58e5b6e4b6b65adfb92b9',
-        },
-      ],
-      outputs: [
-        {
-          boxId:
-            '4e017aa7ea63d3481baf381584af5b91a626e98e70be66f5f6f906c72312d480',
-          value: 230000000n,
-          ergoTree: '1906010101d17300',
-          assets: [],
-          creationHeight: 1615925,
-          additionalRegisters: {
-            R4: '0e205b1a88f00bc6013cc6506883b23aabba148346ca6fa64e4e3573592f4e3ad854',
-            R5: '058087a70e',
-          },
-          transactionId:
-            'e95db744c82a3bf9d9965ae630144460af1dab0175b1bb52bd6824101fb41498',
-          index: 0,
-        },
-        {
-          boxId:
-            '34434c8af607e5576309b6ad5acbb4bd3231136ec46e14b2fffc5272014ca407',
-          value: 15000000n,
-          ergoTree:
-            '1005040004000e36100204a00b08cd0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798ea02d192a39a8cc7a701730073011001020402d19683030193a38cc7b2a57300000193c2b2a57301007473027303830108cdeeac93b1a57304',
-          assets: [],
-          creationHeight: 1615925,
-          additionalRegisters: {},
-          transactionId:
-            'e95db744c82a3bf9d9965ae630144460af1dab0175b1bb52bd6824101fb41498',
-          index: 1,
-        },
-      ],
+  ],
+  outputs: [
+    {
+      boxId: '8a0160409c949952f4b1d7d5771c9e6d4167ef81be33dbb71ead2ff21b27f04e',
+      value: 230000000n,
+      ergoTree:
+        '193c0204000400d801d601b2a5730000d19683040193cbc27201e4c6a7040e92c1720199c1a7e4c6a7050593db63087201db6308a793c5a7c5b2a4730100',
+      assets: [],
+      creationHeight: 1695308,
+      additionalRegisters: {
+        R4: '0e205b1a88f00bc6013cc6506883b23aabba148346ca6fa64e4e3573592f4e3ad854',
+        R5: '058087a70e',
+      },
+      transactionId:
+        '01b5b7af3e49077f1861c5b2511295a6d992aa480af087ca0c19088657bc7b16',
+      index: 0,
     },
-  },
-  // fail transactions
-  {
-    txType: 'GiftReturn',
-    tx: {
-      id: 'bce5ee4d20b5952b5541c9713a689efc8cb15f277462589c6481622b891a5e21',
-      inputs: [
-        {
-          boxId:
-            '64c47f5110e4a022921434f6554a4590e90972db9665e17686b795a1ef19f0ce',
-        },
-        {
-          boxId:
-            '2ddb49c2fcd04a367206671c4520eee88785a8805ff6f3363b6ed60873bf7ccb',
-        },
-      ],
-      dataInputs: [
-        {
-          boxId:
-            'cc24f5385c00f8997c40e8044331ac148e9fd83ec79285fcfc50d9fb84f8c6fa',
-        },
-      ],
-      outputs: [
-        {
-          boxId:
-            'bc88e2dfcb35d768846641cbf91c2ba51a5a0911cb8a589e5ab899022376c87f',
-          value: 60000000n,
-          ergoTree: '1908010408d191a37300',
-          assets: [
-            {
-              tokenId:
-                '03d8b4ffd5d41b9ce481426d85faadad02bc33abebd333613bf193cd8f74aff3',
-              amount: 1n,
-            },
-            {
-              tokenId:
-                'c1ee69c89109e4783e624d0635e9c38457332162c7d7f56c54ba492aa53a14a1',
-              amount: 2000n,
-            },
-          ],
-          creationHeight: 1629138,
-          additionalRegisters: {
-            R4: '1103d00fa2efc6018087a70e',
-            R5: '0402',
-            R6: '0500',
-            R7: '0e20c1ee69c89109e4783e624d0635e9c38457332162c7d7f56c54ba492aa53a14a1',
-          },
-          transactionId:
-            'bce5ee4d20b5952b5541c9713a689efc8cb15f277462589c6481622b891a5e21',
-          index: 0,
-        },
-        {
-          boxId:
-            '9c6612bf80d5e7205a4a36fee5b30cf2c5571bd9d7b068a2413dc7c837fae1ca',
-          value: 135000000n,
-          ergoTree: '1906010101d17300',
-          assets: [
-            {
-              tokenId:
-                'a2f94479204476ab6ff8c5f461fda56ea1eedf82f4bb1da6581c3ad29e4a45ed',
-              amount: 10n,
-            },
-          ],
-          creationHeight: 1629138,
-          additionalRegisters: {
-            R4: '0e200f318e1cd5860000282d016ef8b4ac1d06486b2e83be2777c86772b25886ecdc',
-            R5: '058087a70e',
-          },
-          transactionId:
-            'bce5ee4d20b5952b5541c9713a689efc8cb15f277462589c6481622b891a5e21',
-          index: 1,
-        },
-        {
-          boxId:
-            'e1a8d838e79f6e2505ff5511a1376009cd81d624a027bf94d22fdcb158a3f71c',
-          value: 15000000n,
-          ergoTree:
-            '1005040004000e36100204a00b08cd0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798ea02d192a39a8cc7a701730073011001020402d19683030193a38cc7b2a57300000193c2b2a57301007473027303830108cdeeac93b1a57304',
-          assets: [],
-          creationHeight: 1629138,
-          additionalRegisters: {},
-          transactionId:
-            'bce5ee4d20b5952b5541c9713a689efc8cb15f277462589c6481622b891a5e21',
-          index: 2,
-        },
-      ],
+    {
+      boxId: 'd71efd533ac419830409225e8e8c47f3efe4afa7a6e4f355c5b06a1d79141015',
+      value: 15000000n,
+      ergoTree:
+        '1005040004000e36100204a00b08cd0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798ea02d192a39a8cc7a701730073011001020402d19683030193a38cc7b2a57300000193c2b2a57301007473027303830108cdeeac93b1a57304',
+      assets: [],
+      creationHeight: 1695308,
+      additionalRegisters: {},
+      transactionId:
+        '01b5b7af3e49077f1861c5b2511295a6d992aa480af087ca0c19088657bc7b16',
+      index: 1,
     },
-  },
-  {
-    txType: 'TicketRedeem',
-    tx: {
-      id: '61cc7297d52c477760e89b6f2c579bf82c4920f507bc77d8ad09fa439b737241',
-      inputs: [
-        {
-          boxId:
-            '7ab1b5b718c45f435d4ce34b734a3f2b434a6453648eed2c4e820a01d6e14406',
-        },
-        {
-          boxId:
-            'd62f162cd24cc7250718a610f6603888436d39652fff95e4e5bae4e80aefda9d',
-        },
-      ],
-      dataInputs: [
-        {
-          boxId:
-            'c8ab58bed0a5edbcae7f99fa7a1446f77da8b23b302dc937fb5b5d21d34026c1',
-        },
-      ],
-      outputs: [
-        {
-          boxId:
-            '3f25b3556d114d9db3fd75960fc3145c61748c33af59cff6485954f4e4324d95',
-          value: 60000000n,
-          ergoTree: '190801040ad191a37300',
-          assets: [
-            {
-              tokenId:
-                'a5a0c2c9596cc11ff55fb7881d28de99f39502c5eecf78e957ca067899ac3aa4',
-              amount: 1n,
-            },
-            {
-              tokenId:
-                'd84c2f5d5aa9ca81e2a28421152e8bc4355529e587e0d66bb987e8271870d3a8',
-              amount: 2000n,
-            },
-          ],
-          creationHeight: 1629147,
-          additionalRegisters: {
-            R4: '1103d00fb4efc6018087a70e',
-            R5: '0402',
-            R6: '0500',
-            R7: '0e20d84c2f5d5aa9ca81e2a28421152e8bc4355529e587e0d66bb987e8271870d3a8',
-          },
-          transactionId:
-            '61cc7297d52c477760e89b6f2c579bf82c4920f507bc77d8ad09fa439b737241',
-          index: 0,
-        },
-        {
-          boxId:
-            'f63283d3d9afe2d317c7699e6085408830fe873c30c98654b2d98d6b4f18eba0',
-          value: 135000000n,
-          ergoTree: '1906010101d17300',
-          assets: [
-            {
-              tokenId:
-                'a2f94479204476ab6ff8c5f461fda56ea1eedf82f4bb1da6581c3ad29e4a45ed',
-              amount: 10n,
-            },
-          ],
-          creationHeight: 1629147,
-          additionalRegisters: {
-            R4: '0e200f318e1cd5860000282d016ef8b4ac1d06486b2e83be2777c86772b25886ecdc',
-            R5: '058087a70e',
-          },
-          transactionId:
-            '61cc7297d52c477760e89b6f2c579bf82c4920f507bc77d8ad09fa439b737241',
-          index: 1,
-        },
-        {
-          boxId:
-            'fdd920089f8b2903f8bc9fa5ce2777279d88e6713af19048f43721d760b67c5d',
-          value: 15000000n,
-          ergoTree:
-            '1005040004000e36100204a00b08cd0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798ea02d192a39a8cc7a701730073011001020402d19683030193a38cc7b2a57300000193c2b2a57301007473027303830108cdeeac93b1a57304',
-          assets: [],
-          creationHeight: 1629147,
-          additionalRegisters: {},
-          transactionId:
-            '61cc7297d52c477760e89b6f2c579bf82c4920f507bc77d8ad09fa439b737241',
-          index: 2,
-        },
-      ],
+  ],
+};
+
+export const sampleSafePayExtractedData = {
+  boxId: '85f8510acc8a2c0e1b8c5c8c810621a60ddd43b6dca1f41decc77d72d33d1d70',
+  txId: 'cbd6926047761879423ae7b2c2d31725243a2b081d6019acce5ed402e5e351eb',
+  recipient:
+    '0008cd036540c579e977b8d827dd04240d4893e136de7b466f5e2cca730c3faf6a479fa7',
+  serialized:
+    'wN+vQBk8AgQABADYAdYBsqVzAADRloMEAZPLwnIB5ManBA6SwXIBmcGn5ManBQWT22MIcgHbYwink8WnxbKkcwEAzLxnAaL5RHkgRHarb/jF9GH9pW6h7t+C9LsdplgcOtKeSkXtCgIOIFsaiPALxgE8xlBog7I6q7oUg0bKb6ZOTjVzWS9OOthUBYCHpw7L1pJgR3YYeUI657LC0xclJDorCB1gGazOXtQC5eNR6wE=',
+};
+
+export const sampleSafePayTx: Transaction = {
+  id: 'cbd6926047761879423ae7b2c2d31725243a2b081d6019acce5ed402e5e351eb',
+  inputs: [
+    {
+      boxId: 'd8a3c46841c46b627fd50a8540b7a6b4668396454e35b66da8c8b7b788eb62b7',
+      extension: {},
     },
-  },
-  // license-redeem transactions
-  {
-    txType: 'LicenseRedeem',
-    tx: {
-      id: '555614c992258924cdb9ae6da4e6d548b7a0b2a0e9d0d26f3b8adde8d2643471',
-      inputs: [
-        {
-          boxId:
-            'ad7bebbf4cb2ff5387873ff24e4dbc36df6eac4bb3d053125e6d66383c1f9c01',
-        },
-        {
-          boxId:
-            '4a07171a18c118a493270febf33332428fe6cbca25d3df97e8d682daedd26d44',
-        },
-      ],
-      dataInputs: [],
-      outputs: [
-        {
-          boxId:
-            'df8e2d16421a383f666eb3919fff77f8c8449225169f3aae5982ae4f3d9b325d',
-          value: 15000000n,
-          ergoTree: '1908010402d191a37300',
-          assets: [
-            {
-              tokenId:
-                '4cbc5951921c424368a14ca32b3f8dc1b9ccd63126a407c04a326e2c8ffe57f1',
-              amount: 1n,
-            },
-            {
-              tokenId:
-                '716149d5c68e4ea1ea0529b60c7029797ffb26f3d401d44f9aadd4b090593e4e',
-              amount: 999999999n,
-            },
-          ],
-          creationHeight: 1615925,
-          additionalRegisters: {
-            R4: '1104c801c80180a8d6b9078087a70e',
-            R5: '0e20edb662d009b16812a2bd2ffd1b926b965d62040ade9241fdc4b88237a99dfebe',
-          },
-          transactionId:
-            '555614c992258924cdb9ae6da4e6d548b7a0b2a0e9d0d26f3b8adde8d2643471',
-          index: 0,
-        },
-        {
-          boxId:
-            'e0915b3567c837eb457f45fb169a9e74e04657b21a99d1c4e86c74de3a8b8fc3',
-          value: 1630000000n,
-          ergoTree: '1906010101d17300',
-          assets: [],
-          creationHeight: 1615925,
-          additionalRegisters: {
-            R4: '0e20d217c8109e3bb5535c96d04875649efdb07b211b59bd0d1c62681baa8b8e0f11',
-            R5: '058087a70e',
-          },
-          transactionId:
-            '555614c992258924cdb9ae6da4e6d548b7a0b2a0e9d0d26f3b8adde8d2643471',
-          index: 1,
-        },
-        {
-          boxId:
-            'c022531d307c5b0bd768b480088d7c990f42f0ae711f08e8078a161d723592d4',
-          value: 15000000n,
-          ergoTree:
-            '1005040004000e36100204a00b08cd0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798ea02d192a39a8cc7a701730073011001020402d19683030193a38cc7b2a57300000193c2b2a57301007473027303830108cdeeac93b1a57304',
-          assets: [],
-          creationHeight: 1615925,
-          additionalRegisters: {},
-          transactionId:
-            '555614c992258924cdb9ae6da4e6d548b7a0b2a0e9d0d26f3b8adde8d2643471',
-          index: 2,
-        },
-      ],
+    {
+      boxId: 'b0bf52fe154e37d700d63f0dfa5f25aaa5d1d9499af409cde0529172c71be74a',
+      extension: {
+        '0': '0e240008cd036540c579e977b8d827dd04240d4893e136de7b466f5e2cca730c3faf6a479fa7',
+      },
     },
-  },
-];
+  ],
+  dataInputs: [
+    {
+      boxId: 'a9c575f15b19afff7d69851b49284058d2309bb062f9ab939129871d0810c5f0',
+    },
+  ],
+  outputs: [
+    {
+      boxId: 'bc564aeaa6836f85d3e2272c7d3366a8e622774de5ca9be3caad477a30f5af46',
+      value: 245000000n,
+      ergoTree:
+        '19c8041e040004000e20e758826c0478a003ed559a394cdb0a98239c4a66b6684b9f77519d7266bcf1bc040004000400040204040402040004020402040204000400050204060404040401010502040004000e20000fefb945bee92640a53bf22f972158c170870ab72961ff542ab834c6a41185040604000404010104000402d807d601e4c6a70411d602e4c6a70605d603e4c6a70504d604b2db6501fe730000d605b27201730100d606ededed93cbc272047302938cb2db63087204730300018cb2db6308a77304000190b2e4c672040511730500720591b2e4c6720405117306007205d607b272017307009591b272017308007202d808d608b2a5730900d609db63087208d60adb6308a7d60bb1720ad60cb27209730a00d60db2720a730b00d60e8c720d01d60fb2a4730c00d196830d0193c27208c2a793c17208c1a793b17209720b93b27209730d00b2720a730e00938c720c01720e938c720c029a8c720d02730f9593720b731093b27209731100b2720a731200731393e4c672080411720193e4c672080504720393e4c6720806059a72027314938cb2db6308720f73150001720e93e4c6720f050472037206d804d608b2a5731600d609db6308a7d60ae4c67208040ed60bd9010b0eaea5d9010d63aedb6308720dd9010f4d0e938c720f01720bd19683090193cbc27208731793c1720899c1a772079593b17209731893b2db63087208731900b27209731a00731b93720ae4c67204040e93e4c672080505720793cbe4e3000e720a7206efda720b018cb27209731c0001efda720b018cb27209731d0001',
+      assets: [
+        {
+          tokenId:
+            '6394efce52392141d67cdc70d9474ff85fea07df49530e85b9d26fbe43362bc4',
+          amount: 1n,
+        },
+        {
+          tokenId:
+            '7284c29e7a9941a8eae29aee38622d802f19561bdf53337d087cd959e4bdf489',
+          amount: 2000n,
+        },
+      ],
+      creationHeight: 1695308,
+      additionalRegisters: {
+        R4: '110324028087a70e',
+        R5: '0402',
+        R6: '0502',
+      },
+      transactionId:
+        'cbd6926047761879423ae7b2c2d31725243a2b081d6019acce5ed402e5e351eb',
+      index: 0,
+    },
+    {
+      boxId: '85f8510acc8a2c0e1b8c5c8c810621a60ddd43b6dca1f41decc77d72d33d1d70',
+      value: 135000000n,
+      ergoTree:
+        '193c0204000400d801d601b2a5730000d19683040193cbc27201e4c6a7040e92c1720199c1a7e4c6a7050593db63087201db6308a793c5a7c5b2a4730100',
+      assets: [
+        {
+          tokenId:
+            'a2f94479204476ab6ff8c5f461fda56ea1eedf82f4bb1da6581c3ad29e4a45ed',
+          amount: 10n,
+        },
+      ],
+      creationHeight: 1695308,
+      additionalRegisters: {
+        R4: '0e205b1a88f00bc6013cc6506883b23aabba148346ca6fa64e4e3573592f4e3ad854',
+        R5: '058087a70e',
+      },
+      transactionId:
+        'cbd6926047761879423ae7b2c2d31725243a2b081d6019acce5ed402e5e351eb',
+      index: 1,
+    },
+    {
+      boxId: '5fea65d727a3c1041c72ce80f9db399c5673e60ccd89fdbe5cf78441a43725a3',
+      value: 15000000n,
+      ergoTree:
+        '1005040004000e36100204a00b08cd0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798ea02d192a39a8cc7a701730073011001020402d19683030193a38cc7b2a57300000193c2b2a57301007473027303830108cdeeac93b1a57304',
+      assets: [],
+      creationHeight: 1695308,
+      additionalRegisters: {},
+      transactionId:
+        'cbd6926047761879423ae7b2c2d31725243a2b081d6019acce5ed402e5e351eb',
+      index: 2,
+    },
+  ],
+};

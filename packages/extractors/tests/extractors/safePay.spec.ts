@@ -1,12 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import { Network } from '@fleet-sdk/core';
 import { compile } from '@fleet-sdk/compiler';
+import {
+  ErgoNetworkType,
+  InputExtension,
+} from '@rosen-bridge/scanner-interfaces';
+import { TxExtra } from '@rosen-bridge/abstract-extractor';
 
 import { SafePayExtractor } from '../../lib/extractors/safePay';
 import { createDatabase } from '../utils.mock';
 import * as safePayMocks from './mocked/safePay.mock';
-import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
-import { TxExtra } from '@rosen-bridge/abstract-extractor';
 
 /*
  * create fixtures that contains below steps data:
@@ -16,13 +19,15 @@ import { TxExtra } from '@rosen-bridge/abstract-extractor';
  */
 const createSafePayExtractorTest = async () => {
   const dataSource = await createDatabase();
-  const boxErgoTree = compile('{sigmaProp(true);}');
-  const boxFalseErgoTree = compile('{sigmaProp(false);}');
-  const serviceErgoTree = compile('{sigmaProp(HEIGHT > 1);}');
-  const successRaffleErgoTree = compile('{sigmaProp(HEIGHT > 2);}');
-  const winnerPrizeErgoTree = compile('{sigmaProp(HEIGHT > 3);}');
-  const winnerErgoTree = compile('{sigmaProp(HEIGHT > 4);}');
-  const ticketRedeemErgoTree = compile('{sigmaProp(HEIGHT > 5);}');
+  const safePayAddress =
+    'ZqMQQYoChK43wLcSN4mFHZNRnuby8vkSnpwgEZ2td3hXWecWe5v2MYvPoR6MRpQhXiZKRQEV85h7ZaxzUUQywYchpL4';
+  const boxErgoTree = compile('{sigmaProp(true);}')
+    .toAddress(Network.Testnet)
+    .toString();
+  const successRaffleErgoTree = compile('{sigmaProp(HEIGHT > 1);}');
+  const successRaffleAddress = successRaffleErgoTree
+    .toAddress(Network.Testnet)
+    .toString();
 
   return it.extend({
     extractor: new SafePayExtractor(
@@ -30,19 +35,11 @@ const createSafePayExtractorTest = async () => {
       'SafePay',
       'http://127.0.0.1/',
       ErgoNetworkType.Node,
-      boxErgoTree.toAddress(Network.Testnet).toString(),
-      serviceErgoTree.toAddress(Network.Testnet).toString(),
-      successRaffleErgoTree.toAddress(Network.Testnet).toString(),
-      winnerPrizeErgoTree.toAddress(Network.Testnet).toString(),
-      winnerErgoTree.toAddress(Network.Testnet).toString(),
-      ticketRedeemErgoTree.toAddress(Network.Testnet).toString(),
+      safePayAddress,
+      successRaffleAddress,
     ),
-    boxFalseErgoTree: boxFalseErgoTree,
-    serviceErgoTree: serviceErgoTree,
-    successRaffleErgoTree: successRaffleErgoTree,
-    winnerPrizeErgoTree: winnerPrizeErgoTree,
-    winnerErgoTree: winnerErgoTree,
-    ticketRedeemErgoTree: ticketRedeemErgoTree,
+    successRaffleErgoTree,
+    boxErgoTree,
   });
 };
 
@@ -51,20 +48,101 @@ const extractorTest = await createSafePayExtractorTest();
 describe('SafePayExtractor', () => {
   describe('extractBoxData', () => {
     /**
-     * @target should extract data from a sample SafePay box successfully
+     * @target should extract data from a service fee box in fee payment transaction
      * @dependencies
      * @scenario
      * - call the extractBoxData functions
-     * - check if SafePay box data extracted correctly
+     * - check safe pay extracted data
      * @expected
-     * - SafePays should extract successfully
+     * - to extract recipient from the first box (active raffle) input extension
      */
     extractorTest(
-      `should extract data from a sample SafePay box successfully`,
+      `should extract data from a service fee box in fee payment transaction`,
+      async ({ extractor, successRaffleErgoTree }) => {
+        const extractedData = extractor.extractBoxData(
+          safePayMocks.feePaymentTx.outputs[1],
+          safePayMocks.feePaymentTx.inputs.map(
+            (input) => input.extension as InputExtension,
+          ),
+          {
+            firstOutputErgoTree: successRaffleErgoTree.toHex(),
+          },
+        );
+
+        expect(extractedData).toEqual(
+          safePayMocks.feePaymentSafePayExtractedData[0],
+        );
+      },
+    );
+
+    /**
+     * @target should extract data from a implementer fee box in fee payment transaction
+     * @dependencies
+     * @scenario
+     * - call the extractBoxData functions
+     * - check safe pay extracted data
+     * @expected
+     * - to extract recipient from the first input box (active raffle) extension
+     */
+    extractorTest(
+      `should extract data from a implementer fee box in fee payment transaction`,
+      async ({ extractor, successRaffleErgoTree }) => {
+        const extractedData = extractor.extractBoxData(
+          safePayMocks.feePaymentTx.outputs[2],
+          safePayMocks.feePaymentTx.inputs.map(
+            (input) => input.extension as InputExtension,
+          ),
+          { firstOutputErgoTree: successRaffleErgoTree.toHex() },
+        );
+
+        expect(extractedData).toEqual(
+          safePayMocks.feePaymentSafePayExtractedData[1],
+        );
+      },
+    );
+
+    /**
+     * @target should extract data from a final prize transaction
+     * @dependencies
+     * @scenario
+     * - call the extractBoxData function with final prize box
+     * - check safe pay extracted data
+     * @expected
+     * - to extract recipient from the second input box extension
+     */
+    extractorTest(
+      `should extract data from a sample safe pay creation transaction`,
       async ({ extractor }) => {
         const extractedData = extractor.extractBoxData(
-          safePayMocks.sampleSafePayBoxes[0],
-          [],
+          safePayMocks.finalPrizeTx.outputs[0],
+          safePayMocks.finalPrizeTx.inputs.map(
+            (input) => input.extension as InputExtension,
+          ),
+          { firstOutputErgoTree: '' },
+        );
+
+        expect(extractedData).toEqual(safePayMocks.finalPrizeExtractedData);
+      },
+    );
+
+    /**
+     * @target should extract data from a sample safe pay creation transaction
+     * @dependencies
+     * @scenario
+     * - call the extractBoxData functions
+     * - check safe pay extracted data
+     * @expected
+     * - to extract recipient from the second input box extension
+     */
+    extractorTest(
+      `should extract data from a sample safe pay creation transaction`,
+      async ({ extractor }) => {
+        const extractedData = extractor.extractBoxData(
+          safePayMocks.sampleSafePayTx.outputs[1],
+          safePayMocks.sampleSafePayTx.inputs.map(
+            (input) => input.extension as InputExtension,
+          ),
+          { firstOutputErgoTree: '' },
         );
 
         expect(extractedData).toEqual(safePayMocks.sampleSafePayExtractedData);
@@ -74,24 +152,19 @@ describe('SafePayExtractor', () => {
 
   describe('getTransactionExtraData', () => {
     /**
-     * @target should return value be equals to the expected value by different transactions successfully
+     * @target should return first output ergo tree as extra data
      * @dependencies
      * @scenario
-     * - call the getTransactionExtraData functions
-     * - check if the extractBoxData call correctly
-     * - result must be false
+     * - call the getTransactionExtraData function with mocked tx
      * @expected
-     * - SafePays box checking result must be false
+     * - to return first output ergo tree
      */
     extractorTest(
-      `should return value be equals to the expected value by different transactions successfully`,
+      `should return first output ergo tree as extra data`,
       async ({ extractor }) => {
-        for (const txData of safePayMocks.sampleSafePayTxs) {
-          const txExtraData: TxExtra = extractor.getTransactionExtraData(
-            txData.tx,
-          );
-          expect(txExtraData.txType).toEqual(txData.txType);
-        }
+        const tx = safePayMocks.sampleSafePayTx;
+        const txExtraData: TxExtra = extractor.getTransactionExtraData(tx);
+        expect(txExtraData.firstOutputErgoTree).toEqual(tx.outputs[0].ergoTree);
       },
     );
   });
@@ -111,7 +184,7 @@ describe('SafePayExtractor', () => {
       `should return true for valid box data`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData(
-          safePayMocks.sampleSafePayBoxes[0],
+          safePayMocks.sampleSafePayTx.outputs[1],
         );
 
         expect(extractedData).toBeTruthy();
@@ -130,11 +203,11 @@ describe('SafePayExtractor', () => {
      */
     extractorTest(
       `should return false for invalid box address`,
-      async ({ extractor, boxFalseErgoTree }) => {
+      async ({ extractor, boxErgoTree }) => {
         const extractedData = await extractor.hasData({
-          ...safePayMocks.sampleSafePayBoxes[0],
+          ...safePayMocks.sampleSafePayTx.outputs[1],
           // set invalid ergoTree
-          ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
+          ergoTree: boxErgoTree,
         });
 
         expect(extractedData).toBeFalsy();

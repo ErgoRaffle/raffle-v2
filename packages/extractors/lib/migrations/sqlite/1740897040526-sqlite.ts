@@ -15,8 +15,7 @@ export class Sqlite1740897040526 implements MigrationInterface {
                 "extractor" varchar NOT NULL,
                 "serialized" varchar NOT NULL,
                 "txId" varchar NOT NULL,
-                "raffleId" varchar NOT NULL,
-                "txType" varchar NOT NULL,
+                "recipient" varchar NOT NULL,
                 CONSTRAINT "UQ_6e3731698d1ef95eb1b8f78c687" UNIQUE ("boxId", "extractor")
             )
         `);

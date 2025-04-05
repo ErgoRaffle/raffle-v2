@@ -37,8 +37,7 @@ export class SafePayAction extends AbstractInitializableErgoExtractorAction<
         serialized: box.serialized,
         extractor: extractor,
         txId: box.txId,
-        raffleId: box.raffleId,
-        txType: box.txType,
+        recipient: box.recipient,
       };
     });
   };
@@ -50,10 +49,9 @@ export class SafePayAction extends AbstractInitializableErgoExtractorAction<
     return entities.map((data) => ({
       boxId: data.boxId,
       txId: data.txId,
-      raffleId: data.raffleId,
+      recipient: data.recipient,
       extractor: data.extractor,
       serialized: data.serialized,
-      txType: data.txType,
     }));
   };
 }

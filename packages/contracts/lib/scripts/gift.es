@@ -8,6 +8,10 @@
   // Tokens:
   //   0: GiftToken
   //   1: Gift
+  // Context (gift unwrap):
+  //   C0: Coll[Byte]: WinnerErgoTree
+  // Context (gift return):
+  //   C0: Coll[Byte]: DonatorErgoTree
   //
   // Spent in 4 transactions:
   //   - Gift unwrap
@@ -28,7 +32,8 @@
     blake2b256(safePayBox.propositionBytes) == safePayScriptHash &&
     safePayBox.value == SELF.value - txFee &&
     safePayBox.tokens == SELF.tokens.slice(1, SELF.tokens.size) &&
-    safePayBox.R5[Long].get == txFee
+    safePayBox.R5[Long].get == txFee &&
+    blake2b256(getVar[Coll[Byte]](0).get) == safePayBox.R4[Coll[Byte]].get
 
   if(blake2b256(INPUTS(0).propositionBytes) == winnerPrizeScriptHash){
     // Gift unwrap
