@@ -1,5 +1,5 @@
 {
-  "name": "@ergo-raffle/main",
+  "name": "@ergo-raffle/main-service",
   "version": "0.1.0",
   "description": "",
   "repository": "",
@@ -16,7 +16,7 @@
     "start:prod": "tsx ./dist/index.js",
     "test": "NODE_OPTIONS='--import tsx' vitest",
     "type-check": "tsc --noEmit",
-    "typeorm": "NODE_OPTIONS='--import tsx' typeorm-ts-node-esm",
+    "typeorm": "NODE_OPTIONS='--import tsx' typeorm",
     "typeorm:generate:postgres": "npm run typeorm migration:generate ./src/migrations/postgres/postgres -- -p -d ./src/dataSources/postgres.ts",
     "typeorm:generate:sqlite": "npm run typeorm migration:generate ./src/migrations/sqlite/sqlite -- -p -d ./src/dataSources/sqlite.ts",
     "typeorm:migrate:postgres": "npm run typeorm migration:run -- -d ./src/dataSources/postgres.ts",
