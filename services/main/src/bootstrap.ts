@@ -1,14 +1,10 @@
 import 'reflect-metadata';
 import WinstonLogger from '@rosen-bridge/winston-logger';
+import { getConfig } from './config/config';
+import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
+import packageJson from '../package.json' assert { type: 'json' };
 
-import { maxLogSize, maxLogFilesCount, logsPath, logLevel } from './configs';
+CallbackLoggerFactory.init(new WinstonLogger(getConfig().logger.transports));
+const logger = CallbackLoggerFactory.getInstance().getLogger(import.meta.url);
 
-await WinstonLogger.init([
-  {
-    type: 'file',
-    maxSize: maxLogSize,
-    maxFiles: maxLogFilesCount,
-    path: logsPath,
-    level: logLevel,
-  },
-]);
+logger.info(`Raffle Extractor version: ${packageJson.version}`);
