@@ -7,4 +7,4 @@ import packageJson from '../package.json' assert { type: 'json' };
 CallbackLoggerFactory.init(new WinstonLogger(getConfig().logger.transports));
 const logger = CallbackLoggerFactory.getInstance().getLogger(import.meta.url);
 
-logger.info(`Raffle Extractor version: ${packageJson.version}`);
+logger.info(`Raffle background-service version: ${packageJson.version}`);

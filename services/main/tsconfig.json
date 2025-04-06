@@ -6,8 +6,5 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true
   },
-  "include": ["src"],
-  "ts-node": {
-    "esm": true
-  }
+  "include": ["src"]
 }
