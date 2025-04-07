@@ -1,0 +1,7 @@
+logs:
+  - type: console
+  - type: file
+    maxSize: 20m
+    maxFiles: 14d
+    path: ./logs/
+    level: debug
