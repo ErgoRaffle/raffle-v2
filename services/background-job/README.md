@@ -1,4 +1,4 @@
-# background-job
+# Background-Job
 
 ## Table of contents
 
