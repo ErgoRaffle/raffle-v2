@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@rosen-bridge/callback-logger": "^0.1.0",
+    "@rosen-bridge/service-manager": "^0.1.2",
     "@rosen-bridge/winston-logger": "^1.0.3",
     "config": "^3.3.12",
     "reflect-metadata": "^0.1.13",
@@ -39,8 +40,8 @@
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "prettier": "^3.2.4",
-    "tsx": "^4.19.3",
     "tsconfig-paths": "^4.1.2",
+    "tsx": "^4.19.3",
     "typescript": "^5.3.3",
     "vitest": "^2.0.5"
   }

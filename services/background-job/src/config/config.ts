@@ -1,9 +1,11 @@
 import config from 'config';
 import { cloneDeep } from 'lodash-es';
 import { TransportOptions } from '@rosen-bridge/winston-logger';
+import { DataBaseOption } from '../types';
 
 interface ConfigType {
   logger: LoggerConfig;
+  database: DBConfig;
 }
 
 const getOptionalString = (path: string, defaultValue = '') => {
@@ -58,13 +60,26 @@ class LoggerConfig {
   }
 }
 
+class DBConfig {
+  database: DataBaseOption;
+  constructor() {
+    const database = config.get<DataBaseOption>('database');
+    const clonedDatabase = cloneDeep(database);
+
+    this.database = clonedDatabase;
+  }
+}
+
 let internalConfig: ConfigType | undefined;
 
 const getConfig = (): ConfigType => {
   if (internalConfig == undefined) {
-    const logger = new LoggerConfig();
+    const loggerConfig = new LoggerConfig();
+    const dbConfig = new DBConfig();
+
     internalConfig = {
-      logger,
+      logger: loggerConfig,
+      database: dbConfig,
     };
   }
   return internalConfig;
