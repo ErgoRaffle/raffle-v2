@@ -40,10 +40,9 @@ export const sampleTicketExtractedData = {
 
 export const sampleTicketExtension: InputExtension[] = [
   {
-    '0': SColl(
-      SByte,
+    '0': SColl(SColl(SByte), [
       Array.from(Buffer.from(donatorWallet.ergoTree.toString(), 'hex')),
-    ).toHex(),
+    ]).toHex(),
   },
   {},
 ];

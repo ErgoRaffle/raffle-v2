@@ -72,7 +72,7 @@ export class TicketExtractor extends AbstractInitializableErgoExtractor<
     let donatorErgoTree = '';
     try {
       donatorErgoTree = Buffer.from(
-        SConstant.from(inputExtensions[0]['0']).data as Uint8Array,
+        (SConstant.from(inputExtensions[0]['0']).data as Uint8Array[])[0],
       ).toString('hex');
     } catch (err) {
       this.logger.warn(
