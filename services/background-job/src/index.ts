@@ -13,10 +13,8 @@ const logger = CallbackLoggerFactory.getInstance().getLogger(import.meta.url);
 const main = async () => {
   logger.debug('Initializing database service');
   DBService.init(dataSource, logger);
-  const serviceManager = ServiceManager.getInstance();
-  const dbServices = DBService.getInstances();
-  for (const key of Object.keys(dbServices))
-    serviceManager.register(dbServices[key]);
+  const serviceManager = ServiceManager.setup();
+  serviceManager.register(DBService.getInstance());
   logger.debug('Database service registered to the service manager');
 };
 

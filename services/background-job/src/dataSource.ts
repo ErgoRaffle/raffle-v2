@@ -7,7 +7,21 @@ import { migrations } from '@ergo-raffle/extractors/lib/migrations';
 
 const dbConfigs = config.get<DataBaseOption>('database');
 const commonConfigs = {
-  entities,
+  entities: [
+    // entities.RaffleServiceEntity,
+    // entities.RaffleEntity,
+    entities.BoxEntity,
+    // entities.WinnerEntity,
+    // entities.RaffleDetailsEntity,
+    // entities.PictureEntity,
+    // entities.GiftEntity,
+    // entities.TicketEntity,
+    // entities.WinnerPrizeEntity,
+    // entities.GiftRedeemEntity,
+    // entities.SuccessRaffleEntity,
+    // entities.TicketRedeemEntity,
+    // entities.SafePayEntity,
+  ],
   synchronize: false,
   logging: false,
 };
