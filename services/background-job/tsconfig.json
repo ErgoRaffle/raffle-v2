@@ -7,5 +7,5 @@
     "experimentalDecorators": true
   },
   "include": ["./src"],
-  "references": [{ "path": "../../packages/extractors" }]
+  "references": [{ "path": "../../packages/extractors/tsconfig.build.json" }]
 }
