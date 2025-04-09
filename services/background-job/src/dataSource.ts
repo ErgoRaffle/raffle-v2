@@ -2,25 +2,39 @@ import config from 'config';
 import { DataSource } from 'typeorm';
 import { DataBaseOption } from './types';
 
-import { BoxEntity } from '@ergo-raffle/extractors';
+import {
+  RaffleServiceEntity,
+  RaffleEntity,
+  BoxEntity,
+  WinnerEntity,
+  RaffleDetailsEntity,
+  PictureEntity,
+  GiftEntity,
+  TicketEntity,
+  WinnerPrizeEntity,
+  GiftRedeemEntity,
+  SuccessRaffleEntity,
+  TicketRedeemEntity,
+  SafePayEntity,
+} from '@ergo-raffle/extractors/lib/entities';
 import { migrations } from '@ergo-raffle/extractors';
 
 const dbConfigs = config.get<DataBaseOption>('database');
 const commonConfigs = {
   entities: [
-    // entities.RaffleServiceEntity,
-    // entities.RaffleEntity,
+    RaffleServiceEntity,
+    RaffleEntity,
     BoxEntity,
-    // entities.WinnerEntity,
-    // entities.RaffleDetailsEntity,
-    // entities.PictureEntity,
-    // entities.GiftEntity,
-    // entities.TicketEntity,
-    // entities.WinnerPrizeEntity,
-    // entities.GiftRedeemEntity,
-    // entities.SuccessRaffleEntity,
-    // entities.TicketRedeemEntity,
-    // entities.SafePayEntity,
+    WinnerEntity,
+    RaffleDetailsEntity,
+    PictureEntity,
+    GiftEntity,
+    TicketEntity,
+    WinnerPrizeEntity,
+    GiftRedeemEntity,
+    SuccessRaffleEntity,
+    TicketRedeemEntity,
+    SafePayEntity,
   ],
   synchronize: false,
   logging: false,
