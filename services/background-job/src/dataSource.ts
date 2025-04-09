@@ -2,15 +2,15 @@ import config from 'config';
 import { DataSource } from 'typeorm';
 import { DataBaseOption } from './types';
 
-import * as entities from '@ergo-raffle/extractors/lib/entities';
-import { migrations } from '@ergo-raffle/extractors/lib/migrations';
+import { BoxEntity } from '@ergo-raffle/extractors';
+import { migrations } from '@ergo-raffle/extractors';
 
 const dbConfigs = config.get<DataBaseOption>('database');
 const commonConfigs = {
   entities: [
     // entities.RaffleServiceEntity,
     // entities.RaffleEntity,
-    entities.BoxEntity,
+    BoxEntity,
     // entities.WinnerEntity,
     // entities.RaffleDetailsEntity,
     // entities.PictureEntity,
