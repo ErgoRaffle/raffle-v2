@@ -17,18 +17,22 @@
     "test": "NODE_OPTIONS='--import tsx' vitest",
     "type-check": "tsc --noEmit",
     "typeorm": "NODE_OPTIONS='--import tsx' typeorm",
-    "typeorm:generate:postgres": "npm run typeorm migration:generate ./src/migrations/postgres/postgres -- -p -d ./src/dataSources/postgres.ts",
-    "typeorm:generate:sqlite": "npm run typeorm migration:generate ./src/migrations/sqlite/sqlite -- -p -d ./src/dataSources/sqlite.ts",
-    "typeorm:migrate:postgres": "npm run typeorm migration:run -- -d ./src/dataSources/postgres.ts",
-    "typeorm:migrate:sqlite": "npm run typeorm migration:run -- -d ./src/dataSources/sqlite.ts"
+    "typeorm:generate:postgres": "npm run typeorm migration:generate ./src/migrations/postgres/postgres -- -p -d ./src/dataSource.ts",
+    "typeorm:generate:sqlite": "npm run typeorm migration:generate ./src/migrations/sqlite/sqlite -- -p -d ./src/dataSource.ts",
+    "typeorm:migrate:postgres": "npm run typeorm migration:run -- -d ./src/dataSource.ts",
+    "typeorm:migrate:sqlite": "npm run typeorm migration:run -- -d ./src/dataSource.ts"
   },
   "dependencies": {
     "@rosen-bridge/callback-logger": "^0.1.0",
+    "@rosen-bridge/service-manager": "^0.1.2",
     "@rosen-bridge/winston-logger": "^1.0.3",
+    "@rosen-bridge/extended-typeorm": "^0.0.3",
+    "@ergo-raffle/extractors": "^0.1.0",
     "config": "^3.3.12",
-    "reflect-metadata": "^0.1.13",
-    "sqlite3": "^5.0.8",
-    "typeorm": "^0.3.6"
+    "lodash-es": "^4.17.21",
+    "reflect-metadata": "^0.1.14",
+    "sqlite3": "^5.1.7",
+    "typeorm": "0.3.20"
   },
   "devDependencies": {
     "@types/config": "^3.3.5",
@@ -39,8 +43,8 @@
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "prettier": "^3.2.4",
-    "tsx": "^4.19.3",
     "tsconfig-paths": "^4.1.2",
+    "tsx": "^4.19.3",
     "typescript": "^5.3.3",
     "vitest": "^2.0.5"
   }

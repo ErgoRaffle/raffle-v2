@@ -5,3 +5,6 @@ logs:
     maxFiles: 14d
     path: ./logs/
     level: debug
+database:
+  type: 'sqlite'
+  path: 'job.sqlite'

@@ -1,9 +1,11 @@
 import config from 'config';
 import { cloneDeep } from 'lodash-es';
 import { TransportOptions } from '@rosen-bridge/winston-logger';
+import { DataBaseOption } from '../types';
 
 interface ConfigType {
   logger: LoggerConfig;
+  database: DBConfig;
 }
 
 const getOptionalString = (path: string, defaultValue = '') => {
@@ -58,13 +60,58 @@ class LoggerConfig {
   }
 }
 
+class DBConfig {
+  type: 'sqlite' | 'postgres';
+  // sqlite options
+  path: string;
+  // postgres options
+  host: string;
+  port: number;
+  user: string;
+  password: string;
+  name: string;
+
+  constructor() {
+    const database = config.get<DataBaseOption>('database');
+    const clonedDatabase = cloneDeep(database);
+    this.type = clonedDatabase.type;
+    if (clonedDatabase.type == 'sqlite') {
+      if (!clonedDatabase.path)
+        throw new Error('Invalid SQLite database path.');
+      this.path = clonedDatabase.path;
+    } else if (clonedDatabase.type == 'postgres') {
+      if (!clonedDatabase.host)
+        throw new Error('Invalid Postgres database host.');
+      if (!clonedDatabase.port)
+        throw new Error('Invalid Postgres database port.');
+      if (!clonedDatabase.user)
+        throw new Error('Invalid Postgres database user.');
+      if (!clonedDatabase.password)
+        throw new Error('Invalid Postgres database password.');
+      if (!clonedDatabase.name)
+        throw new Error('Invalid Postgres database name.');
+
+      this.host = clonedDatabase.host;
+      this.port = clonedDatabase.port;
+      this.user = clonedDatabase.user;
+      this.password = clonedDatabase.password;
+      this.name = clonedDatabase.name;
+    } else {
+      throw new Error(`Database type=[${this.type}] not supported`);
+    }
+  }
+}
+
 let internalConfig: ConfigType | undefined;
 
 const getConfig = (): ConfigType => {
   if (internalConfig == undefined) {
-    const logger = new LoggerConfig();
+    const loggerConfig = new LoggerConfig();
+    const dbConfig = new DBConfig();
+
     internalConfig = {
-      logger,
+      logger: loggerConfig,
+      database: dbConfig,
     };
   }
   return internalConfig;
