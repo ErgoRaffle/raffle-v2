@@ -61,5 +61,5 @@ if (dbConfigs.type === 'sqlite' && dbConfigs.path != undefined) {
 } else {
   throw new Error(`Database type=[${dbConfigs.type}] not supported`);
 }
-console.log('>>>>>>>>>>>>>>>>', dataSource);
+
 export default dataSource;

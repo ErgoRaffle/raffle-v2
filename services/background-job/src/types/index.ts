@@ -1,32 +1,3 @@
-import {
-  RaffleServiceEntity,
-  RaffleEntity,
-  BoxEntity,
-  WinnerEntity,
-  RaffleDetailsEntity,
-  GiftEntity,
-  TicketEntity,
-  WinnerPrizeEntity,
-  GiftRedeemEntity,
-  SuccessRaffleEntity,
-  TicketRedeemEntity,
-  SafePayEntity,
-} from '@ergo-raffle/extractors';
-
-export type RaffleEntitiesType =
-  | RaffleServiceEntity
-  | BoxEntity
-  | WinnerEntity
-  | RaffleDetailsEntity
-  | GiftEntity
-  | TicketEntity
-  | WinnerPrizeEntity
-  | GiftRedeemEntity
-  | SuccessRaffleEntity
-  | TicketRedeemEntity
-  | SafePayEntity
-  | RaffleEntity;
-
 interface SqliteDataBaseOption {
   type: 'sqlite';
   path: string;
