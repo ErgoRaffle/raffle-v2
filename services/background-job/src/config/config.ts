@@ -96,6 +96,8 @@ class DBConfig {
       this.user = clonedDatabase.user;
       this.password = clonedDatabase.password;
       this.name = clonedDatabase.name;
+    } else {
+      throw new Error(`Database type=[${this.type}] not supported`);
     }
   }
 }
