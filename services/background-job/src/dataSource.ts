@@ -1,4 +1,4 @@
-import { DataSource } from 'typeorm';
+import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { getConfig } from './config/config';
 
 import {
@@ -40,14 +40,14 @@ const commonConfigs = {
   logging: false,
 };
 let dataSource: DataSource;
-if (dbConfigs.type === 'sqlite' && dbConfigs.path != undefined) {
+if (dbConfigs.type === 'sqlite') {
   dataSource = new DataSource({
     type: 'sqlite',
     migrations: migrations['sqlite'],
     database: dbConfigs.path,
     ...commonConfigs,
   });
-} else if (dbConfigs.type === 'postgres') {
+} else {
   dataSource = new DataSource({
     type: 'postgres',
     migrations: migrations['postgres'],
@@ -58,8 +58,6 @@ if (dbConfigs.type === 'sqlite' && dbConfigs.path != undefined) {
     database: dbConfigs.name,
     ...commonConfigs,
   });
-} else {
-  throw new Error(`Database type=[${dbConfigs.type}] not supported`);
 }
 
 export default dataSource;

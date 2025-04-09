@@ -16,6 +16,8 @@ const main = async () => {
   const serviceManager = ServiceManager.setup();
   serviceManager.register(DBService.getInstance());
   logger.debug('Database service registered to the service manager');
+  logger.debug('Starting service manager...');
+  await serviceManager.start(DBService.getInstance().getName());
 };
 
 main();

@@ -76,8 +76,21 @@ class DBConfig {
     const clonedDatabase = cloneDeep(database);
     this.type = clonedDatabase.type;
     if (clonedDatabase.type == 'sqlite') {
+      if (!clonedDatabase.path)
+        throw new Error('Invalid SQLite database path.');
       this.path = clonedDatabase.path;
     } else if (clonedDatabase.type == 'postgres') {
+      if (!clonedDatabase.host)
+        throw new Error('Invalid Postgres database host.');
+      if (!clonedDatabase.port)
+        throw new Error('Invalid Postgres database port.');
+      if (!clonedDatabase.user)
+        throw new Error('Invalid Postgres database user.');
+      if (!clonedDatabase.password)
+        throw new Error('Invalid Postgres database password.');
+      if (!clonedDatabase.name)
+        throw new Error('Invalid Postgres database name.');
+
       this.host = clonedDatabase.host;
       this.port = clonedDatabase.port;
       this.user = clonedDatabase.user;
