@@ -61,12 +61,29 @@ class LoggerConfig {
 }
 
 class DBConfig {
-  database: DataBaseOption;
+  type: 'sqlite' | 'postgres';
+  // sqlite options
+  path: string;
+  // postgres options
+  host: string;
+  port: number;
+  user: string;
+  password: string;
+  name: string;
+
   constructor() {
     const database = config.get<DataBaseOption>('database');
     const clonedDatabase = cloneDeep(database);
-
-    this.database = clonedDatabase;
+    this.type = clonedDatabase.type;
+    if (clonedDatabase.type == 'sqlite') {
+      this.path = clonedDatabase.path;
+    } else if (clonedDatabase.type == 'postgres') {
+      this.host = clonedDatabase.host;
+      this.port = clonedDatabase.port;
+      this.user = clonedDatabase.user;
+      this.password = clonedDatabase.password;
+      this.name = clonedDatabase.name;
+    }
   }
 }
 

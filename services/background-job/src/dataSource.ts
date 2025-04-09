@@ -1,6 +1,5 @@
-import config from 'config';
 import { DataSource } from 'typeorm';
-import { DataBaseOption } from './types';
+import { getConfig } from './config/config';
 
 import {
   RaffleServiceEntity,
@@ -16,10 +15,11 @@ import {
   SuccessRaffleEntity,
   TicketRedeemEntity,
   SafePayEntity,
-} from '@ergo-raffle/extractors/lib/entities';
+} from '@ergo-raffle/extractors';
 import { migrations } from '@ergo-raffle/extractors';
 
-const dbConfigs = config.get<DataBaseOption>('database');
+const dbConfigs = getConfig().database;
+
 const commonConfigs = {
   entities: [
     RaffleServiceEntity,
@@ -61,5 +61,5 @@ if (dbConfigs.type === 'sqlite' && dbConfigs.path != undefined) {
 } else {
   throw new Error(`Database type=[${dbConfigs.type}] not supported`);
 }
-
+console.log('>>>>>>>>>>>>>>>>', dataSource);
 export default dataSource;

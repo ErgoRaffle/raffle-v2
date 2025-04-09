@@ -11,7 +11,7 @@ import {
   SuccessRaffleEntity,
   TicketRedeemEntity,
   SafePayEntity,
-} from '@ergo-raffle/extractors/lib/entities';
+} from '@ergo-raffle/extractors';
 
 export type RaffleEntitiesType =
   | RaffleServiceEntity
