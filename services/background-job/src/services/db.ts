@@ -4,7 +4,7 @@ import {
   Dependency,
   ServiceStatus,
 } from '@rosen-bridge/service-manager';
-import { DataSource } from 'typeorm';
+import { DataSource } from '@rosen-bridge/extended-typeorm';
 
 export class DBService extends AbstractService {
   name = 'DBService';
