@@ -19,6 +19,7 @@ import {
   TicketRedeemExtractor,
   SafePayExtractor,
 } from '@ergo-raffle/extractors';
+import { raffleInfo } from '@ergo-raffle/contracts';
 
 import * as scanner from '@rosen-bridge/scanner';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
@@ -34,8 +35,7 @@ export class ScannerService extends AbstractService {
   private scannerConfig: ScannerBaseOption;
   private nextJobId = 0;
   private shouldStop = false;
-  private jobsToStop: NodeJS.Timeout[] = [];
-  private interval = 60000;
+  private jobsToStop = new Map<number, NodeJS.Timeout>();
   private continueStop = () => {
     return;
   };
@@ -72,8 +72,8 @@ export class ScannerService extends AbstractService {
       'RaffleService',
       scannerConfig.node.url,
       ErgoNetworkType.Node,
-      scannerConfig.contractAddresses.raffleService,
-      scannerConfig.tokenAddresses.raffleNFT,
+      raffleInfo.addresses.service,
+      raffleInfo.tokens.serviceNft,
       logger,
     );
     this.ergoScanner.registerExtractor(raffleServiceExtractor);
@@ -82,9 +82,9 @@ export class ScannerService extends AbstractService {
       this.dbService.dataSource,
       'InactiveRaffle',
       scannerConfig.node.url,
-      scannerConfig.contractAddresses.inactiveRaffle,
-      scannerConfig.contractAddresses.raffleService,
-      scannerConfig.tokenAddresses.license,
+      raffleInfo.addresses.inactiveRaffle,
+      raffleInfo.addresses.service,
+      raffleInfo.tokens.raffleLicense,
       logger,
     );
     this.ergoScanner.registerExtractor(inactiveRaffleExtractor);
@@ -94,7 +94,7 @@ export class ScannerService extends AbstractService {
       'TicketRepo',
       scannerConfig.node.url,
       ErgoNetworkType.Node,
-      scannerConfig.contractAddresses.ticketRepo,
+      raffleInfo.addresses.ticketRepo,
       logger,
     );
     this.ergoScanner.registerExtractor(ticketRepoExtractor);
@@ -104,8 +104,8 @@ export class ScannerService extends AbstractService {
       'ActiveRaffle',
       scannerConfig.node.url,
       ErgoNetworkType.Node,
-      scannerConfig.contractAddresses.activeRaffle,
-      scannerConfig.tokenAddresses.license,
+      raffleInfo.addresses.activeRaffle,
+      raffleInfo.tokens.raffleLicense,
       logger,
     );
     this.ergoScanner.registerExtractor(activeRaffleExtractor);
@@ -115,7 +115,7 @@ export class ScannerService extends AbstractService {
       'GiftTokenRepo',
       scannerConfig.node.url,
       ErgoNetworkType.Node,
-      scannerConfig.contractAddresses.giftTokenRepo,
+      raffleInfo.addresses.giftTokenRepo,
       logger,
     );
     this.ergoScanner.registerExtractor(giftTokenRepoExtractor);
@@ -125,7 +125,7 @@ export class ScannerService extends AbstractService {
       'Winner',
       scannerConfig.node.url,
       ErgoNetworkType.Node,
-      scannerConfig.contractAddresses.winner,
+      raffleInfo.addresses.winner,
       logger,
     );
     this.ergoScanner.registerExtractor(winnerExtractor);
@@ -135,7 +135,7 @@ export class ScannerService extends AbstractService {
       'RaffleDetails',
       scannerConfig.node.url,
       ErgoNetworkType.Node,
-      scannerConfig.contractAddresses.raffleDetails,
+      raffleInfo.addresses.raffleDetails,
       logger,
     );
     this.ergoScanner.registerExtractor(raffleDetailsExtractor);
@@ -145,7 +145,7 @@ export class ScannerService extends AbstractService {
       'Gift',
       scannerConfig.node.url,
       ErgoNetworkType.Node,
-      scannerConfig.contractAddresses.gift,
+      raffleInfo.addresses.gift,
       logger,
     );
     this.ergoScanner.registerExtractor(giftExtractor);
@@ -155,7 +155,7 @@ export class ScannerService extends AbstractService {
       'Ticket',
       scannerConfig.node.url,
       ErgoNetworkType.Node,
-      scannerConfig.contractAddresses.ticket,
+      raffleInfo.addresses.ticket,
       logger,
     );
     this.ergoScanner.registerExtractor(ticketExtractor);
@@ -165,7 +165,7 @@ export class ScannerService extends AbstractService {
       'WinnerPrize',
       scannerConfig.node.url,
       ErgoNetworkType.Node,
-      scannerConfig.contractAddresses.winnerPrize,
+      raffleInfo.addresses.winnerPrize,
       logger,
     );
     this.ergoScanner.registerExtractor(winnerPrize);
@@ -175,8 +175,8 @@ export class ScannerService extends AbstractService {
       'GiftRedeem',
       scannerConfig.node.url,
       ErgoNetworkType.Node,
-      scannerConfig.contractAddresses.giftRedeem,
-      scannerConfig.tokenAddresses.license,
+      raffleInfo.addresses.giftRedeem,
+      raffleInfo.tokens.raffleLicense,
       logger,
     );
     this.ergoScanner.registerExtractor(giftRedeem);
@@ -185,8 +185,8 @@ export class ScannerService extends AbstractService {
       this.dbService.dataSource,
       'SuccessRaffle',
       scannerConfig.node.url,
-      scannerConfig.contractAddresses.successRaffle,
-      scannerConfig.tokenAddresses.license,
+      raffleInfo.addresses.successRaffle,
+      raffleInfo.tokens.raffleLicense,
       logger,
     );
     this.ergoScanner.registerExtractor(successRaffle);
@@ -196,8 +196,8 @@ export class ScannerService extends AbstractService {
       'TicketRedeem',
       scannerConfig.node.url,
       ErgoNetworkType.Node,
-      scannerConfig.contractAddresses.ticketRedeem,
-      scannerConfig.tokenAddresses.license,
+      raffleInfo.addresses.ticketRedeem,
+      raffleInfo.tokens.raffleLicense,
       logger,
     );
     this.ergoScanner.registerExtractor(ticketRedeem);
@@ -207,8 +207,8 @@ export class ScannerService extends AbstractService {
       'SafePay',
       scannerConfig.node.url,
       ErgoNetworkType.Node,
-      scannerConfig.contractAddresses.safePay,
-      scannerConfig.contractAddresses.successRaffle,
+      raffleInfo.addresses.safePay,
+      raffleInfo.addresses.successRaffle,
     );
     this.ergoScanner.registerExtractor(safePayExtractor);
   }
@@ -261,30 +261,34 @@ export class ScannerService extends AbstractService {
   protected start = async (): Promise<boolean> => {
     this.shouldStop = false;
     this.setStatus(ServiceStatus.started);
-    return await this.fetchData();
+    return await this.fetchData(this.nextJobId++);
   };
 
-  protected fetchData = async () => {
+  /**
+   * Scan and fetch raffle boxes data
+   */
+  protected fetchData = async (jobId: number) => {
+    this.jobsToStop.delete(jobId);
     this.logger.info('Starting scanner fetchData job');
     try {
-      this.setStatus(ServiceStatus.running);
       await this.ergoScanner.update();
     } catch (err) {
       this.logger.error(`ScannerService fetchData failed: ${err}`);
       if (err instanceof Error && err.stack) this.logger.error(err.stack);
-      this.setStatus(ServiceStatus.dormant);
       return false;
     }
-    this.setStatus(ServiceStatus.running);
 
-    const scheduled = setTimeout(() => this.fetchData(), this.interval);
+    const scheduled = setTimeout(
+      () => this.fetchData(jobId),
+      this.scannerConfig.rescanDelaySeconds * 1000,
+    );
 
     if (this.shouldStop) {
       this.shouldStop = false;
       clearTimeout(scheduled);
       this.continueStop();
     } else {
-      this.jobsToStop.push(scheduled);
+      this.jobsToStop.set(jobId, scheduled);
     }
 
     return true;
@@ -303,7 +307,7 @@ export class ScannerService extends AbstractService {
   protected stop = async (): Promise<boolean> => {
     let stoppedJobs = 0;
     while (stoppedJobs < this.nextJobId) {
-      for (const scheduledJob of this.jobsToStop) {
+      for (const scheduledJob of this.jobsToStop.values()) {
         clearTimeout(scheduledJob);
         stoppedJobs++;
       }

@@ -25,7 +25,6 @@ const main = async () => {
   logger.debug('Scanner service registered to the service manager');
 
   logger.debug('Starting service manager...');
-  await serviceManager.start(DBService.getInstance().getName());
   await serviceManager.start(ScannerService.getInstance().getName());
 };
 

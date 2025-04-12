@@ -1,13 +1,7 @@
 import config from 'config';
 import { cloneDeep } from 'lodash-es';
 import { TransportOptions } from '@rosen-bridge/winston-logger';
-import {
-  DataBaseOption,
-  ScannerBaseOption,
-  NodeBaseOption,
-  ContractAddressesOption,
-  TokenAddressesOption,
-} from '../types';
+import { DataBaseOption, ScannerBaseOption, NodeBaseOption } from '../types';
 
 interface ConfigType {
   logger: LoggerConfig;
@@ -115,32 +109,11 @@ class NodeConfig implements NodeBaseOption {
   initialHeight: number;
 }
 
-class ContractAddressesConfig implements ContractAddressesOption {
-  raffleService: string;
-  inactiveRaffle: string;
-  ticketRepo: string;
-  activeRaffle: string;
-  giftTokenRepo: string;
-  winner: string;
-  raffleDetails: string;
-  gift: string;
-  ticket: string;
-  winnerPrize: string;
-  giftRedeem: string;
-  successRaffle: string;
-  ticketRedeem: string;
-  safePay: string;
-}
-
-class TokenAddressesConfig implements TokenAddressesOption {
-  raffleNFT: string;
-  license: string;
-}
-
 class ScannerConfig implements ScannerBaseOption {
   node: NodeBaseOption = new NodeConfig();
-  contractAddresses: ContractAddressesOption = new ContractAddressesConfig();
-  tokenAddresses: TokenAddressesOption = new TokenAddressesConfig();
+  rescanDelaySeconds: number;
+
+  defaultRescanDelaySeconds = 10;
 
   constructor() {
     const scanner = config.get<ScannerBaseOption>('scanner');
@@ -158,45 +131,8 @@ class ScannerConfig implements ScannerBaseOption {
     this.node.url = clonedScanner.node.url;
     this.node.timeout = clonedScanner.node.timeout;
     this.node.initialHeight = clonedScanner.node.initialHeight;
-
-    // validate and set contracts-addresses configs
-    if (!clonedScanner.contractAddresses)
-      throw new Error('Scanner "contractAddresses" configurations missed.');
-    const contracts = [
-      'raffleService',
-      'inactiveRaffle',
-      'ticketRepo',
-      'activeRaffle',
-      'giftTokenRepo',
-      'winner',
-      'raffleDetails',
-      'gift',
-      'ticket',
-      'winnerPrize',
-      'giftRedeem',
-      'successRaffle',
-      'ticketRedeem',
-      'safePay',
-    ];
-    for (const contract of contracts) {
-      const contractAddress = Object.entries(
-        clonedScanner.contractAddresses,
-      ).filter((keyAndValue) => keyAndValue[0] == contract);
-      if (contractAddress.length == 0)
-        throw new Error(
-          `Invalid scanner contractAddresses "${contract}" address.`,
-        );
-    }
-    this.contractAddresses = clonedScanner.contractAddresses;
-
-    // validate and set node configs
-    if (!clonedScanner.tokenAddresses)
-      throw new Error('Scanner "tokenAddresses" configurations missed.');
-    if (!clonedScanner.tokenAddresses.raffleNFT)
-      throw new Error('Invalid scanner tokenAddresses raffleNFT value.');
-    if (!clonedScanner.tokenAddresses.license)
-      throw new Error('Invalid scanner tokenAddresses license value.');
-    this.tokenAddresses = clonedScanner.tokenAddresses;
+    this.rescanDelaySeconds =
+      clonedScanner.rescanDelaySeconds || this.defaultRescanDelaySeconds;
   }
 }
 
