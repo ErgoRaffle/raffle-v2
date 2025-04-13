@@ -20,13 +20,14 @@ import {
   SafePayExtractor,
 } from '@ergo-raffle/extractors';
 import { raffleInfo } from '@ergo-raffle/contracts';
-
+import WinstonLogger from '@rosen-bridge/winston-logger';
 import * as scanner from '@rosen-bridge/scanner';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 
 import { DBService } from './db';
 import { ScannerBaseOption } from '../types';
+import { getConfig } from '../config/config';
 
 export class ScannerService extends AbstractService {
   name = 'ScannerService';
@@ -64,7 +65,9 @@ export class ScannerService extends AbstractService {
         initialHeight: scannerConfig.node.initialHeight,
         dataSource: dbService.dataSource,
       },
-      logger,
+      new WinstonLogger(getConfig().logger.transports).getLogger(
+        'raffle-scanner',
+      ),
     );
 
     const raffleServiceExtractor = new RaffleServiceExtractor(
@@ -74,7 +77,9 @@ export class ScannerService extends AbstractService {
       ErgoNetworkType.Node,
       raffleInfo.addresses.service,
       raffleInfo.tokens.serviceNft,
-      logger,
+      new WinstonLogger(getConfig().logger.transports).getLogger(
+        'raffle-service-extractor',
+      ),
     );
     this.ergoScanner.registerExtractor(raffleServiceExtractor);
 
@@ -85,7 +90,9 @@ export class ScannerService extends AbstractService {
       raffleInfo.addresses.inactiveRaffle,
       raffleInfo.addresses.service,
       raffleInfo.tokens.raffleLicense,
-      logger,
+      new WinstonLogger(getConfig().logger.transports).getLogger(
+        'raffle-inactiveRaffle-extractor',
+      ),
     );
     this.ergoScanner.registerExtractor(inactiveRaffleExtractor);
 
@@ -95,7 +102,9 @@ export class ScannerService extends AbstractService {
       scannerConfig.node.url,
       ErgoNetworkType.Node,
       raffleInfo.addresses.ticketRepo,
-      logger,
+      new WinstonLogger(getConfig().logger.transports).getLogger(
+        'raffle-ticketRepo-extractor',
+      ),
     );
     this.ergoScanner.registerExtractor(ticketRepoExtractor);
 
@@ -106,7 +115,9 @@ export class ScannerService extends AbstractService {
       ErgoNetworkType.Node,
       raffleInfo.addresses.activeRaffle,
       raffleInfo.tokens.raffleLicense,
-      logger,
+      new WinstonLogger(getConfig().logger.transports).getLogger(
+        'raffle-activeRaffle-extractor',
+      ),
     );
     this.ergoScanner.registerExtractor(activeRaffleExtractor);
 
@@ -116,7 +127,9 @@ export class ScannerService extends AbstractService {
       scannerConfig.node.url,
       ErgoNetworkType.Node,
       raffleInfo.addresses.giftTokenRepo,
-      logger,
+      new WinstonLogger(getConfig().logger.transports).getLogger(
+        'raffle-giftTokenRepo-extractor',
+      ),
     );
     this.ergoScanner.registerExtractor(giftTokenRepoExtractor);
 
@@ -126,7 +139,9 @@ export class ScannerService extends AbstractService {
       scannerConfig.node.url,
       ErgoNetworkType.Node,
       raffleInfo.addresses.winner,
-      logger,
+      new WinstonLogger(getConfig().logger.transports).getLogger(
+        'raffle-winner-extractor',
+      ),
     );
     this.ergoScanner.registerExtractor(winnerExtractor);
 
@@ -136,7 +151,9 @@ export class ScannerService extends AbstractService {
       scannerConfig.node.url,
       ErgoNetworkType.Node,
       raffleInfo.addresses.raffleDetails,
-      logger,
+      new WinstonLogger(getConfig().logger.transports).getLogger(
+        'raffle-details-extractor',
+      ),
     );
     this.ergoScanner.registerExtractor(raffleDetailsExtractor);
 
@@ -146,7 +163,9 @@ export class ScannerService extends AbstractService {
       scannerConfig.node.url,
       ErgoNetworkType.Node,
       raffleInfo.addresses.gift,
-      logger,
+      new WinstonLogger(getConfig().logger.transports).getLogger(
+        'raffle-gift-extractor',
+      ),
     );
     this.ergoScanner.registerExtractor(giftExtractor);
 
@@ -156,7 +175,9 @@ export class ScannerService extends AbstractService {
       scannerConfig.node.url,
       ErgoNetworkType.Node,
       raffleInfo.addresses.ticket,
-      logger,
+      new WinstonLogger(getConfig().logger.transports).getLogger(
+        'raffle-ticket-extractor',
+      ),
     );
     this.ergoScanner.registerExtractor(ticketExtractor);
 
@@ -166,7 +187,9 @@ export class ScannerService extends AbstractService {
       scannerConfig.node.url,
       ErgoNetworkType.Node,
       raffleInfo.addresses.winnerPrize,
-      logger,
+      new WinstonLogger(getConfig().logger.transports).getLogger(
+        'raffle-winnerPrize-extractor',
+      ),
     );
     this.ergoScanner.registerExtractor(winnerPrize);
 
@@ -177,7 +200,9 @@ export class ScannerService extends AbstractService {
       ErgoNetworkType.Node,
       raffleInfo.addresses.giftRedeem,
       raffleInfo.tokens.raffleLicense,
-      logger,
+      new WinstonLogger(getConfig().logger.transports).getLogger(
+        'raffle-giftRedeem-extractor',
+      ),
     );
     this.ergoScanner.registerExtractor(giftRedeem);
 
@@ -187,7 +212,9 @@ export class ScannerService extends AbstractService {
       scannerConfig.node.url,
       raffleInfo.addresses.successRaffle,
       raffleInfo.tokens.raffleLicense,
-      logger,
+      new WinstonLogger(getConfig().logger.transports).getLogger(
+        'raffle-successRaffle-extractor',
+      ),
     );
     this.ergoScanner.registerExtractor(successRaffle);
 
@@ -198,7 +225,9 @@ export class ScannerService extends AbstractService {
       ErgoNetworkType.Node,
       raffleInfo.addresses.ticketRedeem,
       raffleInfo.tokens.raffleLicense,
-      logger,
+      new WinstonLogger(getConfig().logger.transports).getLogger(
+        'raffle-ticketRedeem-extractor',
+      ),
     );
     this.ergoScanner.registerExtractor(ticketRedeem);
 
@@ -209,6 +238,9 @@ export class ScannerService extends AbstractService {
       ErgoNetworkType.Node,
       raffleInfo.addresses.safePay,
       raffleInfo.addresses.successRaffle,
+      new WinstonLogger(getConfig().logger.transports).getLogger(
+        'raffle-safePay-extractor',
+      ),
     );
     this.ergoScanner.registerExtractor(safePayExtractor);
   }
@@ -249,9 +281,7 @@ export class ScannerService extends AbstractService {
   /**
    * starts the service. following steps are performed:
    *  - scanner update job is started
-   *  - based on observed blockchain, the observation scanner job is started
-   *  - Ergo scanner's sync status is checked and based on that service's status
-   *    is set
+   *  - initiating fetch of boxes linked to Raffle V2 contracts
    *
    * @protected
    * @return {Promise<boolean>} true if service started successfully, otherwise

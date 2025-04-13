@@ -12,7 +12,7 @@
     "coverage": "npm run test -- --coverage",
     "lint": "eslint --fix . && npm run prettify",
     "prettify": "prettier --write . --ignore-path ./.gitignore",
-    "start": "NODE_OPTIONS='--import tsx' tsx watch ./src/index.ts",
+    "start": "tsx watch ./src/index.ts",
     "start:prod": "tsx ./dist/index.js",
     "test": "NODE_OPTIONS='--import tsx' vitest",
     "type-check": "tsc --noEmit",
