@@ -1,5 +1,4 @@
 import { ServiceManager } from '@rosen-bridge/service-manager';
-import WinstonLogger from '@rosen-bridge/winston-logger';
 import { getConfig } from './config/config';
 import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
 
@@ -8,7 +7,6 @@ import './bootstrap';
 import dataSource from './dataSource';
 import { ScannerService } from './services/scanner';
 
-CallbackLoggerFactory.init(new WinstonLogger(getConfig().logger.transports));
 const logger = CallbackLoggerFactory.getInstance().getLogger(import.meta.url);
 
 const main = async () => {

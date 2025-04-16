@@ -71,7 +71,7 @@ export class ScannerService extends AbstractService {
         initialHeight: this.scannerConfig.node.initialHeight,
         dataSource: this.dbService.dataSource,
       },
-      CallbackLoggerFactory.getInstance().getLogger(import.meta.url),
+      CallbackLoggerFactory.getInstance().getLogger('raffle-scanner'),
     );
 
     const raffleServiceExtractor = new RaffleServiceExtractor(
