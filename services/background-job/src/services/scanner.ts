@@ -20,23 +20,21 @@ import {
   SafePayExtractor,
 } from '@ergo-raffle/extractors';
 import { raffleInfo } from '@ergo-raffle/contracts';
-import WinstonLogger from '@rosen-bridge/winston-logger';
 import * as scanner from '@rosen-bridge/scanner';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
+import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
 
 import { DBService } from './db';
 import { ScannerBaseOption } from '../types';
-import { getConfig } from '../config/config';
 
 export class ScannerService extends AbstractService {
   name = 'ScannerService';
   private static instance: ScannerService;
   readonly dbService: DBService;
-  private scannerConfig: ScannerBaseOption;
-  private nextJobId = 0;
+  readonly scannerConfig: ScannerBaseOption;
   private shouldStop = false;
-  private jobsToStop = new Map<number, NodeJS.Timeout>();
+  private latestTimeOut: undefined | ReturnType<typeof setTimeout>;
   private continueStop = () => {
     return;
   };
@@ -46,7 +44,7 @@ export class ScannerService extends AbstractService {
       allowedStatuses: [ServiceStatus.running],
     },
   ];
-  private ergoScanner: scanner.ErgoScanner;
+  readonly ergoScanner: scanner.ErgoScanner;
 
   private constructor(
     scannerConfig: ScannerBaseOption,
@@ -56,194 +54,174 @@ export class ScannerService extends AbstractService {
     super(logger);
     this.scannerConfig = scannerConfig;
     this.dbService = dbService;
+    this.ergoScanner = this.createScanner();
+  }
 
-    this.ergoScanner = new scanner.ErgoScanner(
+  /**
+   * Initializes the scanner and registers all required extractors.
+   *
+   * @returns {ErgoScanner} The configured scanner instance.
+   */
+  readonly createScanner = () => {
+    const ergoScanner = new scanner.ErgoScanner(
       {
-        url: scannerConfig.node.url,
+        url: this.scannerConfig.node.url,
         type: ErgoNetworkType.Node,
-        timeout: scannerConfig.node.timeout,
-        initialHeight: scannerConfig.node.initialHeight,
-        dataSource: dbService.dataSource,
+        timeout: this.scannerConfig.node.timeout,
+        initialHeight: this.scannerConfig.node.initialHeight,
+        dataSource: this.dbService.dataSource,
       },
-      new WinstonLogger(getConfig().logger.transports).getLogger(
-        'raffle-scanner',
-      ),
+      CallbackLoggerFactory.getInstance().getLogger(import.meta.url),
     );
 
     const raffleServiceExtractor = new RaffleServiceExtractor(
       this.dbService.dataSource,
       'RaffleService',
-      scannerConfig.node.url,
+      this.scannerConfig.node.url,
       ErgoNetworkType.Node,
       raffleInfo.addresses.service,
       raffleInfo.tokens.serviceNft,
-      new WinstonLogger(getConfig().logger.transports).getLogger(
-        'raffle-service-extractor',
-      ),
+      CallbackLoggerFactory.getInstance().getLogger(import.meta.url),
     );
     this.ergoScanner.registerExtractor(raffleServiceExtractor);
 
     const inactiveRaffleExtractor = new InactiveRaffleExtractor(
       this.dbService.dataSource,
       'InactiveRaffle',
-      scannerConfig.node.url,
+      this.scannerConfig.node.url,
       raffleInfo.addresses.inactiveRaffle,
       raffleInfo.addresses.service,
       raffleInfo.tokens.raffleLicense,
-      new WinstonLogger(getConfig().logger.transports).getLogger(
-        'raffle-inactiveRaffle-extractor',
-      ),
+      CallbackLoggerFactory.getInstance().getLogger(import.meta.url),
     );
     this.ergoScanner.registerExtractor(inactiveRaffleExtractor);
 
     const ticketRepoExtractor = new TicketRepoExtractor(
       this.dbService.dataSource,
       'TicketRepo',
-      scannerConfig.node.url,
+      this.scannerConfig.node.url,
       ErgoNetworkType.Node,
       raffleInfo.addresses.ticketRepo,
-      new WinstonLogger(getConfig().logger.transports).getLogger(
-        'raffle-ticketRepo-extractor',
-      ),
+      CallbackLoggerFactory.getInstance().getLogger(import.meta.url),
     );
     this.ergoScanner.registerExtractor(ticketRepoExtractor);
 
     const activeRaffleExtractor = new ActiveRaffleExtractor(
       this.dbService.dataSource,
       'ActiveRaffle',
-      scannerConfig.node.url,
+      this.scannerConfig.node.url,
       ErgoNetworkType.Node,
       raffleInfo.addresses.activeRaffle,
       raffleInfo.tokens.raffleLicense,
-      new WinstonLogger(getConfig().logger.transports).getLogger(
-        'raffle-activeRaffle-extractor',
-      ),
+      CallbackLoggerFactory.getInstance().getLogger(import.meta.url),
     );
     this.ergoScanner.registerExtractor(activeRaffleExtractor);
 
     const giftTokenRepoExtractor = new GiftTokenRepoExtractor(
       this.dbService.dataSource,
       'GiftTokenRepo',
-      scannerConfig.node.url,
+      this.scannerConfig.node.url,
       ErgoNetworkType.Node,
       raffleInfo.addresses.giftTokenRepo,
-      new WinstonLogger(getConfig().logger.transports).getLogger(
-        'raffle-giftTokenRepo-extractor',
-      ),
+      CallbackLoggerFactory.getInstance().getLogger(import.meta.url),
     );
     this.ergoScanner.registerExtractor(giftTokenRepoExtractor);
 
     const winnerExtractor = new WinnerExtractor(
       this.dbService.dataSource,
       'Winner',
-      scannerConfig.node.url,
+      this.scannerConfig.node.url,
       ErgoNetworkType.Node,
       raffleInfo.addresses.winner,
-      new WinstonLogger(getConfig().logger.transports).getLogger(
-        'raffle-winner-extractor',
-      ),
+      CallbackLoggerFactory.getInstance().getLogger(import.meta.url),
     );
     this.ergoScanner.registerExtractor(winnerExtractor);
 
     const raffleDetailsExtractor = new RaffleDetailsExtractor(
       this.dbService.dataSource,
       'RaffleDetails',
-      scannerConfig.node.url,
+      this.scannerConfig.node.url,
       ErgoNetworkType.Node,
       raffleInfo.addresses.raffleDetails,
-      new WinstonLogger(getConfig().logger.transports).getLogger(
-        'raffle-details-extractor',
-      ),
+      CallbackLoggerFactory.getInstance().getLogger(import.meta.url),
     );
     this.ergoScanner.registerExtractor(raffleDetailsExtractor);
 
     const giftExtractor = new GiftExtractor(
       this.dbService.dataSource,
       'Gift',
-      scannerConfig.node.url,
+      this.scannerConfig.node.url,
       ErgoNetworkType.Node,
       raffleInfo.addresses.gift,
-      new WinstonLogger(getConfig().logger.transports).getLogger(
-        'raffle-gift-extractor',
-      ),
+      CallbackLoggerFactory.getInstance().getLogger(import.meta.url),
     );
     this.ergoScanner.registerExtractor(giftExtractor);
 
     const ticketExtractor = new TicketExtractor(
       this.dbService.dataSource,
       'Ticket',
-      scannerConfig.node.url,
+      this.scannerConfig.node.url,
       ErgoNetworkType.Node,
       raffleInfo.addresses.ticket,
-      new WinstonLogger(getConfig().logger.transports).getLogger(
-        'raffle-ticket-extractor',
-      ),
+      CallbackLoggerFactory.getInstance().getLogger(import.meta.url),
     );
     this.ergoScanner.registerExtractor(ticketExtractor);
 
     const winnerPrize = new WinnerPrizeExtractor(
       this.dbService.dataSource,
       'WinnerPrize',
-      scannerConfig.node.url,
+      this.scannerConfig.node.url,
       ErgoNetworkType.Node,
       raffleInfo.addresses.winnerPrize,
-      new WinstonLogger(getConfig().logger.transports).getLogger(
-        'raffle-winnerPrize-extractor',
-      ),
+      CallbackLoggerFactory.getInstance().getLogger(import.meta.url),
     );
     this.ergoScanner.registerExtractor(winnerPrize);
 
     const giftRedeem = new GiftRedeemExtractor(
       this.dbService.dataSource,
       'GiftRedeem',
-      scannerConfig.node.url,
+      this.scannerConfig.node.url,
       ErgoNetworkType.Node,
       raffleInfo.addresses.giftRedeem,
       raffleInfo.tokens.raffleLicense,
-      new WinstonLogger(getConfig().logger.transports).getLogger(
-        'raffle-giftRedeem-extractor',
-      ),
+      CallbackLoggerFactory.getInstance().getLogger(import.meta.url),
     );
     this.ergoScanner.registerExtractor(giftRedeem);
 
     const successRaffle = new SuccessRaffleExtractor(
       this.dbService.dataSource,
       'SuccessRaffle',
-      scannerConfig.node.url,
+      this.scannerConfig.node.url,
       raffleInfo.addresses.successRaffle,
       raffleInfo.tokens.raffleLicense,
-      new WinstonLogger(getConfig().logger.transports).getLogger(
-        'raffle-successRaffle-extractor',
-      ),
+      CallbackLoggerFactory.getInstance().getLogger(import.meta.url),
     );
     this.ergoScanner.registerExtractor(successRaffle);
 
     const ticketRedeem = new TicketRedeemExtractor(
       this.dbService.dataSource,
       'TicketRedeem',
-      scannerConfig.node.url,
+      this.scannerConfig.node.url,
       ErgoNetworkType.Node,
       raffleInfo.addresses.ticketRedeem,
       raffleInfo.tokens.raffleLicense,
-      new WinstonLogger(getConfig().logger.transports).getLogger(
-        'raffle-ticketRedeem-extractor',
-      ),
+      CallbackLoggerFactory.getInstance().getLogger(import.meta.url),
     );
     this.ergoScanner.registerExtractor(ticketRedeem);
 
     const safePayExtractor = new SafePayExtractor(
       this.dbService.dataSource,
       'SafePay',
-      scannerConfig.node.url,
+      this.scannerConfig.node.url,
       ErgoNetworkType.Node,
       raffleInfo.addresses.safePay,
       raffleInfo.addresses.successRaffle,
-      new WinstonLogger(getConfig().logger.transports).getLogger(
-        'raffle-safePay-extractor',
-      ),
+      CallbackLoggerFactory.getInstance().getLogger(import.meta.url),
     );
     this.ergoScanner.registerExtractor(safePayExtractor);
-  }
+
+    return ergoScanner;
+  };
 
   /**
    * initializes the singleton instance of ScannerService
@@ -253,14 +231,16 @@ export class ScannerService extends AbstractService {
    * @param {AbstractLogger} [logger]
    * @memberof ScannerService
    */
-  static init = (
+  static readonly init = (
     scannerConfig: ScannerBaseOption,
     dbService: DBService,
-    logger?: AbstractLogger,
   ) => {
     if (this.instance != undefined) {
       return;
     }
+    const logger = CallbackLoggerFactory.getInstance().getLogger(
+      import.meta.url,
+    );
     this.instance = new ScannerService(scannerConfig, dbService, logger);
   };
 
@@ -271,7 +251,7 @@ export class ScannerService extends AbstractService {
    * @return {ScannerService}
    * @memberof ScannerService
    */
-  static getInstance = (): ScannerService => {
+  static readonly getInstance = (): ScannerService => {
     if (!this.instance) {
       throw new Error('ScannerService instances is not initialized yet');
     }
@@ -291,14 +271,14 @@ export class ScannerService extends AbstractService {
   protected start = async (): Promise<boolean> => {
     this.shouldStop = false;
     this.setStatus(ServiceStatus.started);
-    return await this.fetchData(this.nextJobId++);
+    return await this.fetchData();
   };
 
   /**
    * Scan and fetch raffle boxes data
    */
-  protected fetchData = async (jobId: number) => {
-    this.jobsToStop.delete(jobId);
+  protected fetchData = async () => {
+    this.latestTimeOut = undefined;
     this.logger.info('Starting scanner fetchData job');
     try {
       await this.ergoScanner.update();
@@ -309,7 +289,7 @@ export class ScannerService extends AbstractService {
     }
 
     const scheduled = setTimeout(
-      () => this.fetchData(jobId),
+      () => this.fetchData(),
       this.scannerConfig.rescanDelaySeconds * 1000,
     );
 
@@ -318,7 +298,7 @@ export class ScannerService extends AbstractService {
       clearTimeout(scheduled);
       this.continueStop();
     } else {
-      this.jobsToStop.set(jobId, scheduled);
+      this.latestTimeOut = scheduled;
     }
 
     return true;
@@ -326,7 +306,7 @@ export class ScannerService extends AbstractService {
 
   /**
    * stops the service. following steps are performed:
-   *  - scheduled jobs are stopped
+   *  - scheduled timeout are stopped
    *  - service's status is set to dormant
    *
    * @protected
@@ -335,25 +315,12 @@ export class ScannerService extends AbstractService {
    * @memberof ScannerService
    */
   protected stop = async (): Promise<boolean> => {
-    let stoppedJobs = 0;
-    while (stoppedJobs < this.nextJobId) {
-      for (const scheduledJob of this.jobsToStop.values()) {
-        clearTimeout(scheduledJob);
-        stoppedJobs++;
-      }
+    clearTimeout(this.latestTimeOut);
+    await new Promise<void>((resolve) => {
+      this.continueStop = resolve;
+      this.shouldStop = true;
+    });
 
-      if (stoppedJobs >= this.nextJobId) {
-        break;
-      }
-
-      await new Promise<void>((resolve) => {
-        this.continueStop = resolve;
-        this.shouldStop = true;
-      });
-      stoppedJobs++;
-    }
-
-    this.nextJobId = 0;
     this.setStatus(ServiceStatus.dormant);
     return true;
   };
