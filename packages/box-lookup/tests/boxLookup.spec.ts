@@ -1,9 +1,23 @@
-import { it, describe, expect } from 'vitest';
+import { it, beforeEach, describe, expect } from 'vitest';
 import { TxPot } from '@rosen-bridge/tx-pot';
 
 import { BoxLookup } from '../lib/boxLookup';
-import { AbstractLookupRequest } from '../lib/abstractRequest';
-import { getBoxLookupRequest } from './utils';
+import { Request } from '../lib/types/request';
+
+interface BoxLookupTestContext {
+  txPot: TxPot;
+  boxLookup: BoxLookup;
+  request: Request;
+  request2: Request;
+}
+
+beforeEach<BoxLookupTestContext>(async (context) => {
+  const txPot = {} as TxPot;
+  context.txPot = txPot;
+  context.boxLookup = new BoxLookup(txPot);
+  context.request = {} as Request;
+  context.request2 = {} as Request;
+});
 
 describe('BoxLookup', () => {
   describe('registerRequest', () => {
@@ -16,28 +30,26 @@ describe('BoxLookup', () => {
      * - register another request
      * - assert second returned id is exists
      * @expected
-     * - it should exists all of requests by ids
+     * - it should confirm all requests exist by their Ids
      */
-    it('should increment requestsIdCounter and store the request when registerRequest is called', () => {
-      // Arrange
-      const txPot = {} as TxPot;
-      const boxLookup = new BoxLookup(txPot);
-      const request = {} as AbstractLookupRequest;
-      const request2 = {} as AbstractLookupRequest;
-
+    it<BoxLookupTestContext>('should increment requestsIdCounter and store the request when registerRequest is called', ({
+      boxLookup,
+      request,
+      request2,
+    }) => {
       // Act
       const requestId = boxLookup.registerRequest(request);
 
       // Assert
       expect(requestId).toBe(1);
-      expect(getBoxLookupRequest(boxLookup).get(1)).toBe(request);
+      expect(boxLookup['requests'].get(1)).toBe(request);
 
       // Act again to verify counter increments
       const requestId2 = boxLookup.registerRequest(request2);
 
       // Assert again
       expect(requestId2).toBe(2);
-      expect(getBoxLookupRequest(boxLookup).get(2)).toBe(request2);
+      expect(boxLookup['requests'].get(2)).toBe(request2);
     });
   });
 
@@ -53,19 +65,17 @@ describe('BoxLookup', () => {
      * @expected
      * - the requests attribute of the boxLookup object must be empty
      */
-    it('should set request to undefined when unregisterRequest is called with existing requestId', () => {
-      // Arrange
-      const txPot = {} as TxPot;
-      const boxLookup = new BoxLookup(txPot);
-      const request = {} as AbstractLookupRequest;
-
+    it<BoxLookupTestContext>('should set request to undefined when unregisterRequest is called with existing requestId', ({
+      boxLookup,
+      request,
+    }) => {
       // Act - Try to unregister a request
       const requestId = boxLookup.registerRequest(request);
       const result = boxLookup.unregisterRequest(requestId);
 
       // Assert
       expect(result).toBe(request);
-      expect(getBoxLookupRequest(boxLookup).get(requestId)).toBeUndefined();
+      expect(boxLookup['requests'].get(requestId)).toBeUndefined();
     });
 
     /**
@@ -80,12 +90,10 @@ describe('BoxLookup', () => {
      * @expected
      * - request from the boxLookup must contains one item
      */
-    it('should do nothing when unregisterRequest is called with ID greater than requestsIdCounter', () => {
-      // Arrange
-      const txPot = {} as TxPot;
-      const boxLookup = new BoxLookup(txPot);
-      const request = {} as AbstractLookupRequest;
-
+    it<BoxLookupTestContext>('should do nothing when unregisterRequest is called with ID greater than requestsIdCounter', ({
+      boxLookup,
+      request,
+    }) => {
       // Register a request to set requestsIdCounter to 1
       boxLookup.registerRequest(request);
 
@@ -94,8 +102,8 @@ describe('BoxLookup', () => {
 
       // Assert
       expect(result).toBeUndefined();
-      expect(getBoxLookupRequest(boxLookup).size).toBe(1);
-      expect(getBoxLookupRequest(boxLookup).get(1)).toBe(request);
+      expect(boxLookup['requests'].size).toBe(1);
+      expect(boxLookup['requests'].get(1)).toBe(request);
     });
 
     /**
@@ -110,12 +118,10 @@ describe('BoxLookup', () => {
      * @expected
      * - request from the boxLookup must contain one item
      */
-    it('should do nothing when unregisterRequest is called with negative ID', () => {
-      // Arrange
-      const txPot = {} as TxPot;
-      const boxLookup = new BoxLookup(txPot);
-      const request = {} as AbstractLookupRequest;
-
+    it<BoxLookupTestContext>('should do nothing when unregisterRequest is called with negative ID', ({
+      boxLookup,
+      request,
+    }) => {
       // Register a request to set requestsIdCounter to 1
       boxLookup.registerRequest(request);
 
@@ -124,8 +130,8 @@ describe('BoxLookup', () => {
 
       // Assert
       expect(result).toBeUndefined();
-      expect(getBoxLookupRequest(boxLookup).size).toBe(1);
-      expect(getBoxLookupRequest(boxLookup).get(1)).toBe(request);
+      expect(boxLookup['requests'].size).toBe(1);
+      expect(boxLookup['requests'].get(1)).toBe(request);
     });
   });
 });

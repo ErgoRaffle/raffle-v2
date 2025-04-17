@@ -24,6 +24,7 @@
     "@vitest/coverage-istanbul": "^2.0.5",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-vitest": "^0.5.4",
     "prettier": "^3.2.4",
     "typescript": "^5.3.3",
     "vitest": "^2.0.5"
@@ -32,7 +33,8 @@
     "node": ">=20.11.0"
   },
   "dependencies": {
-    "@rosen-bridge/tx-pot": "^1.0.3",
-    "@fleet-sdk/core": "^0.4.1"
+    "@fleet-sdk/core": "^0.4.1",
+    "@rosen-bridge/abstract-logger": "^2.0.1",
+    "@rosen-bridge/tx-pot": "^1.0.3"
   }
 }

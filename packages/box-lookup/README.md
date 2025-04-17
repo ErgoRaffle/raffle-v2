@@ -7,6 +7,8 @@
 
 ## Introduction
 
+A lightweight TypeScript package for monitoring Ergo blockchain boxes related to Raffle-v2
+
 ## Installation
 
 npm:
