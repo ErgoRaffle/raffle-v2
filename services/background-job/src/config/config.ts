@@ -16,6 +16,8 @@ const getOptionalString = (path: string, defaultValue = '') => {
   return defaultValue;
 };
 
+const defaultRescanDelaySeconds = 10;
+
 class LoggerConfig {
   transports: TransportOptions[];
 
@@ -52,7 +54,7 @@ class LoggerConfig {
     });
     if (wrongLogTypeIndex >= 0) {
       throw new Error(
-        `unexpected config at path ${`logs[${wrongLogTypeIndex}]`}: ${JSON.stringify(
+        `unexpected config at path logs[${wrongLogTypeIndex}]: ${JSON.stringify(
           logs[wrongLogTypeIndex],
         )}`,
       );
@@ -113,8 +115,6 @@ class ScannerConfig implements ScannerBaseOption {
   node: NodeBaseOption = new NodeConfig();
   rescanDelaySeconds: number;
 
-  defaultRescanDelaySeconds = 10;
-
   constructor() {
     const scanner = config.get<ScannerBaseOption>('scanner');
     const clonedScanner = cloneDeep(scanner);
@@ -132,7 +132,7 @@ class ScannerConfig implements ScannerBaseOption {
     this.node.timeout = clonedScanner.node.timeout;
     this.node.initialHeight = clonedScanner.node.initialHeight;
     this.rescanDelaySeconds =
-      clonedScanner.rescanDelaySeconds || this.defaultRescanDelaySeconds;
+      clonedScanner.rescanDelaySeconds || defaultRescanDelaySeconds;
   }
 }
 

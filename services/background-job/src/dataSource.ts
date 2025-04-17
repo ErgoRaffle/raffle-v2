@@ -50,14 +50,14 @@ let dataSource: DataSource;
 if (dbConfigs.type === 'sqlite') {
   dataSource = new DataSource({
     type: 'sqlite',
-    migrations: [...migrations['sqlite'], ...scannerMigrations['sqlite']],
+    migrations: [...migrations.sqlite, ...scannerMigrations.sqlite],
     database: dbConfigs.path,
     ...commonConfigs,
   });
 } else {
   dataSource = new DataSource({
     type: 'postgres',
-    migrations: [...migrations['postgres'], ...scannerMigrations['postgres']],
+    migrations: [...migrations.postgres, ...scannerMigrations.postgres],
     host: dbConfigs.host,
     port: dbConfigs.port,
     username: dbConfigs.user,
