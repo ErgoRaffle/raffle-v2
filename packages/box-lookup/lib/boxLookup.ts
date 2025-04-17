@@ -1,6 +1,6 @@
 import { Request } from './types/request';
 import { TxPot } from '@rosen-bridge/tx-pot';
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
 
 export class BoxLookup {
   protected requestsIdCounter: number = 0;
@@ -8,7 +8,9 @@ export class BoxLookup {
   constructor(
     protected txPot: TxPot,
     protected logger?: AbstractLogger,
-  ) {}
+  ) {
+    this.logger = logger ?? new DummyLogger();
+  }
 
   /**
    * register a new lookup request and return its assigned ID
