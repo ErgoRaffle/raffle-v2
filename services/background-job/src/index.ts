@@ -18,7 +18,7 @@ const main = async () => {
   logger.debug('Database service registered to the service manager');
 
   logger.debug('Initializing scanner service');
-  ScannerService.init(getConfig().scanner, DBService.getInstance());
+  await ScannerService.init(getConfig().scanner, DBService.getInstance());
   serviceManager.register(ScannerService.getInstance());
   logger.debug('Scanner service registered to the service manager');
 
