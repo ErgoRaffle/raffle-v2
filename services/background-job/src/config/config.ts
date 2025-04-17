@@ -1,11 +1,12 @@
 import config from 'config';
 import { cloneDeep } from 'lodash-es';
 import { TransportOptions } from '@rosen-bridge/winston-logger';
-import { DataBaseOption } from '../types';
+import { DataBaseOption, ScannerBaseOption, NodeBaseOption } from '../types';
 
 interface ConfigType {
   logger: LoggerConfig;
   database: DBConfig;
+  scanner: ScannerConfig;
 }
 
 const getOptionalString = (path: string, defaultValue = '') => {
@@ -102,16 +103,51 @@ class DBConfig {
   }
 }
 
+class NodeConfig implements NodeBaseOption {
+  url: string;
+  timeout: number;
+  initialHeight: number;
+}
+
+class ScannerConfig implements ScannerBaseOption {
+  node: NodeBaseOption = new NodeConfig();
+  rescanDelaySeconds: number;
+
+  defaultRescanDelaySeconds = 10;
+
+  constructor() {
+    const scanner = config.get<ScannerBaseOption>('scanner');
+    const clonedScanner = cloneDeep(scanner);
+
+    // validate and set node configs
+    if (!clonedScanner.node)
+      throw new Error('Scanner "node" configurations missed.');
+    if (!clonedScanner.node.url)
+      throw new Error('Invalid scanner node url value.');
+    if (!clonedScanner.node.timeout)
+      throw new Error('Invalid scanner node timeout value.');
+    if (!clonedScanner.node.initialHeight)
+      throw new Error('Invalid scanner node initialHeight value.');
+    this.node.url = clonedScanner.node.url;
+    this.node.timeout = clonedScanner.node.timeout;
+    this.node.initialHeight = clonedScanner.node.initialHeight;
+    this.rescanDelaySeconds =
+      clonedScanner.rescanDelaySeconds || this.defaultRescanDelaySeconds;
+  }
+}
+
 let internalConfig: ConfigType | undefined;
 
 const getConfig = (): ConfigType => {
   if (internalConfig == undefined) {
     const loggerConfig = new LoggerConfig();
     const dbConfig = new DBConfig();
+    const scannerConfig = new ScannerConfig();
 
     internalConfig = {
       logger: loggerConfig,
       database: dbConfig,
+      scanner: scannerConfig,
     };
   }
   return internalConfig;

@@ -16,12 +16,19 @@ import {
   TicketRedeemEntity,
   SafePayEntity,
 } from '@ergo-raffle/extractors';
+import {
+  BlockEntity,
+  ExtractorStatusEntity,
+  migrations as scannerMigrations,
+} from '@rosen-bridge/scanner';
 import { migrations } from '@ergo-raffle/extractors';
 
 const dbConfigs = getConfig().database;
 
 const commonConfigs = {
   entities: [
+    BlockEntity,
+    ExtractorStatusEntity,
     RaffleServiceEntity,
     RaffleEntity,
     BoxEntity,
@@ -43,14 +50,14 @@ let dataSource: DataSource;
 if (dbConfigs.type === 'sqlite') {
   dataSource = new DataSource({
     type: 'sqlite',
-    migrations: migrations['sqlite'],
+    migrations: [...migrations['sqlite'], ...scannerMigrations['sqlite']],
     database: dbConfigs.path,
     ...commonConfigs,
   });
 } else {
   dataSource = new DataSource({
     type: 'postgres',
-    migrations: migrations['postgres'],
+    migrations: [...migrations['postgres'], ...scannerMigrations['postgres']],
     host: dbConfigs.host,
     port: dbConfigs.port,
     username: dbConfigs.user,
