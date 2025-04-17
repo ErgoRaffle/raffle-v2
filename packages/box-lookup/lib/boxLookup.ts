@@ -17,7 +17,7 @@ export class BoxLookup {
    */
   readonly registerRequest = (request: Request) => {
     this.requests.set(++this.requestsIdCounter, request);
-    this.logger?.info(
+    this.logger.info(
       `New BoxLookupRequest registered by ${this.requestsIdCounter} id`,
     );
     return this.requestsIdCounter;
@@ -35,11 +35,11 @@ export class BoxLookup {
       this.requests.get(requestId)
     ) {
       const request = this.requests.get(requestId);
-      this.logger?.info(`A BoxLookupRequest unregistered by ${requestId} id`);
+      this.logger.info(`A BoxLookupRequest unregistered by ${requestId} id`);
       this.requests.delete(requestId);
       return request;
     }
-    this.logger?.info(
+    this.logger.info(
       `Tried to unregistered a BoxLookupRequest by ${requestId} id that not exists`,
     );
     return undefined;
