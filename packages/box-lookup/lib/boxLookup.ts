@@ -1,13 +1,13 @@
 import { Request } from './types/request';
 import { TxPot } from '@rosen-bridge/tx-pot';
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
 
 export class BoxLookup {
   protected requestsIdCounter: number = 0;
   protected requests = new Map<number, Request | undefined>();
   constructor(
     protected txPot: TxPot,
-    protected logger: AbstractLogger,
+    protected logger: AbstractLogger = new DummyLogger(),
   ) {}
 
   /**
