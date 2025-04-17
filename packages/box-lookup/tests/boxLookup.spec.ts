@@ -3,6 +3,7 @@ import { TxPot } from '@rosen-bridge/tx-pot';
 
 import { BoxLookup } from '../lib/boxLookup';
 import { Request } from '../lib/types/request';
+import { DummyLogger } from '@rosen-bridge/abstract-logger';
 
 interface BoxLookupTestContext {
   txPot: TxPot;
@@ -14,7 +15,7 @@ interface BoxLookupTestContext {
 beforeEach<BoxLookupTestContext>(async (context) => {
   const txPot = {} as TxPot;
   context.txPot = txPot;
-  context.boxLookup = new BoxLookup(txPot);
+  context.boxLookup = new BoxLookup(txPot, new DummyLogger());
   context.request = {} as Request;
   context.request2 = {} as Request;
 });
