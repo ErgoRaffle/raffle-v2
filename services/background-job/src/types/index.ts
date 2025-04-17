@@ -13,3 +13,14 @@ interface PostgresDataBaseOption {
 }
 
 export type DataBaseOption = SqliteDataBaseOption | PostgresDataBaseOption;
+
+export interface NodeBaseOption {
+  url: string;
+  timeout: number;
+  initialHeight: number;
+}
+
+export interface ScannerBaseOption {
+  node: NodeBaseOption;
+  rescanDelaySeconds: number;
+}
