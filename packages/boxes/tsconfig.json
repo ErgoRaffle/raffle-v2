@@ -4,5 +4,6 @@
     "outDir": "./dist",
     "composite": true
   },
-  "include": ["tests", "lib", "vitest.config.ts"]
+  "include": ["tests", "lib", "vitest.config.ts"],
+  "references": [{ "path": "../contracts" }]
 }
