@@ -308,14 +308,6 @@ export class InactiveRaffleBuilder {
   buildOutput = (): OutputBuilder => {
     this.validate();
 
-    const r6Content = [
-      Array.from(Buffer.from(this.name!)),
-      Array.from(Buffer.from(this.description!)),
-      ...(this.pictures
-        ? [Array.from(Buffer.from(this.pictures.join(',')))]
-        : []),
-    ];
-
     const tokens = [
       {
         tokenId: raffleInfo.tokens.raffleLicense,
@@ -351,7 +343,13 @@ export class InactiveRaffleBuilder {
           Array.from(this.implementerErgoTreeHash!),
           Array.from(this.creatorErgoTreeHash!),
         ]).toHex(),
-        R6: SColl(SColl(SByte), r6Content).toHex(),
+        R6: SColl(SColl(SByte), [
+          Array.from(Buffer.from(this.name!)),
+          Array.from(Buffer.from(this.description!)),
+          ...(this.pictures
+            ? this.pictures.map((pic) => Array.from(Buffer.from(pic)))
+            : []),
+        ]).toHex(),
         R7: SColl(SColl(SByte), [
           Array.from(Buffer.from(this.ticketId!, 'hex')),
           Array.from(this.winnersPercentListHash!),
