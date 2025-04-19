@@ -28,7 +28,7 @@ const createInactiveRaffleExtractorTest = async () => {
       'InactiveRaffle',
       'http://127.0.0.1/',
       boxErgoTree.toAddress(Network.Testnet).toString(),
-      serviceWallet.ergoTree.toString(),
+      serviceWallet.address.toString(),
       '2'.repeat(64),
     ),
     boxFalseErgoTree: boxFalseErgoTree,

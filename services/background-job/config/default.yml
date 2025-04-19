@@ -1,5 +1,6 @@
 logs:
   - type: console
+    level: info
   - type: file
     maxSize: 20m
     maxFiles: 14d
@@ -8,3 +9,9 @@ logs:
 database:
   type: 'sqlite'
   path: 'job.sqlite'
+scanner:
+  node:
+    url: 'http://127.0.0.1:9052/'
+    timeout: 1000000
+    initialHeight: 1698712
+  rescanDelaySeconds: 10
