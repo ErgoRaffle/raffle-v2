@@ -217,7 +217,6 @@ export class ServiceBuilder {
     // Set all parameters using setters
     builder
       .setValue(BigInt(box.value))
-      .setCreationHeight(box.creationHeight)
       .setLicenseTokenCount(BigInt(box.assets[1].amount))
       .setServiceFeePercent(r4Data[0])
       .setImplementerFeePercent(r4Data[1])
