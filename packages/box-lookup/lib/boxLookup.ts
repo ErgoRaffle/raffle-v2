@@ -4,7 +4,7 @@ import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
 
 export class BoxLookup {
   protected requestsIdCounter: number = 0;
-  protected requests = new Map<number, Request | undefined>();
+  protected requests = new Map<number, Request>();
   constructor(
     protected txPot: TxPot,
     protected logger: AbstractLogger = new DummyLogger(),
@@ -29,11 +29,7 @@ export class BoxLookup {
    * @returns {Request | undefined}
    */
   readonly unregisterRequest = (requestId: number) => {
-    if (
-      requestId > 0 &&
-      requestId <= this.requestsIdCounter &&
-      this.requests.get(requestId)
-    ) {
+    if (this.requests.has(requestId)) {
       const request = this.requests.get(requestId);
       this.logger.info(`A BoxLookupRequest unregistered by ${requestId} id`);
       this.requests.delete(requestId);

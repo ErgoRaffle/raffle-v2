@@ -7,18 +7,18 @@
 
 ## Introduction
 
-A lightweight TypeScript package for monitoring Ergo blockchain boxes related to Raffle-v2
+A lightweight TypeScript package for monitoring Ergo blockchain Mempool boxes.
 
 ## Installation
 
 npm:
 
 ```sh
-npm i box-lookup
+npm i @ergo-raffle/box-lookup
 ```
 
 yarn:
 
 ```sh
-yarn add box-lookup
+yarn add @ergo-raffle/box-lookup
 ```

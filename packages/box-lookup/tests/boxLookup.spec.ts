@@ -22,9 +22,8 @@ beforeEach<BoxLookupTestContext>(async (context) => {
 describe('BoxLookup', () => {
   describe('registerRequest', () => {
     /**
-     * @target increment requestsIdCounter and store the request when registerRequest is called
+     * @target should increment requestsIdCounter and store the request when registerRequest is called
      * @scenario
-     * - create required objects for test scenario
      * - register a request and put return id to a variable
      * - assert returned id is exists
      * - register another request
@@ -55,9 +54,8 @@ describe('BoxLookup', () => {
 
   describe('unregisterRequest', () => {
     /**
-     * @target set request to undefined when unregisterRequest is called with existing requestId
+     * @target should set request to undefined when unregisterRequest is called with existing requestId
      * @scenario
-     * - create required objects for test scenario
      * - register a request and put return id to a variable
      * - unregister request by returned id
      * - assert returned value of unregister method is equal to original request object
@@ -79,9 +77,8 @@ describe('BoxLookup', () => {
     });
 
     /**
-     * @target do nothing when unregisterRequest is called with ID greater than requestsIdCounter
+     * @target should do nothing when unregisterRequest is called with ID greater than requestsIdCounter
      * @scenario
-     * - create required objects for test scenario
      * - register a request and put return id to a variable
      * - unregister request by invalid id
      * - assert returned value of unregister method is undefined
@@ -107,9 +104,8 @@ describe('BoxLookup', () => {
     });
 
     /**
-     * @target do nothing when unregisterRequest is called with negative ID
+     * @target should do nothing when unregisterRequest is called with negative ID
      * @scenario
-     * - create required objects for test scenario
      * - register a request and put return id to a variable
      * - unregister request by invalid negative id
      * - assert returned value of unregister method is undefined
