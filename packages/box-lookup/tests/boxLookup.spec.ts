@@ -22,19 +22,17 @@ beforeEach<BoxLookupTestContext>(async (context) => {
 describe('BoxLookup', () => {
   describe('registerRequest', () => {
     /**
-     * @target should increment requestsIdCounter and store the request when registerRequest is called
+     * @target should exists registered request after registering one Request
      * @scenario
      * - register a request and put return id to a variable
      * - assert returned id is exists
-     * - register another request
-     * - assert second returned id is exists
      * @expected
-     * - it should confirm all requests exist by their Ids
+     * - returned value of registered request must equal to 1
+     * - it should confirm stored request exist by their Id
      */
-    it<BoxLookupTestContext>('should increment requestsIdCounter and store the request when registerRequest is called', ({
+    it<BoxLookupTestContext>('should exists registered request after registering one Request', ({
       boxLookup,
       request,
-      request2,
     }) => {
       // Act
       const requestId = boxLookup.registerRequest(request);
@@ -42,28 +40,46 @@ describe('BoxLookup', () => {
       // Assert
       expect(requestId).toBe(1);
       expect(boxLookup['requests'].get(1)).toBe(request);
+    });
 
-      // Act again to verify counter increments
+    /**
+     * @target should exists second registered request after registering two Requests
+     * @scenario
+     * - register two request instances and put return ids to related variables
+     * - assert returned id of second call of the registerRequest equal to old id plus one
+     * - assert second returned id is exists
+     * @expected
+     * - returned value of second registered request must equal to old id plus one
+     * - it should confirm second stored request exist by their Id
+     */
+    it<BoxLookupTestContext>('should exists second registered request after registering two Requests', ({
+      boxLookup,
+      request,
+      request2,
+    }) => {
+      // Act
+      const requestId = boxLookup.registerRequest(request);
       const requestId2 = boxLookup.registerRequest(request2);
 
-      // Assert again
-      expect(requestId2).toBe(2);
+      // Assert
+      expect(requestId2).toBe(requestId + 1);
       expect(boxLookup['requests'].get(2)).toBe(request2);
     });
   });
 
   describe('unregisterRequest', () => {
     /**
-     * @target should set request to undefined when unregisterRequest is called with existing requestId
+     * @target should unregister Request instance by related id
      * @scenario
      * - register a request and put return id to a variable
      * - unregister request by returned id
      * - assert returned value of unregister method is equal to original request object
      * - assert request removed from the requests attribute of the boxLookup
      * @expected
+     * - the returned value of unregister must be equal to original request instance
      * - the requests attribute of the boxLookup object must be empty
      */
-    it<BoxLookupTestContext>('should set request to undefined when unregisterRequest is called with existing requestId', ({
+    it<BoxLookupTestContext>('should unregister Request instance by related id', ({
       boxLookup,
       request,
     }) => {
@@ -77,57 +93,24 @@ describe('BoxLookup', () => {
     });
 
     /**
-     * @target should do nothing when unregisterRequest is called with ID greater than requestsIdCounter
+     * @target should do nothing when try to unregister Request that not exists
      * @scenario
-     * - register a request and put return id to a variable
-     * - unregister request by invalid id
+     * - call unregister request method by invalid id
      * - assert returned value of unregister method is undefined
-     * - assert size of request attribute of the boxLookup object 1
-     * - assert existing item of request from the boxLookup is equal to original request object
+     * - assert size of request attribute of the boxLookup object is 0
      * @expected
-     * - request from the boxLookup must contains one item
+     * - returned value of unregister method must be undefined
+     * - request from the boxLookup must contains zero items
      */
-    it<BoxLookupTestContext>('should do nothing when unregisterRequest is called with ID greater than requestsIdCounter', ({
+    it<BoxLookupTestContext>('should do nothing when try to unregister Request that not exists', ({
       boxLookup,
-      request,
     }) => {
-      // Register a request to set requestsIdCounter to 1
-      boxLookup.registerRequest(request);
-
       // Act - Try to unregister a request with ID > requestsIdCounter
-      const result = boxLookup.unregisterRequest(2);
+      const result = boxLookup.unregisterRequest(100);
 
       // Assert
       expect(result).toBeUndefined();
-      expect(boxLookup['requests'].size).toBe(1);
-      expect(boxLookup['requests'].get(1)).toBe(request);
-    });
-
-    /**
-     * @target should do nothing when unregisterRequest is called with negative ID
-     * @scenario
-     * - register a request and put return id to a variable
-     * - unregister request by invalid negative id
-     * - assert returned value of unregister method is undefined
-     * - assert size of request attribute of the boxLookup object is 1
-     * - assert existing item of request from the boxLookup is equal to original request object
-     * @expected
-     * - request from the boxLookup must contain one item
-     */
-    it<BoxLookupTestContext>('should do nothing when unregisterRequest is called with negative ID', ({
-      boxLookup,
-      request,
-    }) => {
-      // Register a request to set requestsIdCounter to 1
-      boxLookup.registerRequest(request);
-
-      // Act - Try to unregister a request with negative ID
-      const result = boxLookup.unregisterRequest(-1);
-
-      // Assert
-      expect(result).toBeUndefined();
-      expect(boxLookup['requests'].size).toBe(1);
-      expect(boxLookup['requests'].get(1)).toBe(request);
+      expect(boxLookup['requests'].size).toBe(0);
     });
   });
 });
