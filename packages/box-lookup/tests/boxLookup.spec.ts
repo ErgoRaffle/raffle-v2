@@ -158,7 +158,7 @@ describe('BoxLookup', () => {
       await boxLookup['updateSpentBoxesList']();
 
       // Assert
-      expect(boxLookup.getSpentBoxesList().length).toEqual(4);
+      expect(boxLookup.getSpentBoxesList().size).toEqual(4);
     });
 
     /**
@@ -181,7 +181,7 @@ describe('BoxLookup', () => {
       await boxLookup['updateSpentBoxesList']();
 
       // Assert
-      expect(boxLookup.getSpentBoxesList().length).toEqual(1);
+      expect(boxLookup.getSpentBoxesList().size).toEqual(1);
     });
 
     /**
@@ -216,7 +216,7 @@ describe('BoxLookup', () => {
       await boxLookup['updateSpentBoxesList']();
 
       // Assert
-      expect(boxLookup.getSpentBoxesList().length).toEqual(3);
+      expect(boxLookup.getSpentBoxesList().size).toEqual(3);
     });
 
     /**
@@ -256,7 +256,7 @@ describe('BoxLookup', () => {
       await boxLookup['updateSpentBoxesList']();
 
       // Assert
-      expect(boxLookup.getSpentBoxesList().length).toEqual(0);
+      expect(boxLookup.getSpentBoxesList().size).toEqual(0);
     });
   });
 });

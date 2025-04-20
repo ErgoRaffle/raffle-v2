@@ -10,7 +10,7 @@ import { Request } from './types/request';
 
 export class BoxLookup {
   protected requestsIdCounter: number = 0;
-  protected spentBoxes: string[] = [];
+  protected spentBoxes: Set<string> = new Set<string>();
   protected nodeAPI: Axios;
   protected requests = new Map<number, Request>();
 
@@ -105,6 +105,7 @@ export class BoxLookup {
       ...(await this.txPot.getTxsByStatus(TransactionStatus.SENT, false)),
       ...(await this.txPot.getTxsByStatus(TransactionStatus.COMPLETED, false)),
     ];
+
     for (const tx of activeTxs) {
       unspentBoxes = unspentBoxes.concat(
         ...(await this.fetchTxPotInputBoxIds(tx)),
@@ -120,12 +121,10 @@ export class BoxLookup {
    * @return
    */
   protected readonly updateSpentBoxesList = async () => {
-    this.spentBoxes = await this.getNodeSpentBoxes();
-    this.spentBoxes = this.spentBoxes.concat(
-      ...(await this.getTxPotSpentBoxes()).filter(
-        (boxId) => this.spentBoxes.indexOf(boxId) < 0,
-      ),
-    );
+    this.spentBoxes = new Set<string>([
+      ...(await this.getNodeSpentBoxes()),
+      ...(await this.getTxPotSpentBoxes()),
+    ]);
   };
 
   /**
