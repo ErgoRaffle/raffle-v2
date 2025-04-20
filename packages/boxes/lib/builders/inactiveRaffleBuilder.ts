@@ -5,7 +5,10 @@ import {
   SByte,
   SInt,
   ErgoAddress,
+  Box,
+  Amount,
 } from '@fleet-sdk/core';
+import { SConstant } from '@fleet-sdk/serializer';
 import { raffleInfo } from '@ergo-raffle/contracts';
 import { blake2b256 } from '@fleet-sdk/crypto';
 import { bigIntToUint8Array } from '../utils';
@@ -265,6 +268,43 @@ export class InactiveRaffleBuilder {
    */
   setCollectingTokenId = (tokenId: string): this => {
     this.collectingTokenId = tokenId;
+    return this;
+  };
+
+  /**
+   * Fill data from a service box
+   * @param serviceBox - The service box to get information from
+   * @returns this builder instance
+   * @throws Error if service box is invalid
+   */
+  fromServiceBox = (serviceBox: Box<Amount>): this => {
+    if (serviceBox.assets.length < 2) {
+      throw new Error('Invalid service box: missing required tokens');
+    }
+
+    const registers = serviceBox.additionalRegisters;
+    if (!registers.R4 || !registers.R5) {
+      throw new Error('Invalid service box: missing required registers');
+    }
+
+    // Get configuration from R4: [ServiceFeePercent, ImplementerFeePercent, CreationFee, TxFee]
+    const r4Data = SConstant.from(registers.R4).data as bigint[];
+    if (r4Data.length < 4) {
+      throw new Error('Invalid service box: invalid R4 register format');
+    }
+
+    // Get service fee ergoTree hash from R5
+    const serviceFeeErgoTreeHash = SConstant.from(registers.R5)
+      .data as Uint8Array;
+
+    // Set the service fee percent and implementer fee percent from R4
+    this.setServiceFeePercent(r4Data[0])
+      .setImplementerFeePercent(r4Data[1])
+      .setTxFee(r4Data[3]);
+
+    // Store the service fee ergoTree hash for later use
+    this.serviceErgoTreeHash = serviceFeeErgoTreeHash;
+
     return this;
   };
 
