@@ -21,13 +21,13 @@
     "@types/node": "^20.11.9",
     "@typescript-eslint/eslint-plugin": "^6.19.1",
     "@typescript-eslint/parser": "^6.19.1",
-    "@vitest/coverage-istanbul": "^2.0.5",
+    "@vitest/coverage-istanbul": "^3.1.1",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-vitest": "^0.5.4",
     "prettier": "^3.2.4",
     "typescript": "^5.3.3",
-    "vitest": "^2.0.5"
+    "vitest": "^3.1.1"
   },
   "engines": {
     "node": ">=20.11.0"
@@ -35,6 +35,8 @@
   "dependencies": {
     "@fleet-sdk/core": "^0.4.1",
     "@rosen-bridge/abstract-logger": "^2.0.1",
-    "@rosen-bridge/tx-pot": "^1.0.3"
+    "@rosen-bridge/tx-pot": "^1.0.3",
+    "axios": "^1.8.4",
+    "typeorm": "^0.3.20"
   }
 }
