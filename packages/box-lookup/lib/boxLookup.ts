@@ -1,4 +1,8 @@
-import { TransactionStatus, TxPot } from '@rosen-bridge/tx-pot';
+import {
+  TransactionEntity,
+  TransactionStatus,
+  TxPot,
+} from '@rosen-bridge/tx-pot';
 import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
 import { Axios } from 'axios';
 
@@ -76,12 +80,16 @@ export class BoxLookup {
    *
    * @return { string[] }
    */
-  protected readonly fetchTxPotBoxes = async (txId: string) => {
-    const results = await this.nodeAPI.get(
-      `/transactions/unconfirmed/byTransactionId/${txId}`,
-    );
-    if (results.status == 200)
-      return results.data.inputs.map((input: { boxId: string }) => input.boxId);
+  protected readonly fetchTxPotInputBoxIds = async (tx: TransactionEntity) => {
+    try {
+      return JSON.parse(tx.serializedTx).inputs.map(
+        (input: { boxId: string }) => input.boxId,
+      );
+    } catch (err) {
+      this.logger.error(
+        `Invalid ${tx.txId} tx serialized value: ${tx.serializedTx}`,
+      );
+    }
     return [];
   };
 
@@ -92,16 +100,14 @@ export class BoxLookup {
    */
   protected readonly getTxPotSpentBoxes = async () => {
     let unspentBoxes: string[] = [];
-    let txs = await this.txPot.getTxsByStatus(TransactionStatus.SIGNED, false);
-    txs = txs.concat(
+    const activeTxs = [
+      ...(await this.txPot.getTxsByStatus(TransactionStatus.SIGNED, false)),
       ...(await this.txPot.getTxsByStatus(TransactionStatus.SENT, false)),
-    );
-    txs = txs.concat(
       ...(await this.txPot.getTxsByStatus(TransactionStatus.COMPLETED, false)),
-    );
-    for (const tx of txs) {
+    ];
+    for (const tx of activeTxs) {
       unspentBoxes = unspentBoxes.concat(
-        ...(await this.fetchTxPotBoxes(tx.txId)),
+        ...(await this.fetchTxPotInputBoxIds(tx)),
       );
     }
 
