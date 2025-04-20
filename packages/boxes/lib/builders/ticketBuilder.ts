@@ -175,7 +175,7 @@ export class TicketBuilder {
    * @returns OutputBuilder instance configured for the ticket box
    * @throws Error if any required parameter is missing or inconsistent
    */
-  buildOutput = (): OutputBuilder => {
+  build = (): OutputBuilder => {
     this.validate();
 
     return new OutputBuilder(

@@ -319,7 +319,7 @@ export class ActiveRaffleBuilder {
    * @returns OutputBuilder instance configured for the active raffle box
    * @throws Error if any required parameter is missing
    */
-  buildOutput = (): OutputBuilder => {
+  build = (): OutputBuilder => {
     this.validate();
 
     const tokens = [

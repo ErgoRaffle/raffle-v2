@@ -96,11 +96,11 @@ export class TicketRepoBuilder {
 
   /**
    * Build an output box for the ticket repository contract
-   * Contains ticket tokens for distribution
+   * Contains ticket tokens
    * @returns OutputBuilder instance configured for the ticket repository box
    * @throws Error if any required parameter is missing
    */
-  buildOutput = (): OutputBuilder => {
+  build = (): OutputBuilder => {
     this.validate();
 
     return new OutputBuilder(

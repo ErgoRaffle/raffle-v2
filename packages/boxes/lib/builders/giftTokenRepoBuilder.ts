@@ -235,7 +235,7 @@ export class GiftTokenRepoBuilder {
    * @returns OutputBuilder instance configured for the gift token repository box
    * @throws Error if any required parameter is missing
    */
-  buildOutput = (): OutputBuilder => {
+  build = (): OutputBuilder => {
     this.validate();
 
     return new OutputBuilder(

@@ -175,7 +175,7 @@ export class RaffleDetailsBuilder {
    * @returns OutputBuilder instance configured for the raffle details box
    * @throws Error if any required parameter is missing
    */
-  buildOutput = (): OutputBuilder => {
+  build = (): OutputBuilder => {
     this.validate();
 
     // Convert strings to byte arrays

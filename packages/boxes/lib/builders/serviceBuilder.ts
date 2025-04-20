@@ -173,7 +173,7 @@ export class ServiceBuilder {
    * @returns OutputBuilder instance configured for the service box
    * @throws Error if any required parameter is missing
    */
-  buildOutput = (): OutputBuilder => {
+  build = (): OutputBuilder => {
     this.validate();
 
     return new OutputBuilder(this.value!, this.ergoTree!, this.creationHeight!)
