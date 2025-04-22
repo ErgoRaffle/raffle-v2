@@ -20,7 +20,7 @@
     "compile-contracts": "tsx ./cli/index.ts compile-contracts",
     "make-input-template": "tsx ./cli/index.ts make-input-template",
     "make-build-template": "tsx ./cli/index.ts make-input-template --for-build",
-    "prepare": "mkdir -p dist/ && tsx --trace-warnings ./cli/index.ts build configs.json"
+    "prepare": "npm run build"
   },
   "devDependencies": {
     "@fleet-sdk/mock-chain": "^0.4.2",
