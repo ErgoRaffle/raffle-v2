@@ -4,14 +4,14 @@ import {
   TxPot,
 } from '@rosen-bridge/tx-pot';
 import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
-import { Axios } from 'axios';
+import ergoNodeClientFactory from '@rosen-clients/ergo-node';
 
 import { Request } from './types/request';
 
 export class BoxLookup {
   protected requestsIdCounter: number = 0;
   protected spentBoxes: Set<string> = new Set<string>();
-  protected nodeAPI: Axios;
+  protected nodeAPI;
   protected requests = new Map<number, Request>();
 
   constructor(
@@ -19,7 +19,7 @@ export class BoxLookup {
     nodeURL: string,
     protected logger: AbstractLogger = new DummyLogger(),
   ) {
-    this.nodeAPI = new Axios({ baseURL: nodeURL });
+    this.nodeAPI = ergoNodeClientFactory(nodeURL);
   }
 
   /**
@@ -63,15 +63,16 @@ export class BoxLookup {
     let unspentBoxes: string[] = [];
     let offset = 0;
     do {
-      results = await this.nodeAPI.get('/transactions/unconfirmed', {
-        params: { limit: 100, offset: offset },
+      results = await this.nodeAPI.getUnconfirmedTransactions({
+        limit: 100,
+        offset: offset,
       });
-      for (const tx of results.data)
+      for (const tx of results)
         unspentBoxes = unspentBoxes.concat(
           ...tx.inputs.map((input: { boxId: string }) => input.boxId),
         );
       offset += 100;
-    } while (results.status == 200 && results.data.length == 100);
+    } while (results.length == 100);
     return unspentBoxes;
   };
 

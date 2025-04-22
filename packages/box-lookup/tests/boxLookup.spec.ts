@@ -9,6 +9,7 @@ import {
   unconfirmedTxList,
 } from './mocked/boxLookup.mock';
 import { Repository } from 'typeorm';
+import { Transactions } from '@rosen-clients/ergo-node';
 
 interface BoxLookupTestContext {
   txRepository: Repository<TransactionEntity>;
@@ -27,18 +28,10 @@ beforeEach<BoxLookupTestContext>(async (context) => {
   const txRepository = dataSource.getRepository(TransactionEntity);
   await txRepository.insert(SampleTransactionEntities);
   const boxLookup = new BoxLookup(txPot, 'http://127.0.0.1:9052/');
-  vi.spyOn(boxLookup['nodeAPI'], 'get').mockImplementation(async (url) => {
-    if (url == '/transactions/unconfirmed')
-      return {
-        data: unconfirmedTxList,
-        status: 200,
-      };
-
-    return {
-      status: 200,
-      data: { inputs: [{ boxId: url.split('/')[url.split('/').length - 1] }] },
-    };
-  });
+  vi.spyOn(
+    boxLookup['nodeAPI'],
+    'getUnconfirmedTransactions',
+  ).mockResolvedValue(unconfirmedTxList as unknown as Transactions);
 
   context.txRepository = txRepository;
   context.txPot = txPot;
@@ -159,6 +152,46 @@ describe('BoxLookup', () => {
 
       // Assert
       expect(boxLookup.getSpentBoxesList().size).toEqual(4);
+      expect(boxLookup.getSpentBoxesList()).toEqual(
+        new Set([
+          '0000000000000000000000000000000000000000000000000000000000000000',
+          '4444444444444444444444444444444444444444444444444444444444444444',
+          '6666666666666666666666666666666666666666666666666666666666666666',
+          '7777777777777777777777777777777777777777777777777777777777777777',
+        ]),
+      );
+    });
+
+    /**
+     * should retrieve and combine spent boxes from empty node and empty TxPot data
+     * @scenario
+     * - mock node api to return empty tx data
+     * - call the updateSpentBoxesList method
+     * - assert spentBoxes size must be equal to the TxPot spent boxes plus node spent boxes
+     * @expected
+     * - spentBoxes size must be equal to 0
+     */
+    it<BoxLookupTestContext>('should retrieve and combine spent boxes from empty node and TxPot data', async ({
+      boxLookup,
+    }) => {
+      // Mock
+      vi.spyOn(
+        boxLookup['nodeAPI'],
+        'getUnconfirmedTransactions',
+      ).mockImplementation(async () => []);
+
+      // Act
+      await boxLookup['updateSpentBoxesList']();
+
+      // Assert
+      expect(boxLookup.getSpentBoxesList().size).toEqual(3);
+      expect(boxLookup.getSpentBoxesList()).toEqual(
+        new Set([
+          '4444444444444444444444444444444444444444444444444444444444444444',
+          '6666666666666666666666666666666666666666666666666666666666666666',
+          '7777777777777777777777777777777777777777777777777777777777777777',
+        ]),
+      );
     });
 
     /**
@@ -182,45 +215,15 @@ describe('BoxLookup', () => {
 
       // Assert
       expect(boxLookup.getSpentBoxesList().size).toEqual(1);
+      expect(boxLookup.getSpentBoxesList()).toEqual(
+        new Set([
+          '0000000000000000000000000000000000000000000000000000000000000000',
+        ]),
+      );
     });
 
     /**
-     * should retrieve and combine spent boxes from TxPot and by empty node data
-     * @scenario
-     * - mock node api to return empty tx data
-     * - call the updateSpentBoxesList method
-     * - assert spentBoxes size must be equal to the TxPot spent boxes plus node spent boxes
-     * @expected
-     * - spentBoxes size must be equal to 3
-     */
-    it<BoxLookupTestContext>('should retrieve and combine spent boxes from TxPot and by empty node data', async ({
-      boxLookup,
-    }) => {
-      // Mock
-      vi.spyOn(boxLookup['nodeAPI'], 'get').mockImplementation(async (url) => {
-        if (url == '/transactions/unconfirmed')
-          return {
-            data: [],
-            status: 200,
-          };
-
-        return {
-          status: 200,
-          data: {
-            inputs: [{ boxId: url.split('/')[url.split('/').length - 1] }],
-          },
-        };
-      });
-
-      // Act
-      await boxLookup['updateSpentBoxesList']();
-
-      // Assert
-      expect(boxLookup.getSpentBoxesList().size).toEqual(3);
-    });
-
-    /**
-     * should retrieve and combine spent boxes from TxPot and by empty node data
+     * should retrieve and combine spent boxes from empty node and empty TxPot data
      * @scenario
      * - remove total tx from TxPot DB
      * - mock node api to return empty tx data
@@ -229,7 +232,7 @@ describe('BoxLookup', () => {
      * @expected
      * - spentBoxes size must be equal to 0
      */
-    it<BoxLookupTestContext>('should retrieve and combine spent boxes from TxPot and by empty node data', async ({
+    it<BoxLookupTestContext>('should retrieve and combine spent boxes from empty node and empty TxPot data', async ({
       boxLookup,
       txRepository,
     }) => {
@@ -237,20 +240,10 @@ describe('BoxLookup', () => {
       txRepository.clear();
 
       // Mock
-      vi.spyOn(boxLookup['nodeAPI'], 'get').mockImplementation(async (url) => {
-        if (url == '/transactions/unconfirmed')
-          return {
-            data: [],
-            status: 200,
-          };
-
-        return {
-          status: 200,
-          data: {
-            inputs: [{ boxId: url.split('/')[url.split('/').length - 1] }],
-          },
-        };
-      });
+      vi.spyOn(
+        boxLookup['nodeAPI'],
+        'getUnconfirmedTransactions',
+      ).mockImplementation(async () => []);
 
       // Act
       await boxLookup['updateSpentBoxesList']();
