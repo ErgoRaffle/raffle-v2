@@ -29,5 +29,11 @@
   },
   "engines": {
     "node": ">=20.11.0"
+  },
+  "dependencies": {
+    "@ergo-raffle/contracts": "^0.1.0",
+    "@fleet-sdk/core": "^0.4.1",
+    "@fleet-sdk/crypto": "^0.4.1",
+    "@fleet-sdk/serializer": "^0.4.1"
   }
 }
