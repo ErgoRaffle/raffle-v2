@@ -7,6 +7,7 @@ import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
 import ergoNodeClientFactory from '@rosen-clients/ergo-node';
 
 import { Request } from './types/request';
+import { API_LIMIT } from './constants';
 
 export class BoxLookup {
   protected requestsIdCounter: number = 0;
@@ -59,21 +60,20 @@ export class BoxLookup {
    * @return { string[] }
    */
   protected readonly getNodeSpentBoxes = async () => {
-    const limit = 100;
     let results;
     let unspentBoxes: string[] = [];
     let offset = 0;
     do {
       results = await this.nodeAPI.getUnconfirmedTransactions({
-        limit,
+        limit: API_LIMIT,
         offset: offset,
       });
       for (const tx of results)
         unspentBoxes = unspentBoxes.concat(
           ...tx.inputs.map((input: { boxId: string }) => input.boxId),
         );
-      offset += limit;
-    } while (results.length == limit);
+      offset += API_LIMIT;
+    } while (results.length == API_LIMIT);
     return unspentBoxes;
   };
 
