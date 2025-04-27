@@ -187,7 +187,7 @@ export class GiftBuilder {
    * @returns this builder instance
    * @throws Error if box structure doesn't match winner box requirements
    */
-  giftForWinner = (winnerBox: Box<Amount>): this => {
+  static giftForWinner = (winnerBox: Box<Amount>): GiftBuilder => {
     if (winnerBox.assets.length < 2) {
       throw new Error('Invalid winner box: missing required tokens');
     }
@@ -201,12 +201,16 @@ export class GiftBuilder {
     const r4Data = SConstant.from(registers.R4).data as bigint[];
     const winnerIndex = SConstant.from(registers.R5).data as number;
 
+    // Create new builder instance
+    const builder = new GiftBuilder();
+
     // Set all parameters using setters
-    this.setValue(2n * r4Data[2]) // 2 * txFee from R4[2]
+    builder
+      .setValue(2n * r4Data[2]) // 2 * txFee from R4[2]
       .setWinnerIndex(winnerIndex)
       .setTxFee(r4Data[2]) // txFee from R4[2]
       .setGiftToken(winnerBox.assets[1].tokenId);
 
-    return this;
+    return builder;
   };
 }

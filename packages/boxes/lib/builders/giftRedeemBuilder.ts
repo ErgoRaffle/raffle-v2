@@ -33,7 +33,6 @@ export class GiftRedeemBuilder {
   private txFee?: bigint;
   private winnersCount?: number;
   private step?: number;
-  private raffleLicenseToken?: TokenAmount<bigint>;
   private ticketToken?: TokenAmount<bigint>;
   private collectingToken?: TokenAmount<bigint>;
 
@@ -108,19 +107,6 @@ export class GiftRedeemBuilder {
   };
 
   /**
-   * Set the raffle license token
-   * @param tokenId - Raffle license token ID
-   * @returns this builder instance
-   */
-  setRaffleLicenseToken = (tokenId: string): this => {
-    this.raffleLicenseToken = {
-      tokenId,
-      amount: 1n,
-    };
-    return this;
-  };
-
-  /**
    * Set the ticket token
    * @param tokenId - Ticket token ID
    * @param amount - Number of ticket tokens
@@ -160,8 +146,6 @@ export class GiftRedeemBuilder {
     if (!this.txFee) throw new Error('Transaction fee not set');
     if (!this.winnersCount) throw new Error('Winners count not set');
     if (!this.step) throw new Error('Step not set');
-    if (!this.raffleLicenseToken)
-      throw new Error('Raffle license token not set');
     if (!this.ticketToken) throw new Error('Ticket token not set');
   };
 
@@ -174,7 +158,10 @@ export class GiftRedeemBuilder {
   build = (): OutputBuilder => {
     this.validate();
 
-    const tokens = [this.raffleLicenseToken!, this.ticketToken!];
+    const tokens = [
+      { tokenId: raffleInfo.tokens.raffleLicense, amount: 1n },
+      this.ticketToken!,
+    ];
     if (this.collectingToken) {
       tokens.push(this.collectingToken);
     }
@@ -254,7 +241,6 @@ export class GiftRedeemBuilder {
       .setTxFee(r4Data[2])
       .setWinnersCount(SConstant.from(registers.R5).data as number)
       .setStep(SConstant.from(registers.R6).data as number)
-      .setRaffleLicenseToken(box.assets[0].tokenId)
       .setTicketToken(box.assets[1].tokenId, BigInt(box.assets[1].amount));
 
     // Set collecting token if present
@@ -299,7 +285,6 @@ export class GiftRedeemBuilder {
       .setTxFee(r4Data[6])
       .setWinnersCount(SConstant.from(registers.R6).data as number)
       .setStep(1)
-      .setRaffleLicenseToken(box.assets[0].tokenId)
       .setTicketToken(box.assets[1].tokenId, BigInt(box.assets[1].amount) + 1n);
 
     // Set collecting token if present

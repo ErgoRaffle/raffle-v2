@@ -33,10 +33,12 @@ export class RaffleDetailsBuilder {
   /**
    * Fill data from an inactive raffle box
    * @param inactiveRaffleBox - The inactive raffle box to get information from
-   * @returns this builder instance
+   * @returns New RaffleDetailsBuilder instance with data from inactive raffle
    * @throws Error if inactive raffle box is invalid
    */
-  fromInactiveRaffle = (inactiveRaffleBox: Box<Amount>): this => {
+  static fromInactiveRaffle = (
+    inactiveRaffleBox: Box<Amount>,
+  ): RaffleDetailsBuilder => {
     if (inactiveRaffleBox.assets.length < 1) {
       throw new Error('Invalid inactive raffle box: missing required tokens');
     }
@@ -81,15 +83,17 @@ export class RaffleDetailsBuilder {
     }
     const txFee = r4Data[6];
 
-    this.setName(name)
+    const builder = new RaffleDetailsBuilder();
+    builder
+      .setName(name)
       .setDescription(description)
       .setValue(txFee)
       .setTicketToken(ticketId, 1n);
 
     // Add all pictures
-    pictures.forEach((pic) => this.addPicture(pic));
+    pictures.forEach((pic) => builder.addPicture(pic));
 
-    return this;
+    return builder;
   };
 
   /**
@@ -197,40 +201,4 @@ export class RaffleDetailsBuilder {
         R4: SColl(SColl(SByte), r4Data).toHex(),
       });
   };
-
-  /**
-   * Create a RaffleDetailsBuilder instance from an existing box
-   * @param box - Existing raffle details box to copy configuration from
-   * @returns New RaffleDetailsBuilder instance with copied configuration
-   * @throws Error if box structure doesn't match raffle details box requirements
-   */
-  static fromBox(box: Box<Amount>): RaffleDetailsBuilder {
-    if (box.assets.length < 1) {
-      throw new Error('Invalid raffle details box: missing required tokens');
-    }
-
-    const registers = box.additionalRegisters;
-    if (!registers.R4) {
-      throw new Error('Invalid raffle details box: missing required registers');
-    }
-
-    const r4Data = SConstant.from(registers.R4).data as Uint8Array[];
-    if (r4Data.length < 5) {
-      throw new Error('Invalid raffle details box: invalid R4 register format');
-    }
-
-    const builder = new RaffleDetailsBuilder();
-    builder.value = BigInt(box.value);
-    builder.creationHeight = box.creationHeight;
-    builder.name = Buffer.from(r4Data[0]).toString();
-    builder.description = Buffer.from(r4Data[1]).toString();
-    builder.pictures = r4Data
-      .slice(2)
-      .map((arr) => Buffer.from(arr).toString());
-    builder.ticketToken = {
-      tokenId: box.assets[0].tokenId,
-      amount: 1n,
-    };
-    return builder;
-  }
 }
