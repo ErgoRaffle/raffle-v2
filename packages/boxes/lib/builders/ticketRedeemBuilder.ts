@@ -219,7 +219,6 @@ export class TicketRedeemBuilder {
 
     const builder = new TicketRedeemBuilder()
       .setValue(BigInt(box.value))
-      .setCreationHeight(box.creationHeight)
       .setTotalSoldTickets(r4Data[0])
       .setTicketPrice(r4Data[1])
       .setTxFee(r4Data[2])

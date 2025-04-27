@@ -401,7 +401,6 @@ export class ActiveRaffleBuilder {
     // Set all parameters using setters
     builder
       .setValue(BigInt(box.value))
-      .setCreationHeight(box.creationHeight)
       .setWinnersPercent(r4Data[0])
       .setServiceFeePercent(r4Data[1])
       .setImplementerFeePercent(r4Data[2])
@@ -481,7 +480,6 @@ export class ActiveRaffleBuilder {
     // Set all parameters using setters
     builder
       .setValue(BigInt(box.value) - 5n * r4Data[6] * BigInt(r8Data) - r4Data[6]) // Value calculation from contract
-      .setCreationHeight(box.creationHeight)
       .setWinnersPercent(r4Data[0])
       .setServiceFeePercent(r4Data[1])
       .setImplementerFeePercent(r4Data[2])

@@ -313,7 +313,6 @@ export class SuccessRaffleBuilder {
 
     const builder = new SuccessRaffleBuilder()
       .setValue(BigInt(box.value))
-      .setCreationHeight(box.creationHeight)
       .setTotalPrize(r4Data[0])
       .setTotalSoldTickets(r4Data[1])
       .setTxFee(r4Data[2])
