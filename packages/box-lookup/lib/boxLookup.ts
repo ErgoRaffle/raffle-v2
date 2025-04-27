@@ -59,20 +59,21 @@ export class BoxLookup {
    * @return { string[] }
    */
   protected readonly getNodeSpentBoxes = async () => {
+    const limit = 100;
     let results;
     let unspentBoxes: string[] = [];
     let offset = 0;
     do {
       results = await this.nodeAPI.getUnconfirmedTransactions({
-        limit: 100,
+        limit,
         offset: offset,
       });
       for (const tx of results)
         unspentBoxes = unspentBoxes.concat(
           ...tx.inputs.map((input: { boxId: string }) => input.boxId),
         );
-      offset += 100;
-    } while (results.length == 100);
+      offset += limit;
+    } while (results.length == limit);
     return unspentBoxes;
   };
 
