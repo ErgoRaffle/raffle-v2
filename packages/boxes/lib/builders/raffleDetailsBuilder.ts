@@ -4,7 +4,6 @@ import {
   TokenAmount,
   Amount,
   SColl,
-  SLong,
   SByte,
   ErgoAddress,
 } from '@fleet-sdk/core';
