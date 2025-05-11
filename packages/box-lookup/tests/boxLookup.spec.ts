@@ -10,6 +10,7 @@ import {
 } from './mocked/boxLookup.mock';
 import { Repository } from 'typeorm';
 import { Transactions } from '@rosen-clients/ergo-node';
+import { ErgoAddress } from '@fleet-sdk/core';
 
 interface BoxLookupTestContext {
   txRepository: Repository<TransactionEntity>;
@@ -27,7 +28,7 @@ beforeEach<BoxLookupTestContext>(async (context) => {
   const txPot = TxPot.setup(dataSource);
   const txRepository = dataSource.getRepository(TransactionEntity);
   await txRepository.insert(SampleTransactionEntities);
-  const boxLookup = new BoxLookup(txPot, 'http://127.0.0.1:9052/');
+  const boxLookup = new BoxLookup(txPot, 'http://127.0.0.1:9052/', 1);
   vi.spyOn(
     boxLookup['nodeAPI'],
     'getUnconfirmedTransactions',
@@ -135,11 +136,11 @@ describe('BoxLookup', () => {
     });
   });
 
-  describe('updateSpentBoxesList', () => {
+  describe('updateBoxesLists', () => {
     /**
      * should retrieve and combine spent boxes from node and TxPot
      * @scenario
-     * - call the updateSpentBoxesList method
+     * - call the updateBoxesLists method
      * - assert spentBoxes size must be equal to the TxPot spent boxes plus node spent boxes
      * @expected
      * - spentBoxes size must be equal to 4
@@ -148,7 +149,7 @@ describe('BoxLookup', () => {
       boxLookup,
     }) => {
       // Act
-      await boxLookup['updateSpentBoxesList']();
+      await boxLookup['updateBoxesLists']();
 
       // Assert
       expect(boxLookup.getSpentBoxesList().size).toEqual(4);
@@ -163,10 +164,10 @@ describe('BoxLookup', () => {
     });
 
     /**
-     * should retrieve and combine spent boxes from empty node and empty TxPot data
+     * should retrieve and combine spent boxes from empty node and TxPot data
      * @scenario
      * - mock node api to return empty tx data
-     * - call the updateSpentBoxesList method
+     * - call the updateBoxesLists method
      * - assert spentBoxes size must be equal to the TxPot spent boxes plus node spent boxes
      * @expected
      * - spentBoxes size must be equal to 0
@@ -181,7 +182,7 @@ describe('BoxLookup', () => {
       ).mockImplementation(async () => []);
 
       // Act
-      await boxLookup['updateSpentBoxesList']();
+      await boxLookup['updateBoxesLists']();
 
       // Assert
       expect(boxLookup.getSpentBoxesList().size).toEqual(3);
@@ -198,7 +199,7 @@ describe('BoxLookup', () => {
      * should retrieve and combine spent boxes from node and by empty TxPot data
      * @scenario
      * - remove total tx from TxPot DB
-     * - call the updateSpentBoxesList method
+     * - call the updateBoxesLists method
      * - assert spentBoxes size must be equal to the TxPot spent boxes plus node spent boxes
      * @expected
      * - spentBoxes size must be equal to 1
@@ -211,7 +212,7 @@ describe('BoxLookup', () => {
       txRepository.clear();
 
       // Act
-      await boxLookup['updateSpentBoxesList']();
+      await boxLookup['updateBoxesLists']();
 
       // Assert
       expect(boxLookup.getSpentBoxesList().size).toEqual(1);
@@ -227,7 +228,7 @@ describe('BoxLookup', () => {
      * @scenario
      * - remove total tx from TxPot DB
      * - mock node api to return empty tx data
-     * - call the updateSpentBoxesList method
+     * - call the updateBoxesLists method
      * - assert spentBoxes size must be equal to the TxPot spent boxes plus node spent boxes
      * @expected
      * - spentBoxes size must be equal to 0
@@ -246,10 +247,133 @@ describe('BoxLookup', () => {
       ).mockImplementation(async () => []);
 
       // Act
-      await boxLookup['updateSpentBoxesList']();
+      await boxLookup['updateBoxesLists']();
 
       // Assert
       expect(boxLookup.getSpentBoxesList().size).toEqual(0);
+    });
+  });
+
+  describe('serveRequests', () => {
+    interface ServeRequestsInterface {
+      boxLookup: BoxLookup;
+      mockOnSuffice: () => Promise<void>;
+    }
+
+    beforeEach<ServeRequestsInterface>((context) => {
+      const mockTxPot = {
+        getTxsByStatus: vi.fn().mockResolvedValue([]),
+      } as unknown as TxPot;
+      const mockOnSuffice = vi.fn();
+      const boxLookup = new BoxLookup(mockTxPot, 'http://127.0.0.1:9052', 1);
+
+      // mock updateBoxesLists manually to insert desired boxes
+      (boxLookup as unknown as { updateBoxesLists: () => Promise<void> })[
+        'updateBoxesLists'
+      ] = async () => {
+        boxLookup['unspentBoxes'] = JSON.parse(
+          SampleTransactionEntities[0].serializedTx,
+        ).outputs;
+      };
+
+      boxLookup['alreadySelectedUnspentBoxesIds'] = new Set();
+
+      // register request
+      boxLookup['requests'].set(1, {
+        address: ErgoAddress.fromErgoTree(
+          '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
+        ).toString(),
+        tokens: [
+          {
+            tokenId:
+              '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+            amount: 50n,
+          },
+        ],
+        onSuffice: mockOnSuffice,
+      });
+
+      mockOnSuffice.mockClear();
+
+      context.boxLookup = boxLookup;
+      context.mockOnSuffice = mockOnSuffice;
+    });
+
+    /**
+     * request callback must fired when sufficient token is found in unspent boxes
+     * @scenario
+     * - mock a transaction containing the required token with sufficient amount
+     * - register a request with a matching token and amount
+     * - run the boxLookup job
+     * - stop the job and wait for it to finish
+     * @expected
+     * - onSuffice callback must be called exactly once
+     */
+    it<ServeRequestsInterface>('request callback must fired when sufficient token is found in unspent boxes', async ({
+      boxLookup,
+      mockOnSuffice,
+    }) => {
+      const startJob = boxLookup.run();
+      await boxLookup.stop();
+      await startJob;
+      expect(mockOnSuffice).toBeCalledTimes(1);
+    });
+
+    /**
+     * does not call onSuffice if box has insufficient token amount
+     * @scenario
+     * - add a second request requiring more tokens than available in the mocked box
+     * - run and stop the boxLookup job
+     * @expected
+     * - onSuffice should only be called once (for the first request)
+     */
+    it<ServeRequestsInterface>('does not call onSuffice if box has insufficient token amount', async ({
+      boxLookup,
+      mockOnSuffice,
+    }) => {
+      boxLookup['requests'].set(2, {
+        address: ErgoAddress.fromErgoTree(
+          '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
+        ).toString(),
+        tokens: [
+          {
+            tokenId:
+              '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+            amount: 200n,
+          },
+        ],
+        onSuffice: mockOnSuffice,
+      });
+
+      const startJob = boxLookup.run();
+      await boxLookup.stop();
+      await startJob;
+
+      expect(mockOnSuffice).toHaveBeenCalledTimes(1);
+    });
+
+    /**
+     * does nothing if no requests are registered
+     * @scenario
+     * - clear all registered requests
+     * - run the boxLookup job
+     * - spy on the internal updateBoxesLists method
+     * @expected
+     * - updateBoxesLists must not be called at all
+     */
+    it<ServeRequestsInterface>('does nothing if no requests are registered', async ({
+      boxLookup,
+    }) => {
+      boxLookup['requests'].clear();
+      const spy = vi.spyOn(
+        boxLookup as unknown as { updateBoxesLists: () => Promise<void> },
+        'updateBoxesLists',
+      );
+      const startJob = boxLookup.run();
+      await boxLookup.stop();
+      await startJob;
+
+      expect(spy).not.toHaveBeenCalled();
     });
   });
 });
