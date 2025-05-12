@@ -157,7 +157,7 @@ export class BoxLookup {
    *
    * @return
    */
-  protected readonly updateBoxesLists = async () => {
+  protected updateBoxesLists = async () => {
     const [nodeInputBoxesIds, nodeOutputBoxes] =
       await this.getArrangedNodeBoxes();
     const [txPotInputBoxesIds, txPotOutputBoxes] =
