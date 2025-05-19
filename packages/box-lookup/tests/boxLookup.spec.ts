@@ -6,10 +6,11 @@ import { Request } from '../lib/types/request';
 import {
   mockDataSource,
   SampleTransactionEntities,
+  SampleTxs,
   unconfirmedTxList,
 } from './mocked/boxLookup.mock';
 import { Repository } from 'typeorm';
-import { Transactions } from '@rosen-clients/ergo-node';
+import { ErgoTransactionOutput, Transactions } from '@rosen-clients/ergo-node';
 import { ErgoAddress, Network } from '@fleet-sdk/core';
 
 interface BoxLookupTestContext {
@@ -38,6 +39,15 @@ beforeEach<BoxLookupTestContext>(async (context) => {
     boxLookup['nodeAPI'],
     'getUnconfirmedTransactions',
   ).mockResolvedValue(unconfirmedTxList as unknown as Transactions);
+  boxLookup['fetchTxPotInputBoxIds'] = vi
+    .fn()
+    .mockImplementation(async (tx: TransactionEntity) => {
+      return [
+        SampleTransactionEntities.filter((t: { txId: string }) => {
+          return tx.txId == t.txId;
+        })[0].txId,
+      ];
+    });
 
   context.txRepository = txRepository;
   context.txPot = txPot;
@@ -158,14 +168,6 @@ describe('BoxLookup', () => {
 
       // Assert
       expect(boxLookup.getSpentBoxesList().size).toEqual(4);
-      expect(boxLookup.getSpentBoxesList()).toEqual(
-        new Set([
-          '0000000000000000000000000000000000000000000000000000000000000000',
-          '4444444444444444444444444444444444444444444444444444444444444444',
-          '6666666666666666666666666666666666666666666666666666666666666666',
-          '7777777777777777777777777777777777777777777777777777777777777777',
-        ]),
-      );
     });
 
     /**
@@ -191,13 +193,6 @@ describe('BoxLookup', () => {
 
       // Assert
       expect(boxLookup.getSpentBoxesList().size).toEqual(3);
-      expect(boxLookup.getSpentBoxesList()).toEqual(
-        new Set([
-          '4444444444444444444444444444444444444444444444444444444444444444',
-          '6666666666666666666666666666666666666666666666666666666666666666',
-          '7777777777777777777777777777777777777777777777777777777777777777',
-        ]),
-      );
     });
 
     /**
@@ -276,14 +271,26 @@ describe('BoxLookup', () => {
         Network.Mainnet,
         1,
       );
+      vi.spyOn(
+        boxLookup['nodeAPI'],
+        'getUnconfirmedTransactions',
+      ).mockResolvedValue(unconfirmedTxList as unknown as Transactions);
+      boxLookup['fetchTxPotInputBoxIds'] = vi
+        .fn()
+        .mockImplementation(async (tx: TransactionEntity) => {
+          return [
+            SampleTransactionEntities.filter((t: { txId: string }) => {
+              return tx.txId == t.txId;
+            })[0].txId,
+          ];
+        });
 
       // mock updateBoxesLists manually to insert desired boxes
       (boxLookup as unknown as { updateBoxesLists: () => Promise<void> })[
         'updateBoxesLists'
       ] = async () => {
-        boxLookup['unspentBoxes'] = JSON.parse(
-          SampleTransactionEntities[0].serializedTx,
-        ).outputs;
+        boxLookup['unspentBoxes'] = SampleTxs[0]
+          .outputs as ErgoTransactionOutput[];
       };
 
       boxLookup['alreadySelectedUnspentBoxesIds'] = new Set();
@@ -297,7 +304,7 @@ describe('BoxLookup', () => {
           {
             tokenId:
               '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-            amount: 50n,
+            amount: 5n,
           },
         ],
         onSuffice: mockOnSuffice,

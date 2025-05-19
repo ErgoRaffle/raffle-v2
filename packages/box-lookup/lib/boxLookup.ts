@@ -11,6 +11,7 @@ import ergoNodeClientFactory, {
 import { Request } from './types/request';
 import { API_LIMIT } from './constants';
 import { ErgoAddress, Network } from '@fleet-sdk/core';
+import { deserializeTransaction } from '@fleet-sdk/serializer';
 
 export class BoxLookup {
   protected requestsIdCounter: number = 0;
@@ -98,15 +99,16 @@ export class BoxLookup {
    *
    * @return { string[] }
    */
-  protected readonly fetchTxPotInputBoxIds = async (tx: TransactionEntity) => {
+  protected fetchTxPotInputBoxIds = async (tx: TransactionEntity) => {
     try {
-      return JSON.parse(tx.serializedTx).inputs.map(
-        (input: { boxId: string }) => input.boxId,
-      );
+      return deserializeTransaction(
+        Buffer.from(tx.serializedTx, 'base64'),
+      ).inputs.map((input: { boxId: string }) => input.boxId);
     } catch (err) {
       this.logger.error(
         `Invalid ${tx.txId} tx serialized value: ${tx.serializedTx}`,
       );
+      throw err;
     }
     return [];
   };
@@ -118,13 +120,14 @@ export class BoxLookup {
    */
   protected readonly fetchTxPotOutputBoxes = async (tx: TransactionEntity) => {
     try {
-      return JSON.parse(tx.serializedTx).outputs;
+      return deserializeTransaction(Buffer.from(tx.serializedTx, 'base64'))
+        .outputs as ErgoTransactionOutput[];
     } catch (err) {
       this.logger.error(
         `Invalid ${tx.txId} tx serialized value: ${tx.serializedTx}`,
       );
     }
-    return [];
+    return [] as ErgoTransactionOutput[];
   };
 
   /**
