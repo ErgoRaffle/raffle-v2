@@ -10,7 +10,7 @@ import {
 } from './mocked/boxLookup.mock';
 import { Repository } from 'typeorm';
 import { Transactions } from '@rosen-clients/ergo-node';
-import { ErgoAddress } from '@fleet-sdk/core';
+import { ErgoAddress, Network } from '@fleet-sdk/core';
 
 interface BoxLookupTestContext {
   txRepository: Repository<TransactionEntity>;
@@ -28,7 +28,12 @@ beforeEach<BoxLookupTestContext>(async (context) => {
   const txPot = TxPot.setup(dataSource);
   const txRepository = dataSource.getRepository(TransactionEntity);
   await txRepository.insert(SampleTransactionEntities);
-  const boxLookup = new BoxLookup(txPot, 'http://127.0.0.1:9052/', 1);
+  const boxLookup = new BoxLookup(
+    txPot,
+    'http://127.0.0.1:9052/',
+    Network.Mainnet,
+    1,
+  );
   vi.spyOn(
     boxLookup['nodeAPI'],
     'getUnconfirmedTransactions',
@@ -265,7 +270,12 @@ describe('BoxLookup', () => {
         getTxsByStatus: vi.fn().mockResolvedValue([]),
       } as unknown as TxPot;
       const mockOnSuffice = vi.fn();
-      const boxLookup = new BoxLookup(mockTxPot, 'http://127.0.0.1:9052', 1);
+      const boxLookup = new BoxLookup(
+        mockTxPot,
+        'http://127.0.0.1:9052',
+        Network.Mainnet,
+        1,
+      );
 
       // mock updateBoxesLists manually to insert desired boxes
       (boxLookup as unknown as { updateBoxesLists: () => Promise<void> })[

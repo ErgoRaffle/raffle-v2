@@ -10,7 +10,7 @@ import ergoNodeClientFactory, {
 
 import { Request } from './types/request';
 import { API_LIMIT } from './constants';
-import { ErgoAddress } from '@fleet-sdk/core';
+import { ErgoAddress, Network } from '@fleet-sdk/core';
 
 export class BoxLookup {
   protected requestsIdCounter: number = 0;
@@ -26,6 +26,7 @@ export class BoxLookup {
   constructor(
     protected txPot: TxPot,
     nodeURL: string,
+    protected networkType: Network,
     delayBetweenChecksAsSecond: number,
     protected logger: AbstractLogger = new DummyLogger(),
   ) {
@@ -199,7 +200,7 @@ export class BoxLookup {
    * @returns
    */
   public run = async () => {
-    if (this.requests.size === 0) return;
+    if (this.running || this.requests.size === 0) return;
     this.running = true;
     await this.serveRequests();
   };
@@ -218,7 +219,10 @@ export class BoxLookup {
 
       for (const box of unspentBoxes) {
         const isFromCorrectAddress =
-          ErgoAddress.fromErgoTree(box.ergoTree).toString() === request.address;
+          ErgoAddress.fromErgoTree(
+            box.ergoTree,
+            this.networkType,
+          ).toString() === request.address;
         const isNewBox =
           box.boxId && !this.alreadySelectedUnspentBoxesIds.has(box.boxId);
 
