@@ -286,7 +286,7 @@ describe('BoxLookup', () => {
         ).outputs;
       };
 
-      boxLookup['alreadySelectedUnspentBoxesIds'] = new Set();
+      boxLookup['alreadySelectedUnspentBoxIds'] = new Set();
 
       // register request
       boxLookup['requests'].set(1, {
@@ -323,7 +323,7 @@ describe('BoxLookup', () => {
       boxLookup,
       mockOnSuffice,
     }) => {
-      const startJob = boxLookup.run();
+      const startJob = boxLookup.start();
       await boxLookup.stop();
       await startJob;
       expect(mockOnSuffice).toBeCalledTimes(1);
@@ -355,7 +355,7 @@ describe('BoxLookup', () => {
         onSuffice: mockOnSuffice,
       });
 
-      const startJob = boxLookup.run();
+      const startJob = boxLookup.start();
       await boxLookup.stop();
       await startJob;
 
@@ -379,7 +379,7 @@ describe('BoxLookup', () => {
         boxLookup as unknown as { updateBoxesLists: () => Promise<void> },
         'updateBoxesLists',
       );
-      const startJob = boxLookup.run();
+      const startJob = boxLookup.start();
       await boxLookup.stop();
       await startJob;
 

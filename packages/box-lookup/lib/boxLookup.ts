@@ -16,10 +16,10 @@ export class BoxLookup {
   protected requestsIdCounter: number = 0;
   protected spentBoxes: Set<string> = new Set<string>();
   protected unspentBoxes: ErgoTransactionOutput[] = [];
-  protected alreadySelectedUnspentBoxesIds: Set<string> = new Set<string>();
+  protected alreadySelectedUnspentBoxIds: Set<string> = new Set<string>();
   protected nodeAPI;
   protected requests = new Map<number, Request>();
-  protected delayBetweenChecksAsSecond: number;
+  protected intervalAsSecond: number;
   protected running = false;
   protected latestTimeout: ReturnType<typeof setTimeout>;
 
@@ -27,11 +27,11 @@ export class BoxLookup {
     protected txPot: TxPot,
     nodeURL: string,
     protected networkType: Network,
-    delayBetweenChecksAsSecond: number,
+    intervalAsSecond: number,
     protected logger: AbstractLogger = new DummyLogger(),
   ) {
     this.nodeAPI = ergoNodeClientFactory(nodeURL);
-    this.delayBetweenChecksAsSecond = delayBetweenChecksAsSecond;
+    this.intervalAsSecond = intervalAsSecond;
   }
 
   /**
@@ -112,7 +112,7 @@ export class BoxLookup {
   };
 
   /**
-   * Fetch TxPot spent boxes by txId
+   * Fetch TxPot spent boxes of a transaction
    *
    * @return { string[] }
    */
@@ -172,11 +172,11 @@ export class BoxLookup {
     );
 
     // remove unavailable unspent-boxes to reduce memory usage
-    for (const alreadyUnspentBox of this.alreadySelectedUnspentBoxesIds) {
+    for (const alreadyUnspentBox of this.alreadySelectedUnspentBoxIds) {
       if (
         this.unspentBoxes.map((box) => box.boxId).indexOf(alreadyUnspentBox) < 0
       )
-        this.alreadySelectedUnspentBoxesIds.delete(alreadyUnspentBox);
+        this.alreadySelectedUnspentBoxIds.delete(alreadyUnspentBox);
     }
   };
 
@@ -199,7 +199,7 @@ export class BoxLookup {
    *
    * @returns
    */
-  public run = async () => {
+  public start = async () => {
     if (this.running || this.requests.size === 0) return;
     this.running = true;
     await this.serveRequests();
@@ -214,8 +214,8 @@ export class BoxLookup {
     await this.updateBoxesLists();
     const unspentBoxes = Array.from(this.unspentBoxes);
     for (const request of this.requests.values()) {
-      const selectedBoxes: typeof unspentBoxes = [];
-      const totalAmounts: Record<string, number> = {};
+      let selectedBoxes: ErgoTransactionOutput[] = [];
+      const totalAmounts: Map<string, number> = new Map<string, number>();
 
       for (const box of unspentBoxes) {
         const isFromCorrectAddress =
@@ -224,33 +224,37 @@ export class BoxLookup {
             this.networkType,
           ).toString() === request.address;
         const isNewBox =
-          box.boxId && !this.alreadySelectedUnspentBoxesIds.has(box.boxId);
+          box.boxId && !this.alreadySelectedUnspentBoxIds.has(box.boxId);
 
-        const hasAllRequiredTokens = request.tokens.every((token) =>
+        const hasRequiredTokens = request.tokens.some((token) =>
           (box.assets ?? []).some((asset) => asset.tokenId === token.tokenId),
         );
 
-        if (isFromCorrectAddress && isNewBox && hasAllRequiredTokens) {
+        if (isFromCorrectAddress && isNewBox && hasRequiredTokens) {
           selectedBoxes.push(box);
-          this.alreadySelectedUnspentBoxesIds.add(box.boxId!);
           for (const token of request.tokens) {
             const asset = (box.assets ?? []).find(
               (a) => a.tokenId === token.tokenId,
             );
             if (asset) {
-              totalAmounts[token.tokenId] =
-                (totalAmounts[token.tokenId] || 0) + Number(asset.amount);
+              totalAmounts.set(
+                token.tokenId,
+                (totalAmounts.get(token.tokenId) || 0) + Number(asset.amount),
+              );
             }
           }
 
           const isSufficient = request.tokens.every(
-            (token) => totalAmounts[token.tokenId] >= Number(token.amount),
+            (token) =>
+              (totalAmounts.get(token.tokenId) || -1) >= Number(token.amount),
           );
 
           if (isSufficient) {
+            for (const box of selectedBoxes)
+              this.alreadySelectedUnspentBoxIds.add(box.boxId!);
             request.onSuffice(selectedBoxes);
-            selectedBoxes.length = 0; // reset for next round
-            Object.keys(totalAmounts).forEach((k) => delete totalAmounts[k]);
+            selectedBoxes = []; // reset for next round
+            Object.keys(totalAmounts).forEach((k) => totalAmounts.delete(k));
           }
         }
       }
@@ -258,7 +262,7 @@ export class BoxLookup {
     if (this.running) {
       this.latestTimeout = setTimeout(
         this.serveRequests,
-        this.delayBetweenChecksAsSecond * 1000,
+        this.intervalAsSecond * 1000,
       );
     }
   };
