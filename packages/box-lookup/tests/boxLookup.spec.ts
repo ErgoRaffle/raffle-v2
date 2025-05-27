@@ -9,8 +9,8 @@ import {
   unconfirmedTxList,
 } from './mocked/boxLookup.mock';
 import { Repository } from 'typeorm';
-import { Transactions } from '@rosen-clients/ergo-node';
-import { ErgoAddress, Network } from '@fleet-sdk/core';
+import { ErgoTransactionOutput, Transactions } from '@rosen-clients/ergo-node';
+import { ErgoAddress, Network, SAFE_MIN_BOX_VALUE } from '@fleet-sdk/core';
 
 interface BoxLookupTestContext {
   txRepository: Repository<TransactionEntity>;
@@ -32,7 +32,6 @@ beforeEach<BoxLookupTestContext>(async (context) => {
     txPot,
     'http://127.0.0.1:9052/',
     Network.Mainnet,
-    1,
   );
   vi.spyOn(
     boxLookup['nodeAPI'],
@@ -154,11 +153,11 @@ describe('BoxLookup', () => {
       boxLookup,
     }) => {
       // Act
-      await boxLookup['updateBoxesLists']();
+      const [spentBoxesList] = await boxLookup['updateBoxesLists']();
 
       // Assert
-      expect(boxLookup.getSpentBoxesList().size).toEqual(4);
-      expect(boxLookup.getSpentBoxesList()).toEqual(
+      expect((spentBoxesList as Set<string>).size).toEqual(4);
+      expect(spentBoxesList).toEqual(
         new Set([
           '0000000000000000000000000000000000000000000000000000000000000000',
           '4444444444444444444444444444444444444444444444444444444444444444',
@@ -187,11 +186,11 @@ describe('BoxLookup', () => {
       ).mockImplementation(async () => []);
 
       // Act
-      await boxLookup['updateBoxesLists']();
+      const [spentBoxesList] = await boxLookup['updateBoxesLists']();
 
       // Assert
-      expect(boxLookup.getSpentBoxesList().size).toEqual(3);
-      expect(boxLookup.getSpentBoxesList()).toEqual(
+      expect((spentBoxesList as Set<string>).size).toEqual(3);
+      expect(spentBoxesList).toEqual(
         new Set([
           '4444444444444444444444444444444444444444444444444444444444444444',
           '6666666666666666666666666666666666666666666666666666666666666666',
@@ -217,11 +216,11 @@ describe('BoxLookup', () => {
       txRepository.clear();
 
       // Act
-      await boxLookup['updateBoxesLists']();
+      const [spentBoxesList] = await boxLookup['updateBoxesLists']();
 
       // Assert
-      expect(boxLookup.getSpentBoxesList().size).toEqual(1);
-      expect(boxLookup.getSpentBoxesList()).toEqual(
+      expect((spentBoxesList as Set<string>).size).toEqual(1);
+      expect(spentBoxesList).toEqual(
         new Set([
           '0000000000000000000000000000000000000000000000000000000000000000',
         ]),
@@ -252,10 +251,10 @@ describe('BoxLookup', () => {
       ).mockImplementation(async () => []);
 
       // Act
-      await boxLookup['updateBoxesLists']();
+      const [spentBoxesList] = await boxLookup['updateBoxesLists']();
 
       // Assert
-      expect(boxLookup.getSpentBoxesList().size).toEqual(0);
+      expect(spentBoxesList.values.length).toEqual(0);
     });
   });
 
@@ -274,25 +273,28 @@ describe('BoxLookup', () => {
         mockTxPot,
         'http://127.0.0.1:9052',
         Network.Mainnet,
-        1,
       );
 
       // mock updateBoxesLists manually to insert desired boxes
-      (boxLookup as unknown as { updateBoxesLists: () => Promise<void> })[
-        'updateBoxesLists'
-      ] = async () => {
-        boxLookup['unspentBoxes'] = JSON.parse(
-          SampleTransactionEntities[0].serializedTx,
-        ).outputs;
+      (
+        boxLookup as unknown as {
+          updateBoxesLists: () => Promise<
+            Array<Set<string> | ErgoTransactionOutput[]>
+          >;
+        }
+      )['updateBoxesLists'] = async () => {
+        return [
+          [],
+          JSON.parse(SampleTransactionEntities[0].serializedTx).outputs,
+        ];
       };
-
-      boxLookup['alreadySelectedUnspentBoxIds'] = new Set();
 
       // register request
       boxLookup['requests'].set(1, {
         address: ErgoAddress.fromErgoTree(
           '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
         ).toString(),
+        nanoErgValue: 0,
         tokens: [
           {
             tokenId:
@@ -323,9 +325,71 @@ describe('BoxLookup', () => {
       boxLookup,
       mockOnSuffice,
     }) => {
-      const startJob = boxLookup.start();
-      await boxLookup.stop();
-      await startJob;
+      await boxLookup.serveRequests();
+      expect(mockOnSuffice).toBeCalledTimes(1);
+    });
+
+    /**
+     * request callback must fired when sufficient ergs is found in unspent boxes
+     * @scenario
+     * - mock a transaction containing the required ergs with sufficient amount
+     * - register a request with a matching erg amount
+     * - run the boxLookup job
+     * - stop the job and wait for it to finish
+     * @expected
+     * - onSuffice callback must be called exactly once
+     */
+    it<ServeRequestsInterface>('request callback must fired when sufficient ergs is found in unspent boxes', async ({
+      boxLookup,
+      mockOnSuffice,
+    }) => {
+      boxLookup['requests'].clear();
+      // Mock register request
+      boxLookup['requests'].set(1, {
+        address: ErgoAddress.fromErgoTree(
+          '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
+        ).toString(),
+        nanoErgValue: Number(SAFE_MIN_BOX_VALUE * 2n),
+        tokens: [],
+        onSuffice: mockOnSuffice,
+      });
+
+      await boxLookup.serveRequests();
+      expect(mockOnSuffice).toBeCalledTimes(1);
+    });
+
+    /**
+     * request callback must fired when sufficient ergs and token is found in unspent boxes
+     * @scenario
+     * - mock a transaction containing the required ergs and token with sufficient amount
+     * - register a request with a matching erg and token amount
+     * - run the boxLookup job
+     * - stop the job and wait for it to finish
+     * @expected
+     * - onSuffice callback must be called exactly once
+     */
+    it<ServeRequestsInterface>('request callback must fired when sufficient ergs and token is found in unspent boxes', async ({
+      boxLookup,
+      mockOnSuffice,
+    }) => {
+      boxLookup['requests'].clear();
+      // Mock register request
+      boxLookup['requests'].set(1, {
+        address: ErgoAddress.fromErgoTree(
+          '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
+        ).toString(),
+        nanoErgValue: Number(SAFE_MIN_BOX_VALUE * 2n),
+        tokens: [
+          {
+            tokenId:
+              '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+            amount: 50n,
+          },
+        ],
+        onSuffice: mockOnSuffice,
+      });
+
+      await boxLookup.serveRequests();
       expect(mockOnSuffice).toBeCalledTimes(1);
     });
 
@@ -345,6 +409,7 @@ describe('BoxLookup', () => {
         address: ErgoAddress.fromErgoTree(
           '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
         ).toString(),
+        nanoErgValue: 0,
         tokens: [
           {
             tokenId:
@@ -355,9 +420,7 @@ describe('BoxLookup', () => {
         onSuffice: mockOnSuffice,
       });
 
-      const startJob = boxLookup.start();
-      await boxLookup.stop();
-      await startJob;
+      await boxLookup.serveRequests();
 
       expect(mockOnSuffice).toHaveBeenCalledTimes(1);
     });
@@ -375,13 +438,17 @@ describe('BoxLookup', () => {
       boxLookup,
     }) => {
       boxLookup['requests'].clear();
-      const spy = vi.spyOn(
-        boxLookup as unknown as { updateBoxesLists: () => Promise<void> },
-        'updateBoxesLists',
-      );
-      const startJob = boxLookup.start();
-      await boxLookup.stop();
-      await startJob;
+      const spy = vi
+        .spyOn(
+          boxLookup as unknown as {
+            updateBoxesLists: () => Promise<
+              Array<Set<string> | ErgoTransactionOutput[]>
+            >;
+          },
+          'updateBoxesLists',
+        )
+        .mockImplementation(async () => []);
+      await boxLookup.serveRequests();
 
       expect(spy).not.toHaveBeenCalled();
     });

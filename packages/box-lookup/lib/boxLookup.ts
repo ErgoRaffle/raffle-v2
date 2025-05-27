@@ -10,28 +10,21 @@ import ergoNodeClientFactory, {
 
 import { Request } from './types/request';
 import { API_LIMIT } from './constants';
-import { ErgoAddress, Network } from '@fleet-sdk/core';
+import { ErgoAddress, Network, SAFE_MIN_BOX_VALUE } from '@fleet-sdk/core';
 
 export class BoxLookup {
   protected requestsIdCounter: number = 0;
-  protected spentBoxes: Set<string> = new Set<string>();
-  protected unspentBoxes: ErgoTransactionOutput[] = [];
-  protected alreadySelectedUnspentBoxIds: Set<string> = new Set<string>();
   protected nodeAPI;
   protected requests = new Map<number, Request>();
-  protected intervalAsSecond: number;
-  protected running = false;
   protected latestTimeout: ReturnType<typeof setTimeout>;
 
   constructor(
     protected txPot: TxPot,
     nodeURL: string,
     protected networkType: Network,
-    intervalAsSecond: number,
     protected logger: AbstractLogger = new DummyLogger(),
   ) {
     this.nodeAPI = ergoNodeClientFactory(nodeURL);
-    this.intervalAsSecond = intervalAsSecond;
   }
 
   /**
@@ -163,46 +156,18 @@ export class BoxLookup {
       await this.getArrangedNodeBoxes();
     const [txPotInputBoxesIds, txPotOutputBoxes] =
       await this.getArrangedTxPotBoxes();
-    this.spentBoxes = new Set<string>([
+    const spentBoxes = new Set<string>([
       ...nodeInputBoxesIds,
       ...txPotInputBoxesIds,
     ]);
-    this.unspentBoxes = [...nodeOutputBoxes, ...txPotOutputBoxes].filter(
-      (val) => val.boxId && Array.from(this.spentBoxes).indexOf(val.boxId) < 0,
+    const unspentBoxes: ErgoTransactionOutput[] = [
+      ...nodeOutputBoxes,
+      ...txPotOutputBoxes,
+    ].filter(
+      (val) => val.boxId && Array.from(spentBoxes).indexOf(val.boxId) < 0,
     );
 
-    // remove unavailable unspent-boxes to reduce memory usage
-    for (const alreadyUnspentBox of this.alreadySelectedUnspentBoxIds) {
-      if (
-        this.unspentBoxes.map((box) => box.boxId).indexOf(alreadyUnspentBox) < 0
-      )
-        this.alreadySelectedUnspentBoxIds.delete(alreadyUnspentBox);
-    }
-  };
-
-  /**
-   * return latest values of the spentBoxes ids
-   *
-   * @returns { string[] }
-   */
-  public getSpentBoxesList = () => this.spentBoxes;
-
-  /**
-   * return latest values of the unspentBoxes
-   *
-   * @returns { ErgoTransactionOutput[] }
-   */
-  public getUnspentBoxesList = () => this.unspentBoxes;
-
-  /**
-   * start the process of observing unspent boxes
-   *
-   * @returns
-   */
-  public start = async () => {
-    if (this.running || this.requests.size === 0) return;
-    this.running = true;
-    await this.serveRequests();
+    return [spentBoxes, unspentBoxes];
   };
 
   /**
@@ -210,70 +175,84 @@ export class BoxLookup {
    *
    * @returns
    */
-  protected serveRequests = async () => {
-    await this.updateBoxesLists();
-    const unspentBoxes = Array.from(this.unspentBoxes);
-    for (const request of this.requests.values()) {
-      let selectedBoxes: ErgoTransactionOutput[] = [];
-      const totalAmounts: Map<string, number> = new Map<string, number>();
+  public serveRequests = async () => {
+    if (this.requests.size <= 0) return;
+    const [, unspentBoxes] = await this.updateBoxesLists();
+    const alreadySelectedUnspentBoxIds: Set<string> = new Set<string>();
+    let anyRequestTriggered = false;
+    do {
+      anyRequestTriggered = false;
+      for (const request of this.requests.values()) {
+        let selectedBoxes: ErgoTransactionOutput[] = [];
+        const totalTokenAmounts: Map<string, number> = new Map<
+          string,
+          number
+        >();
+        let totalErgValue = 0n;
 
-      for (const box of unspentBoxes) {
-        const isFromCorrectAddress =
-          ErgoAddress.fromErgoTree(
-            box.ergoTree,
-            this.networkType,
-          ).toString() === request.address;
-        const isNewBox =
-          box.boxId && !this.alreadySelectedUnspentBoxIds.has(box.boxId);
+        for (const box of unspentBoxes as ErgoTransactionOutput[]) {
+          const isFromCorrectAddress =
+            ErgoAddress.fromErgoTree(
+              box.ergoTree,
+              this.networkType,
+            ).toString() === request.address;
+          const isNewBox =
+            box.boxId && !alreadySelectedUnspentBoxIds.has(box.boxId);
 
-        const hasRequiredTokens = request.tokens.some((token) =>
-          (box.assets ?? []).some((asset) => asset.tokenId === token.tokenId),
-        );
-
-        if (isFromCorrectAddress && isNewBox && hasRequiredTokens) {
-          selectedBoxes.push(box);
-          for (const token of request.tokens) {
-            const asset = (box.assets ?? []).find(
-              (a) => a.tokenId === token.tokenId,
-            );
-            if (asset) {
-              totalAmounts.set(
-                token.tokenId,
-                (totalAmounts.get(token.tokenId) || 0) + Number(asset.amount),
-              );
-            }
-          }
-
-          const isSufficient = request.tokens.every(
-            (token) =>
-              (totalAmounts.get(token.tokenId) || -1) >= Number(token.amount),
+          const hasRequiredTokens = request.tokens.some((token) =>
+            (box.assets ?? []).some((asset) => asset.tokenId === token.tokenId),
           );
 
-          if (isSufficient) {
-            for (const box of selectedBoxes)
-              this.alreadySelectedUnspentBoxIds.add(box.boxId!);
-            request.onSuffice(selectedBoxes);
-            selectedBoxes = []; // reset for next round
-            Object.keys(totalAmounts).forEach((k) => totalAmounts.delete(k));
+          const requiredErgs = request.nanoErgValue && request.nanoErgValue > 0;
+          const hasRequiredErgs =
+            requiredErgs &&
+            request.nanoErgValue &&
+            BigInt(box.value) - SAFE_MIN_BOX_VALUE >= 0;
+
+          if (
+            isFromCorrectAddress &&
+            isNewBox &&
+            (hasRequiredTokens || hasRequiredErgs)
+          ) {
+            totalErgValue += BigInt(box.value) - SAFE_MIN_BOX_VALUE;
+            selectedBoxes.push(box);
+            for (const token of request.tokens) {
+              const asset = (box.assets ?? []).find(
+                (a) => a.tokenId === token.tokenId,
+              );
+              if (asset) {
+                totalTokenAmounts.set(
+                  token.tokenId,
+                  (totalTokenAmounts.get(token.tokenId) || 0) +
+                    Number(asset.amount),
+                );
+              }
+            }
+
+            const isSufficient =
+              request.tokens.every(
+                // Considering tokens
+                (token) =>
+                  (totalTokenAmounts.get(token.tokenId) || -1) >=
+                  Number(token.amount),
+              ) &&
+              // Considering Ergs
+              (!request.nanoErgValue || totalErgValue >= request.nanoErgValue);
+
+            if (isSufficient) {
+              for (const box of selectedBoxes)
+                alreadySelectedUnspentBoxIds.add(box.boxId!);
+              await request.onSuffice(selectedBoxes);
+              selectedBoxes = []; // reset for next round
+              Object.keys(totalTokenAmounts).forEach((k) =>
+                totalTokenAmounts.delete(k),
+              );
+
+              anyRequestTriggered = true;
+            }
           }
         }
       }
-    }
-    if (this.running) {
-      this.latestTimeout = setTimeout(
-        this.serveRequests,
-        this.intervalAsSecond * 1000,
-      );
-    }
-  };
-
-  /**
-   * stop the process of observing unspent boxes
-   *
-   * @return
-   */
-  public stop = async () => {
-    clearTimeout(this.latestTimeout);
-    this.running = false;
+    } while (anyRequestTriggered);
   };
 }
