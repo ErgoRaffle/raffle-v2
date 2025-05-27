@@ -184,10 +184,7 @@ export class BoxLookup {
       anyRequestTriggered = false;
       for (const request of this.requests.values()) {
         let selectedBoxes: ErgoTransactionOutput[] = [];
-        const totalTokenAmounts: Map<string, number> = new Map<
-          string,
-          number
-        >();
+        let totalTokenAmounts: Map<string, number> = new Map<string, number>();
         let totalErgValue = 0n;
 
         for (const box of unspentBoxes as ErgoTransactionOutput[]) {
@@ -244,10 +241,7 @@ export class BoxLookup {
                 alreadySelectedUnspentBoxIds.add(box.boxId!);
               await request.onSuffice(selectedBoxes);
               selectedBoxes = []; // reset for next round
-              Object.keys(totalTokenAmounts).forEach((k) =>
-                totalTokenAmounts.delete(k),
-              );
-
+              totalTokenAmounts = new Map<string, number>();
               anyRequestTriggered = true;
             }
           }
