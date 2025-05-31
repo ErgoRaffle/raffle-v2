@@ -236,7 +236,10 @@ export class BoxLookup {
               // Considering Ergs
               (!request.nanoErgValue || totalErgValue >= request.nanoErgValue);
 
-            if (isSufficient) {
+            if (
+              isSufficient &&
+              Array.from(this.requests.values()).indexOf(request) >= 0
+            ) {
               for (const box of selectedBoxes)
                 alreadySelectedUnspentBoxIds.add(box.boxId!);
               await request.onSuffice(selectedBoxes);
