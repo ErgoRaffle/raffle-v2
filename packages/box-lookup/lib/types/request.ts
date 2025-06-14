@@ -3,7 +3,7 @@ import { ErgoTransactionOutput } from '@rosen-clients/ergo-node';
 
 export interface Request {
   address: string;
-  nanoErgValue: number | undefined;
+  value: number | undefined;
   tokens: TokenAmount<Amount>[];
   /**
    * This method is called by BoxLookup when the preferred condition occurs

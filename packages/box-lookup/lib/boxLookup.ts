@@ -10,7 +10,7 @@ import ergoNodeClientFactory, {
 
 import { Request } from './types/request';
 import { API_LIMIT } from './constants';
-import { ErgoAddress, Network, SAFE_MIN_BOX_VALUE } from '@fleet-sdk/core';
+import { ErgoAddress, Network } from '@fleet-sdk/core';
 
 export class BoxLookup {
   protected requestsIdCounter: number = 0;
@@ -147,11 +147,11 @@ export class BoxLookup {
   };
 
   /**
-   * update Spent & unspent Boxes lists by node & TxPot data
+   * Collect unspent Boxes by node & TxPot data
    *
    * @return
    */
-  protected updateBoxesLists = async () => {
+  protected getUnspentBoxes = async () => {
     const [nodeInputBoxesIds, nodeOutputBoxes] =
       await this.getArrangedNodeBoxes();
     const [txPotInputBoxesIds, txPotOutputBoxes] =
@@ -167,17 +167,18 @@ export class BoxLookup {
       (val) => val.boxId && Array.from(spentBoxes).indexOf(val.boxId) < 0,
     );
 
-    return [spentBoxes, unspentBoxes];
+    return unspentBoxes;
   };
 
   /**
-   * Updates the list of unspent boxes and serves pending requests
+   * Serve requests by considering unspent-boxes
    *
    * @returns
    */
   public serveRequests = async () => {
     if (this.requests.size <= 0) return;
-    const [, unspentBoxes] = await this.updateBoxesLists();
+    this.logger.info('The BoxLookup serving requests started');
+    const unspentBoxes = await this.getUnspentBoxes();
     const alreadySelectedUnspentBoxIds: Set<string> = new Set<string>();
     let anyRequestTriggered = false;
     do {
@@ -200,18 +201,15 @@ export class BoxLookup {
             (box.assets ?? []).some((asset) => asset.tokenId === token.tokenId),
           );
 
-          const requiredErgs = request.nanoErgValue && request.nanoErgValue > 0;
-          const hasRequiredErgs =
-            requiredErgs &&
-            request.nanoErgValue &&
-            BigInt(box.value) - SAFE_MIN_BOX_VALUE >= 0;
+          const requiredErgs = request.value && request.value > 0;
+          const hasRequiredErgs = requiredErgs && request.value;
 
           if (
             isFromCorrectAddress &&
             isNewBox &&
             (hasRequiredTokens || hasRequiredErgs)
           ) {
-            totalErgValue += BigInt(box.value) - SAFE_MIN_BOX_VALUE;
+            totalErgValue += BigInt(box.value);
             selectedBoxes.push(box);
             for (const token of request.tokens) {
               const asset = (box.assets ?? []).find(
@@ -234,7 +232,7 @@ export class BoxLookup {
                   Number(token.amount),
               ) &&
               // Considering Ergs
-              (!request.nanoErgValue || totalErgValue >= request.nanoErgValue);
+              (!request.value || totalErgValue >= request.value);
 
             if (
               isSufficient &&
@@ -245,11 +243,19 @@ export class BoxLookup {
               await request.onSuffice(selectedBoxes);
               selectedBoxes = []; // reset for next round
               totalTokenAmounts = new Map<string, number>();
+              totalErgValue = 0n;
+              this.logger.info(
+                `The BoxLookup triggered for ${request.address} request address`,
+              );
+              this.logger.debug(
+                `The ${request.address} request address sufficed by ${selectedBoxes} boxes`,
+              );
               anyRequestTriggered = true;
             }
           }
         }
       }
     } while (anyRequestTriggered);
+    this.logger.info('The BoxLookup serving requests done');
   };
 }

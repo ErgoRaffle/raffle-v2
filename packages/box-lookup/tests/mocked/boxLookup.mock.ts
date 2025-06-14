@@ -95,7 +95,7 @@ export const SampleTransactionEntities: TransactionEntity[] = [
         outputs: [
           {
             boxId:
-              '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+              '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd119',
             value: SAFE_MIN_BOX_VALUE * 3n,
             ergoTree:
               '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
@@ -104,6 +104,48 @@ export const SampleTransactionEntities: TransactionEntity[] = [
               {
                 tokenId:
                   '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+                amount: 1000,
+              },
+            ],
+            additionalRegisters: {
+              R4: '100204a00b08cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041ea02d192a39a8cc7a70173007301',
+            },
+            transactionId:
+              '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+            index: 0,
+          },
+          {
+            boxId:
+              '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd120',
+            value: SAFE_MIN_BOX_VALUE,
+            ergoTree:
+              '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
+            creationHeight: 9149,
+            assets: [
+              {
+                tokenId:
+                  '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd118',
+                amount: 1000,
+              },
+            ],
+            additionalRegisters: {
+              R4: '100204a00b08cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041ea02d192a39a8cc7a70173007301',
+            },
+            transactionId:
+              '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+            index: 0,
+          },
+          {
+            boxId:
+              '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd121',
+            value: SAFE_MIN_BOX_VALUE,
+            ergoTree:
+              '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
+            creationHeight: 9149,
+            assets: [
+              {
+                tokenId:
+                  '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd119',
                 amount: 1000,
               },
             ],
@@ -151,7 +193,7 @@ export const SampleTransactionEntities: TransactionEntity[] = [
         outputs: [
           {
             boxId:
-              '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+              '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd120',
             value: SAFE_MIN_BOX_VALUE * 3n,
             ergoTree:
               '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
@@ -207,7 +249,7 @@ export const SampleTransactionEntities: TransactionEntity[] = [
         outputs: [
           {
             boxId:
-              '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+              '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd121',
             value: SAFE_MIN_BOX_VALUE * 3n,
             ergoTree:
               '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
@@ -264,7 +306,7 @@ export const SampleTransactionEntities: TransactionEntity[] = [
         outputs: [
           {
             boxId:
-              '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+              '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd122',
             value: SAFE_MIN_BOX_VALUE * 3n,
             ergoTree:
               '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
@@ -321,7 +363,7 @@ export const SampleTransactionEntities: TransactionEntity[] = [
         outputs: [
           {
             boxId:
-              '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+              '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd123',
             value: SAFE_MIN_BOX_VALUE * 3n,
             ergoTree:
               '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
@@ -377,7 +419,7 @@ export const SampleTransactionEntities: TransactionEntity[] = [
         outputs: [
           {
             boxId:
-              '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+              '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd124',
             value: SAFE_MIN_BOX_VALUE * 3n,
             ergoTree:
               '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
@@ -433,7 +475,7 @@ export const SampleTransactionEntities: TransactionEntity[] = [
         outputs: [
           {
             boxId:
-              '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+              '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd125',
             value: SAFE_MIN_BOX_VALUE * 3n,
             ergoTree:
               '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
