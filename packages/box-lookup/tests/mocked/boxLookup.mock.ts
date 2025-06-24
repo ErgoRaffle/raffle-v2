@@ -106,6 +106,11 @@ export const SampleTransactionEntities: TransactionEntity[] = [
                   '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
                 amount: 1000,
               },
+              {
+                tokenId:
+                  '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd000',
+                amount: 100,
+              },
             ],
             additionalRegisters: {
               R4: '100204a00b08cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041ea02d192a39a8cc7a70173007301',
@@ -202,7 +207,7 @@ export const SampleTransactionEntities: TransactionEntity[] = [
               {
                 tokenId:
                   '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-                amount: 1000,
+                amount: 20,
               },
             ],
             additionalRegisters: {
@@ -258,7 +263,7 @@ export const SampleTransactionEntities: TransactionEntity[] = [
               {
                 tokenId:
                   '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-                amount: 1000,
+                amount: 40,
               },
             ],
             additionalRegisters: {
@@ -503,3 +508,62 @@ export const SampleTransactionEntities: TransactionEntity[] = [
     ),
   },
 ];
+
+export const SampleTransactionEntitiesContainsSpecialOutput: TransactionEntity[] =
+  [
+    {
+      txId: 'tx-id-contains-outputs-7',
+      chain: 'chain-2',
+      txType: 'tx-B',
+      status: TransactionStatus.COMPLETED,
+      requiredSign: 0,
+      lastCheck: 0,
+      lastStatusUpdate: '1685894220',
+      failedInSign: false,
+      signFailedCount: 0,
+      serializedTx: JSON.stringify(
+        {
+          id: '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+          inputs: [
+            {
+              boxId:
+                '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd125',
+              spendingProof: {
+                proofBytes:
+                  '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+                extension: {},
+              },
+            },
+          ],
+          dataInputs: [],
+          outputs: [
+            {
+              boxId:
+                '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd125',
+              value: SAFE_MIN_BOX_VALUE * 3n,
+              ergoTree:
+                '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
+              creationHeight: 9149,
+              assets: [
+                {
+                  tokenId:
+                    '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+                  amount: 1000,
+                },
+              ],
+              additionalRegisters: {
+                R4: '100204a00b08cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041ea02d192a39a8cc7a70173007301',
+              },
+              transactionId:
+                '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+              index: 0,
+            },
+          ],
+          size: 0,
+        },
+        (k, v) => {
+          return typeof v == 'bigint' ? String(v) : v;
+        },
+      ),
+    },
+  ];

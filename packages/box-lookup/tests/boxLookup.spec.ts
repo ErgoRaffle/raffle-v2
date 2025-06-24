@@ -6,6 +6,7 @@ import { Request } from '../lib/types/request';
 import {
   mockDataSource,
   SampleTransactionEntities,
+  SampleTransactionEntitiesContainsSpecialOutput,
   unconfirmedTxList,
 } from './mocked/boxLookup.mock';
 import { Repository } from 'typeorm';
@@ -168,6 +169,36 @@ describe('BoxLookup', () => {
     });
 
     /**
+     * should filter spent boxes from node and TxPot when a box exists as spent and meanwhile unspent transactions
+     * @scenario
+     * - add a Transaction-Entity by certain output box id to the tx-pot
+     * - call the getUnspentBoxes method
+     * - assert spentBoxes size must be equal to the TxPot spent boxes plus node spent boxes
+     * @expected
+     * - spentBoxes size must be equal to 4
+     */
+    it<BoxLookupTestContext>('should filter spent boxes from node and TxPot when a box exists as spent and meanwhile unspent transactions', async ({
+      boxLookup,
+      txRepository,
+    }) => {
+      // Empty TxPot DB data
+      await txRepository.insert(SampleTransactionEntitiesContainsSpecialOutput);
+
+      // Act
+      const unspentBoxesList = await boxLookup['getUnspentBoxes']();
+
+      // Assert
+      expect((unspentBoxesList as ErgoTransactionOutput[]).length).toEqual(3);
+      expect(
+        (unspentBoxesList as ErgoTransactionOutput[]).map((box) => box.boxId),
+      ).toEqual([
+        '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+        '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd122',
+        '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd124',
+      ]);
+    });
+
+    /**
      * should retrieve and combine spent boxes from empty node and TxPot data
      * @scenario
      * - mock node api to return empty tx data
@@ -279,13 +310,7 @@ describe('BoxLookup', () => {
       );
 
       // mock getUnspentBoxes manually to insert desired boxes
-      (
-        boxLookup as unknown as {
-          getUnspentBoxes: () => Promise<
-            Array<Set<string> | ErgoTransactionOutput[]>
-          >;
-        }
-      )['getUnspentBoxes'] = async () => {
+      boxLookup['getUnspentBoxes'] = async () => {
         return JSON.parse(SampleTransactionEntities[0].serializedTx).outputs;
       };
 
@@ -314,8 +339,6 @@ describe('BoxLookup', () => {
     /**
      * request callback must fired when sufficient token is found in unspent boxes
      * @scenario
-     * - mock a transaction containing the required token with sufficient amount
-     * - register a request with a matching token and amount
      * - run the boxLookup job
      * - stop the job and wait for it to finish
      * @expected
@@ -327,8 +350,41 @@ describe('BoxLookup', () => {
     }) => {
       await boxLookup.serveRequests();
       expect(mockOnSuffice).toBeCalledTimes(1);
-      expect((mockOnSuffice as Mock).mock.calls[0]).toEqual([
-        [JSON.parse(SampleTransactionEntities[0].serializedTx).outputs[0]],
+      expect(mockOnSuffice).toBeCalledWith([
+        JSON.parse(SampleTransactionEntities[0].serializedTx).outputs[0],
+      ]);
+    });
+
+    /**
+     * request callback must fired when sufficient token is found in unspent boxes multiple times
+     * @scenario
+     * - mock a transaction containing the required token with more than one sufficient amount
+     * - run the boxLookup job
+     * - stop the job and wait for it to finish
+     * @expected
+     * - onSuffice callback must be called exactly once
+     */
+    it<ServeRequestsInterface>('request callback must fired when sufficient token is found in unspent boxes multiple times', async ({
+      boxLookup,
+      mockOnSuffice,
+    }) => {
+      // mock getUnspentBoxes manually to insert desired boxes
+      boxLookup['getUnspentBoxes'] = async () => {
+        return [
+          ...JSON.parse(SampleTransactionEntities[0].serializedTx).outputs,
+          ...JSON.parse(SampleTransactionEntities[1].serializedTx).outputs,
+          ...JSON.parse(SampleTransactionEntities[2].serializedTx).outputs,
+        ];
+      };
+
+      await boxLookup.serveRequests();
+      expect(mockOnSuffice).toBeCalledTimes(2);
+      expect(mockOnSuffice).toBeCalledWith([
+        JSON.parse(SampleTransactionEntities[0].serializedTx).outputs[0],
+      ]);
+      expect(mockOnSuffice).toBeCalledWith([
+        JSON.parse(SampleTransactionEntities[1].serializedTx).outputs[0],
+        JSON.parse(SampleTransactionEntities[2].serializedTx).outputs[0],
       ]);
     });
 
@@ -409,12 +465,13 @@ describe('BoxLookup', () => {
      * - run and stop the boxLookup job
      * @expected
      * - onSuffice should only be called once (for the first request)
+     * - onSuffice should not be called (for the second request)
      */
     it<ServeRequestsInterface>('does not call onSuffice if box has insufficient token amount', async ({
       boxLookup,
     }) => {
       const mockOnSuffice = vi.fn();
-      boxLookup['requests'].set(2, {
+      boxLookup['requests'].set(1, {
         address: ErgoAddress.fromErgoTree(
           '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
         ).toString(),
@@ -422,7 +479,7 @@ describe('BoxLookup', () => {
         tokens: [
           {
             tokenId:
-              '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+              '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd000',
             amount: 200n,
           },
         ],

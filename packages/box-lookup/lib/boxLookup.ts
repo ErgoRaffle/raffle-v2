@@ -163,9 +163,7 @@ export class BoxLookup {
     const unspentBoxes: ErgoTransactionOutput[] = [
       ...nodeOutputBoxes,
       ...txPotOutputBoxes,
-    ].filter(
-      (val) => val.boxId && Array.from(spentBoxes).indexOf(val.boxId) < 0,
-    );
+    ].filter((val) => val.boxId && !spentBoxes.has(val.boxId));
 
     return unspentBoxes;
   };
@@ -180,82 +178,87 @@ export class BoxLookup {
     this.logger.info('The BoxLookup serving requests started');
     const unspentBoxes = await this.getUnspentBoxes();
     const alreadySelectedUnspentBoxIds: Set<string> = new Set<string>();
-    let anyRequestTriggered = false;
-    do {
-      anyRequestTriggered = false;
-      for (const request of this.requests.values()) {
-        let selectedBoxes: ErgoTransactionOutput[] = [];
-        let totalTokenAmounts: Map<string, number> = new Map<string, number>();
-        let totalErgValue = 0n;
+    for (const request of this.requests.values()) {
+      let selectedBoxes: ErgoTransactionOutput[] = [];
+      let totalTokenAmounts: Map<string, number> = new Map<string, number>();
+      let totalErgValue = 0n;
 
-        for (const box of unspentBoxes as ErgoTransactionOutput[]) {
-          const isFromCorrectAddress =
-            ErgoAddress.fromErgoTree(
-              box.ergoTree,
-              this.networkType,
-            ).toString() === request.address;
-          const isNewBox =
-            box.boxId && !alreadySelectedUnspentBoxIds.has(box.boxId);
+      for (const box of unspentBoxes as ErgoTransactionOutput[]) {
+        // check if current request unregistered then breaking the loop
+        if (Array.from(this.requests.values()).indexOf(request) < 0) break;
 
-          const hasRequiredTokens = request.tokens.some((token) =>
-            (box.assets ?? []).some((asset) => asset.tokenId === token.tokenId),
+        const isFromCorrectAddress =
+          ErgoAddress.fromErgoTree(
+            box.ergoTree,
+            this.networkType,
+          ).toString() === request.address;
+        const isNewBox =
+          box.boxId && !alreadySelectedUnspentBoxIds.has(box.boxId);
+
+        const hasRequiredTokens = request.tokens.some((token) =>
+          (box.assets ?? []).some((asset) => asset.tokenId === token.tokenId),
+        );
+
+        const requiredErgs = request.value && request.value > 0;
+        const hasRequiredErgs = requiredErgs && request.value;
+
+        if (
+          isFromCorrectAddress &&
+          isNewBox &&
+          (hasRequiredTokens || hasRequiredErgs)
+        ) {
+          totalErgValue += BigInt(box.value);
+          this.logger.debug(
+            `Current collected erg values for request by ${request.address} address is ${totalErgValue}`,
           );
-
-          const requiredErgs = request.value && request.value > 0;
-          const hasRequiredErgs = requiredErgs && request.value;
-
-          if (
-            isFromCorrectAddress &&
-            isNewBox &&
-            (hasRequiredTokens || hasRequiredErgs)
-          ) {
-            totalErgValue += BigInt(box.value);
-            selectedBoxes.push(box);
-            for (const token of request.tokens) {
-              const asset = (box.assets ?? []).find(
-                (a) => a.tokenId === token.tokenId,
-              );
-              if (asset) {
-                totalTokenAmounts.set(
-                  token.tokenId,
-                  (totalTokenAmounts.get(token.tokenId) || 0) +
-                    Number(asset.amount),
-                );
-              }
-            }
-
-            const isSufficient =
-              request.tokens.every(
-                // Considering tokens
-                (token) =>
-                  (totalTokenAmounts.get(token.tokenId) || -1) >=
-                  Number(token.amount),
-              ) &&
-              // Considering Ergs
-              (!request.value || totalErgValue >= request.value);
-
-            if (
-              isSufficient &&
-              Array.from(this.requests.values()).indexOf(request) >= 0
-            ) {
-              for (const box of selectedBoxes)
-                alreadySelectedUnspentBoxIds.add(box.boxId!);
-              await request.onSuffice(selectedBoxes);
-              selectedBoxes = []; // reset for next round
-              totalTokenAmounts = new Map<string, number>();
-              totalErgValue = 0n;
-              this.logger.info(
-                `The BoxLookup triggered for ${request.address} request address`,
+          selectedBoxes.push(box);
+          for (const token of request.tokens) {
+            const asset = (box.assets ?? []).find(
+              (a) => a.tokenId === token.tokenId,
+            );
+            if (asset) {
+              totalTokenAmounts.set(
+                token.tokenId,
+                (totalTokenAmounts.get(token.tokenId) || 0) +
+                  Number(asset.amount),
               );
               this.logger.debug(
-                `The ${request.address} request address sufficed by ${selectedBoxes} boxes`,
+                `Current collected tokens for request by ${request.address} address are ${totalTokenAmounts}`,
               );
-              anyRequestTriggered = true;
             }
+          }
+
+          const isSufficient =
+            request.tokens.every(
+              // Considering tokens
+              (token) =>
+                (totalTokenAmounts.get(token.tokenId) || -1) >=
+                Number(token.amount),
+            ) &&
+            // Considering Ergs
+            (!request.value || totalErgValue >= request.value);
+
+          this.logger.debug(
+            `Current collected boxes for request by ${request.address} address are ${selectedBoxes}, that is ${!isSufficient ? 'not ' : ''}suffice`,
+          );
+
+          if (isSufficient) {
+            for (const box of selectedBoxes)
+              alreadySelectedUnspentBoxIds.add(box.boxId!);
+            await request.onSuffice(selectedBoxes);
+            selectedBoxes = []; // reset for next round
+            totalTokenAmounts = new Map<string, number>();
+            totalErgValue = 0n;
+            this.logger.info(
+              `The BoxLookup triggered for ${request.address} request address`,
+            );
+            this.logger.debug(
+              `The ${request.address} request address sufficed by ${selectedBoxes} boxes`,
+            );
           }
         }
       }
-    } while (anyRequestTriggered);
+    }
     this.logger.info('The BoxLookup serving requests done');
   };
 }
