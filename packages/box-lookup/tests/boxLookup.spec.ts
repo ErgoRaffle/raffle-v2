@@ -146,7 +146,7 @@ describe('BoxLookup', () => {
      * should retrieve and combine spent boxes from node and TxPot
      * @scenario
      * - call the getUnspentBoxes method
-     * - assert spentBoxes size must be equal to the TxPot spent boxes plus node spent boxes
+     * - assert unspentBoxes size must be equal to the TxPot spent boxes plus node spent boxes
      * @expected
      * - unspentBoxes size must be equal to 4
      */
@@ -173,7 +173,7 @@ describe('BoxLookup', () => {
      * @scenario
      * - insert a certain output box id to the tx-pot that already exists on the unspent boxes
      * - call the getUnspentBoxes method
-     * - assert spentBoxes size must be equal to the TxPot spent boxes plus node spent boxes minus one spent box
+     * - assert unspentBoxes size must be equal to the TxPot spent boxes plus node spent boxes minus one spent box
      * @expected
      * - unspentBoxes size must be equal to 3
      */
@@ -203,7 +203,7 @@ describe('BoxLookup', () => {
      * @scenario
      * - mock node api to return empty tx data
      * - call the getUnspentBoxes method
-     * - assert spentBoxes size must be equal to the TxPot spent boxes plus node spent boxes
+     * - assert unspentBoxes size must be equal to the TxPot spent boxes plus node spent boxes
      * @expected
      * - unspentBoxes size must be equal to 0
      */
@@ -235,7 +235,7 @@ describe('BoxLookup', () => {
      * @scenario
      * - remove total tx from TxPot DB
      * - call the getUnspentBoxes method
-     * - assert spentBoxes size must be equal to the TxPot spent boxes plus node spent boxes
+     * - assert unspentBoxes size must be equal to the TxPot spent boxes plus node spent boxes
      * @expected
      * - unspentBoxes size must be equal to 1
      */
@@ -264,7 +264,7 @@ describe('BoxLookup', () => {
      * - remove total tx from TxPot DB
      * - mock node api to return empty tx data
      * - call the getUnspentBoxes method
-     * - assert spentBoxes size must be equal to the TxPot spent boxes plus node spent boxes
+     * - assert unspentBoxes size must be equal to the TxPot spent boxes plus node spent boxes
      * @expected
      * - unspentBoxes size must be equal to 0
      */
