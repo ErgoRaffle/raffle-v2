@@ -148,7 +148,7 @@ describe('BoxLookup', () => {
      * - call the getUnspentBoxes method
      * - assert spentBoxes size must be equal to the TxPot spent boxes plus node spent boxes
      * @expected
-     * - spentBoxes size must be equal to 4
+     * - unspentBoxes size must be equal to 4
      */
     it<BoxLookupTestContext>('should retrieve and combine spent boxes from node and TxPot', async ({
       boxLookup,
@@ -171,11 +171,11 @@ describe('BoxLookup', () => {
     /**
      * should filter spent boxes from node and TxPot when a box exists as spent and meanwhile unspent transactions
      * @scenario
-     * - add a Transaction-Entity by certain output box id to the tx-pot
+     * - insert a certain output box id to the tx-pot that already exists on the unspent boxes
      * - call the getUnspentBoxes method
-     * - assert spentBoxes size must be equal to the TxPot spent boxes plus node spent boxes
+     * - assert spentBoxes size must be equal to the TxPot spent boxes plus node spent boxes minus one spent box
      * @expected
-     * - spentBoxes size must be equal to 4
+     * - unspentBoxes size must be equal to 3
      */
     it<BoxLookupTestContext>('should filter spent boxes from node and TxPot when a box exists as spent and meanwhile unspent transactions', async ({
       boxLookup,
@@ -205,7 +205,7 @@ describe('BoxLookup', () => {
      * - call the getUnspentBoxes method
      * - assert spentBoxes size must be equal to the TxPot spent boxes plus node spent boxes
      * @expected
-     * - spentBoxes size must be equal to 0
+     * - unspentBoxes size must be equal to 0
      */
     it<BoxLookupTestContext>('should retrieve and combine spent boxes from empty node and TxPot data', async ({
       boxLookup,
@@ -237,7 +237,7 @@ describe('BoxLookup', () => {
      * - call the getUnspentBoxes method
      * - assert spentBoxes size must be equal to the TxPot spent boxes plus node spent boxes
      * @expected
-     * - spentBoxes size must be equal to 1
+     * - unspentBoxes size must be equal to 1
      */
     it<BoxLookupTestContext>('should retrieve and combine spent boxes from node and by empty TxPot data', async ({
       boxLookup,
@@ -266,7 +266,7 @@ describe('BoxLookup', () => {
      * - call the getUnspentBoxes method
      * - assert spentBoxes size must be equal to the TxPot spent boxes plus node spent boxes
      * @expected
-     * - spentBoxes size must be equal to 0
+     * - unspentBoxes size must be equal to 0
      */
     it<BoxLookupTestContext>('should retrieve and combine spent boxes from empty node and empty TxPot data', async ({
       boxLookup,
@@ -340,7 +340,6 @@ describe('BoxLookup', () => {
      * request callback must fired when sufficient token is found in unspent boxes
      * @scenario
      * - run the boxLookup job
-     * - stop the job and wait for it to finish
      * @expected
      * - onSuffice callback must be called exactly once
      */
@@ -360,7 +359,6 @@ describe('BoxLookup', () => {
      * @scenario
      * - mock a transaction containing the required token with more than one sufficient amount
      * - run the boxLookup job
-     * - stop the job and wait for it to finish
      * @expected
      * - onSuffice callback must be called exactly once
      */
@@ -394,7 +392,6 @@ describe('BoxLookup', () => {
      * - mock a transaction containing the required ergs with sufficient amount
      * - register a request with a matching erg amount
      * - run the boxLookup job
-     * - stop the job and wait for it to finish
      * @expected
      * - onSuffice callback must be called exactly once
      */
@@ -415,8 +412,8 @@ describe('BoxLookup', () => {
 
       await boxLookup.serveRequests();
       expect(mockOnSuffice).toBeCalledTimes(1);
-      expect((mockOnSuffice as Mock).mock.calls[0]).toEqual([
-        [JSON.parse(SampleTransactionEntities[0].serializedTx).outputs[0]],
+      expect(mockOnSuffice as Mock).toBeCalledWith([
+        JSON.parse(SampleTransactionEntities[0].serializedTx).outputs[0],
       ]);
     });
 
@@ -426,7 +423,6 @@ describe('BoxLookup', () => {
      * - mock a transaction containing the required ergs and token with sufficient amount
      * - register a request with a matching erg and token amount
      * - run the boxLookup job
-     * - stop the job and wait for it to finish
      * @expected
      * - onSuffice callback must be called exactly once
      */
@@ -453,8 +449,8 @@ describe('BoxLookup', () => {
 
       await boxLookup.serveRequests();
       expect(mockOnSuffice).toBeCalledTimes(1);
-      expect((mockOnSuffice as Mock).mock.calls[0]).toEqual([
-        [JSON.parse(SampleTransactionEntities[0].serializedTx).outputs[0]],
+      expect(mockOnSuffice as Mock).toBeCalledWith([
+        JSON.parse(SampleTransactionEntities[0].serializedTx).outputs[0],
       ]);
     });
 
@@ -464,8 +460,7 @@ describe('BoxLookup', () => {
      * - add a second request requiring more tokens than available in the mocked box
      * - run and stop the boxLookup job
      * @expected
-     * - onSuffice should only be called once (for the first request)
-     * - onSuffice should not be called (for the second request)
+     * - onSuffice should not be called
      */
     it<ServeRequestsInterface>('does not call onSuffice if box has insufficient token amount', async ({
       boxLookup,

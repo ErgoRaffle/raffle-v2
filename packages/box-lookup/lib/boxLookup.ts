@@ -223,7 +223,7 @@ export class BoxLookup {
                   Number(asset.amount),
               );
               this.logger.debug(
-                `Current collected tokens for request by ${request.address} address are ${totalTokenAmounts}`,
+                `Current collected tokens for request by ${request.address} address are ${JSON.stringify(Array.from(totalTokenAmounts))}`,
               );
             }
           }
@@ -239,7 +239,7 @@ export class BoxLookup {
             (!request.value || totalErgValue >= request.value);
 
           this.logger.debug(
-            `Current collected boxes for request by ${request.address} address are ${selectedBoxes}, that is ${!isSufficient ? 'not ' : ''}suffice`,
+            `Current collected boxes for request by ${request.address} address are ${JSON.stringify(selectedBoxes)}, that is ${!isSufficient ? 'not ' : ''}suffice`,
           );
 
           if (isSufficient) {
@@ -253,7 +253,7 @@ export class BoxLookup {
               `The BoxLookup triggered for ${request.address} request address`,
             );
             this.logger.debug(
-              `The ${request.address} request address sufficed by ${selectedBoxes} boxes`,
+              `The ${request.address} request address sufficed by ${JSON.stringify(selectedBoxes)} boxes`,
             );
           }
         }
