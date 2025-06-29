@@ -1,7 +1,6 @@
 import {
   Box,
   OutputBuilder,
-  TokenAmount,
   Amount,
   SColl,
   SLong,
@@ -33,8 +32,10 @@ export class GiftRedeemBuilder {
   private txFee?: bigint;
   private winnersCount?: number;
   private step?: number;
-  private ticketToken?: TokenAmount<bigint>;
-  private collectingToken?: TokenAmount<bigint>;
+  private ticketTokenId?: string;
+  private ticketTokenAmount?: bigint;
+  private collectingTokenId?: string;
+  private collectingTokenAmount?: bigint;
 
   /**
    * Set the box value in nanoERG
@@ -68,7 +69,7 @@ export class GiftRedeemBuilder {
 
   /**
    * Set the ticket price
-   * @param price - Price in nanoERG
+   * @param price - Price in nanoERG/CollectingToken
    * @returns this builder instance
    */
   setTicketPrice = (price: bigint): this => {
@@ -113,10 +114,8 @@ export class GiftRedeemBuilder {
    * @returns this builder instance
    */
   setTicketToken = (tokenId: string, amount: bigint): this => {
-    this.ticketToken = {
-      tokenId,
-      amount,
-    };
+    this.ticketTokenId = tokenId;
+    this.ticketTokenAmount = amount;
     return this;
   };
 
@@ -127,10 +126,8 @@ export class GiftRedeemBuilder {
    * @returns this builder instance
    */
   setCollectingToken = (tokenId: string, amount: bigint): this => {
-    this.collectingToken = {
-      tokenId,
-      amount,
-    };
+    this.collectingTokenId = tokenId;
+    this.collectingTokenAmount = amount;
     return this;
   };
 
@@ -146,7 +143,8 @@ export class GiftRedeemBuilder {
     if (!this.txFee) throw new Error('Transaction fee not set');
     if (!this.winnersCount) throw new Error('Winners count not set');
     if (!this.step) throw new Error('Step not set');
-    if (!this.ticketToken) throw new Error('Ticket token not set');
+    if (!this.ticketTokenId) throw new Error('Ticket token not set');
+    if (!this.ticketTokenAmount) throw new Error('Ticket token amount not set');
   };
 
   /**
@@ -160,10 +158,13 @@ export class GiftRedeemBuilder {
 
     const tokens = [
       { tokenId: raffleInfo.tokens.raffleLicense, amount: 1n },
-      this.ticketToken!,
+      { tokenId: this.ticketTokenId!, amount: this.ticketTokenAmount! },
     ];
-    if (this.collectingToken) {
-      tokens.push(this.collectingToken);
+    if (this.collectingTokenId && this.collectingTokenAmount) {
+      tokens.push({
+        tokenId: this.collectingTokenId,
+        amount: this.collectingTokenAmount,
+      });
     }
 
     return new OutputBuilder(
@@ -193,7 +194,8 @@ export class GiftRedeemBuilder {
     if (!this.value) throw new Error('Value not set');
     if (!this.txFee) throw new Error('Transaction fee not set');
     if (!this.step) throw new Error('Step not set');
-    if (!this.ticketToken) throw new Error('Ticket token not set');
+    if (!this.ticketTokenId) throw new Error('Ticket token not set');
+    if (!this.ticketTokenAmount) throw new Error('Ticket token amount not set');
 
     // Winner's value is 4 times the tx fee
     const winnerValue = this.txFee * 4n;
@@ -205,7 +207,7 @@ export class GiftRedeemBuilder {
     this.setStep(this.step + 1);
 
     // Add winner's ticket to the box
-    this.setTicketToken(this.ticketToken.tokenId, this.ticketToken.amount + 1n);
+    this.setTicketToken(this.ticketTokenId, this.ticketTokenAmount + 1n);
 
     return this;
   };

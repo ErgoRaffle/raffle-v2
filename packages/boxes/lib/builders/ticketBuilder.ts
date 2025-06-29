@@ -31,6 +31,7 @@ export class TicketBuilder {
   private ticketCount?: bigint;
   private value?: bigint;
   private creationHeight?: number;
+  private txFee?: bigint;
 
   constructor() {}
 
@@ -66,6 +67,7 @@ export class TicketBuilder {
     this.setRangeStart(totalSoldTickets)
       .setTicketPrice(ticketPrice)
       .setDeadline(deadline)
+      .setTxFee(txFee)
       .setValue(requiredValue);
 
     return this;
@@ -111,7 +113,7 @@ export class TicketBuilder {
 
   /**
    * Set the ticket price
-   * @param price - Price per ticket in nanoERG
+   * @param price - Price per ticket in nanoERG/CollectingToken
    * @returns this builder instance
    */
   setTicketPrice = (price: bigint): this => {
@@ -120,8 +122,8 @@ export class TicketBuilder {
   };
 
   /**
-   * Set the ticket deadline
-   * @param deadline - Block height when tickets expire
+   * Set the raffle deadline
+   * @param deadline - Block height when raffle expires
    * @returns this builder instance
    */
   setDeadline = (deadline: bigint): this => {
@@ -150,6 +152,16 @@ export class TicketBuilder {
   };
 
   /**
+   * Set the transaction fee (optional only used for validation)
+   * @param fee - Transaction fee in nanoERG
+   * @returns this builder instance
+   */
+  setTxFee = (fee: bigint): this => {
+    this.txFee = fee;
+    return this;
+  };
+
+  /**
    * Validate that all required parameters are set and consistent
    * @throws Error if any required parameter is missing or inconsistent
    */
@@ -166,6 +178,14 @@ export class TicketBuilder {
     // Validate range consistency
     if (this.rangeEnd! - this.rangeStart! !== this.ticketCount!) {
       throw new Error('Range end must be range start plus ticket count');
+    }
+
+    // Validate value constraint: value >= 3 * txFee
+    const minimumValue = 3n * this.txFee!;
+    if (this.txFee && this.value < 3n * this.txFee) {
+      throw new Error(
+        `Value is too low. Minimum required: ${minimumValue} nanoERG (3 * txFee)`,
+      );
     }
   };
 

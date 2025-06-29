@@ -20,6 +20,9 @@ export class TicketRepoBuilder {
   private raffleId?: string;
   private tokenName?: string;
   private tokenDescription?: string;
+  private txFee?: bigint;
+
+  constructor() {}
 
   /**
    * Set the box value in nanoERG
@@ -82,6 +85,16 @@ export class TicketRepoBuilder {
   };
 
   /**
+   * Set the transaction fee (optional only used for validation)
+   * @param fee - Transaction fee in nanoERG
+   * @returns this builder instance
+   */
+  setTxFee = (fee: bigint): this => {
+    this.txFee = fee;
+    return this;
+  };
+
+  /**
    * Validate that all required parameters are set
    * @throws Error if any required parameter is missing
    */
@@ -92,6 +105,11 @@ export class TicketRepoBuilder {
     if (!this.raffleId) throw new Error('Raffle ID not set');
     if (!this.tokenName) throw new Error('Token name not set');
     if (!this.tokenDescription) throw new Error('Token description not set');
+
+    // Validate value constraint: value == txFee (as per contract)
+    if (this.txFee && this.value !== this.txFee) {
+      throw new Error(`Value must be exactly ${this.txFee} nanoERG (txFee)`);
+    }
   };
 
   /**

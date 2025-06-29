@@ -67,7 +67,7 @@ export class TicketRedeemBuilder {
 
   /**
    * Set the ticket price
-   * @param price - Price in nanoERG
+   * @param price - Price in nanoERG/CollectingToken
    * @returns this builder instance
    */
   setTicketPrice = (price: bigint): this => {

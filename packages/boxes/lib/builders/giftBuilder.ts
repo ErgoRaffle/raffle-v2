@@ -32,7 +32,8 @@ export class GiftBuilder {
   private donatorErgoTreeHash?: Uint8Array;
   private winnerIndex?: number;
   private txFee?: bigint;
-  private giftToken?: TokenAmount<bigint>;
+  private giftTokenId?: string;
+  private giftTokenAmount?: bigint;
   private gifts: TokenAmount<bigint>[] = [];
 
   /**
@@ -93,11 +94,9 @@ export class GiftBuilder {
    * @param tokenId - Gift token ID
    * @returns this builder instance
    */
-  setGiftToken = (tokenId: string): this => {
-    this.giftToken = {
-      tokenId,
-      amount: 1n,
-    };
+  setGiftToken = (tokenId: string, amount: bigint = 1n): this => {
+    this.giftTokenId = tokenId;
+    this.giftTokenAmount = amount;
     return this;
   };
 
@@ -107,11 +106,8 @@ export class GiftBuilder {
    * @param amount - Number of gifts
    * @returns this builder instance
    */
-  addGift = (tokenId: string, amount: bigint): this => {
-    this.gifts.push({
-      tokenId,
-      amount,
-    });
+  addGift = (gift: TokenAmount<bigint>): this => {
+    this.gifts.push(gift);
     return this;
   };
 
@@ -150,12 +146,13 @@ export class GiftBuilder {
    */
   private validate = (): void => {
     if (!this.value) throw new Error('Value not set');
+    if (!this.txFee) throw new Error('Transaction fee not set');
+    if (this.value < 2n * this.txFee) throw new Error('Value is too low');
     if (!this.creationHeight) throw new Error('Creation height not set');
     if (!this.donatorErgoTreeHash)
       throw new Error('Donator ErgoTree hash not set');
     if (!this.winnerIndex) throw new Error('Winner index not set');
-    if (!this.txFee) throw new Error('Transaction fee not set');
-    if (!this.giftToken) throw new Error('Gift token not set');
+    if (!this.giftTokenId) throw new Error('Gift token not set');
     if (this.gifts.length === 0) throw new Error('No gifts added');
   };
 
@@ -173,7 +170,10 @@ export class GiftBuilder {
       ErgoAddress.fromBase58(raffleInfo.addresses.gift).ergoTree,
       this.creationHeight!,
     )
-      .addTokens([this.giftToken!, ...this.gifts])
+      .addTokens([
+        { tokenId: this.giftTokenId!, amount: this.giftTokenAmount ?? 1n },
+        ...this.gifts,
+      ])
       .setAdditionalRegisters({
         R4: SColl(SByte, Array.from(this.donatorErgoTreeHash!)).toHex(),
         R5: SInt(this.winnerIndex!).toHex(),
@@ -183,6 +183,7 @@ export class GiftBuilder {
 
   /**
    * Fill private parameters from a winner box
+   * CAUTION: This method wont set gift array, gifts should be added manually
    * @param winnerBox - Winner box to extract information from
    * @returns this builder instance
    * @throws Error if box structure doesn't match winner box requirements

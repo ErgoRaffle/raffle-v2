@@ -1,7 +1,6 @@
 import {
   Box,
   OutputBuilder,
-  TokenAmount,
   Amount,
   SColl,
   SLong,
@@ -34,9 +33,11 @@ export class WinnerBuilder {
   private txFee?: bigint;
   private winnerIndex?: number;
   private giftCount?: bigint;
-  private giftTokenId?: Uint8Array;
-  private ticketToken?: TokenAmount<bigint>;
-  private giftToken?: TokenAmount<bigint>;
+  private ticketTokenId?: string;
+  private ticketTokenAmount?: bigint;
+  private giftTokenId?: string;
+  private giftTokenAmount?: bigint;
+  private unavailableGiftTokenId?: Uint8Array;
 
   /**
    * Set the box value in nanoERG
@@ -113,8 +114,8 @@ export class WinnerBuilder {
    * @param id - Gift token ID as byte array
    * @returns this builder instance
    */
-  setGiftTokenId = (id: Uint8Array): this => {
-    this.giftTokenId = id;
+  setUnavailableGiftTokenId = (id: Uint8Array): this => {
+    this.unavailableGiftTokenId = id;
     return this;
   };
 
@@ -124,10 +125,8 @@ export class WinnerBuilder {
    * @returns this builder instance
    */
   setTicketToken = (tokenId: string): this => {
-    this.ticketToken = {
-      tokenId,
-      amount: 1n,
-    };
+    this.ticketTokenId = tokenId;
+    this.ticketTokenAmount = 1n;
     return this;
   };
 
@@ -138,10 +137,8 @@ export class WinnerBuilder {
    * @returns this builder instance
    */
   setGiftToken = (tokenId: string, amount: bigint): this => {
-    this.giftToken = {
-      tokenId,
-      amount,
-    };
+    this.giftTokenId = tokenId;
+    this.giftTokenAmount = amount;
     return this;
   };
 
@@ -157,7 +154,10 @@ export class WinnerBuilder {
     if (!this.txFee) throw new Error('Transaction fee not set');
     if (!this.winnerIndex) throw new Error('Winner index not set');
     if (!this.giftCount) throw new Error('Gift count not set');
-    if (!this.ticketToken) throw new Error('Ticket token not set');
+    if (!this.ticketTokenId) throw new Error('Ticket token not set');
+    if (!this.ticketTokenAmount) throw new Error('Ticket token amount not set');
+    if (!this.giftTokenId) throw new Error('Gift token not set');
+    if (!this.giftTokenAmount) throw new Error('Gift token amount not set');
   };
 
   /**
@@ -169,9 +169,14 @@ export class WinnerBuilder {
   build = (): OutputBuilder => {
     this.validate();
 
-    const tokens = [this.ticketToken!];
-    if (this.giftToken) {
-      tokens.push(this.giftToken);
+    const tokens = [
+      { tokenId: this.ticketTokenId!, amount: this.ticketTokenAmount! },
+    ];
+    if (this.giftTokenId && this.giftTokenAmount) {
+      tokens.push({
+        tokenId: this.giftTokenId!,
+        amount: this.giftTokenAmount!,
+      });
     }
 
     return new OutputBuilder(
@@ -188,8 +193,8 @@ export class WinnerBuilder {
         ]).toHex(),
         R5: SInt(this.winnerIndex!).toHex(),
         R6: SLong(this.giftCount!).toHex(),
-        R7: this.giftTokenId
-          ? SColl(SByte, Array.from(this.giftTokenId)).toHex()
+        R7: this.unavailableGiftTokenId
+          ? SColl(SByte, Array.from(this.unavailableGiftTokenId)).toHex()
           : undefined,
       });
   };
@@ -213,7 +218,7 @@ export class WinnerBuilder {
     // Set the gift token with the received amount
     this.setGiftToken(giftTokenId, giftTokenCount);
     // Remove the gift token id from the R7 register
-    this.giftTokenId = undefined;
+    this.unavailableGiftTokenId = undefined;
 
     return this;
   };
@@ -225,18 +230,18 @@ export class WinnerBuilder {
    * @throws Error if required parameters are not set or insufficient gift tokens
    */
   addGift = (): this => {
-    if (!this.giftToken) {
+    if (!this.giftTokenId || !this.giftTokenAmount) {
       throw new Error('Gift token not set');
     }
     if (!this.giftCount) {
       throw new Error('Gift count not set');
     }
-    if (this.giftToken.amount < 1n) {
+    if (this.giftTokenAmount < 1n) {
       throw new Error('Insufficient gift tokens available');
     }
 
     // Decrease gift token amount by 1
-    this.setGiftToken(this.giftToken.tokenId, this.giftToken.amount - 1n);
+    this.setGiftToken(this.giftTokenId, this.giftTokenAmount - 1n);
 
     // Increase gift count by 1
     this.setGiftCount(this.giftCount + 1n);
@@ -280,11 +285,6 @@ export class WinnerBuilder {
     // Set gift token if present
     if (box.assets.length > 1) {
       builder.setGiftToken(box.assets[1].tokenId, BigInt(box.assets[1].amount));
-    }
-
-    // Set gift token ID from R7 if present
-    if (registers.R7) {
-      builder.setGiftTokenId(SConstant.from(registers.R7).data as Uint8Array);
     }
 
     return builder;

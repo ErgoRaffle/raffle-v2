@@ -1,7 +1,6 @@
 import {
   Box,
   OutputBuilder,
-  TokenAmount,
   Amount,
   SColl,
   SByte,
@@ -26,7 +25,9 @@ export class RaffleDetailsBuilder {
   private name?: string;
   private description?: string;
   private pictures: string[] = [];
-  private ticketToken?: TokenAmount<bigint>;
+  private ticketTokenId?: string;
+  private ticketTokenAmount?: bigint;
+  private txFee?: bigint;
 
   constructor() {}
 
@@ -88,7 +89,8 @@ export class RaffleDetailsBuilder {
       .setName(name)
       .setDescription(description)
       .setValue(txFee)
-      .setTicketToken(ticketId, 1n);
+      .setTicketToken(ticketId, 1n)
+      .setTxFee(txFee);
 
     // Add all pictures
     pictures.forEach((pic) => builder.addPicture(pic));
@@ -152,11 +154,19 @@ export class RaffleDetailsBuilder {
    * @param amount - Amount of tickets
    * @returns this builder instance
    */
-  setTicketToken = (tokenId: string, amount: bigint): this => {
-    this.ticketToken = {
-      tokenId,
-      amount,
-    };
+  setTicketToken = (tokenId: string, amount: bigint = 1n): this => {
+    this.ticketTokenId = tokenId;
+    this.ticketTokenAmount = amount;
+    return this;
+  };
+
+  /**
+   * Set the transaction fee (optional only used for validation)
+   * @param fee - Transaction fee in nanoERG
+   * @returns this builder instance
+   */
+  setTxFee = (fee: bigint): this => {
+    this.txFee = fee;
     return this;
   };
 
@@ -169,7 +179,13 @@ export class RaffleDetailsBuilder {
     if (!this.creationHeight) throw new Error('Creation height not set');
     if (!this.name) throw new Error('Name not set');
     if (!this.description) throw new Error('Description not set');
-    if (!this.ticketToken) throw new Error('Ticket token not set');
+    if (!this.ticketTokenId) throw new Error('Ticket token not set');
+    if (!this.ticketTokenAmount) throw new Error('Ticket token amount not set');
+
+    // Validate value constraint: value == txFee (as per contract)
+    if (this.txFee && this.value !== this.txFee) {
+      throw new Error(`Value must be exactly ${this.txFee} nanoERG (txFee)`);
+    }
   };
 
   /**
@@ -196,7 +212,9 @@ export class RaffleDetailsBuilder {
       ErgoAddress.fromBase58(raffleInfo.addresses.raffleDetails).ergoTree,
       this.creationHeight!,
     )
-      .addTokens([this.ticketToken!])
+      .addTokens([
+        { tokenId: this.ticketTokenId!, amount: this.ticketTokenAmount! },
+      ])
       .setAdditionalRegisters({
         R4: SColl(SColl(SByte), r4Data).toHex(),
       });

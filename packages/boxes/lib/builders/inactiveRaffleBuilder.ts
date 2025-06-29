@@ -102,8 +102,8 @@ export class InactiveRaffleBuilder {
   };
 
   /**
-   * Set the ticket price in nanoERG
-   * @param price - Price in nanoERG
+   * Set the ticket price
+   * @param price - Price in nanoERG/CollectingToken
    * @returns this builder instance
    */
   setTicketPrice = (price: bigint): this => {
@@ -112,8 +112,8 @@ export class InactiveRaffleBuilder {
   };
 
   /**
-   * Set the raffle goal in nanoERG
-   * @param goal - Goal amount in nanoERG
+   * Set the raffle goal
+   * @param goal - Goal amount in nanoERG/CollectingToken
    * @returns this builder instance
    */
   setGoal = (goal: bigint): this => {
@@ -133,7 +133,7 @@ export class InactiveRaffleBuilder {
 
   /**
    * Set the transaction fee
-   * @param fee - Fee amount in nanoERG
+   * @param fee - Transaction fee in nanoERG
    * @returns this builder instance
    */
   setTxFee = (fee: bigint): this => {

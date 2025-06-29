@@ -87,6 +87,14 @@ export class SafePayBuilder {
     if (!this.txFee) throw new Error('Transaction fee not set');
     if (!this.value) throw new Error('Value not set');
     if (!this.creationHeight) throw new Error('Creation height not set');
+
+    // Validate value constraint: value must be at least txFee
+    // The contract will deduct txFee from the value when spending
+    if (this.value < this.txFee!) {
+      throw new Error(
+        `Value is too low. Must be at least ${this.txFee} nanoERG (txFee)`,
+      );
+    }
   };
 
   /**

@@ -1,7 +1,6 @@
 import {
   Box,
   OutputBuilder,
-  TokenAmount,
   Amount,
   SColl,
   SLong,
@@ -33,8 +32,10 @@ export class ServiceBuilder {
   private implementerFeePercent?: bigint;
   private creationFee?: bigint;
   private txFee?: bigint;
-  private serviceNft?: TokenAmount<bigint>;
-  private licensingToken?: TokenAmount<bigint>;
+  private serviceNftId?: string;
+  private serviceNftAmount: bigint = 1n;
+  private licensingTokenId?: string;
+  private licensingTokenAmount?: bigint;
 
   constructor() {}
 
@@ -78,10 +79,8 @@ export class ServiceBuilder {
    * @returns this builder instance
    */
   setLicenseTokenCount = (count: bigint): this => {
-    this.licensingToken = {
-      tokenId: raffleInfo.tokens.raffleLicense,
-      amount: count,
-    };
+    this.licensingTokenId = raffleInfo.tokens.raffleLicense;
+    this.licensingTokenAmount = count;
     return this;
   };
 
@@ -90,10 +89,10 @@ export class ServiceBuilder {
    * @returns this builder instance
    */
   decrementLicenseToken = (): this => {
-    if (!this.licensingToken) {
+    if (!this.licensingTokenId || !this.licensingTokenAmount) {
       throw new Error('License token not set');
     }
-    this.licensingToken.amount -= 1n;
+    this.licensingTokenAmount -= 1n;
     return this;
   };
 
@@ -102,10 +101,10 @@ export class ServiceBuilder {
    * @returns this builder instance
    */
   incrementLicenseToken = (): this => {
-    if (!this.licensingToken) {
+    if (!this.licensingTokenId || !this.licensingTokenAmount) {
       throw new Error('License token not set');
     }
-    this.licensingToken.amount += 1n;
+    this.licensingTokenAmount += 1n;
     return this;
   };
 
@@ -163,8 +162,10 @@ export class ServiceBuilder {
       throw new Error('Implementer fee percent not set');
     if (!this.creationFee) throw new Error('Creation fee not set');
     if (!this.txFee) throw new Error('Transaction fee not set');
-    if (!this.serviceNft) throw new Error('Service NFT not set');
-    if (!this.licensingToken) throw new Error('License token not set');
+    if (!this.serviceNftId) throw new Error('Service NFT not set');
+    if (!this.licensingTokenId) throw new Error('License token not set');
+    if (!this.licensingTokenAmount)
+      throw new Error('License token amount not set');
   };
 
   /**
@@ -177,7 +178,10 @@ export class ServiceBuilder {
     this.validate();
 
     return new OutputBuilder(this.value!, this.ergoTree!, this.creationHeight!)
-      .addTokens([this.serviceNft!, this.licensingToken!])
+      .addTokens([
+        { tokenId: this.serviceNftId!, amount: this.serviceNftAmount },
+        { tokenId: this.licensingTokenId!, amount: this.licensingTokenAmount! },
+      ])
       .setAdditionalRegisters({
         R4: SColl(SLong, [
           this.serviceFeePercent!,
@@ -223,10 +227,8 @@ export class ServiceBuilder {
       .setTxFee(r4Data[3]);
 
     // Set tokens
-    builder.serviceNft = {
-      tokenId: box.assets[0].tokenId,
-      amount: 1n,
-    };
+    builder.serviceNftId = box.assets[0].tokenId;
+    builder.serviceNftAmount = BigInt(box.assets[0].amount);
 
     // Set ergoTree and hash directly since we have them from the box
     builder.ergoTree = box.ergoTree;

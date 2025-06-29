@@ -98,8 +98,8 @@ export class ActiveRaffleBuilder {
   };
 
   /**
-   * Set the ticket price in nanoERG
-   * @param price - Price in nanoERG
+   * Set the ticket price in nanoERG/CollectingToken
+   * @param price - Price in nanoERG/CollectingToken
    * @returns this builder instance
    */
   setTicketPrice = (price: bigint): this => {
@@ -108,8 +108,8 @@ export class ActiveRaffleBuilder {
   };
 
   /**
-   * Set the raffle goal in nanoERG
-   * @param goal - Goal amount in nanoERG
+   * Set the raffle goal in nanoERG/CollectingToken
+   * @param goal - Goal amount in nanoERG/CollectingToken
    * @returns this builder instance
    */
   setGoal = (goal: bigint): this => {
@@ -376,6 +376,10 @@ export class ActiveRaffleBuilder {
   static fromBox = (box: Box<Amount>): ActiveRaffleBuilder => {
     if (box.assets.length < 2) {
       throw new Error('Invalid active raffle box: missing required tokens');
+    }
+
+    if (box.assets.length > 3) {
+      throw new Error('Invalid active raffle box: too many tokens');
     }
 
     const registers = box.additionalRegisters;
