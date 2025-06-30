@@ -143,14 +143,14 @@ describe('BoxLookup', () => {
 
   describe('getUnspentBoxes', () => {
     /**
-     * should retrieve and combine spent boxes from node and TxPot
+     * should retrieve and combine unspent boxes from node and TxPot
      * @scenario
      * - call the getUnspentBoxes method
-     * - assert unspentBoxes size must be equal to the TxPot spent boxes plus node spent boxes
+     * - assert unspentBoxes size must be equal to the TxPot unspent boxes plus node unspent boxes
      * @expected
      * - unspentBoxes size must be equal to 4
      */
-    it<BoxLookupTestContext>('should retrieve and combine spent boxes from node and TxPot', async ({
+    it<BoxLookupTestContext>('should retrieve and combine unspent boxes from node and TxPot', async ({
       boxLookup,
     }) => {
       // Act
@@ -169,15 +169,15 @@ describe('BoxLookup', () => {
     });
 
     /**
-     * should filter spent boxes from node and TxPot when a box exists as spent and meanwhile unspent transactions
+     * should filter unspent boxes from node and TxPot when a box exists as spent and meanwhile unspent transactions
      * @scenario
      * - insert a certain output box id to the tx-pot that already exists on the unspent boxes
      * - call the getUnspentBoxes method
-     * - assert unspentBoxes size must be equal to the TxPot spent boxes plus node spent boxes minus one spent box
+     * - assert unspentBoxes size must be equal to the TxPot unspent boxes plus node unspent boxes minus one spent box
      * @expected
      * - unspentBoxes size must be equal to 3
      */
-    it<BoxLookupTestContext>('should filter spent boxes from node and TxPot when a box exists as spent and meanwhile unspent transactions', async ({
+    it<BoxLookupTestContext>('should filter unspent boxes from node and TxPot when a box exists as spent and meanwhile unspent transactions', async ({
       boxLookup,
       txRepository,
     }) => {
@@ -199,15 +199,15 @@ describe('BoxLookup', () => {
     });
 
     /**
-     * should retrieve and combine spent boxes from empty node and TxPot data
+     * should retrieve and combine unspent boxes from empty node and TxPot data
      * @scenario
      * - mock node api to return empty tx data
      * - call the getUnspentBoxes method
-     * - assert unspentBoxes size must be equal to the TxPot spent boxes plus node spent boxes
+     * - assert unspentBoxes size must be equal to the TxPot unspent boxes plus node unspent boxes
      * @expected
      * - unspentBoxes size must be equal to 0
      */
-    it<BoxLookupTestContext>('should retrieve and combine spent boxes from empty node and TxPot data', async ({
+    it<BoxLookupTestContext>('should retrieve and combine unspent boxes from empty node and TxPot data', async ({
       boxLookup,
     }) => {
       // Mock
@@ -231,15 +231,15 @@ describe('BoxLookup', () => {
     });
 
     /**
-     * should retrieve and combine spent boxes from node and by empty TxPot data
+     * should retrieve and combine unspent boxes from node and by empty TxPot data
      * @scenario
      * - remove total tx from TxPot DB
      * - call the getUnspentBoxes method
-     * - assert unspentBoxes size must be equal to the TxPot spent boxes plus node spent boxes
+     * - assert unspentBoxes size must be equal to the TxPot unspent boxes plus node unspent boxes
      * @expected
      * - unspentBoxes size must be equal to 1
      */
-    it<BoxLookupTestContext>('should retrieve and combine spent boxes from node and by empty TxPot data', async ({
+    it<BoxLookupTestContext>('should retrieve and combine unspent boxes from node and by empty TxPot data', async ({
       boxLookup,
       txRepository,
     }) => {
@@ -259,16 +259,16 @@ describe('BoxLookup', () => {
     });
 
     /**
-     * should retrieve and combine spent boxes from empty node and empty TxPot data
+     * should retrieve and combine unspent boxes from empty node and empty TxPot data
      * @scenario
      * - remove total tx from TxPot DB
      * - mock node api to return empty tx data
      * - call the getUnspentBoxes method
-     * - assert unspentBoxes size must be equal to the TxPot spent boxes plus node spent boxes
+     * - assert unspentBoxes size must be equal to the TxPot unspent boxes plus node unspent boxes
      * @expected
      * - unspentBoxes size must be equal to 0
      */
-    it<BoxLookupTestContext>('should retrieve and combine spent boxes from empty node and empty TxPot data', async ({
+    it<BoxLookupTestContext>('should retrieve and combine unspent boxes from empty node and empty TxPot data', async ({
       boxLookup,
       txRepository,
     }) => {
