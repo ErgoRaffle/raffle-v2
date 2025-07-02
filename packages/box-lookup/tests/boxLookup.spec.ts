@@ -205,7 +205,7 @@ describe('BoxLookup', () => {
      * - call the getUnspentBoxes method
      * - assert unspentBoxes size must be equal to the TxPot unspent boxes plus node unspent boxes
      * @expected
-     * - unspentBoxes size must be equal to 0
+     * - unspentBoxes size must be equal to 3
      */
     it<BoxLookupTestContext>('should retrieve and combine unspent boxes from empty node and TxPot data', async ({
       boxLookup,
