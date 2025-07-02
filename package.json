@@ -31,8 +31,5 @@
     "lint-staged": "^13.0.3",
     "prettier": "^3.2.5",
     "tsx": "^4.19.3"
-  },
-  "dependencies": {
-    "@rosen-bridge/tx-pot": "^1.0.3"
   }
 }
