@@ -152,7 +152,11 @@ program
         'base64',
       ),
     );
-    defaults.set('GIFT_TOKEN_COUNT', rawConfigs['giftTokenCount'].toString());
+    // Convert number to string with L for compilation
+    defaults.set(
+      'GIFT_TOKEN_COUNT',
+      rawConfigs['giftTokenCount'].toString() + 'L',
+    );
     defaults.set(
       'TICKET_EXPIRATION_HEIGHT',
       rawConfigs['ticketExpirationHeight'].toString(),
@@ -213,7 +217,7 @@ export const raffleInfo: {
     "tokens": {${tokensTypeString}
     },
     "constants": {
-      "giftTokenCount": string,
+      "giftTokenCount": number,
       "ticketExpirationHeight": number
     }
 };
