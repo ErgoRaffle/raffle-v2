@@ -3,5 +3,13 @@
   "compilerOptions": {
     "outDir": "./dist"
   },
-  "include": ["tests", "lib"]
+  "include": ["tests", "lib"],
+  "references": [
+    {
+      "path": "../contracts"
+    },
+    {
+      "path": "../boxes"
+    }
+  ]
 }

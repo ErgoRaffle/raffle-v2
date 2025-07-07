@@ -3,5 +3,13 @@
   "compilerOptions": {
     "rootDir": "./lib"
   },
-  "exclude": ["tests"]
+  "exclude": ["tests"],
+  "references": [
+    {
+      "path": "../contracts/tsconfig.build.json"
+    },
+    {
+      "path": "../boxes/tsconfig.build.json"
+    }
+  ]
 }

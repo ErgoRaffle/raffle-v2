@@ -1,10 +1,9 @@
 {
-  "name": "transactions",
-  "version": "0.0.0",
-  "description": "",
-  "repository": "",
+  "name": "@ergo-raffle/transactions",
+  "version": "0.0.1",
+  "description": "A package to manage transactions",
   "license": "GPL-3.0",
-  "author": "Rosen Team",
+  "author": "Ergo Raffle Team",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -26,5 +25,9 @@
   },
   "engines": {
     "node": ">=20.11.0"
+  },
+  "dependencies": {
+    "@ergo-raffle/boxes": "^0.1.0",
+    "@ergo-raffle/contracts": "^0.1.0"
   }
 }
