@@ -113,7 +113,7 @@
       oracleBox.creationInfo._1 > deadline,
 
       // Correct SuccessRaffle format
-      // R4: [TotalPrize, totalSoldTickets, TxFee]
+      // R4: [TotalPrize, TotalSoldTickets, TxFee]
       // R5: WinnersCount
       // R6: ProjectErgoTreeHash
       // R7: [Seed, SelectedWinnersListHash]
