@@ -175,6 +175,10 @@ program
     const RaffleAddressesAndTokens = {
       addresses: contracts,
       tokens: tokens,
+      constants: {
+        giftTokenCount: rawConfigs['giftTokenCount'],
+        ticketExpirationHeight: rawConfigs['ticketExpirationHeight'],
+      },
     };
 
     fs.writeFileSync(
@@ -207,6 +211,10 @@ export const raffleInfo: {
   "addresses": {${addressesTypeString}
     },
     "tokens": {${tokensTypeString}
+    },
+    "constants": {
+      "giftTokenCount": string,
+      "ticketExpirationHeight": number
     }
 };
 `,
