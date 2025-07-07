@@ -16,6 +16,7 @@ installation:
     paths:
       - node_modules
       - '**/node_modules'
+      - '**/dist'
   script:
     - npm ci
 

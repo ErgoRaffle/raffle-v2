@@ -12,7 +12,7 @@
     "build": "npm run build --workspaces",
     "coverage": "npm run coverage --workspaces",
     "lint": "npm run lint --workspaces",
-    "prepare": "husky install",
+    "prepare": "husky install && npm run build --workspace packages/contracts",
     "release": "npm run release --workspaces",
     "test": "npm run test --workspaces",
     "test:related": "npm run test:related --workspaces",
@@ -25,11 +25,13 @@
     "@types/node": "^20.11.0",
     "@typescript-eslint/eslint-plugin": "^6.19.1",
     "@typescript-eslint/parser": "^6.19.1",
+    "@vitest/coverage-istanbul": "^3.1.2",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "husky": "^8.0.0",
     "lint-staged": "^13.0.3",
     "prettier": "^3.2.5",
-    "tsx": "^4.19.3"
+    "tsx": "^4.19.3",
+    "vitest": "^3.1.2"
   }
 }

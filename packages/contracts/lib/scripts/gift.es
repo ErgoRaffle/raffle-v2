@@ -7,7 +7,7 @@
   //   R6[Long]: txFee
   // Tokens:
   //   0: GiftToken
-  //   1: Gift
+  //   1: Gift(s)
   // Context (gift unwrap):
   //   C0: Coll[Byte]: WinnerErgoTree
   // Context (gift return):
