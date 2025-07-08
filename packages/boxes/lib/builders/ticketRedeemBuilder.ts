@@ -76,6 +76,14 @@ export class TicketRedeemBuilder {
   };
 
   /**
+   * Get the ticket price
+   * @returns ticket price in nanoERG/CollectingToken
+   */
+  getTicketPrice = (): bigint => {
+    return this.ticketPrice!;
+  };
+
+  /**
    * Set the transaction fee
    * @param fee - Fee amount in nanoERG
    * @returns this builder instance
