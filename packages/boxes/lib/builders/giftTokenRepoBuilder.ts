@@ -151,6 +151,14 @@ export class GiftTokenRepoBuilder {
   };
 
   /**
+   * Get the number of winners
+   * @returns Number of winners
+   */
+  getWinnersCount = (): number => {
+    return this.winnersCount!;
+  };
+
+  /**
    * Set the current step
    * @param step - Current step number
    * @returns this builder instance
@@ -158,6 +166,14 @@ export class GiftTokenRepoBuilder {
   setStep = (step: number): this => {
     this.step = step;
     return this;
+  };
+
+  /**
+   * Get the current step
+   * @returns Current step
+   */
+  getStep = (): number => {
+    return this.step!;
   };
 
   /**

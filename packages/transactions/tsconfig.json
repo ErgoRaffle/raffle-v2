@@ -6,9 +6,6 @@
   "include": ["tests", "lib"],
   "references": [
     {
-      "path": "../contracts"
-    },
-    {
       "path": "../boxes"
     }
   ]
