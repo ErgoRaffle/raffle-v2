@@ -26,7 +26,7 @@ import { TicketRepoBuilder } from '@ergo-raffle/boxes';
  */
 export class CreationTxBuilder {
   // Private fields for transaction configuration
-  private serviceBox?: ErgoUnsignedInput;
+  private serviceBox?: Box<Amount>;
   private feeBoxes: Box<Amount>[] = [];
   private creatorAddress?: string;
   private implementerAddress?: string;
@@ -55,7 +55,7 @@ export class CreationTxBuilder {
    * @param serviceBox - The service box to spend
    * @returns this builder instance
    */
-  setServiceBox = (serviceBox: ErgoUnsignedInput): this => {
+  setServiceBox = (serviceBox: Box<Amount>): this => {
     this.serviceBox = serviceBox;
     this.raffleId = serviceBox.boxId.toString();
     return this;
@@ -298,7 +298,8 @@ export class CreationTxBuilder {
     this.validate();
 
     // Set context extension for service box
-    this.serviceBox!.setContextExtension({
+    const inputServiceBox = new ErgoUnsignedInput(this.serviceBox!);
+    inputServiceBox.setContextExtension({
       0: SColl(SLong, this.winnersPercent!),
       1: SColl(SColl(SByte), [
         Array.from(
@@ -366,7 +367,7 @@ export class CreationTxBuilder {
 
     // Build the transaction
     const transaction = new TransactionBuilder(this.chainHeight!)
-      .from([this.serviceBox!, ...this.feeBoxes])
+      .from([inputServiceBox, ...this.feeBoxes])
       .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
       .configureSelector((selector) => {
         selector.defineStrategy((inputs) => inputs);
