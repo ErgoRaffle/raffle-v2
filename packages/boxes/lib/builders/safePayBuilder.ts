@@ -5,6 +5,7 @@ import {
   SByte,
   ErgoAddress,
   TokenAmount,
+  Amount,
 } from '@fleet-sdk/core';
 import { raffleInfo } from '@ergo-raffle/contracts';
 
@@ -23,7 +24,7 @@ export class SafePayBuilder {
   private txFee?: bigint;
   private value?: bigint;
   private creationHeight?: number;
-  private tokens?: TokenAmount<bigint>[];
+  private tokens?: TokenAmount<Amount>[];
 
   constructor() {}
 
@@ -85,7 +86,7 @@ export class SafePayBuilder {
    * @param tokens - Array of token amounts
    * @returns this builder instance
    */
-  setTokens = (tokens: TokenAmount<bigint>[]): this => {
+  setTokens = (tokens: TokenAmount<Amount>[]): this => {
     this.tokens = tokens;
     return this;
   };

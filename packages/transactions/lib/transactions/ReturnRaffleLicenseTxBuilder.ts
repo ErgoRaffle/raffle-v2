@@ -108,12 +108,7 @@ export class ReturnRaffleLicenseTxBuilder {
       .setCreationHeight(this.chainHeight!)
       .setTxFee(this.txFee!);
     if (this.endedRaffle!.assets[2]) {
-      changeBoxBuilder.setTokens([
-        {
-          tokenId: this.endedRaffle!.assets[2].tokenId,
-          amount: BigInt(this.endedRaffle!.assets[2].amount),
-        },
-      ]);
+      changeBoxBuilder.setTokens([this.endedRaffle!.assets[2]]);
     }
     const changeBox = changeBoxBuilder.build();
 

@@ -131,12 +131,7 @@ export class GiftReturnTxBuilder {
       .setCreationHeight(this.chainHeight!)
       .setTxFee(this.txFee!)
       .setReceiverErgoTreeHash(receiverHash)
-      .setTokens(
-        this.gift!.assets.slice(1).map((asset) => ({
-          tokenId: asset.tokenId,
-          amount: BigInt(asset.amount),
-        })),
-      );
+      .setTokens(this.gift!.assets.slice(1));
     const safePayBox = safePayBuilder.build();
 
     // Build the transaction

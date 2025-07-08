@@ -34,7 +34,7 @@ export class GiftBuilder {
   private txFee?: bigint;
   private giftTokenId?: string;
   private giftTokenAmount?: bigint;
-  private gifts: TokenAmount<bigint>[] = [];
+  private gifts: TokenAmount<Amount>[] = [];
 
   /**
    * Set the box value in nanoERG
@@ -106,7 +106,7 @@ export class GiftBuilder {
    * @param amount - Number of gifts
    * @returns this builder instance
    */
-  addGift = (gift: TokenAmount<bigint>): this => {
+  addGift = (gift: TokenAmount<Amount>): this => {
     this.gifts.push(gift);
     return this;
   };
@@ -116,7 +116,7 @@ export class GiftBuilder {
    * @param gifts - Array of gift tokens to add
    * @returns this builder instance
    */
-  addGifts = (gifts: TokenAmount<bigint>[]): this => {
+  addGifts = (gifts: TokenAmount<Amount>[]): this => {
     this.gifts.push(...gifts);
     return this;
   };
