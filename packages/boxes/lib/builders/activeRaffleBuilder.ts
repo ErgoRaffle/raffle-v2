@@ -128,6 +128,14 @@ export class ActiveRaffleBuilder {
   };
 
   /**
+   * Get the raffle deadline in blocks
+   * @returns Deadline in blocks
+   */
+  getDeadline = (): bigint => {
+    return this.deadline!;
+  };
+
+  /**
    * Set the transaction fee
    * @param fee - Fee amount in nanoERG
    * @returns this builder instance
@@ -145,6 +153,14 @@ export class ActiveRaffleBuilder {
   setWinnersCount = (count: number): this => {
     this.winnersCount = count;
     return this;
+  };
+
+  /**
+   * Get the number of winners
+   * @returns Number of winners
+   */
+  getWinnersCount = (): number => {
+    return this.winnersCount!;
   };
 
   /**

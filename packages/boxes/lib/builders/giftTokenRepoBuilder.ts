@@ -135,8 +135,8 @@ export class GiftTokenRepoBuilder {
    * @param id - Ticket ID as byte array
    * @returns this builder instance
    */
-  setTicketId = (id: Uint8Array): this => {
-    this.ticketId = id;
+  setTicketId = (id: string): this => {
+    this.ticketId = Buffer.from(id, 'hex');
     return this;
   };
 
@@ -321,7 +321,11 @@ export class GiftTokenRepoBuilder {
       .setDecimals(SConstant.from(registers.R6).data as Uint8Array)
       .setGiftTokensPerWinner(r7Data[0])
       .setTxFee(r7Data[1])
-      .setTicketId(SConstant.from(registers.R8).data as Uint8Array)
+      .setTicketId(
+        Buffer.from(SConstant.from(registers.R8).data as Uint8Array).toString(
+          'hex',
+        ),
+      )
       .setWinnersCount(r9Data[0])
       .setStep(r9Data[1]);
 
