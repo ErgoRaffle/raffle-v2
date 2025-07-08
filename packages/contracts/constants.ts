@@ -108,7 +108,7 @@ export const defaultScriptsVariables: {
 };
 
 export const defaultBuildVariables = {
-  giftTokenCount: '1000L',
+  giftTokenCount: 1000,
   ticketExpirationHeight: 7200,
   tokens: {
     oracleTokenId:
