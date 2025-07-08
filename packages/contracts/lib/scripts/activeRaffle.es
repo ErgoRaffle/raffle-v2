@@ -113,10 +113,11 @@
       oracleBox.creationInfo._1 > deadline,
 
       // Correct SuccessRaffle format
-      // R4: [TotalPrize, TotalSoldTickets]
+      // R4: [TotalPrize, TotalSoldTickets, TxFee]
       // R5: WinnersCount
-      // R6: [Seed, SelectedWinnersListHash]
-      // R7: Step
+      // R6: ProjectErgoTreeHash
+      // R7: [Seed, SelectedWinnersListHash]
+      // R8: Step
       blake2b256(successRaffle.propositionBytes) == successRaffleScriptHash,
       successRaffle.value >= SELF.value - serviceFee.value - implementerFee.value,
       successRaffle.tokens(0) == SELF.tokens(0),

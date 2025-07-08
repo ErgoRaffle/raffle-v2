@@ -77,6 +77,7 @@
         // Correct TicketRepo format
         blake2b256(ticketRepo.propositionBytes) == ticketRepoScriptHash,
         ticketRepo.tokens(0)._1 == SELF.id,
+        ticketRepo.tokens(0)._2 > winnersCount + 1L,
         ticketRepo.tokens.size == 1, // Not to steal tickets
         ticketRepo.value == txFee,
 

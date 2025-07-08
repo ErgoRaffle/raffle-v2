@@ -152,7 +152,11 @@ program
         'base64',
       ),
     );
-    defaults.set('GIFT_TOKEN_COUNT', rawConfigs['giftTokenCount'].toString());
+    // Convert number to string with L for compilation
+    defaults.set(
+      'GIFT_TOKEN_COUNT',
+      rawConfigs['giftTokenCount'].toString() + 'L',
+    );
     defaults.set(
       'TICKET_EXPIRATION_HEIGHT',
       rawConfigs['ticketExpirationHeight'].toString(),
@@ -175,6 +179,10 @@ program
     const RaffleAddressesAndTokens = {
       addresses: contracts,
       tokens: tokens,
+      constants: {
+        giftTokenCount: rawConfigs['giftTokenCount'],
+        ticketExpirationHeight: rawConfigs['ticketExpirationHeight'],
+      },
     };
 
     fs.writeFileSync(
@@ -207,6 +215,10 @@ export const raffleInfo: {
   "addresses": {${addressesTypeString}
     },
     "tokens": {${tokensTypeString}
+    },
+    "constants": {
+      "giftTokenCount": number,
+      "ticketExpirationHeight": number
     }
 };
 `,
