@@ -4,6 +4,7 @@ import {
   SLong,
   SByte,
   ErgoAddress,
+  TokenAmount,
 } from '@fleet-sdk/core';
 import { raffleInfo } from '@ergo-raffle/contracts';
 
@@ -22,6 +23,7 @@ export class SafePayBuilder {
   private txFee?: bigint;
   private value?: bigint;
   private creationHeight?: number;
+  private tokens?: TokenAmount<bigint>[];
 
   constructor() {}
 
@@ -79,6 +81,16 @@ export class SafePayBuilder {
   };
 
   /**
+   * Set the tokens to be added to the box
+   * @param tokens - Array of token amounts
+   * @returns this builder instance
+   */
+  setTokens = (tokens: TokenAmount<bigint>[]): this => {
+    this.tokens = tokens;
+    return this;
+  };
+
+  /**
    * Validate that all required parameters are set
    * @throws Error if any required parameter is missing
    */
@@ -106,7 +118,7 @@ export class SafePayBuilder {
   build = (): OutputBuilder => {
     this.validate();
 
-    return new OutputBuilder(
+    const builder = new OutputBuilder(
       this.value!,
       ErgoAddress.fromBase58(raffleInfo.addresses.safePay).ergoTree,
       this.creationHeight!,
@@ -114,5 +126,9 @@ export class SafePayBuilder {
       R4: SColl(SByte, Array.from(this.receiverErgoTreeHash!)).toHex(),
       R5: SLong(this.txFee!).toHex(),
     });
+    if (this.tokens) {
+      builder.addTokens(this.tokens);
+    }
+    return builder;
   };
 }

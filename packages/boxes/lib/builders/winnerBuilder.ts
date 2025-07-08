@@ -250,6 +250,28 @@ export class WinnerBuilder {
   };
 
   /**
+   * Send a gift to the winner or return it to the gift giver
+   * @returns this builder instance
+   * @throws Error if required parameters are not set or insufficient gift tokens
+   */
+  sendGift = (): this => {
+    if (!this.giftTokenId || !this.giftTokenAmount) {
+      throw new Error('Gift token not set');
+    }
+    if (!this.giftCount) {
+      throw new Error('Gift count not set');
+    }
+
+    // Increase gift token amount by 1
+    this.setGiftToken(this.giftTokenId, this.giftTokenAmount + 1n);
+
+    // Decrease gift count by 1
+    this.setGiftCount(this.giftCount - 1n);
+
+    return this;
+  };
+
+  /**
    * Create a WinnerBuilder instance from an existing box
    * @param box - Existing winner box to copy configuration from
    * @returns New WinnerBuilder instance with copied configuration
