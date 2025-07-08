@@ -98,6 +98,22 @@ export class ActiveRaffleBuilder {
   };
 
   /**
+   * Get the service fee percentage (in thousandths)
+   * @returns Service fee percentage (in thousandths)
+   */
+  getServiceFeePercent = (): bigint => {
+    return this.serviceFeePercent!;
+  };
+
+  /**
+   * Get the implementer fee percentage (in thousandths)
+   * @returns Implementer fee percentage (in thousandths)
+   */
+  getImplementerFeePercent = (): bigint => {
+    return this.implementerFeePercent!;
+  };
+
+  /**
    * Set the ticket price in nanoERG/CollectingToken
    * @param price - Price in nanoERG/CollectingToken
    * @returns this builder instance
@@ -105,6 +121,14 @@ export class ActiveRaffleBuilder {
   setTicketPrice = (price: bigint): this => {
     this.ticketPrice = price;
     return this;
+  };
+
+  /**
+   * Get the ticket price in nanoERG/CollectingToken
+   * @returns Ticket price in nanoERG/CollectingToken
+   */
+  getTicketPrice = (): bigint => {
+    return this.ticketPrice!;
   };
 
   /**
@@ -171,6 +195,14 @@ export class ActiveRaffleBuilder {
   setTotalSoldTickets = (count: bigint): this => {
     this.totalSoldTickets = count;
     return this;
+  };
+
+  /**
+   * Get the total number of tickets sold
+   * @returns Total number of tickets sold
+   */
+  getTotalSoldTickets = (): bigint => {
+    return this.totalSoldTickets!;
   };
 
   /**

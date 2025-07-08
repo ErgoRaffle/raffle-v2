@@ -7,3 +7,6 @@ export { FailureTxBuilder } from './transactions/FailureTxBuilder';
 export { GiftReturnTxBuilder } from './transactions/GiftReturnTxBuilder';
 export { WinnerRemovalTxBuilder } from './transactions/WinnerRemovalTxBuilder';
 export { ForwardToTicketRedeemTxBuilder } from './transactions/ForwardToTicketRedeemTxBuilder';
+export { TicketRedeemTxBuilder } from './transactions/TicketRedeemTxBuilder';
+export { ReturnRaffleLicenseTxBuilder } from './transactions/ReturnRaffleLicenseTxBuilder';
+export { FeePaymentTxBuilder } from './transactions/FeePaymentTxBuilder';
