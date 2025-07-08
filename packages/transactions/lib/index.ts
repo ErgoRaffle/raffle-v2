@@ -1,6 +1,9 @@
 export { CreationTxBuilder } from './transactions/CreationTxBuilder';
 export { ActivationTxBuilder } from './transactions/ActivationTxBuilder';
-export { GiftTokenReceiptTxBuilder } from './transactions/giftTokenReceipt';
+export { GiftTokenReceiptTxBuilder } from './transactions/GiftTokenReceiptTxBuilder';
 export { AddGiftTxBuilder } from './transactions/AddGiftTxBuilder';
 export { DonateTxBuilder } from './transactions/DonateTxBuilder';
 export { FailureTxBuilder } from './transactions/FailureTxBuilder';
+export { GiftReturnTxBuilder } from './transactions/GiftReturnTxBuilder';
+export { WinnerRemovalTxBuilder } from './transactions/WinnerRemovalTxBuilder';
+export { ForwardToTicketRedeemTxBuilder } from './transactions/ForwardToTicketRedeemTxBuilder';
