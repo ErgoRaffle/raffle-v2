@@ -25,13 +25,12 @@ export class ActivationTxBuilder {
   // Private fields for transaction configuration
   private inactiveRaffle?: Box<Amount>;
   private ticketRepo?: Box<Amount>;
-  private winnersCount?: number;
-  private deadline?: bigint;
   private winnersSharePercent?: bigint[];
   private chainHeight?: number;
   private txFee?: bigint;
   private giftTokenId?: string;
   private ticketTokenId?: string;
+  private winnersCount?: number;
 
   constructor() {}
 
@@ -58,32 +57,13 @@ export class ActivationTxBuilder {
   };
 
   /**
-   * Set the number of winners
-   * @param count - Number of winners
-   * @returns this builder instance
-   */
-  setWinnersCount = (count: number): this => {
-    this.winnersCount = count;
-    return this;
-  };
-
-  /**
-   * Set the raffle deadline in blocks
-   * @param deadline - Deadline in blocks
-   * @returns this builder instance
-   */
-  setDeadline = (deadline: bigint): this => {
-    this.deadline = deadline;
-    return this;
-  };
-
-  /**
    * Set the winners share percentage list
    * @param percentages - Array of winner percentages (in thousandths)
    * @returns this builder instance
    */
   setWinnersSharePercent = (percentages: bigint[]): this => {
     this.winnersSharePercent = percentages;
+    this.winnersCount = percentages.length;
     return this;
   };
 
@@ -114,8 +94,6 @@ export class ActivationTxBuilder {
   private validate = (): void => {
     if (!this.inactiveRaffle) throw new Error('Inactive raffle box not set');
     if (!this.ticketRepo) throw new Error('Ticket repository box not set');
-    if (!this.winnersCount) throw new Error('Winners count not set');
-    if (!this.deadline) throw new Error('Deadline not set');
     if (!this.winnersSharePercent)
       throw new Error('Winners share percent not set');
     if (!this.chainHeight) throw new Error('Chain height not set');
@@ -130,12 +108,6 @@ export class ActivationTxBuilder {
   build = (): ErgoUnsignedTransaction => {
     this.validate();
 
-    // Calculate active raffle value
-    const activeRaffleValue =
-      BigInt(this.inactiveRaffle!.value.toString()) -
-      5n * BigInt(this.winnersCount!) * this.txFee! -
-      this.txFee!;
-
     // Calculate ticket token amount for active raffle
     const activeRaffleTicketAmount =
       BigInt(this.ticketRepo!.assets[0].amount.toString()) -
@@ -145,7 +117,6 @@ export class ActivationTxBuilder {
     const activeRaffleBuilder = ActiveRaffleBuilder.fromInactiveRaffleBox(
       this.inactiveRaffle!,
     )
-      .setValue(activeRaffleValue)
       .setCreationHeight(this.chainHeight!)
       .setTotalSoldTickets(0n)
       .setTicketCount(activeRaffleTicketAmount);
