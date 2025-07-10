@@ -1,5 +1,4 @@
-import { TokenAmount, Amount } from '@fleet-sdk/core';
-import { ErgoTransactionOutput } from '@rosen-clients/ergo-node';
+import { TokenAmount, Amount, ErgoBox } from '@fleet-sdk/core';
 
 export interface Request {
   address: string;
@@ -9,5 +8,5 @@ export interface Request {
    * This method is called by BoxLookup when the preferred condition occurs
    * @param boxes
    */
-  onSuffice: (boxes: ErgoTransactionOutput[]) => Promise<void>;
+  onSuffice: (boxes: ErgoBox[]) => Promise<void>;
 }

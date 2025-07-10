@@ -4,19 +4,16 @@ import {
   TxPot,
 } from '@rosen-bridge/tx-pot';
 import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
-import ergoNodeClientFactory, {
-  ErgoTransactionOutput,
-} from '@rosen-clients/ergo-node';
+import ergoNodeClientFactory from '@rosen-clients/ergo-node';
 
-import { Request } from './types/request';
+import { Request } from './types';
 import { API_LIMIT } from './constants';
-import { ErgoAddress, Network } from '@fleet-sdk/core';
+import { ErgoAddress, ErgoBox, Network } from '@fleet-sdk/core';
 
 export class BoxLookup {
   protected requestsIdCounter: number = 0;
   protected nodeAPI;
   protected requests = new Map<number, Request>();
-  protected latestTimeout: ReturnType<typeof setTimeout>;
 
   constructor(
     protected txPot: TxPot,
@@ -61,14 +58,14 @@ export class BoxLookup {
   /**
    * This method return all spent & unspent boxes that currently placed on the mempool
    *
-   * @return { [string[],  ErgoTransactionOutput[]] }
+   * @return { [string[],  ErgoBox[]] }
    */
   protected readonly getArrangedNodeBoxes = async (): Promise<
-    [string[], ErgoTransactionOutput[]]
+    [string[], ErgoBox[]]
   > => {
     let results;
     let spentBoxes: string[] = [];
-    let unspentBoxes: ErgoTransactionOutput[] = [];
+    let unspentBoxes: ErgoBox[] = [];
     let offset = 0;
     do {
       results = await this.nodeAPI.getUnconfirmedTransactions({
@@ -79,7 +76,7 @@ export class BoxLookup {
         spentBoxes = spentBoxes.concat(
           ...tx.inputs.map((input: { boxId: string }) => input.boxId),
         );
-        unspentBoxes = unspentBoxes.concat(...tx.outputs);
+        unspentBoxes = unspentBoxes.concat(...(tx.outputs as ErgoBox[]));
       }
       offset += API_LIMIT;
     } while (results.length == API_LIMIT);
@@ -123,13 +120,13 @@ export class BoxLookup {
   /**
    * This method get all spent & unspent boxes that currently managed by TxPot instance
    *
-   * @return { [string[],  ErgoTransactionOutput[]] }
+   * @return { [string[],  ErgoBox[]] }
    */
   protected readonly getArrangedTxPotBoxes = async (): Promise<
-    [string[], ErgoTransactionOutput[]]
+    [string[], ErgoBox[]]
   > => {
     let spentBoxes: string[] = [];
-    let unspentBoxes: ErgoTransactionOutput[] = [];
+    let unspentBoxes: ErgoBox[] = [];
     const activeTxs = [
       ...(await this.txPot.getTxsByStatus(TransactionStatus.SIGNED, false)),
       ...(await this.txPot.getTxsByStatus(TransactionStatus.SENT, false)),
@@ -151,7 +148,7 @@ export class BoxLookup {
    *
    * @return
    */
-  protected getUnspentBoxes = async () => {
+  protected getUnspentBoxes = async (): Promise<ErgoBox[]> => {
     const [nodeInputBoxesIds, nodeOutputBoxes] =
       await this.getArrangedNodeBoxes();
     const [txPotInputBoxesIds, txPotOutputBoxes] =
@@ -160,7 +157,7 @@ export class BoxLookup {
       ...nodeInputBoxesIds,
       ...txPotInputBoxesIds,
     ]);
-    const unspentBoxes: ErgoTransactionOutput[] = [
+    const unspentBoxes: ErgoBox[] = [
       ...nodeOutputBoxes,
       ...txPotOutputBoxes,
     ].filter((val) => val.boxId && !spentBoxes.has(val.boxId));
@@ -179,11 +176,11 @@ export class BoxLookup {
     const unspentBoxes = await this.getUnspentBoxes();
     const alreadySelectedUnspentBoxIds: Set<string> = new Set<string>();
     for (const request of this.requests.values()) {
-      let selectedBoxes: ErgoTransactionOutput[] = [];
+      let selectedBoxes: ErgoBox[] = [];
       let totalTokenAmounts: Map<string, number> = new Map<string, number>();
       let totalErgValue = 0n;
 
-      for (const box of unspentBoxes as ErgoTransactionOutput[]) {
+      for (const box of unspentBoxes) {
         // check if current request unregistered then breaking the loop
         if (Array.from(this.requests.values()).indexOf(request) < 0) break;
 
