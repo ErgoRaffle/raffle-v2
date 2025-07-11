@@ -31,6 +31,8 @@ export class ActivationTxBuilder {
   private giftTokenId?: string;
   private ticketTokenId?: string;
   private winnersCount?: number;
+  private giftTokenName?: Buffer;
+  private giftTokenDescription?: Buffer;
 
   constructor() {}
 
@@ -88,6 +90,26 @@ export class ActivationTxBuilder {
   };
 
   /**
+   * Set the gift token name
+   * @param name - Gift token name as string
+   * @returns this builder instance
+   */
+  setGiftTokenName = (name: string): this => {
+    this.giftTokenName = Buffer.from(name, 'utf-8');
+    return this;
+  };
+
+  /**
+   * Set the gift token description
+   * @param description - Gift token description as string
+   * @returns this builder instance
+   */
+  setGiftTokenDescription = (description: string): this => {
+    this.giftTokenDescription = Buffer.from(description, 'utf-8');
+    return this;
+  };
+
+  /**
    * Validate that all required parameters are set
    * @throws Error if any required parameter is missing
    */
@@ -98,6 +120,9 @@ export class ActivationTxBuilder {
       throw new Error('Winners share percent not set');
     if (!this.chainHeight) throw new Error('Chain height not set');
     if (!this.txFee) throw new Error('Transaction fee not set');
+    if (!this.giftTokenName) throw new Error('Gift token name not set');
+    if (!this.giftTokenDescription)
+      throw new Error('Gift token description not set');
   };
 
   /**
@@ -132,11 +157,18 @@ export class ActivationTxBuilder {
 
     // Create gift token repository output box
     const giftTokenRepoBuilder = new GiftTokenRepoBuilder()
+      .setTokenName(this.giftTokenName!)
+      .setTokenDescription(this.giftTokenDescription!)
+      .setDecimals(Buffer.from('0', 'utf-8'))
+      .setGiftTokensPerWinner(BigInt(raffleInfo.constants.giftTokenCount))
       .setValue(this.txFee! * BigInt(this.winnersCount!))
+      .setTxFee(this.txFee!)
       .setCreationHeight(this.chainHeight!)
       .setWinnersCount(activeRaffleBuilder.getWinnersCount())
       .setStep(1) // step 1 for start
-      .setGiftTokenAmount(BigInt(raffleInfo.constants.giftTokenCount))
+      .setGiftTokenAmount(
+        BigInt(raffleInfo.constants.giftTokenCount * this.winnersCount!),
+      )
       .setTicketId(this.ticketTokenId!)
       .setGiftTokenId(this.giftTokenId!);
 
@@ -147,10 +179,12 @@ export class ActivationTxBuilder {
     for (let i = 0; i < this.winnersCount!; i++) {
       const winnerBuilder = new WinnerBuilder()
         .setValue(4n * this.txFee!)
+        .setTxFee(this.txFee!)
         .setCreationHeight(this.chainHeight!)
         .setWinnerIndex(i + 1)
         .setTicketToken(this.ticketTokenId!)
         .setDeadline(activeRaffleBuilder.getDeadline())
+        .setUnavailableGiftTokenId(Buffer.from(this.giftTokenId!, 'hex'))
         .setGiftCount(0n) // zero gifts for start
         .setRewardPercent(this.winnersSharePercent![i]);
 

@@ -153,11 +153,9 @@ export class WinnerBuilder {
     if (!this.deadline) throw new Error('Deadline not set');
     if (!this.txFee) throw new Error('Transaction fee not set');
     if (!this.winnerIndex) throw new Error('Winner index not set');
-    if (!this.giftCount) throw new Error('Gift count not set');
+    if (this.giftCount == undefined) throw new Error('Gift count not set');
     if (!this.ticketTokenId) throw new Error('Ticket token not set');
     if (!this.ticketTokenAmount) throw new Error('Ticket token amount not set');
-    if (!this.giftTokenId) throw new Error('Gift token not set');
-    if (!this.giftTokenAmount) throw new Error('Gift token amount not set');
   };
 
   /**
@@ -208,13 +206,6 @@ export class WinnerBuilder {
    * @throws Error if required parameters are not set or invalid
    */
   receiveGiftTokens = (giftTokenId: string, giftTokenCount: bigint): this => {
-    if (!this.giftTokenId) {
-      throw new Error('Gift token ID not set');
-    }
-    if (!this.giftCount) {
-      throw new Error('Gift count not set');
-    }
-
     // Set the gift token with the received amount
     this.setGiftToken(giftTokenId, giftTokenCount);
     // Remove the gift token id from the R7 register
@@ -233,7 +224,7 @@ export class WinnerBuilder {
     if (!this.giftTokenId || !this.giftTokenAmount) {
       throw new Error('Gift token not set');
     }
-    if (!this.giftCount) {
+    if (this.giftCount == undefined) {
       throw new Error('Gift count not set');
     }
     if (this.giftTokenAmount < 1n) {
@@ -258,7 +249,7 @@ export class WinnerBuilder {
     if (!this.giftTokenId || !this.giftTokenAmount) {
       throw new Error('Gift token not set');
     }
-    if (!this.giftCount) {
+    if (this.giftCount == undefined) {
       throw new Error('Gift count not set');
     }
 

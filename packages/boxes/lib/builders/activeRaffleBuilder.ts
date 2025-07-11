@@ -346,7 +346,8 @@ export class ActiveRaffleBuilder {
     if (!this.deadline) throw new Error('Deadline not set');
     if (!this.txFee) throw new Error('Transaction fee not set');
     if (!this.winnersCount) throw new Error('Winners count not set');
-    if (!this.totalSoldTickets) throw new Error('Total sold tickets not set');
+    if (this.totalSoldTickets === undefined)
+      throw new Error('Total sold tickets not set');
     if (!this.serviceErgoTreeHash)
       throw new Error('Service ergoTree hash not set');
     if (!this.implementerErgoTreeHash)
