@@ -224,6 +224,7 @@ export class ServiceBuilder {
       .setLicenseTokenCount(BigInt(box.assets[1].amount))
       .setServiceFeePercent(r4Data[0])
       .setImplementerFeePercent(r4Data[1])
+      .setCreationFee(r4Data[2])
       .setTxFee(r4Data[3]);
 
     // Set tokens

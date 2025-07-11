@@ -28,8 +28,8 @@ export class CreationTxBuilder {
   // Private fields for transaction configuration
   private serviceBox?: Box<Amount>;
   private feeBoxes: Box<Amount>[] = [];
-  private creatorAddress?: string;
-  private implementerAddress?: string;
+  private creatorErgoTree?: string;
+  private implementerErgoTree?: string;
   private winnersCount?: number;
   private deadline?: bigint;
   private winnersPercent?: bigint[];
@@ -87,7 +87,17 @@ export class CreationTxBuilder {
    * @returns this builder instance
    */
   setCreatorAddress = (address: string): this => {
-    this.creatorAddress = address;
+    this.creatorErgoTree = ErgoAddress.fromBase58(address).ergoTree;
+    return this;
+  };
+
+  /**
+   * Set the creator ErgoTree
+   * @param ergoTree - ErgoTree in hex format
+   * @returns this builder instance
+   */
+  setCreatorErgoTree = (ergoTree: string): this => {
+    this.creatorErgoTree = ergoTree;
     return this;
   };
 
@@ -97,7 +107,17 @@ export class CreationTxBuilder {
    * @returns this builder instance
    */
   setImplementerAddress = (address: string): this => {
-    this.implementerAddress = address;
+    this.implementerErgoTree = ErgoAddress.fromBase58(address).ergoTree;
+    return this;
+  };
+
+  /**
+   * Set the implementer ErgoTree
+   * @param ergoTree - ErgoTree in hex format
+   * @returns this builder instance
+   */
+  setImplementerErgoTree = (ergoTree: string): this => {
+    this.implementerErgoTree = ergoTree;
     return this;
   };
 
@@ -267,9 +287,9 @@ export class CreationTxBuilder {
    */
   private validate = (): void => {
     if (!this.serviceBox) throw new Error('Service box not set');
-    if (!this.creatorAddress) throw new Error('Creator address not set');
-    if (!this.implementerAddress)
-      throw new Error('Implementer address not set');
+    if (!this.creatorErgoTree) throw new Error('Creator ErgoTree not set');
+    if (!this.implementerErgoTree)
+      throw new Error('Implementer ErgoTree not set');
     if (!this.winnersCount) throw new Error('Winners count not set');
     if (!this.deadline) throw new Error('Deadline not set');
     if (!this.winnersPercent) throw new Error('Winners percent not set');
@@ -283,9 +303,6 @@ export class CreationTxBuilder {
     if (!this.txFee) throw new Error('Transaction fee not set');
     if (!this.raffleName) throw new Error('Raffle name not set');
     if (!this.raffleDescription) throw new Error('Raffle description not set');
-    if (!this.ticketTokenName) throw new Error('Ticket token name not set');
-    if (!this.ticketTokenDescription)
-      throw new Error('Ticket token description not set');
     if (!this.ticketTokenCount) throw new Error('Ticket token count not set');
   };
 
@@ -302,18 +319,8 @@ export class CreationTxBuilder {
     inputServiceBox.setContextExtension({
       0: SColl(SLong, this.winnersPercent!),
       1: SColl(SColl(SByte), [
-        Array.from(
-          Buffer.from(
-            ErgoAddress.fromBase58(this.implementerAddress!).ergoTree,
-            'hex',
-          ),
-        ),
-        Array.from(
-          Buffer.from(
-            ErgoAddress.fromBase58(this.creatorAddress!).ergoTree,
-            'hex',
-          ),
-        ),
+        Array.from(Buffer.from(this.implementerErgoTree!, 'hex')),
+        Array.from(Buffer.from(this.creatorErgoTree!, 'hex')),
       ]),
     });
 
@@ -330,8 +337,10 @@ export class CreationTxBuilder {
       .setCreationHeight(this.chainHeight!)
       .setTicketTokenAmount(this.ticketTokenCount!)
       .setRaffleId(this.raffleId!)
-      .setTokenName(this.ticketTokenName!)
-      .setTokenDescription(this.ticketTokenDescription!)
+      .setTokenName(this.ticketTokenName || this.raffleName!)
+      .setTokenDescription(
+        this.ticketTokenDescription || this.raffleDescription!,
+      )
       .setTxFee(this.txFee!);
 
     const ticketRepoOutputBox = ticketRepoBuilder.build();
@@ -350,8 +359,8 @@ export class CreationTxBuilder {
       .setDescription(this.raffleDescription!)
       .setTicketId(this.raffleId!)
       .setWinnersPercentList(this.winnersPercent!)
-      .setImplementerAddress(this.implementerAddress!)
-      .setCreatorAddress(this.creatorAddress!);
+      .setImplementerErgoTree(this.implementerErgoTree!)
+      .setCreatorErgoTree(this.creatorErgoTree!);
 
     // Set collecting token if specified
     if (this.collectingTokenId) {
@@ -373,7 +382,7 @@ export class CreationTxBuilder {
         selector.defineStrategy((inputs) => inputs);
       })
       .payFee(this.txFee!)
-      .sendChangeTo(this.creatorAddress!)
+      .sendChangeTo(this.creatorErgoTree!)
       .build();
 
     return transaction;

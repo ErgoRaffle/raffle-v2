@@ -223,41 +223,32 @@ export class InactiveRaffleBuilder {
   };
 
   /**
-   * Set the service address and hash its ergoTree
-   * @param address - Base58 encoded Ergo address
+   * Set the service ergoTree and hash it
+   * @param ergoTree - ErgoTree in hex format
    * @returns this builder instance
    */
-  setServiceAddress = (address: string): this => {
-    const ergoAddress = ErgoAddress.fromBase58(address);
-    this.serviceErgoTreeHash = blake2b256(
-      Buffer.from(ergoAddress.ergoTree, 'hex'),
-    );
+  setServiceErgoTree = (ergoTree: string): this => {
+    this.serviceErgoTreeHash = blake2b256(Buffer.from(ergoTree, 'hex'));
     return this;
   };
 
   /**
-   * Set the implementer address and hash its ergoTree
-   * @param address - Base58 encoded Ergo address
+   * Set the implementer ergoTree and hash it
+   * @param ergoTree - ErgoTree in hex format
    * @returns this builder instance
    */
-  setImplementerAddress = (address: string): this => {
-    const ergoAddress = ErgoAddress.fromBase58(address);
-    this.implementerErgoTreeHash = blake2b256(
-      Buffer.from(ergoAddress.ergoTree, 'hex'),
-    );
+  setImplementerErgoTree = (ergoTree: string): this => {
+    this.implementerErgoTreeHash = blake2b256(Buffer.from(ergoTree, 'hex'));
     return this;
   };
 
   /**
-   * Set the creator address and hash its ergoTree
-   * @param address - Base58 encoded Ergo address
+   * Set the creator ergoTree and hash it
+   * @param ergoTree - ErgoTree in hex format
    * @returns this builder instance
    */
-  setCreatorAddress = (address: string): this => {
-    const ergoAddress = ErgoAddress.fromBase58(address);
-    this.creatorErgoTreeHash = blake2b256(
-      Buffer.from(ergoAddress.ergoTree, 'hex'),
-    );
+  setCreatorErgoTree = (ergoTree: string): this => {
+    this.creatorErgoTreeHash = blake2b256(Buffer.from(ergoTree, 'hex'));
     return this;
   };
 
