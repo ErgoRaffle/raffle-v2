@@ -163,6 +163,7 @@ export class AddGiftTxBuilder {
 
     // Create gift box using giftForWinner method
     const giftBuilder = GiftBuilder.giftForWinner(this.winner!)
+      .setDonatorAddress(this.giftGiverAddress!)
       .setCreationHeight(this.chainHeight!)
       .setValue(this.giftValue!);
 

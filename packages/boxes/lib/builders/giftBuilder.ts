@@ -153,7 +153,6 @@ export class GiftBuilder {
       throw new Error('Donator ErgoTree hash not set');
     if (!this.winnerIndex) throw new Error('Winner index not set');
     if (!this.giftTokenId) throw new Error('Gift token not set');
-    if (this.gifts.length === 0) throw new Error('No gifts added');
   };
 
   /**

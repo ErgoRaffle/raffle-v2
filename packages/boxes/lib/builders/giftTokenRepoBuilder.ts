@@ -194,14 +194,6 @@ export class GiftTokenRepoBuilder {
     if (!this.ticketId) throw new Error('Ticket ID not set');
     if (!this.winnersCount) throw new Error('Winners count not set');
     if (!this.step) throw new Error('Step not set');
-
-    // Validate value constraint: value == (txFee * winnersCount) (as per contract)
-    const expectedValue = this.txFee! * BigInt(this.winnersCount!);
-    if (this.value !== expectedValue) {
-      throw new Error(
-        `Value must be exactly ${expectedValue} nanoERG (txFee * winnersCount)`,
-      );
-    }
   };
 
   /**
@@ -245,10 +237,8 @@ export class GiftTokenRepoBuilder {
     // Increment step
     this.step = this.step + 1;
 
-    // Reduce box value by txFee if not the last step
-    if (this.step < this.winnersCount) {
-      this.value = this.value - this.txFee;
-    }
+    // Reduce box value by txFee
+    this.value = this.value - this.txFee;
 
     return this;
   };
