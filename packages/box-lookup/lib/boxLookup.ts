@@ -14,6 +14,7 @@ export class BoxLookup {
   protected requestsIdCounter: number = 0;
   protected nodeAPI;
   protected requests = new Map<number, Request>();
+  protected extraUnspentBoxes: ErgoBox[] = [];
 
   constructor(
     protected txPot: TxPot,
@@ -160,6 +161,7 @@ export class BoxLookup {
     const unspentBoxes: ErgoBox[] = [
       ...nodeOutputBoxes,
       ...txPotOutputBoxes,
+      ...this.extraUnspentBoxes,
     ].filter((val) => val.boxId && !spentBoxes.has(val.boxId));
 
     return unspentBoxes;
