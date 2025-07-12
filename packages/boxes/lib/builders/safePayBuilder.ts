@@ -8,6 +8,7 @@ import {
   Amount,
 } from '@fleet-sdk/core';
 import { raffleInfo } from '@ergo-raffle/contracts';
+import { blake2b256 } from '@fleet-sdk/crypto';
 
 /**
  * Builder class for creating Safe Pay boxes in the ErgoRaffle protocol
@@ -34,10 +35,19 @@ export class SafePayBuilder {
    * @returns this builder instance
    */
   setReceiverAddress = (address: string): this => {
-    const receiverErgoAddress = ErgoAddress.fromBase58(address);
-    this.receiverErgoTreeHash = new Uint8Array(
-      Buffer.from(receiverErgoAddress.ergoTree, 'hex'),
+    this.receiverErgoTreeHash = blake2b256(
+      ErgoAddress.fromBase58(address).ergoTree,
     );
+    return this;
+  };
+
+  /**
+   * Set the receiver's address and convert it to ErgoTree hash
+   * @param address - Base58 encoded Ergo address
+   * @returns this builder instance
+   */
+  setReceiverErgoTree = (ergoTree: string): this => {
+    this.receiverErgoTreeHash = blake2b256(ergoTree);
     return this;
   };
 

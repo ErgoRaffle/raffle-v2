@@ -153,7 +153,8 @@ export class TicketRedeemBuilder {
     if (!this.totalSoldTickets) throw new Error('Total sold tickets not set');
     if (!this.ticketPrice) throw new Error('Ticket price not set');
     if (!this.txFee) throw new Error('Transaction fee not set');
-    if (!this.redeemedTickets) throw new Error('Redeemed tickets not set');
+    if (this.redeemedTickets === undefined)
+      throw new Error('Redeemed tickets not set');
     if (!this.ticketTokenId) throw new Error('Ticket token ID not set');
     if (!this.ticketTokenCount) throw new Error('Ticket token count not set');
   };
@@ -311,9 +312,9 @@ export class TicketRedeemBuilder {
     const valueToDeduct = ticketCount * this.ticketPrice;
 
     // Create updated builder with changed values
-    const updatedBuilder = new TicketRedeemBuilder()
-      .setRedeemedTickets((this.redeemedTickets || 0n) + ticketCount)
-      .setTicketTokenCount(this.ticketTokenCount + ticketCount);
+    const updatedBuilder = this.setRedeemedTickets(
+      (this.redeemedTickets || 0n) + ticketCount,
+    ).setTicketTokenCount(this.ticketTokenCount + ticketCount);
 
     // Deduct value from box value or collecting tokens
     if (this.collectingTokenId && this.collectingTokenAmount) {

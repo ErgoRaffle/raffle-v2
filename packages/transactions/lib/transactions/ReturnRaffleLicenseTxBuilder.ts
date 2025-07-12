@@ -6,6 +6,7 @@ import {
   ErgoUnsignedInput,
   SColl,
   SByte,
+  ErgoAddress,
 } from '@fleet-sdk/core';
 import { ServiceBuilder } from '@ergo-raffle/boxes';
 import { SafePayBuilder } from '@ergo-raffle/boxes';
@@ -20,7 +21,7 @@ import { SafePayBuilder } from '@ergo-raffle/boxes';
 export class ReturnRaffleLicenseTxBuilder {
   private endedRaffle?: Box<Amount>;
   private service?: Box<Amount>;
-  private changeAddress?: string;
+  private changeErgoTree?: string;
   private chainHeight?: number;
   private txFee?: bigint;
 
@@ -52,7 +53,17 @@ export class ReturnRaffleLicenseTxBuilder {
    * @returns this builder instance
    */
   setChangeAddress = (address: string): this => {
-    this.changeAddress = address;
+    this.changeErgoTree = ErgoAddress.fromBase58(address).ergoTree;
+    return this;
+  };
+
+  /**
+   * Set the change ergo tree
+   * @param ergoTree - Ergo tree to receive change
+   * @returns this builder instance
+   */
+  setChangeErgoTree = (ergoTree: string): this => {
+    this.changeErgoTree = ergoTree;
     return this;
   };
 
@@ -83,7 +94,7 @@ export class ReturnRaffleLicenseTxBuilder {
   private validate = (): void => {
     if (!this.endedRaffle) throw new Error('Ended raffle box not set');
     if (!this.service) throw new Error('Service box not set');
-    if (!this.changeAddress) throw new Error('Change address not set');
+    if (!this.changeErgoTree) throw new Error('Change address not set');
     if (!this.chainHeight) throw new Error('Chain height not set');
     if (!this.txFee) throw new Error('Transaction fee not set');
   };
@@ -106,6 +117,7 @@ export class ReturnRaffleLicenseTxBuilder {
     const changeBoxBuilder = new SafePayBuilder()
       .setValue(BigInt(this.endedRaffle!.value) - this.txFee!)
       .setCreationHeight(this.chainHeight!)
+      .setReceiverErgoTree(this.changeErgoTree!)
       .setTxFee(this.txFee!);
     if (this.endedRaffle!.assets[2]) {
       changeBoxBuilder.setTokens([this.endedRaffle!.assets[2]]);
@@ -115,7 +127,7 @@ export class ReturnRaffleLicenseTxBuilder {
     // Prepare input for ended raffle with context extension
     const inputEndedRaffle = new ErgoUnsignedInput(this.endedRaffle!);
     inputEndedRaffle.setContextExtension({
-      0: SColl(SByte, Array.from(Buffer.from(this.changeAddress!, 'hex'))),
+      0: SColl(SByte, Array.from(Buffer.from(this.changeErgoTree!, 'hex'))),
     });
 
     // Build the transaction

@@ -113,6 +113,7 @@ export class TicketRedeemTxBuilder {
     // Create safe pay box for redeemed donation with tokens
     const safePayBuilder = new SafePayBuilder()
       .setCreationHeight(this.chainHeight!)
+      .setReceiverErgoTree(this.donatorErgoTree!)
       .setTxFee(this.txFee!);
     // Determine if this is a token goal raffle
     const isTokenGoal = this.ticketRedeem!.assets.length > 2;
