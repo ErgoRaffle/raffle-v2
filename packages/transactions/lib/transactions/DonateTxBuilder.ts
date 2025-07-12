@@ -10,14 +10,15 @@ import {
 } from '@fleet-sdk/core';
 
 // Import box builders from the boxes package
-import { ActiveRaffleBuilder } from '@ergo-raffle/boxes';
+import { ActiveRaffleBuilder, TicketBuilder } from '@ergo-raffle/boxes';
 
 /**
  * Builder class for creating donate transactions
  * This builder creates a transaction that:
  * 1. Takes an active raffle box and donator UTXOs as inputs
  * 2. Creates an updated active raffle box with donated tickets
- * 3. Sends change back to the donator
+ * 3. Creates a ticket box for the donator
+ * 4. Sends change back to the donator
  */
 export class DonateTxBuilder {
   // Private fields for transaction configuration
@@ -128,7 +129,9 @@ export class DonateTxBuilder {
     // Create unsigned input for active raffle box with context extension
     const inputActiveRaffle = new ErgoUnsignedInput(this.activeRaffle!);
     inputActiveRaffle.setContextExtension({
-      0: SColl(SByte, Array.from(Buffer.from(this.donatorErgoTree!, 'hex'))),
+      0: SColl(SColl(SByte), [
+        Array.from(Buffer.from(this.donatorErgoTree!, 'hex')),
+      ]),
     });
 
     // Create updated active raffle box using fromBox
@@ -138,10 +141,19 @@ export class DonateTxBuilder {
 
     const updatedActiveRaffleBox = activeRaffleBuilder.build();
 
+    // Create ticket box for the donator
+    const ticketBuilder = new TicketBuilder()
+      .donateToRaffle(this.activeRaffle!)
+      .setDonatorAddress(this.donatorAddress!)
+      .setTicketCount(this.donationTicketCount!)
+      .setCreationHeight(this.chainHeight!);
+
+    const ticketBox = ticketBuilder.build();
+
     // Build the transaction
     const transaction = new TransactionBuilder(this.chainHeight!)
       .from([inputActiveRaffle, ...this.donatorUtxos])
-      .to([updatedActiveRaffleBox])
+      .to([updatedActiveRaffleBox, ticketBox])
       .configureSelector((selector) => {
         selector.defineStrategy((inputs) => inputs);
       })

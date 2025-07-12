@@ -32,6 +32,7 @@ export class TicketBuilder {
   private value?: bigint;
   private creationHeight?: number;
   private txFee?: bigint;
+  private ticketTokenId?: string;
 
   constructor() {}
 
@@ -68,7 +69,8 @@ export class TicketBuilder {
       .setTicketPrice(ticketPrice)
       .setDeadline(deadline)
       .setTxFee(txFee)
-      .setValue(requiredValue);
+      .setValue(requiredValue)
+      .setTicketTokenId(activeRaffleBox.assets[1].tokenId);
 
     return this;
   };
@@ -103,7 +105,7 @@ export class TicketBuilder {
    * @throws Error if range start is not set
    */
   setTicketCount = (count: bigint): this => {
-    if (!this.rangeStart) {
+    if (this.rangeStart === undefined) {
       throw new Error('Range start must be set before setting ticket count');
     }
     this.ticketCount = count;
@@ -162,18 +164,29 @@ export class TicketBuilder {
   };
 
   /**
+   * Set the ticket token ID
+   * @param tokenId - The ticket token ID
+   * @returns this builder instance
+   */
+  setTicketTokenId = (tokenId: string): this => {
+    this.ticketTokenId = tokenId;
+    return this;
+  };
+
+  /**
    * Validate that all required parameters are set and consistent
    * @throws Error if any required parameter is missing or inconsistent
    */
   private validate = (): void => {
     if (!this.donatorErgoTreeHash) throw new Error('Donator address not set');
-    if (!this.rangeStart) throw new Error('Range start not set');
+    if (this.rangeStart === undefined) throw new Error('Range start not set');
     if (!this.rangeEnd) throw new Error('Range end not set');
     if (!this.ticketPrice) throw new Error('Ticket price not set');
     if (!this.deadline) throw new Error('Deadline not set');
     if (!this.ticketCount) throw new Error('Ticket count not set');
     if (!this.value) throw new Error('Value not set');
     if (!this.creationHeight) throw new Error('Creation height not set');
+    if (!this.ticketTokenId) throw new Error('Ticket token ID not set');
 
     // Validate range consistency
     if (this.rangeEnd! - this.rangeStart! !== this.ticketCount!) {
@@ -205,7 +218,7 @@ export class TicketBuilder {
     )
       .addTokens([
         {
-          tokenId: raffleInfo.tokens.ticketCollectorNft,
+          tokenId: this.ticketTokenId!,
           amount: this.ticketCount!,
         },
       ])

@@ -299,7 +299,7 @@ export class ActiveRaffleBuilder {
     if (this.ticketCount < ticketCount) {
       throw new Error('Insufficient tickets available');
     }
-    if (!this.totalSoldTickets) {
+    if (this.totalSoldTickets === undefined) {
       throw new Error('Total sold tickets not set');
     }
     if (!this.ticketPrice) {
