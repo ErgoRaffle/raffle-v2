@@ -20,6 +20,7 @@ import { SafePayBuilder } from '@ergo-raffle/boxes';
 export class FeePaymentTxBuilder {
   private activeRaffle?: Box<Amount>;
   private raffleDetails?: Box<Amount>;
+  private oracleBox?: Box<Amount>;
   private serviceErgoTree?: string;
   private implementerErgoTree?: string;
   private chainHeight?: number;
@@ -44,6 +45,16 @@ export class FeePaymentTxBuilder {
    */
   setRaffleDetails = (box: Box<Amount>): this => {
     this.raffleDetails = box;
+    return this;
+  };
+
+  /**
+   * Set the oracle box to use as data input
+   * @param box - The oracle box to use as data input
+   * @returns this builder instance
+   */
+  setOracleBox = (box: Box<Amount>): this => {
+    this.oracleBox = box;
     return this;
   };
 
@@ -94,6 +105,7 @@ export class FeePaymentTxBuilder {
   private validate = (): void => {
     if (!this.activeRaffle) throw new Error('Active raffle box not set');
     if (!this.raffleDetails) throw new Error('Raffle details box not set');
+    if (!this.oracleBox) throw new Error('Oracle box not set');
     if (!this.serviceErgoTree) throw new Error('Service ErgoTree not set');
     if (!this.implementerErgoTree)
       throw new Error('Implementer ErgoTree not set');
@@ -164,15 +176,18 @@ export class FeePaymentTxBuilder {
     const implementerFeePercent =
       activeRaffleBuilder.getImplementerFeePercent();
 
-    // Create success raffle box using fromBox
-    const successRaffleBuilder = SuccessRaffleBuilder.fromBox(
+    // Create success raffle box using fromActiveRaffleBox with oracle seed
+    const successRaffleBuilder = SuccessRaffleBuilder.fromActiveRaffleBox(
       this.activeRaffle!,
-    ).setCreationHeight(this.chainHeight!);
+    )
+      .setCreationHeight(this.chainHeight!)
+      .setSeed(Buffer.from(this.oracleBox!.boxId, 'hex'));
     const successRaffleBox = successRaffleBuilder.build();
 
     // Create service fee box with appropriate tokens
     const serviceFeeBuilder = new SafePayBuilder()
       .setCreationHeight(this.chainHeight!)
+      .setReceiverErgoTree(this.serviceErgoTree!)
       .setTxFee(this.txFee!);
     this.addShareToBox(serviceFeeBuilder, serviceFeePercent);
     const serviceFeeBox = serviceFeeBuilder.build();
@@ -180,15 +195,17 @@ export class FeePaymentTxBuilder {
     // Create implementer fee box with appropriate tokens
     const implementerFeeBuilder = new SafePayBuilder()
       .setCreationHeight(this.chainHeight!)
+      .setReceiverErgoTree(this.implementerErgoTree!)
       .setTxFee(this.txFee!);
     this.addShareToBox(implementerFeeBuilder, implementerFeePercent);
 
     const implementerFeeBox = implementerFeeBuilder.build();
 
-    // Build the transaction
+    // Build the transaction with oracle box as data input
     const tx = new TransactionBuilder(this.chainHeight!)
       .from([inputActiveRaffle, this.raffleDetails!])
       .to([successRaffleBox, serviceFeeBox, implementerFeeBox])
+      .withDataFrom([this.oracleBox!])
       .configureSelector((selector) => {
         selector.defineStrategy((inputs) => inputs);
       })

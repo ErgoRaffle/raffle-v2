@@ -149,7 +149,8 @@ export class WinnerBuilder {
   private validate = (): void => {
     if (!this.value) throw new Error('Value not set');
     if (!this.creationHeight) throw new Error('Creation height not set');
-    if (!this.rewardPercent) throw new Error('Reward percent not set');
+    if (this.rewardPercent == undefined)
+      throw new Error('Reward percent not set');
     if (!this.deadline) throw new Error('Deadline not set');
     if (!this.txFee) throw new Error('Transaction fee not set');
     if (!this.winnerIndex) throw new Error('Winner index not set');

@@ -366,11 +366,36 @@ export class SuccessRaffleBuilder {
     // Calculate total prize based on winners percent
     const winnersPercent = r4Data[0];
     const ticketPrice = r4Data[3];
+    const txFee = r4Data[6];
     const totalRaised = ticketPrice * totalSoldTickets;
     const totalPrize = (totalRaised * winnersPercent) / 1000n;
 
+    // Calculate fee amount
+    const serviceFeePercent = r4Data[1];
+    const implementerFeePercent = r4Data[2];
+    const totalFeePercent = serviceFeePercent + implementerFeePercent;
+    const totalFeeAmount = (totalRaised * totalFeePercent) / 1000n;
+
+    // Calculate success raffle value and collecting token amount
+    const activeRaffleValue = BigInt(box.value);
+
+    let successRaffleValue: bigint;
+    let collectingTokenAmount: bigint | undefined;
+
+    const isErgGoal = box.assets.length <= 2;
+
+    if (isErgGoal) {
+      // For ERG goal raffles, deduct fees from ERG value
+      successRaffleValue = activeRaffleValue - totalFeeAmount - 4n * txFee;
+    } else {
+      // For token goal raffles, keep ERG value but deduct fees from collecting token
+      successRaffleValue = activeRaffleValue - 4n * txFee;
+      const totalCollectingTokenAmount = BigInt(box.assets[2].amount);
+      collectingTokenAmount = totalCollectingTokenAmount - totalFeeAmount;
+    }
+
     const builder = new SuccessRaffleBuilder()
-      .setValue(BigInt(box.value))
+      .setValue(successRaffleValue)
       .setTotalPrize(totalPrize)
       .setTotalSoldTickets(totalSoldTickets)
       .setTxFee(r4Data[6])
@@ -384,7 +409,7 @@ export class SuccessRaffleBuilder {
     if (box.assets.length > 2) {
       builder
         .setCollectingTokenId(box.assets[2].tokenId)
-        .setCollectingTokenAmount(BigInt(box.assets[2].amount));
+        .setCollectingTokenAmount(collectingTokenAmount!);
     }
 
     return builder;
