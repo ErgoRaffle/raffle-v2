@@ -105,6 +105,7 @@ export class FinalPrizeTxBuilder {
       .setValue(BigInt(this.winnerPrize!.value) - this.txFee!)
       .setCreationHeight(this.chainHeight!)
       .setTxFee(this.txFee!)
+      .setReceiverErgoTree(this.winnerErgoTree!)
       .setTokens(this.winnerPrize!.assets.slice(2));
     const finalPrizeSpendingBox = safePayBuilder.build();
 
