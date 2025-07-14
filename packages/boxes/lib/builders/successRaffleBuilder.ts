@@ -86,6 +86,14 @@ export class SuccessRaffleBuilder {
   };
 
   /**
+   * Get the total number of tickets sold
+   * @returns Total number of tickets sold
+   */
+  getTotalSoldTickets = (): bigint => {
+    return this.totalSoldTickets!;
+  };
+
+  /**
    * Set the transaction fee
    * @param fee - Fee amount in nanoERG
    * @returns this builder instance
@@ -136,6 +144,14 @@ export class SuccessRaffleBuilder {
   setSeed = (seed: Uint8Array): this => {
     this.seed = seed;
     return this;
+  };
+
+  /**
+   * Get the seed for winner selection
+   * @returns The seed bytes
+   */
+  getSeed = (): Uint8Array => {
+    return this.seed!;
   };
 
   /**
@@ -205,7 +221,7 @@ export class SuccessRaffleBuilder {
   private validate = (): void => {
     if (!this.value) throw new Error('Value not set');
     if (!this.creationHeight) throw new Error('Creation height not set');
-    if (!this.totalPrize) throw new Error('Total prize not set');
+    if (this.totalPrize == undefined) throw new Error('Total prize not set');
     if (!this.totalSoldTickets) throw new Error('Total sold tickets not set');
     if (!this.txFee) throw new Error('Transaction fee not set');
     if (!this.winnerCount) throw new Error('Winner count not set');
@@ -318,7 +334,7 @@ export class SuccessRaffleBuilder {
       .setTxFee(r4Data[2])
       .setWinnerCount(winnerCount)
       .setProjectErgoTreeHash(projectErgoTreeHash)
-      .setSeed(r7Data[0])
+      .setSeed(blake2b256(Buffer.from(r7Data[0])))
       .setStep(step)
       .setTicketTokenId(box.assets[1].tokenId)
       .setTicketTokenAmount(BigInt(box.assets[1].amount));
@@ -423,47 +439,24 @@ export class SuccessRaffleBuilder {
    * @returns Updated SuccessRaffleBuilder instance
    * @throws Error if required parameters are not set or invalid
    */
-  subtractPrize = (
-    winnerBox: Box<Amount>,
-    winnerTicketIndex: bigint,
-  ): SuccessRaffleBuilder => {
+  subtractPrize = (prizeAmount: bigint): SuccessRaffleBuilder => {
     if (!this.value) throw new Error('Value not set');
-    if (!this.totalPrize) throw new Error('Total prize not set');
+    if (this.totalPrize == undefined) throw new Error('Total prize not set');
     if (!this.winnerCount) throw new Error('Winners count not set');
     if (!this.step) throw new Error('Step not set');
     if (!this.seed) throw new Error('Seed not set');
     if (!this.txFee) throw new Error('Transaction fee not set');
-    if (this.selectedWinners.length >= this.winnerCount) {
-      throw new Error('Cannot add more winners: winner count limit reached');
-    }
-
-    // Get winner's reward percent from their box
-    const winnerRegisters = winnerBox.additionalRegisters;
-    if (!winnerRegisters.R4) {
-      throw new Error('Invalid winner box: missing R4 register');
-    }
-    const winnerR4Data = SConstant.from(winnerRegisters.R4).data as bigint[];
-    if (winnerR4Data.length < 1) {
-      throw new Error('Invalid winner box: invalid R4 register format');
-    }
-    const rewardPercent = winnerR4Data[0];
-
-    // Calculate winner's reward
-    const winnerReward = (this.totalPrize * rewardPercent) / 1000n;
 
     // Create updated builder with only the changed parameters
-    const updatedBuilder = new SuccessRaffleBuilder()
-      .setSeed(blake2b256(this.seed))
-      .setStep(this.step + 1)
-      .setSelectedWinners([...this.selectedWinners, winnerTicketIndex]);
+    const updatedBuilder = this.setStep(this.step + 1);
 
     // For token goal raffles, subtract from collecting token amount instead of box value
     if (this.collectingTokenId && this.collectingTokenAmount) {
       updatedBuilder
-        .setCollectingTokenAmount(this.collectingTokenAmount - winnerReward)
+        .setCollectingTokenAmount(this.collectingTokenAmount - prizeAmount)
         .setValue(this.value); // Keep box value unchanged
     } else {
-      updatedBuilder.setValue(this.value - winnerReward);
+      updatedBuilder.setValue(this.value - prizeAmount);
     }
 
     return updatedBuilder;

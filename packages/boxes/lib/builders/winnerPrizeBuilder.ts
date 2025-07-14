@@ -36,6 +36,7 @@ export class WinnerPrizeBuilder {
   private giftTokenCount?: bigint;
   private collectingTokenId?: string;
   private collectingTokenAmount?: bigint;
+  private prizeAmount?: bigint;
 
   constructor() {}
 
@@ -160,17 +161,39 @@ export class WinnerPrizeBuilder {
   };
 
   /**
+   * Set the prize amount
+   * @param amount - Prize amount
+   * @returns this builder instance
+   */
+  setPrizeAmount = (amount: bigint): this => {
+    this.prizeAmount = amount;
+    return this;
+  };
+
+  /**
+   * Get the prize amount
+   * @returns Prize amount
+   */
+  getPrizeAmount = (): bigint => {
+    if (this.prizeAmount == undefined) {
+      throw new Error('Prize amount not set');
+    }
+    return this.prizeAmount;
+  };
+
+  /**
    * Validate that all required parameters are set
    * @throws Error if any required parameter is missing
    */
   private validate = (): void => {
     if (!this.value) throw new Error('Value not set');
     if (!this.creationHeight) throw new Error('Creation height not set');
-    if (!this.winnerTicketIndex) throw new Error('Winner ticket index not set');
-    if (!this.giftCount) throw new Error('Gift count not set');
+    if (this.winnerTicketIndex == undefined)
+      throw new Error('Winner ticket index not set');
+    if (this.giftCount == undefined) throw new Error('Gift count not set');
     if (!this.txFee) throw new Error('Transaction fee not set');
     if (!this.winnerIndex) throw new Error('Winner index not set');
-    if (!this.unwrappedGiftCount)
+    if (this.unwrappedGiftCount == undefined)
       throw new Error('Unwrapped gift count not set');
     if (!this.ticketTokenId) throw new Error('Ticket token ID not set');
     if (!this.giftTokenId) throw new Error('Gift token ID not set');
@@ -269,20 +292,20 @@ export class WinnerPrizeBuilder {
 
   /**
    * Create a WinnerPrizeBuilder instance from a winner box
-   * @param box - Winner box to read configuration from
+   * @param winnerBox - Winner box to read configuration from
    * @param successRaffleBox - Success raffle box to get total prize from
    * @returns New WinnerPrizeBuilder instance with configuration from winner box
    * @throws Error if box structure doesn't match winner box requirements
    */
-  static fromWinnerBox = (
-    box: Box<Amount>,
+  static fromWinnerAndSuccessRaffleBox = (
+    winnerBox: Box<Amount>,
     successRaffleBox: Box<Amount>,
   ): WinnerPrizeBuilder => {
-    if (box.assets.length < 2) {
+    if (winnerBox.assets.length < 2) {
       throw new Error('Invalid winner box: missing required tokens');
     }
 
-    const registers = box.additionalRegisters;
+    const registers = winnerBox.additionalRegisters;
     if (!registers.R4 || !registers.R5 || !registers.R6) {
       throw new Error('Invalid winner box: missing required registers');
     }
@@ -320,9 +343,10 @@ export class WinnerPrizeBuilder {
       .setTxFee(txFee)
       .setWinnerIndex(winnerIndex)
       .setUnwrappedGiftCount(0n)
-      .setTicketTokenId(box.assets[0].tokenId)
-      .setGiftTokenId(box.assets[1].tokenId)
-      .setGiftTokenCount(BigInt(box.assets[1].amount));
+      .setTicketTokenId(winnerBox.assets[0].tokenId)
+      .setGiftTokenId(winnerBox.assets[1].tokenId)
+      .setGiftTokenCount(BigInt(winnerBox.assets[1].amount))
+      .setPrizeAmount(prizeAmount);
 
     // Set value and collecting token for token-goal raffles
     if (isTokenGoal) {
@@ -335,5 +359,20 @@ export class WinnerPrizeBuilder {
     }
 
     return builder;
+  };
+
+  /**
+   * Unwrap a gift
+   * @returns this builder instance
+   */
+  unwrapGift = (): this => {
+    if (this.unwrappedGiftCount == undefined)
+      throw new Error('Unwrapped gift count not set');
+    if (this.giftCount == undefined) throw new Error('Gift count not set');
+    if (!this.giftTokenCount) throw new Error('Gift token count not set');
+
+    this.unwrappedGiftCount = this.unwrappedGiftCount! + 1n;
+    this.giftTokenCount = this.giftTokenCount! + 1n;
+    return this;
   };
 }
