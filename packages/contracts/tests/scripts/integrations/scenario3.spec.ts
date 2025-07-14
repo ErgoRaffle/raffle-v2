@@ -4,18 +4,18 @@ import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
 
 import * as testUtils from '../../testUtils';
 import {
-  executeCreateRaffleTx,
-  executeGiftTokenReceiptTx,
-  executePrizeCreationTx,
-  executeMergeTx,
-  executeAddGiftTx,
-  executeDonateTx,
-  executeFeePaymentTx,
-  executeGiftUnwrapTx,
-  executeFinalPrizeTx,
-  executeReturnRaffleLicenseTx,
-  executeSafeWithdrawTransaction,
-} from './transactions';
+  CreationTxBuilder,
+  ActivationTxBuilder,
+  GiftTokenReceiptTxBuilder,
+  AddGiftTxBuilder,
+  DonateTxBuilder,
+  FeePaymentTxBuilder,
+  PrizeCreationTxBuilder,
+  GiftUnwrapTxBuilder,
+  FinalPrizeTxBuilder,
+  ReturnRaffleLicenseTxBuilder,
+  SafeWithdrawTxBuilder,
+} from '@ergo-raffle/transactions';
 
 /*
  * create fixtures that contains below steps data:
@@ -137,17 +137,32 @@ describe('Raffle', () => {
         const winnersPercent: bigint[] = [999n, 1n, 0n];
 
         // Step 1: Raffle creation phase 1 (create inactive raffle and ticketRepo)
-        const createRaffleTx = executeCreateRaffleTx(
-          creator,
-          serviceBox,
-          creator.utxos.toArray(),
-          implementerErgoTree,
-          ownerErgoTree,
-          winnersCount,
-          deadline,
-          winnersPercent,
-          boxFactory,
-          testUtils.X_TOKEN_ID,
+        const createRaffleBuilder = new CreationTxBuilder()
+          .setServiceBox(serviceBox)
+          .setFeeBoxes(creator.utxos.toArray())
+          .setCreatorAddress(creator.address.toString())
+          .setImplementerErgoTree(implementerErgoTree)
+          .setWinnersCount(winnersCount)
+          .setDeadline(deadline)
+          .setWinnersPercent(winnersPercent)
+          .setTicketPrice(100n)
+          .setWinnersSharePercent(200n)
+          .setGoal(1000n)
+          .setInactiveRaffleValue(
+            8n * testUtils.FEE +
+              5n * testUtils.FEE * BigInt(winnersCount) +
+              testUtils.CREATION_FEE,
+          )
+          .setRaffleName('Test success token-goal raffle')
+          .setRaffleDescription('Test Raffle Description')
+          .setTicketTokenCount(100n)
+          .setChainHeight(boxFactory.chain.height)
+          .setTxFee(testUtils.FEE)
+          .setCollectingTokenId(testUtils.X_TOKEN_ID);
+
+        const createRaffleTx = boxFactory.chain.executeAndReturnOutputs(
+          createRaffleBuilder.build(),
+          { signers: [creator] },
         );
         expect(createRaffleTx.success).true;
 
@@ -155,28 +170,37 @@ describe('Raffle', () => {
         const inactiveRaffle = createRaffleTx.outputs[2];
         const ticketRepo = createRaffleTx.outputs[1];
 
-        const mergeTx = executeMergeTx(
-          inactiveRaffle,
-          ticketRepo,
-          winnersCount,
-          deadline,
-          boxFactory,
-          winnersPercent,
+        const activationBuilder = new ActivationTxBuilder()
+          .setGiftTokenName('Gift Token')
+          .setGiftTokenDescription('Gift Token Description')
+          .setInactiveRaffle(inactiveRaffle)
+          .setTicketRepo(ticketRepo)
+          .setWinnersSharePercent(winnersPercent)
+          .setChainHeight(boxFactory.chain.height)
+          .setTxFee(testUtils.FEE);
+
+        const activationTx = boxFactory.chain.executeAndReturnOutputs(
+          activationBuilder.build(),
         );
-        expect(mergeTx.success).true;
+        expect(activationTx.success).true;
 
         // Step 3: Gift token receipt transaction (move gift tokens to winner boxes)
-        let giftTokenRepo = mergeTx.outputs[2];
-        const emptyWinnerBoxes = mergeTx.outputs.slice(3, 3 + winnersCount);
+        let giftTokenRepo = activationTx.outputs[2];
+        const emptyWinnerBoxes = activationTx.outputs.slice(
+          3,
+          3 + winnersCount,
+        );
         let step = 1;
         const winnerBoxes = [];
         for (const winnerBox of emptyWinnerBoxes) {
-          const giftTokenReceiptTx = executeGiftTokenReceiptTx(
-            winnerBox,
-            giftTokenRepo,
-            step,
-            winnersCount,
-            boxFactory,
+          const giftTokenReceiptBuilder = new GiftTokenReceiptTxBuilder()
+            .setWinner(winnerBox)
+            .setGiftTokenRepo(giftTokenRepo)
+            .setChainHeight(boxFactory.chain.height)
+            .setTxFee(testUtils.FEE);
+
+          const giftTokenReceiptTx = boxFactory.chain.executeAndReturnOutputs(
+            giftTokenReceiptBuilder.build(),
           );
           step++;
           expect(giftTokenReceiptTx.success).true;
@@ -188,10 +212,21 @@ describe('Raffle', () => {
         let winner1 = winnerBoxes[0];
         const winnersGifts = [];
         for (let i = 0; i < 2; i++) {
-          const addGiftTx = executeAddGiftTx(
-            winner1,
-            (giftGiverWallets as KeyedMockChainParty[])[i],
-            boxFactory,
+          const addGiftBuilder = new AddGiftTxBuilder()
+            .setWinner(winner1)
+            .setGiftGiverUtxos(
+              (giftGiverWallets as KeyedMockChainParty[])[i].utxos.toArray(),
+            )
+            .setGiftGiverAddress(
+              (giftGiverWallets as KeyedMockChainParty[])[i].address.toString(),
+            )
+            .setGiftValue(10n * testUtils.FEE)
+            .setChainHeight(boxFactory.chain.height)
+            .setTxFee(testUtils.FEE);
+
+          const addGiftTx = boxFactory.chain.executeAndReturnOutputs(
+            addGiftBuilder.build(),
+            { signers: [(giftGiverWallets as KeyedMockChainParty[])[i]] },
           );
           expect(addGiftTx.success).true;
           winner1 = addGiftTx.outputs[0];
@@ -200,17 +235,33 @@ describe('Raffle', () => {
         winnerBoxes[0] = winner1;
 
         // Step 5: Donate fifth by five different donators
-        let activeRaffle = mergeTx.outputs[0];
-        const raffleDetails = mergeTx.outputs[1];
+        let activeRaffle = activationTx.outputs[0];
+        const raffleDetails = activationTx.outputs[1];
 
         const tickets = new testUtils.Tickets();
         const ticketCount = 9n;
         for (let donateCount = 0; donateCount < 5; donateCount++) {
-          const donateTx = executeDonateTx(
-            activeRaffle,
-            (donatorWallets as KeyedMockChainParty[])[donateCount],
-            ticketCount,
-            boxFactory,
+          const donateBuilder = new DonateTxBuilder()
+            .setActiveRaffle(activeRaffle)
+            .setDonatorUtxos(
+              (donatorWallets as KeyedMockChainParty[])[
+                donateCount
+              ].utxos.toArray(),
+            )
+            .setDonatorAddress(
+              (donatorWallets as KeyedMockChainParty[])[
+                donateCount
+              ].address.toString(),
+            )
+            .setDonationTicketCount(ticketCount)
+            .setChainHeight(boxFactory.chain.height)
+            .setTxFee(testUtils.FEE);
+
+          const donateTx = boxFactory.chain.executeAndReturnOutputs(
+            donateBuilder.build(),
+            {
+              signers: [(donatorWallets as KeyedMockChainParty[])[donateCount]],
+            },
           );
           expect(donateTx.success).true;
           activeRaffle = donateTx.outputs[0];
@@ -229,29 +280,45 @@ describe('Raffle', () => {
         boxFactory.chain.setTip(2001);
 
         // Step 6: Success transaction and fee payment after passing the deadline
-        const feePaymentTx = executeFeePaymentTx(
-          activeRaffle,
-          raffleDetails,
-          boxFactory,
-          ownerErgoTree,
-          implementerErgoTree,
+        const oracleBox = boxFactory.createMockedOracleUTxO(testUtils.FEE);
+        const feePaymentBuilder = new FeePaymentTxBuilder()
+          .setActiveRaffle(activeRaffle)
+          .setRaffleDetails(raffleDetails)
+          .setOracleBox(oracleBox)
+          .setServiceErgoTree(ownerErgoTree)
+          .setImplementerErgoTree(implementerErgoTree)
+          .setChainHeight(boxFactory.chain.height)
+          .setTxFee(testUtils.FEE);
+
+        const feePaymentTx = boxFactory.chain.executeAndReturnOutputs(
+          feePaymentBuilder.build(),
         );
         expect(feePaymentTx.success).true;
 
         const serviceFeeSafePayBox = feePaymentTx.outputs[1];
-        const serviceFeeSafeWithdrawTx = executeSafeWithdrawTransaction(
-          serviceFeeSafePayBox,
-          ownerErgoTree,
-          boxFactory,
-        );
+        const serviceFeeSafeWithdrawBuilder = new SafeWithdrawTxBuilder()
+          .setSafePay(serviceFeeSafePayBox)
+          .setReceiverAddress(ownerErgoTree)
+          .setChainHeight(boxFactory.chain.height)
+          .setTxFee(testUtils.FEE);
+
+        const serviceFeeSafeWithdrawTx =
+          boxFactory.chain.executeAndReturnOutputs(
+            serviceFeeSafeWithdrawBuilder.build(),
+          );
         expect(serviceFeeSafeWithdrawTx.success).true;
 
         const implementerFeeSafePayBox = feePaymentTx.outputs[2];
-        const implementerFeeSafeWithdrawTx = executeSafeWithdrawTransaction(
-          implementerFeeSafePayBox,
-          implementerErgoTree,
-          boxFactory,
-        );
+        const implementerFeeSafeWithdrawBuilder = new SafeWithdrawTxBuilder()
+          .setSafePay(implementerFeeSafePayBox)
+          .setReceiverAddress(implementerErgoTree)
+          .setChainHeight(boxFactory.chain.height)
+          .setTxFee(testUtils.FEE);
+
+        const implementerFeeSafeWithdrawTx =
+          boxFactory.chain.executeAndReturnOutputs(
+            implementerFeeSafeWithdrawBuilder.build(),
+          );
         expect(implementerFeeSafeWithdrawTx.success).true;
 
         // Step 7: Create prize-boxes for winners
@@ -274,12 +341,16 @@ describe('Raffle', () => {
             totalSoldTickets,
           );
 
-          const prizeCreationTx = executePrizeCreationTx(
-            successRaffleBox,
-            winnerBoxes[i],
-            newWinnerTicketIndex,
-            winnerTicketsList,
-            boxFactory,
+          const prizeCreationBuilder = new PrizeCreationTxBuilder()
+            .setSuccessRaffle(successRaffleBox)
+            .setWinner(winnerBoxes[i])
+            .setWinnerTicketIndex(newWinnerTicketIndex)
+            .setWinnerIndexList(winnerTicketsList)
+            .setChainHeight(boxFactory.chain.height)
+            .setTxFee(testUtils.FEE);
+
+          const prizeCreationTx = boxFactory.chain.executeAndReturnOutputs(
+            prizeCreationBuilder.build(),
           );
           winnerTicketsList.push(newWinnerTicketIndex);
           expect(prizeCreationTx.success).true;
@@ -298,21 +369,29 @@ describe('Raffle', () => {
             donatorIndex
           ].ergoTree;
 
-          const giftUnwrappedTx = executeGiftUnwrapTx(
-            prizeBoxes[0],
-            winnersGifts[i],
-            winnerTicket,
-            boxFactory,
-            winnerAddress
+          const giftUnwrapBuilder = new GiftUnwrapTxBuilder()
+            .setWinnerPrize(prizeBoxes[0])
+            .setGiftForWinner(winnersGifts[i])
+            .setTicket(winnerTicket)
+            .setWinnerErgoTree(winnerAddress)
+            .setChainHeight(boxFactory.chain.height)
+            .setTxFee(testUtils.FEE);
+
+          const giftUnwrappedTx = boxFactory.chain.executeAndReturnOutputs(
+            giftUnwrapBuilder.build(),
           );
           expect(giftUnwrappedTx.success).true;
           prizeBoxes[0] = giftUnwrappedTx.outputs[0];
 
           const giftSafePayBox = giftUnwrappedTx.outputs[1];
-          const giftSafeWithdrawTx = executeSafeWithdrawTransaction(
-            giftSafePayBox,
-            winnerAddress,
-            boxFactory,
+          const giftSafeWithdrawBuilder = new SafeWithdrawTxBuilder()
+            .setSafePay(giftSafePayBox)
+            .setReceiverAddress(winnerAddress)
+            .setChainHeight(boxFactory.chain.height)
+            .setTxFee(testUtils.FEE);
+
+          const giftSafeWithdrawTx = boxFactory.chain.executeAndReturnOutputs(
+            giftSafeWithdrawBuilder.build(),
           );
           expect(giftSafeWithdrawTx.success).true;
         }
@@ -328,39 +407,54 @@ describe('Raffle', () => {
             donatorIndex
           ].ergoTree;
 
-          const finalPrizeTx = executeFinalPrizeTx(
-            prizeBoxes[i],
-            winnerTicket,
-            boxFactory,
-            winnerAddress
+          const finalPrizeBuilder = new FinalPrizeTxBuilder()
+            .setWinnerPrize(prizeBoxes[i])
+            .setTicket(winnerTicket)
+            .setWinnerErgoTree(winnerAddress)
+            .setChainHeight(boxFactory.chain.height)
+            .setTxFee(testUtils.FEE);
+
+          const finalPrizeTx = boxFactory.chain.executeAndReturnOutputs(
+            finalPrizeBuilder.build(),
           );
           expect(finalPrizeTx.success).true;
 
           const prizeSafePayBox = finalPrizeTx.outputs[0];
-          const prizeSafeWithdrawTx = executeSafeWithdrawTransaction(
-            prizeSafePayBox,
-            winnerAddress,
-            boxFactory,
+          const prizeSafeWithdrawBuilder = new SafeWithdrawTxBuilder()
+            .setSafePay(prizeSafePayBox)
+            .setReceiverAddress(winnerAddress)
+            .setChainHeight(boxFactory.chain.height)
+            .setTxFee(testUtils.FEE);
+
+          const prizeSafeWithdrawTx = boxFactory.chain.executeAndReturnOutputs(
+            prizeSafeWithdrawBuilder.build(),
           );
           expect(prizeSafeWithdrawTx.success).true;
         }
 
         // Step 10: Return raffle license to service
         const finalServiceBox = createRaffleTx.outputs[0];
-        const returnLicenseTx = executeReturnRaffleLicenseTx(
-          successRaffleBox,
-          finalServiceBox,
-          boxFactory,
-          creator.ergoTree,
-          ownerErgoTree,
+        const returnLicenseBuilder = new ReturnRaffleLicenseTxBuilder()
+          .setEndedRaffle(successRaffleBox)
+          .setService(finalServiceBox)
+          .setChangeErgoTree(creator.ergoTree)
+          .setChainHeight(boxFactory.chain.height)
+          .setTxFee(testUtils.FEE);
+
+        const returnLicenseTx = boxFactory.chain.executeAndReturnOutputs(
+          returnLicenseBuilder.build(),
         );
         expect(returnLicenseTx.success).true;
 
         const projectSafePayBox = returnLicenseTx.outputs[1];
-        const projectSafeWithdrawTx = executeSafeWithdrawTransaction(
-          projectSafePayBox,
-          creator.ergoTree,
-          boxFactory,
+        const projectSafeWithdrawBuilder = new SafeWithdrawTxBuilder()
+          .setSafePay(projectSafePayBox)
+          .setReceiverAddress(creator.ergoTree)
+          .setChainHeight(boxFactory.chain.height)
+          .setTxFee(testUtils.FEE);
+
+        const projectSafeWithdrawTx = boxFactory.chain.executeAndReturnOutputs(
+          projectSafeWithdrawBuilder.build(),
         );
         expect(projectSafeWithdrawTx.success).true;
       },
