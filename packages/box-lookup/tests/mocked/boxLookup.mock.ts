@@ -4,6 +4,7 @@ import {
   TransactionStatus,
   migrations,
 } from '@rosen-bridge/tx-pot';
+import { SAFE_MIN_BOX_VALUE } from '@fleet-sdk/core';
 
 export const unconfirmedTxList = [
   {
@@ -25,7 +26,7 @@ export const unconfirmedTxList = [
       {
         boxId:
           '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-        value: 147,
+        value: SAFE_MIN_BOX_VALUE * 3n,
         ergoTree:
           '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
         creationHeight: 9149,
@@ -75,46 +76,98 @@ export const SampleTransactionEntities: TransactionEntity[] = [
     lastStatusUpdate: '1685894400',
     failedInSign: false,
     signFailedCount: 0,
-    serializedTx: JSON.stringify({
-      id: '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-      inputs: [
-        {
-          boxId: '1'.repeat(64),
-          spendingProof: {
-            proofBytes:
-              '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-            extension: {
-              '1': 'a2aed72ff1b139f35d1ad2938cb44c9848a34d4dcfd6d8ab717ebde40a7304f2541cf628ffc8b5c496e6161eba3f169c6dd440704b1719e0',
+    serializedTx: JSON.stringify(
+      {
+        id: '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+        inputs: [
+          {
+            boxId: '1'.repeat(64),
+            spendingProof: {
+              proofBytes:
+                '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+              extension: {
+                '1': 'a2aed72ff1b139f35d1ad2938cb44c9848a34d4dcfd6d8ab717ebde40a7304f2541cf628ffc8b5c496e6161eba3f169c6dd440704b1719e0',
+              },
             },
           },
-        },
-      ],
-      dataInputs: [],
-      outputs: [
-        {
-          boxId:
-            '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-          value: 147,
-          ergoTree:
-            '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
-          creationHeight: 9149,
-          assets: [
-            {
-              tokenId:
-                '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-              amount: 1000,
+        ],
+        dataInputs: [],
+        outputs: [
+          {
+            boxId:
+              '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd119',
+            value: SAFE_MIN_BOX_VALUE * 3n,
+            ergoTree:
+              '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
+            creationHeight: 9149,
+            assets: [
+              {
+                tokenId:
+                  '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+                amount: 1000,
+              },
+              {
+                tokenId:
+                  '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd000',
+                amount: 100,
+              },
+            ],
+            additionalRegisters: {
+              R4: '100204a00b08cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041ea02d192a39a8cc7a70173007301',
             },
-          ],
-          additionalRegisters: {
-            R4: '100204a00b08cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041ea02d192a39a8cc7a70173007301',
+            transactionId:
+              '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+            index: 0,
           },
-          transactionId:
-            '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-          index: 0,
-        },
-      ],
-      size: 0,
-    }),
+          {
+            boxId:
+              '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd120',
+            value: SAFE_MIN_BOX_VALUE,
+            ergoTree:
+              '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
+            creationHeight: 9149,
+            assets: [
+              {
+                tokenId:
+                  '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd118',
+                amount: 1000,
+              },
+            ],
+            additionalRegisters: {
+              R4: '100204a00b08cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041ea02d192a39a8cc7a70173007301',
+            },
+            transactionId:
+              '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+            index: 0,
+          },
+          {
+            boxId:
+              '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd121',
+            value: SAFE_MIN_BOX_VALUE,
+            ergoTree:
+              '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
+            creationHeight: 9149,
+            assets: [
+              {
+                tokenId:
+                  '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd119',
+                amount: 1000,
+              },
+            ],
+            additionalRegisters: {
+              R4: '100204a00b08cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041ea02d192a39a8cc7a70173007301',
+            },
+            transactionId:
+              '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+            index: 0,
+          },
+        ],
+        size: 0,
+      },
+      (k, v) => {
+        return typeof v == 'bigint' ? String(v) : v;
+      },
+    ),
   },
   {
     txId: 'tx-id-2',
@@ -126,46 +179,51 @@ export const SampleTransactionEntities: TransactionEntity[] = [
     lastStatusUpdate: '1685894220',
     failedInSign: false,
     signFailedCount: 0,
-    serializedTx: JSON.stringify({
-      id: '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-      inputs: [
-        {
-          boxId: '2'.repeat(64),
-          spendingProof: {
-            proofBytes:
-              '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-            extension: {
-              '1': 'a2aed72ff1b139f35d1ad2938cb44c9848a34d4dcfd6d8ab717ebde40a7304f2541cf628ffc8b5c496e6161eba3f169c6dd440704b1719e0',
+    serializedTx: JSON.stringify(
+      {
+        id: '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+        inputs: [
+          {
+            boxId: '2'.repeat(64),
+            spendingProof: {
+              proofBytes:
+                '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+              extension: {
+                '1': 'a2aed72ff1b139f35d1ad2938cb44c9848a34d4dcfd6d8ab717ebde40a7304f2541cf628ffc8b5c496e6161eba3f169c6dd440704b1719e0',
+              },
             },
           },
-        },
-      ],
-      dataInputs: [],
-      outputs: [
-        {
-          boxId:
-            '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-          value: 147,
-          ergoTree:
-            '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
-          creationHeight: 9149,
-          assets: [
-            {
-              tokenId:
-                '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-              amount: 1000,
+        ],
+        dataInputs: [],
+        outputs: [
+          {
+            boxId:
+              '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd120',
+            value: SAFE_MIN_BOX_VALUE * 3n,
+            ergoTree:
+              '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
+            creationHeight: 9149,
+            assets: [
+              {
+                tokenId:
+                  '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+                amount: 20,
+              },
+            ],
+            additionalRegisters: {
+              R4: '100204a00b08cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041ea02d192a39a8cc7a70173007301',
             },
-          ],
-          additionalRegisters: {
-            R4: '100204a00b08cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041ea02d192a39a8cc7a70173007301',
+            transactionId:
+              '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+            index: 0,
           },
-          transactionId:
-            '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-          index: 0,
-        },
-      ],
-      size: 0,
-    }),
+        ],
+        size: 0,
+      },
+      (k, v) => {
+        return typeof v == 'bigint' ? String(v) : v;
+      },
+    ),
   },
   {
     txId: 'tx-id-3',
@@ -177,46 +235,51 @@ export const SampleTransactionEntities: TransactionEntity[] = [
     lastStatusUpdate: '1685894220',
     failedInSign: true,
     signFailedCount: 1,
-    serializedTx: JSON.stringify({
-      id: '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-      inputs: [
-        {
-          boxId: '3'.repeat(64),
-          spendingProof: {
-            proofBytes:
-              '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-            extension: {
-              '1': 'a2aed72ff1b139f35d1ad2938cb44c9848a34d4dcfd6d8ab717ebde40a7304f2541cf628ffc8b5c496e6161eba3f169c6dd440704b1719e0',
+    serializedTx: JSON.stringify(
+      {
+        id: '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+        inputs: [
+          {
+            boxId: '3'.repeat(64),
+            spendingProof: {
+              proofBytes:
+                '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+              extension: {
+                '1': 'a2aed72ff1b139f35d1ad2938cb44c9848a34d4dcfd6d8ab717ebde40a7304f2541cf628ffc8b5c496e6161eba3f169c6dd440704b1719e0',
+              },
             },
           },
-        },
-      ],
-      dataInputs: [],
-      outputs: [
-        {
-          boxId:
-            '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-          value: 147,
-          ergoTree:
-            '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
-          creationHeight: 9149,
-          assets: [
-            {
-              tokenId:
-                '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-              amount: 1000,
+        ],
+        dataInputs: [],
+        outputs: [
+          {
+            boxId:
+              '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd121',
+            value: SAFE_MIN_BOX_VALUE * 3n,
+            ergoTree:
+              '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
+            creationHeight: 9149,
+            assets: [
+              {
+                tokenId:
+                  '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+                amount: 40,
+              },
+            ],
+            additionalRegisters: {
+              R4: '100204a00b08cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041ea02d192a39a8cc7a70173007301',
             },
-          ],
-          additionalRegisters: {
-            R4: '100204a00b08cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041ea02d192a39a8cc7a70173007301',
+            transactionId:
+              '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+            index: 0,
           },
-          transactionId:
-            '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-          index: 0,
-        },
-      ],
-      size: 0,
-    }),
+        ],
+        size: 0,
+      },
+      (k, v) => {
+        return typeof v == 'bigint' ? String(v) : v;
+      },
+    ),
     extra: 'extra-1',
   },
   {
@@ -229,46 +292,51 @@ export const SampleTransactionEntities: TransactionEntity[] = [
     lastStatusUpdate: '1685894220',
     failedInSign: true,
     signFailedCount: 1,
-    serializedTx: JSON.stringify({
-      id: '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-      inputs: [
-        {
-          boxId: '4'.repeat(64),
-          spendingProof: {
-            proofBytes:
-              '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-            extension: {
-              '1': 'a2aed72ff1b139f35d1ad2938cb44c9848a34d4dcfd6d8ab717ebde40a7304f2541cf628ffc8b5c496e6161eba3f169c6dd440704b1719e0',
+    serializedTx: JSON.stringify(
+      {
+        id: '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+        inputs: [
+          {
+            boxId: '4'.repeat(64),
+            spendingProof: {
+              proofBytes:
+                '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+              extension: {
+                '1': 'a2aed72ff1b139f35d1ad2938cb44c9848a34d4dcfd6d8ab717ebde40a7304f2541cf628ffc8b5c496e6161eba3f169c6dd440704b1719e0',
+              },
             },
           },
-        },
-      ],
-      dataInputs: [],
-      outputs: [
-        {
-          boxId:
-            '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-          value: 147,
-          ergoTree:
-            '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
-          creationHeight: 9149,
-          assets: [
-            {
-              tokenId:
-                '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-              amount: 1000,
+        ],
+        dataInputs: [],
+        outputs: [
+          {
+            boxId:
+              '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd122',
+            value: SAFE_MIN_BOX_VALUE * 3n,
+            ergoTree:
+              '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
+            creationHeight: 9149,
+            assets: [
+              {
+                tokenId:
+                  '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+                amount: 1000,
+              },
+            ],
+            additionalRegisters: {
+              R4: '100204a00b08cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041ea02d192a39a8cc7a70173007301',
             },
-          ],
-          additionalRegisters: {
-            R4: '100204a00b08cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041ea02d192a39a8cc7a70173007301',
+            transactionId:
+              '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+            index: 0,
           },
-          transactionId:
-            '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-          index: 0,
-        },
-      ],
-      size: 0,
-    }),
+        ],
+        size: 0,
+      },
+      (k, v) => {
+        return typeof v == 'bigint' ? String(v) : v;
+      },
+    ),
     extra: 'extra-2',
   },
   {
@@ -281,46 +349,51 @@ export const SampleTransactionEntities: TransactionEntity[] = [
     lastStatusUpdate: '1685894220',
     failedInSign: false,
     signFailedCount: 0,
-    serializedTx: JSON.stringify({
-      id: '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-      inputs: [
-        {
-          boxId: '5'.repeat(64),
-          spendingProof: {
-            proofBytes:
-              '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-            extension: {
-              '1': 'a2aed72ff1b139f35d1ad2938cb44c9848a34d4dcfd6d8ab717ebde40a7304f2541cf628ffc8b5c496e6161eba3f169c6dd440704b1719e0',
+    serializedTx: JSON.stringify(
+      {
+        id: '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+        inputs: [
+          {
+            boxId: '5'.repeat(64),
+            spendingProof: {
+              proofBytes:
+                '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+              extension: {
+                '1': 'a2aed72ff1b139f35d1ad2938cb44c9848a34d4dcfd6d8ab717ebde40a7304f2541cf628ffc8b5c496e6161eba3f169c6dd440704b1719e0',
+              },
             },
           },
-        },
-      ],
-      dataInputs: [],
-      outputs: [
-        {
-          boxId:
-            '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-          value: 147,
-          ergoTree:
-            '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
-          creationHeight: 9149,
-          assets: [
-            {
-              tokenId:
-                '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-              amount: 1000,
+        ],
+        dataInputs: [],
+        outputs: [
+          {
+            boxId:
+              '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd123',
+            value: SAFE_MIN_BOX_VALUE * 3n,
+            ergoTree:
+              '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
+            creationHeight: 9149,
+            assets: [
+              {
+                tokenId:
+                  '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+                amount: 1000,
+              },
+            ],
+            additionalRegisters: {
+              R4: '100204a00b08cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041ea02d192a39a8cc7a70173007301',
             },
-          ],
-          additionalRegisters: {
-            R4: '100204a00b08cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041ea02d192a39a8cc7a70173007301',
+            transactionId:
+              '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+            index: 0,
           },
-          transactionId:
-            '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-          index: 0,
-        },
-      ],
-      size: 0,
-    }),
+        ],
+        size: 0,
+      },
+      (k, v) => {
+        return typeof v == 'bigint' ? String(v) : v;
+      },
+    ),
   },
   {
     txId: 'tx-id-6',
@@ -332,46 +405,51 @@ export const SampleTransactionEntities: TransactionEntity[] = [
     lastStatusUpdate: '1685894220',
     failedInSign: false,
     signFailedCount: 0,
-    serializedTx: JSON.stringify({
-      id: '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-      inputs: [
-        {
-          boxId: '6'.repeat(64),
-          spendingProof: {
-            proofBytes:
-              '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-            extension: {
-              '1': 'a2aed72ff1b139f35d1ad2938cb44c9848a34d4dcfd6d8ab717ebde40a7304f2541cf628ffc8b5c496e6161eba3f169c6dd440704b1719e0',
+    serializedTx: JSON.stringify(
+      {
+        id: '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+        inputs: [
+          {
+            boxId: '6'.repeat(64),
+            spendingProof: {
+              proofBytes:
+                '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+              extension: {
+                '1': 'a2aed72ff1b139f35d1ad2938cb44c9848a34d4dcfd6d8ab717ebde40a7304f2541cf628ffc8b5c496e6161eba3f169c6dd440704b1719e0',
+              },
             },
           },
-        },
-      ],
-      dataInputs: [],
-      outputs: [
-        {
-          boxId:
-            '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-          value: 147,
-          ergoTree:
-            '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
-          creationHeight: 9149,
-          assets: [
-            {
-              tokenId:
-                '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-              amount: 1000,
+        ],
+        dataInputs: [],
+        outputs: [
+          {
+            boxId:
+              '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd124',
+            value: SAFE_MIN_BOX_VALUE * 3n,
+            ergoTree:
+              '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
+            creationHeight: 9149,
+            assets: [
+              {
+                tokenId:
+                  '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+                amount: 1000,
+              },
+            ],
+            additionalRegisters: {
+              R4: '100204a00b08cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041ea02d192a39a8cc7a70173007301',
             },
-          ],
-          additionalRegisters: {
-            R4: '100204a00b08cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041ea02d192a39a8cc7a70173007301',
+            transactionId:
+              '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+            index: 0,
           },
-          transactionId:
-            '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-          index: 0,
-        },
-      ],
-      size: 0,
-    }),
+        ],
+        size: 0,
+      },
+      (k, v) => {
+        return typeof v == 'bigint' ? String(v) : v;
+      },
+    ),
   },
   {
     txId: 'tx-id-7',
@@ -383,45 +461,109 @@ export const SampleTransactionEntities: TransactionEntity[] = [
     lastStatusUpdate: '1685894220',
     failedInSign: false,
     signFailedCount: 0,
-    serializedTx: JSON.stringify({
-      id: '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-      inputs: [
-        {
-          boxId: '7'.repeat(64),
-          spendingProof: {
-            proofBytes:
-              '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-            extension: {
-              '1': 'a2aed72ff1b139f35d1ad2938cb44c9848a34d4dcfd6d8ab717ebde40a7304f2541cf628ffc8b5c496e6161eba3f169c6dd440704b1719e0',
+    serializedTx: JSON.stringify(
+      {
+        id: '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+        inputs: [
+          {
+            boxId: '7'.repeat(64),
+            spendingProof: {
+              proofBytes:
+                '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+              extension: {
+                '1': 'a2aed72ff1b139f35d1ad2938cb44c9848a34d4dcfd6d8ab717ebde40a7304f2541cf628ffc8b5c496e6161eba3f169c6dd440704b1719e0',
+              },
             },
           },
-        },
-      ],
-      dataInputs: [],
-      outputs: [
-        {
-          boxId:
-            '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-          value: 147,
-          ergoTree:
-            '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
-          creationHeight: 9149,
-          assets: [
-            {
-              tokenId:
-                '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-              amount: 1000,
+        ],
+        dataInputs: [],
+        outputs: [
+          {
+            boxId:
+              '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd125',
+            value: SAFE_MIN_BOX_VALUE * 3n,
+            ergoTree:
+              '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
+            creationHeight: 9149,
+            assets: [
+              {
+                tokenId:
+                  '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+                amount: 1000,
+              },
+            ],
+            additionalRegisters: {
+              R4: '100204a00b08cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041ea02d192a39a8cc7a70173007301',
             },
-          ],
-          additionalRegisters: {
-            R4: '100204a00b08cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041ea02d192a39a8cc7a70173007301',
+            transactionId:
+              '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+            index: 0,
           },
-          transactionId:
-            '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-          index: 0,
-        },
-      ],
-      size: 0,
-    }),
+        ],
+        size: 0,
+      },
+      (k, v) => {
+        return typeof v == 'bigint' ? String(v) : v;
+      },
+    ),
   },
 ];
+
+export const SampleTransactionEntitiesContainsSpecialOutput: TransactionEntity[] =
+  [
+    {
+      txId: 'tx-id-contains-outputs-7',
+      chain: 'chain-2',
+      txType: 'tx-B',
+      status: TransactionStatus.COMPLETED,
+      requiredSign: 0,
+      lastCheck: 0,
+      lastStatusUpdate: '1685894220',
+      failedInSign: false,
+      signFailedCount: 0,
+      serializedTx: JSON.stringify(
+        {
+          id: '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+          inputs: [
+            {
+              boxId:
+                '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd125',
+              spendingProof: {
+                proofBytes:
+                  '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+                extension: {},
+              },
+            },
+          ],
+          dataInputs: [],
+          outputs: [
+            {
+              boxId:
+                '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd125',
+              value: SAFE_MIN_BOX_VALUE * 3n,
+              ergoTree:
+                '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
+              creationHeight: 9149,
+              assets: [
+                {
+                  tokenId:
+                    '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+                  amount: 1000,
+                },
+              ],
+              additionalRegisters: {
+                R4: '100204a00b08cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041ea02d192a39a8cc7a70173007301',
+              },
+              transactionId:
+                '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+              index: 0,
+            },
+          ],
+          size: 0,
+        },
+        (k, v) => {
+          return typeof v == 'bigint' ? String(v) : v;
+        },
+      ),
+    },
+  ];
