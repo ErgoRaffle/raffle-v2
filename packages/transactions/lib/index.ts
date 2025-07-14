@@ -10,3 +10,7 @@ export { ForwardToTicketRedeemTxBuilder } from './transactions/ForwardToTicketRe
 export { TicketRedeemTxBuilder } from './transactions/TicketRedeemTxBuilder';
 export { ReturnRaffleLicenseTxBuilder } from './transactions/ReturnRaffleLicenseTxBuilder';
 export { FeePaymentTxBuilder } from './transactions/FeePaymentTxBuilder';
+export { PrizeCreationTxBuilder } from './transactions/PrizeCreationTxBuilder';
+export { GiftUnwrapTxBuilder } from './transactions/GiftUnwrapTxBuilder';
+export { FinalPrizeTxBuilder } from './transactions/FinalPrizeTxBuilder';
+export { SafeWithdrawTxBuilder } from './transactions/SafeWithdrawTxBuilder';
