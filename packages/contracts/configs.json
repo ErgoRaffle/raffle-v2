@@ -1,5 +1,5 @@
 {
-  "giftTokenCount": "2000L",
+  "giftTokenCount": 2000,
   "ticketExpirationHeight": 22450,
   "tokens": {
     "oracleTokenId": "87a17c567f4fb7fde4cbc8ce9ed77dae2f36b60672733ad96a334ef7fdb931da",

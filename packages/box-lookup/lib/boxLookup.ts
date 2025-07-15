@@ -4,35 +4,27 @@ import {
   TxPot,
 } from '@rosen-bridge/tx-pot';
 import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
-import ergoNodeClientFactory, {
-  ErgoTransactionOutput,
-} from '@rosen-clients/ergo-node';
+import ergoNodeClientFactory from '@rosen-clients/ergo-node';
+import JsonBigInt from '@rosen-bridge/json-bigint';
 
-import { Request } from './types/request';
+import { Request } from './types';
 import { API_LIMIT } from './constants';
-import { ErgoAddress, Network } from '@fleet-sdk/core';
+import { Box, ErgoAddress, ErgoBox, Network } from '@fleet-sdk/core';
 import { deserializeTransaction } from '@fleet-sdk/serializer';
 
 export class BoxLookup {
   protected requestsIdCounter: number = 0;
-  protected spentBoxes: Set<string> = new Set<string>();
-  protected unspentBoxes: ErgoTransactionOutput[] = [];
-  protected alreadySelectedUnspentBoxesIds: Set<string> = new Set<string>();
   protected nodeAPI;
   protected requests = new Map<number, Request>();
-  protected delayBetweenChecksAsSecond: number;
-  protected running = false;
-  protected latestTimeout: ReturnType<typeof setTimeout>;
+  protected extraUnspentBoxes: ErgoBox[] = [];
 
   constructor(
     protected txPot: TxPot,
     nodeURL: string,
     protected networkType: Network,
-    delayBetweenChecksAsSecond: number,
     protected logger: AbstractLogger = new DummyLogger(),
   ) {
     this.nodeAPI = ergoNodeClientFactory(nodeURL);
-    this.delayBetweenChecksAsSecond = delayBetweenChecksAsSecond;
   }
 
   /**
@@ -69,14 +61,14 @@ export class BoxLookup {
   /**
    * This method return all spent & unspent boxes that currently placed on the mempool
    *
-   * @return { [string[],  ErgoTransactionOutput[]] }
+   * @return { [string[],  ErgoBox[]] }
    */
   protected readonly getArrangedNodeBoxes = async (): Promise<
-    [string[], ErgoTransactionOutput[]]
+    [string[], ErgoBox[]]
   > => {
     let results;
     let spentBoxes: string[] = [];
-    let unspentBoxes: ErgoTransactionOutput[] = [];
+    let unspentBoxes: ErgoBox[] = [];
     let offset = 0;
     do {
       results = await this.nodeAPI.getUnconfirmedTransactions({
@@ -87,7 +79,18 @@ export class BoxLookup {
         spentBoxes = spentBoxes.concat(
           ...tx.inputs.map((input: { boxId: string }) => input.boxId),
         );
-        unspentBoxes = unspentBoxes.concat(...tx.outputs);
+        unspentBoxes = unspentBoxes.concat(
+          ...tx.outputs.map(
+            (output) =>
+              new ErgoBox({
+                ...output,
+                assets: output.assets ?? [],
+                boxId: output.boxId ?? '',
+                index: output.index ?? 0,
+                transactionId: output.transactionId ?? '',
+              }),
+          ),
+        );
       }
       offset += API_LIMIT;
     } while (results.length == API_LIMIT);
@@ -114,32 +117,37 @@ export class BoxLookup {
   };
 
   /**
-   * Fetch TxPot spent boxes by txId
+   * Fetch TxPot spent boxes of a transaction
    *
    * @return { string[] }
    */
-  protected readonly fetchTxPotOutputBoxes = async (tx: TransactionEntity) => {
+  protected fetchTxPotOutputBoxes = async (
+    tx: TransactionEntity,
+  ): Promise<ErgoBox[]> => {
     try {
-      return deserializeTransaction(Buffer.from(tx.serializedTx, 'base64'))
-        .outputs as ErgoTransactionOutput[];
+      return deserializeTransaction(
+        Buffer.from(tx.serializedTx, 'base64'),
+      ).outputs.map((outBox) => {
+        return new ErgoBox(outBox as Box);
+      });
     } catch (err) {
       this.logger.error(
         `Invalid ${tx.txId} tx serialized value: ${tx.serializedTx}`,
       );
     }
-    return [] as ErgoTransactionOutput[];
+    return [];
   };
 
   /**
    * This method get all spent & unspent boxes that currently managed by TxPot instance
    *
-   * @return { [string[],  ErgoTransactionOutput[]] }
+   * @return { [string[],  ErgoBox[]] }
    */
-  protected readonly getArrangedTxPotBoxes = async (): Promise<
-    [string[], ErgoTransactionOutput[]]
+  protected getArrangedTxPotBoxes = async (): Promise<
+    [string[], ErgoBox[]]
   > => {
     let spentBoxes: string[] = [];
-    let unspentBoxes: ErgoTransactionOutput[] = [];
+    let unspentBoxes: ErgoBox[] = [];
     const activeTxs = [
       ...(await this.txPot.getTxsByStatus(TransactionStatus.SIGNED, false)),
       ...(await this.txPot.getTxsByStatus(TransactionStatus.SENT, false)),
@@ -157,122 +165,119 @@ export class BoxLookup {
   };
 
   /**
-   * update Spent & unspent Boxes lists by node & TxPot data
+   * Collect unspent Boxes by node & TxPot data
    *
    * @return
    */
-  protected updateBoxesLists = async () => {
+  protected getUnspentBoxes = async (): Promise<ErgoBox[]> => {
     const [nodeInputBoxesIds, nodeOutputBoxes] =
       await this.getArrangedNodeBoxes();
     const [txPotInputBoxesIds, txPotOutputBoxes] =
       await this.getArrangedTxPotBoxes();
-    this.spentBoxes = new Set<string>([
+    const spentBoxes = new Set<string>([
       ...nodeInputBoxesIds,
       ...txPotInputBoxesIds,
     ]);
-    this.unspentBoxes = [...nodeOutputBoxes, ...txPotOutputBoxes].filter(
-      (val) => val.boxId && Array.from(this.spentBoxes).indexOf(val.boxId) < 0,
-    );
+    const unspentBoxes: ErgoBox[] = [
+      ...nodeOutputBoxes,
+      ...txPotOutputBoxes,
+      ...this.extraUnspentBoxes,
+    ].filter((val) => val.boxId && !spentBoxes.has(val.boxId));
 
-    // remove unavailable unspent-boxes to reduce memory usage
-    for (const alreadyUnspentBox of this.alreadySelectedUnspentBoxesIds) {
-      if (
-        this.unspentBoxes.map((box) => box.boxId).indexOf(alreadyUnspentBox) < 0
-      )
-        this.alreadySelectedUnspentBoxesIds.delete(alreadyUnspentBox);
-    }
+    return unspentBoxes;
   };
 
   /**
-   * return latest values of the spentBoxes ids
-   *
-   * @returns { string[] }
-   */
-  public getSpentBoxesList = () => this.spentBoxes;
-
-  /**
-   * return latest values of the unspentBoxes
-   *
-   * @returns { ErgoTransactionOutput[] }
-   */
-  public getUnspentBoxesList = () => this.unspentBoxes;
-
-  /**
-   * start the process of observing unspent boxes
+   * Serve requests by considering unspent-boxes
    *
    * @returns
    */
-  public run = async () => {
-    if (this.running || this.requests.size === 0) return;
-    this.running = true;
-    await this.serveRequests();
-  };
-
-  /**
-   * Updates the list of unspent boxes and serves pending requests
-   *
-   * @returns
-   */
-  protected serveRequests = async () => {
-    await this.updateBoxesLists();
-    const unspentBoxes = Array.from(this.unspentBoxes);
+  public serveRequests = async () => {
+    if (this.requests.size <= 0) return;
+    this.logger.info('The BoxLookup serving requests started');
+    const unspentBoxes = await this.getUnspentBoxes();
+    const alreadySelectedUnspentBoxIds: Set<string> = new Set<string>();
     for (const request of this.requests.values()) {
-      const selectedBoxes: typeof unspentBoxes = [];
-      const totalAmounts: Record<string, number> = {};
+      let selectedBoxes: ErgoBox[] = [];
+      let totalTokenAmounts: Map<string, number> = new Map<string, number>();
+      let totalErgValue = 0n;
 
       for (const box of unspentBoxes) {
+        // check if current request unregistered then breaking the loop
+        if (Array.from(this.requests.values()).indexOf(request) < 0) break;
+
         const isFromCorrectAddress =
           ErgoAddress.fromErgoTree(
             box.ergoTree,
             this.networkType,
           ).toString() === request.address;
         const isNewBox =
-          box.boxId && !this.alreadySelectedUnspentBoxesIds.has(box.boxId);
+          box.boxId && !alreadySelectedUnspentBoxIds.has(box.boxId);
 
-        const hasAllRequiredTokens = request.tokens.every((token) =>
+        const hasRequiredTokens = request.tokens.some((token) =>
           (box.assets ?? []).some((asset) => asset.tokenId === token.tokenId),
         );
 
-        if (isFromCorrectAddress && isNewBox && hasAllRequiredTokens) {
+        const requiredErgs = request.value && request.value > 0;
+        const hasRequiredErgs = requiredErgs && request.value;
+
+        if (
+          isFromCorrectAddress &&
+          isNewBox &&
+          (hasRequiredTokens || hasRequiredErgs)
+        ) {
+          totalErgValue += BigInt(box.value);
+          this.logger.debug(
+            `Current collected erg values for request by ${request.address} address is ${totalErgValue}`,
+          );
           selectedBoxes.push(box);
-          this.alreadySelectedUnspentBoxesIds.add(box.boxId!);
           for (const token of request.tokens) {
             const asset = (box.assets ?? []).find(
               (a) => a.tokenId === token.tokenId,
             );
             if (asset) {
-              totalAmounts[token.tokenId] =
-                (totalAmounts[token.tokenId] || 0) + Number(asset.amount);
+              totalTokenAmounts.set(
+                token.tokenId,
+                (totalTokenAmounts.get(token.tokenId) || 0) +
+                  Number(asset.amount),
+              );
+              this.logger.debug(
+                `Current collected tokens for request by ${request.address} address are ${JsonBigInt.stringify(Array.from(totalTokenAmounts))}`,
+              );
             }
           }
 
-          const isSufficient = request.tokens.every(
-            (token) => totalAmounts[token.tokenId] >= Number(token.amount),
+          const isSufficient =
+            request.tokens.every(
+              // Considering tokens
+              (token) =>
+                (totalTokenAmounts.get(token.tokenId) || -1) >=
+                Number(token.amount),
+            ) &&
+            // Considering Ergs
+            (!request.value || totalErgValue >= request.value);
+
+          this.logger.debug(
+            `Current collected boxes for request by ${request.address} address are ${JsonBigInt.stringify(selectedBoxes)}, that is ${!isSufficient ? 'not ' : ''}suffice`,
           );
 
           if (isSufficient) {
-            request.onSuffice(selectedBoxes);
-            selectedBoxes.length = 0; // reset for next round
-            Object.keys(totalAmounts).forEach((k) => delete totalAmounts[k]);
+            for (const box of selectedBoxes)
+              alreadySelectedUnspentBoxIds.add(box.boxId!);
+            await request.onSuffice(selectedBoxes);
+            selectedBoxes = []; // reset for next round
+            totalTokenAmounts = new Map<string, number>();
+            totalErgValue = 0n;
+            this.logger.info(
+              `The BoxLookup triggered for ${request.address} request address`,
+            );
+            this.logger.debug(
+              `The ${request.address} request address sufficed by ${JsonBigInt.stringify(selectedBoxes)} boxes`,
+            );
           }
         }
       }
     }
-    if (this.running) {
-      this.latestTimeout = setTimeout(
-        this.serveRequests,
-        this.delayBetweenChecksAsSecond * 1000,
-      );
-    }
-  };
-
-  /**
-   * stop the process of observing unspent boxes
-   *
-   * @return
-   */
-  public stop = async () => {
-    clearTimeout(this.latestTimeout);
-    this.running = false;
+    this.logger.info('The BoxLookup serving requests done');
   };
 }

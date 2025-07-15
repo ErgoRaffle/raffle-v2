@@ -8,6 +8,7 @@ import {
   ErgoTree,
   ErgoUnsignedInput,
   OutputBuilder,
+  SAFE_MIN_BOX_VALUE,
   TransactionBuilder,
 } from '@fleet-sdk/core';
 import { mockUTxO } from '@fleet-sdk/mock-chain';
@@ -39,7 +40,7 @@ export const unconfirmedTxList = [
       {
         boxId:
           '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-        value: 147,
+        value: SAFE_MIN_BOX_VALUE * 3n,
         ergoTree:
           '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
         creationHeight: 9149,
@@ -83,14 +84,16 @@ export const SampleTransactionEntities: TransactionEntity[] = [];
 for (let i = 0; i < 10; i++) {
   const utxo = new ErgoUnsignedInput(
     mockUTxO({
-      value: 147n,
+      value: SAFE_MIN_BOX_VALUE * 3n,
       ergoTree:
         '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
       creationHeight: 9149,
       assets: [
         {
           tokenId:
-            '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+            i != 2
+              ? '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117'
+              : '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd118',
           amount: 1000n,
         },
       ],
@@ -99,7 +102,7 @@ for (let i = 0; i < 10; i++) {
       },
       transactionId:
         '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-      index: 0,
+      index: i,
     }),
   );
 
@@ -112,7 +115,7 @@ for (let i = 0; i < 10; i++) {
       .from([utxo])
       .to([
         new OutputBuilder(
-          147n,
+          SAFE_MIN_BOX_VALUE * 3n,
           new ErgoTree(
             '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
           ),
@@ -120,7 +123,9 @@ for (let i = 0; i < 10; i++) {
           .addTokens([
             {
               tokenId:
-                '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+                i != 2
+                  ? '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117'
+                  : '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd118',
               amount: 1000n,
             },
           ])
@@ -143,7 +148,7 @@ for (let i = 0; i < 10; i++) {
   else if (i == 2) status = TransactionStatus.COMPLETED;
 
   SampleTransactionEntities.push({
-    txId: `tx-id-${i + 1}`,
+    txId: sampleTx.id,
     chain: 'ergo',
     txType: 'tx-A',
     status: status,
