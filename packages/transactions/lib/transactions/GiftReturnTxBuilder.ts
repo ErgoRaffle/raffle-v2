@@ -8,6 +8,7 @@ import {
   SByte,
 } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
+
 import { WinnerBuilder } from '@ergo-raffle/boxes';
 import { SafePayBuilder } from '@ergo-raffle/boxes';
 
@@ -25,8 +26,6 @@ export class GiftReturnTxBuilder {
   private giftGiverErgoTree?: string;
   private chainHeight?: number;
   private txFee?: bigint;
-
-  constructor() {}
 
   /**
    * Set the gift redeem box input

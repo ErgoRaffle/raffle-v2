@@ -5,7 +5,6 @@ import {
   ErgoUnsignedTransaction,
 } from '@fleet-sdk/core';
 
-// Import box builders from the boxes package
 import { WinnerBuilder } from '@ergo-raffle/boxes';
 import { GiftTokenRepoBuilder } from '@ergo-raffle/boxes';
 import { raffleInfo } from '@ergo-raffle/contracts';

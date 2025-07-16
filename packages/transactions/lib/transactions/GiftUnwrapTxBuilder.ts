@@ -25,8 +25,6 @@ export class GiftUnwrapTxBuilder {
   private chainHeight?: number;
   private txFee?: bigint;
 
-  constructor() {}
-
   /**
    * Set the winner prize box input
    * @param box - The winner prize box to spend

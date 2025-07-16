@@ -8,6 +8,7 @@ import {
   SByte,
   ErgoAddress,
 } from '@fleet-sdk/core';
+
 import { ServiceBuilder } from '@ergo-raffle/boxes';
 import { SafePayBuilder } from '@ergo-raffle/boxes';
 
@@ -24,8 +25,6 @@ export class ReturnRaffleLicenseTxBuilder {
   private changeErgoTree?: string;
   private chainHeight?: number;
   private txFee?: bigint;
-
-  constructor() {}
 
   /**
    * Set the ended raffle box input (success raffle or ticket redeem)

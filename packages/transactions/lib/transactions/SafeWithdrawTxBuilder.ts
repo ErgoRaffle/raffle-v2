@@ -18,8 +18,6 @@ export class SafeWithdrawTxBuilder {
   private chainHeight?: number;
   private txFee?: bigint;
 
-  constructor() {}
-
   /**
    * Set the safe pay box input
    * @param box - The safe pay box to spend
