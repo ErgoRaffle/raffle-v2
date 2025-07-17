@@ -98,44 +98,19 @@ export class BoxLookup {
   };
 
   /**
-   * Fetch TxPot spent boxes by txId
+   * Get a encoded transaction and return deserialized
    *
-   * @return { string[] }
+   * @return { Transaction }
    */
-  protected fetchTxPotInputBoxIds = async (tx: TransactionEntity) => {
+  protected deserializeTx = async (tx: TransactionEntity) => {
     try {
-      return deserializeTransaction(
-        Buffer.from(tx.serializedTx, 'base64'),
-      ).inputs.map((input: { boxId: string }) => input.boxId);
+      return deserializeTransaction(Buffer.from(tx.serializedTx, 'base64'));
     } catch (err) {
       this.logger.error(
         `Invalid ${tx.txId} tx serialized value: ${tx.serializedTx}`,
       );
       throw err;
     }
-    return [];
-  };
-
-  /**
-   * Fetch TxPot spent boxes of a transaction
-   *
-   * @return { string[] }
-   */
-  protected fetchTxPotOutputBoxes = async (
-    tx: TransactionEntity,
-  ): Promise<ErgoBox[]> => {
-    try {
-      return deserializeTransaction(
-        Buffer.from(tx.serializedTx, 'base64'),
-      ).outputs.map((outBox) => {
-        return new ErgoBox(outBox as Box);
-      });
-    } catch (err) {
-      this.logger.error(
-        `Invalid ${tx.txId} tx serialized value: ${tx.serializedTx}`,
-      );
-    }
-    return [];
   };
 
   /**
@@ -155,9 +130,14 @@ export class BoxLookup {
     ];
 
     for (const tx of activeTxs) {
-      spentBoxes = spentBoxes.concat(...(await this.fetchTxPotInputBoxIds(tx)));
+      const deserializedTx = await this.deserializeTx(tx);
+      spentBoxes = spentBoxes.concat(
+        ...deserializedTx.inputs.map((input: { boxId: string }) => input.boxId),
+      );
       unspentBoxes = unspentBoxes.concat(
-        ...(await this.fetchTxPotOutputBoxes(tx)),
+        ...deserializedTx.outputs.map((outBox) => {
+          return new ErgoBox(outBox as Box);
+        }),
       );
     }
 

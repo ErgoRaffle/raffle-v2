@@ -6,6 +6,7 @@ import { Request } from '../lib/types/request';
 import {
   mockDataSource,
   SampleTransactionEntities,
+  SampleTransactionEntitiesContainsSpecialOutput,
   SampleTxs,
   unconfirmedTxList,
 } from './mocked/boxLookup.mock';
@@ -45,22 +46,25 @@ beforeEach<BoxLookupTestContext>(async (context) => {
     'getUnconfirmedTransactions',
   ).mockResolvedValue(unconfirmedTxList as unknown as Transactions);
 
-  boxLookup['fetchTxPotOutputBoxes'] = vi
-    .fn()
-    .mockImplementation(async (tx: TransactionEntity) => {
-      const txs = SampleTxs.filter((t: { id: string }) => {
-        return tx.txId == t.id;
-      });
-      return txs.length > 0 ? [txs[0].outputs] : [];
-    });
-  boxLookup['fetchTxPotInputBoxIds'] = vi
-    .fn()
-    .mockImplementation(async (tx: TransactionEntity) => {
-      const txs = SampleTxs.filter((t: { id: string }) => {
-        return tx.txId == t.id;
-      });
-      return txs.length > 0 ? [txs[0].inputs.map((b) => b.boxId)] : [];
-    });
+  vi.mock('@fleet-sdk/serializer', async () => {
+    const actual = await vi.importActual<
+      typeof import('@fleet-sdk/serializer')
+    >('@fleet-sdk/serializer');
+
+    return {
+      ...actual,
+      deserializeTransaction: vi.fn().mockImplementation(async (tx) => {
+        return SampleTxs[
+          [
+            ...SampleTransactionEntities,
+            ...SampleTransactionEntitiesContainsSpecialOutput,
+          ]
+            .map((stx) => stx.serializedTx)
+            .indexOf(Buffer.from(tx).toString('base64'))
+        ];
+      }),
+    };
+  });
 
   context.txRepository = txRepository;
   context.txPot = txPot;
@@ -207,30 +211,24 @@ describe('BoxLookup', () => {
      */
     it<BoxLookupTestContext>('should filter unspent boxes from node and TxPot when a box exists as spent and meanwhile unspent transactions', async ({
       boxLookup,
+      txRepository,
     }) => {
-      boxLookup['fetchTxPotInputBoxIds'] = vi
-        .fn()
-        .mockImplementation(async (tx: TransactionEntity) => {
-          const txs = SampleTxs.filter((t: { id: string }) => {
-            return tx.txId == t.id;
-          });
-          return txs.length > 0
-            ? [txs[0].inputs.map((b) => b.boxId), SampleTxs[0].outputs[0].boxId]
-            : [];
-        });
+      let unspentBoxesList = await boxLookup['getUnspentBoxes']();
+      expect(unspentBoxesList.map((ub) => ub.boxId)).toContain(
+        SampleTxs[SampleTxs.length - 1].inputs[0].boxId,
+      );
+
+      // Insert already unspent boxes to the spent tx-pot boxes
+      txRepository.insert(SampleTransactionEntitiesContainsSpecialOutput);
 
       // Act
-      const unspentBoxesList = await boxLookup['getUnspentBoxes']();
-
-      // Assert
-      expect((unspentBoxesList as ErgoTransactionOutput[]).length).toEqual(3);
-      expect(
-        (unspentBoxesList as ErgoTransactionOutput[]).map((box) => box.boxId),
-      ).toEqual([
-        unconfirmedTxList[0].outputs[0].boxId,
-        ...SampleTxs[1].outputs.map((box) => box.boxId),
-        ...SampleTxs[2].outputs.map((box) => box.boxId),
-      ]);
+      unspentBoxesList = await boxLookup['getUnspentBoxes']();
+      expect(unspentBoxesList.map((ub) => ub.boxId)).not.toContain(
+        SampleTxs[SampleTxs.length - 1].inputs[0].boxId,
+      );
+      expect(unspentBoxesList.map((ub) => ub.boxId)).toContain(
+        SampleTxs[SampleTxs.length - 1].outputs[0].boxId,
+      );
     });
 
     /**
