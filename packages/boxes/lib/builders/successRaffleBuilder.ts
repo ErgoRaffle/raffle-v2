@@ -11,6 +11,7 @@ import {
 import { SConstant } from '@fleet-sdk/serializer';
 import { raffleInfo } from '@ergo-raffle/contracts';
 import { blake2b256 } from '@fleet-sdk/crypto';
+import { ActiveRaffleBuilder } from './activeRaffleBuilder';
 
 /**
  * Builder class for creating Success Raffle boxes in the ErgoRaffle protocol
@@ -73,6 +74,22 @@ export class SuccessRaffleBuilder {
   setTotalPrize = (amount: bigint): this => {
     this.totalPrize = amount;
     return this;
+  };
+
+  /**
+   * Get the total prize amount
+   * @returns Total prize amount in nanoERG
+   */
+  getTotalPrize = (): bigint => {
+    return this.totalPrize!;
+  };
+
+  /**
+   * Check if the raffle is an ERG goal raffle
+   * @returns True if the raffle is an ERG goal raffle, false otherwise
+   */
+  isErgGoal = (): boolean => {
+    return this.collectingTokenId === undefined;
   };
 
   /**
@@ -352,43 +369,25 @@ export class SuccessRaffleBuilder {
   /**
    * Create a SuccessRaffleBuilder instance from an active raffle box
    * @param box - Active raffle box to read configuration from
-   * @param oracleBoxId - The oracle box ID to use as seed
    * @returns New SuccessRaffleBuilder instance with configuration from active raffle
    * @throws Error if box structure doesn't match active raffle box requirements
    */
   static fromActiveRaffleBox = (box: Box<Amount>): SuccessRaffleBuilder => {
-    if (box.assets.length < 2) {
-      throw new Error('Invalid active raffle box: missing required tokens');
-    }
-
-    const registers = box.additionalRegisters;
-    if (!registers.R4 || !registers.R5 || !registers.R6 || !registers.R7) {
-      throw new Error('Invalid active raffle box: missing required registers');
-    }
-
-    const r4Data = SConstant.from(registers.R4).data as bigint[];
-    if (r4Data.length < 7) {
-      throw new Error('Invalid active raffle box: invalid R4 register format');
-    }
-
-    const r5Data = SConstant.from(registers.R5).data as Uint8Array[];
-    if (r5Data.length < 3) {
-      throw new Error('Invalid active raffle box: invalid R5 register format');
-    }
-
-    const winnersCount = SConstant.from(registers.R6).data as number;
-    const totalSoldTickets = SConstant.from(registers.R7).data as bigint;
+    // Use ActiveRaffleBuilder to parse the box
+    const activeRaffleBuilder = ActiveRaffleBuilder.fromBox(box);
 
     // Calculate total prize based on winners percent
-    const winnersPercent = r4Data[0];
-    const ticketPrice = r4Data[3];
-    const txFee = r4Data[6];
+    const winnersPercent = activeRaffleBuilder.getWinnersPercent();
+    const ticketPrice = activeRaffleBuilder.getTicketPrice();
+    const txFee = activeRaffleBuilder.getTxFee();
+    const totalSoldTickets = activeRaffleBuilder.getTotalSoldTickets();
     const totalRaised = ticketPrice * totalSoldTickets;
     const totalPrize = (totalRaised * winnersPercent) / 1000n;
 
     // Calculate fee amount
-    const serviceFeePercent = r4Data[1];
-    const implementerFeePercent = r4Data[2];
+    const serviceFeePercent = activeRaffleBuilder.getServiceFeePercent();
+    const implementerFeePercent =
+      activeRaffleBuilder.getImplementerFeePercent();
     const totalFeePercent = serviceFeePercent + implementerFeePercent;
     const totalFeeAmount = (totalRaised * totalFeePercent) / 1000n;
 
@@ -398,9 +397,7 @@ export class SuccessRaffleBuilder {
     let successRaffleValue: bigint;
     let collectingTokenAmount: bigint | undefined;
 
-    const isErgGoal = box.assets.length <= 2;
-
-    if (isErgGoal) {
+    if (activeRaffleBuilder.isErgGoal()) {
       // For ERG goal raffles, deduct fees from ERG value
       successRaffleValue = activeRaffleValue - totalFeeAmount - 4n * txFee;
     } else {
@@ -414,18 +411,19 @@ export class SuccessRaffleBuilder {
       .setValue(successRaffleValue)
       .setTotalPrize(totalPrize)
       .setTotalSoldTickets(totalSoldTickets)
-      .setTxFee(r4Data[6])
-      .setWinnerCount(winnersCount)
-      .setProjectErgoTreeHash(r5Data[2])
+      .setTxFee(txFee)
+      .setWinnerCount(activeRaffleBuilder.getWinnersCount())
+      .setProjectErgoTreeHash(activeRaffleBuilder.getProjectErgoTreeHash())
       .setStep(1)
-      .setTicketTokenId(box.assets[1].tokenId)
-      .setTicketTokenAmount(BigInt(box.assets[1].amount) + 1n);
+      .setTicketTokenId(activeRaffleBuilder.getTicketId())
+      .setTicketTokenAmount(activeRaffleBuilder.getTicketCount() + 1n);
 
     // Set collecting token if present
-    if (box.assets.length > 2) {
+    const collectingTokenId = activeRaffleBuilder.getCollectingTokenId();
+    if (collectingTokenId && collectingTokenAmount) {
       builder
-        .setCollectingTokenId(box.assets[2].tokenId)
-        .setCollectingTokenAmount(collectingTokenAmount!);
+        .setCollectingTokenId(collectingTokenId)
+        .setCollectingTokenAmount(collectingTokenAmount);
     }
 
     return builder;

@@ -9,7 +9,7 @@ import {
 } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
 import { raffleInfo } from '@ergo-raffle/contracts';
-import { SConstant } from '@fleet-sdk/serializer';
+import { ActiveRaffleBuilder } from './activeRaffleBuilder';
 
 /**
  * Builder class for creating Ticket boxes in the ErgoRaffle protocol
@@ -43,34 +43,18 @@ export class TicketBuilder {
    * @throws Error if active raffle box is invalid
    */
   donateToRaffle = (activeRaffleBox: Box<Amount>): this => {
-    if (activeRaffleBox.assets.length < 2) {
-      throw new Error('Invalid active raffle box: missing required tokens');
-    }
-
-    const registers = activeRaffleBox.additionalRegisters;
-    if (!registers.R4 || !registers.R5 || !registers.R6 || !registers.R7) {
-      throw new Error('Invalid active raffle box: missing required registers');
-    }
-
-    const r4Data = SConstant.from(registers.R4).data as bigint[];
-    if (r4Data.length < 7) {
-      throw new Error('Invalid active raffle box: invalid R4 register format');
-    }
-
-    const ticketPrice = r4Data[3];
-    const deadline = r4Data[5];
-    const txFee = r4Data[6];
-    const totalSoldTickets = SConstant.from(registers.R7).data as bigint;
+    // Use ActiveRaffleBuilder to parse the box
+    const activeRaffleBuilder = ActiveRaffleBuilder.fromBox(activeRaffleBox);
 
     // Calculate required value (3 * txFee as per contract)
-    const requiredValue = 3n * txFee;
+    const requiredValue = 3n * activeRaffleBuilder.getTxFee();
 
-    this.setRangeStart(totalSoldTickets)
-      .setTicketPrice(ticketPrice)
-      .setDeadline(deadline)
-      .setTxFee(txFee)
+    this.setRangeStart(activeRaffleBuilder.getTotalSoldTickets())
+      .setTicketPrice(activeRaffleBuilder.getTicketPrice())
+      .setDeadline(activeRaffleBuilder.getDeadline())
+      .setTxFee(activeRaffleBuilder.getTxFee())
       .setValue(requiredValue)
-      .setTicketTokenId(activeRaffleBox.assets[1].tokenId);
+      .setTicketTokenId(activeRaffleBuilder.getTicketId());
 
     return this;
   };
