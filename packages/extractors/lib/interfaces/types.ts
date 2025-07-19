@@ -31,6 +31,10 @@ export interface BoxInterface extends ExtractedBox {
   raffleId: string;
 }
 
+export interface DynamicBoxInterface extends ExtractedBox {
+  address: string;
+}
+
 export interface WinnerBoxInterface extends ExtractedBox {
   raffleId: string;
   index: number;

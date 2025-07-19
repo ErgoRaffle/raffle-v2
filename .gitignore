@@ -144,3 +144,6 @@ dist
 packages/try/
 
 .qodo
+
+# docker
+.devcontainer/
