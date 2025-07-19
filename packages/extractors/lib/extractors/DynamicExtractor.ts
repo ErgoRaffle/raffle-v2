@@ -70,10 +70,16 @@ export class DynamicExtractor extends AbstractErgoExtractor<
    * @param address
    */
   addNewAddress = (address: string) => {
-    this.logger.info(`Adding address ${address} to the watch list`);
-    this.ergoTreeWatchList.push(
-      ErgoAddress.fromBase58(address).ergoTree.toString(),
-    );
+    try {
+      this.ergoTreeWatchList.push(
+        ErgoAddress.fromBase58(address).ergoTree.toString(),
+      );
+      this.logger.info(`Added address ${address} to the watch list`);
+    } catch (error) {
+      this.logger.error(
+        `Error adding address ${address} to the watch list: ${error}`,
+      );
+    }
   };
 
   /**
@@ -81,11 +87,17 @@ export class DynamicExtractor extends AbstractErgoExtractor<
    * @param address
    */
   removeAddress = (address: string) => {
-    this.logger.info(`Removing address ${address} from the watch list`);
-    this.ergoTreeWatchList = this.ergoTreeWatchList.filter(
-      (ergoTree) =>
-        ergoTree !== ErgoAddress.fromBase58(address).ergoTree.toString(),
-    );
+    try {
+      this.ergoTreeWatchList = this.ergoTreeWatchList.filter(
+        (ergoTree) =>
+          ergoTree !== ErgoAddress.fromBase58(address).ergoTree.toString(),
+      );
+      this.logger.info(`Removed address ${address} from the watch list`);
+    } catch (error) {
+      this.logger.error(
+        `Error removing address ${address} from the watch list: ${error}`,
+      );
+    }
   };
 
   /**
