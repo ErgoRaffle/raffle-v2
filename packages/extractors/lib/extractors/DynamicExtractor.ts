@@ -14,19 +14,15 @@ export class DynamicExtractor extends AbstractErgoExtractor<
   DynamicBoxEntity
 > {
   readonly actions: DynamicBoxAction;
-  private ergoTreeWatchList: string[];
+  private ergoTreeWatchList: string[] = [];
 
   constructor(
     dataSource: DataSource,
     private readonly id: string,
-    addresses: string[],
     logger?: AbstractLogger,
     private networkType: Network = Network.Mainnet,
   ) {
     super(logger);
-    this.ergoTreeWatchList = addresses.map((address) =>
-      ErgoAddress.fromBase58(address).ergoTree.toString(),
-    );
     this.actions = new DynamicBoxAction(dataSource, this.logger);
   }
 
@@ -71,9 +67,21 @@ export class DynamicExtractor extends AbstractErgoExtractor<
    */
   addNewAddress = (address: string) => {
     try {
-      this.ergoTreeWatchList.push(
-        ErgoAddress.fromBase58(address).ergoTree.toString(),
-      );
+      const ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
+      if (
+        ErgoAddress.fromErgoTree(ergoTree, this.networkType).toString() !==
+        address
+      ) {
+        this.logger.warn(
+          `Invalid address ${address} for network ${this.networkType}, address will be ignored`,
+        );
+        return;
+      }
+      if (this.ergoTreeWatchList.includes(ergoTree)) {
+        this.logger.warn(`Address ${address} already in the watch list`);
+        return;
+      }
+      this.ergoTreeWatchList.push(ergoTree);
       this.logger.info(`Added address ${address} to the watch list`);
     } catch (error) {
       this.logger.error(
@@ -88,9 +96,18 @@ export class DynamicExtractor extends AbstractErgoExtractor<
    */
   removeAddress = (address: string) => {
     try {
+      const ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
+      if (
+        ErgoAddress.fromErgoTree(ergoTree, this.networkType).toString() !==
+        address
+      ) {
+        this.logger.warn(
+          `Invalid address ${address} for network ${this.networkType}, address will be ignored`,
+        );
+        return;
+      }
       this.ergoTreeWatchList = this.ergoTreeWatchList.filter(
-        (ergoTree) =>
-          ergoTree !== ErgoAddress.fromBase58(address).ergoTree.toString(),
+        (ergoTree) => ergoTree !== ergoTree,
       );
       this.logger.info(`Removed address ${address} from the watch list`);
     } catch (error) {
@@ -104,6 +121,9 @@ export class DynamicExtractor extends AbstractErgoExtractor<
    * dynamic box extractor does not need to initialize boxes
    */
   initializeBoxes = async () => {
+    this.logger.info(
+      `Initializing boxes for extractor ${this.id} is not enabled`,
+    );
     return;
   };
 }

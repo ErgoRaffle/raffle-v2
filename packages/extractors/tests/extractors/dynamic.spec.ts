@@ -16,7 +16,7 @@ describe('DynamicExtractor', () => {
   let extractor: DynamicExtractor;
   beforeEach(async () => {
     dataSource = await createDatabase();
-    extractor = new DynamicExtractor(dataSource, 'Dynamic', []);
+    extractor = new DynamicExtractor(dataSource, 'Dynamic');
   });
 
   describe('extractBoxData', () => {
@@ -47,7 +47,7 @@ describe('DynamicExtractor', () => {
      * @expected
      * - Dynamic box checking result must be true
      */
-    it(`should return true with valid box data`, () => {
+    it(`should return true with valid box data matching the watch list`, () => {
       extractor.addNewAddress(sampleDynamicAddress);
       const extractedData = extractor.hasData(sampleDynamicBoxes[0]);
 
