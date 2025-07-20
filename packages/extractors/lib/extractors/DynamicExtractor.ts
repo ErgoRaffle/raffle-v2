@@ -72,10 +72,9 @@ export class DynamicExtractor extends AbstractErgoExtractor<
         ErgoAddress.fromErgoTree(ergoTree, this.networkType).toString() !==
         address
       ) {
-        this.logger.warn(
+        throw new Error(
           `Invalid address ${address} for network ${this.networkType}, address will be ignored`,
         );
-        return;
       }
       if (this.ergoTreeWatchList.includes(ergoTree)) {
         this.logger.warn(`Address ${address} already in the watch list`);
@@ -84,7 +83,7 @@ export class DynamicExtractor extends AbstractErgoExtractor<
       this.ergoTreeWatchList.push(ergoTree);
       this.logger.info(`Added address ${address} to the watch list`);
     } catch (error) {
-      this.logger.error(
+      throw new Error(
         `Error adding address ${address} to the watch list: ${error}`,
       );
     }
@@ -101,17 +100,16 @@ export class DynamicExtractor extends AbstractErgoExtractor<
         ErgoAddress.fromErgoTree(ergoTree, this.networkType).toString() !==
         address
       ) {
-        this.logger.warn(
+        throw new Error(
           `Invalid address ${address} for network ${this.networkType}, address will be ignored`,
         );
-        return;
       }
       this.ergoTreeWatchList = this.ergoTreeWatchList.filter(
         (ergoTree) => ergoTree !== ergoTree,
       );
       this.logger.info(`Removed address ${address} from the watch list`);
     } catch (error) {
-      this.logger.error(
+      throw new Error(
         `Error removing address ${address} from the watch list: ${error}`,
       );
     }
