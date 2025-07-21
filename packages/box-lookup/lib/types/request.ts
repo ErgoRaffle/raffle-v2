@@ -9,7 +9,10 @@ export interface Request {
    * This method is called by BoxLookup when the preferred condition occurs
    * @param boxes
    */
-  onSuffice: (boxes: ErgoBox[]) => Promise<void>;
+  onSuffice: (
+    sufficeUnspentBoxes: ErgoBox[],
+    totalUnspentBoxes: ErgoBox[],
+  ) => Promise<void>;
 
   /**
    * This method return by BoxLookup

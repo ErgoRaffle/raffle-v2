@@ -15,6 +15,10 @@ export class BoxLookup {
     protected logger: AbstractLogger = new DummyLogger(),
   ) {}
 
+  getRequests = () => {
+    return this.requests;
+  };
+
   /**
    * register a new lookup request and return its assigned ID
    * @param request
@@ -54,14 +58,20 @@ export class BoxLookup {
   public serveRequests = async () => {
     if (this.requests.size <= 0) return;
     this.logger.info('The BoxLookup serving requests started');
-    const unspentBoxes = await this.dataProvider.getUnspentBoxes();
+    const [lastUnspentBoxes, lastStatusUpdate] =
+      await this.dataProvider.getUnspentBoxes(
+        Array.from(this.requests.values()),
+      );
+    let unspentBoxes = lastUnspentBoxes;
     const alreadySelectedUnspentBoxIds: Set<string> = new Set<string>();
     for (const request of this.requests.values()) {
       let selectedBoxes: ErgoBox[] = [];
       let totalTokenAmounts: Map<string, number> = new Map<string, number>();
       let totalErgValue = 0n;
 
-      for (const box of unspentBoxes) {
+      let boxIndex = 0;
+      while (boxIndex < unspentBoxes.length) {
+        const box = unspentBoxes[boxIndex];
         // check if current request unregistered then breaking the loop
         if (Array.from(this.requests.values()).indexOf(request) < 0) break;
 
@@ -123,7 +133,15 @@ export class BoxLookup {
           if (isSufficient) {
             for (const box of selectedBoxes)
               alreadySelectedUnspentBoxIds.add(box.boxId!);
-            await request.onSuffice(selectedBoxes);
+            await request.onSuffice(selectedBoxes, unspentBoxes);
+            const [, newUnspentBoxes] =
+              await this.dataProvider.getArrangedTxPotBoxes(lastStatusUpdate);
+            const totalSpentBoxes = await this.dataProvider.getSpentBoxes();
+            unspentBoxes = unspentBoxes
+              .concat(newUnspentBoxes)
+              .filter((val) => {
+                return val.boxId && !totalSpentBoxes.has(val.boxId);
+              });
             selectedBoxes = []; // reset for next round
             totalTokenAmounts = new Map<string, number>();
             totalErgValue = 0n;
@@ -135,6 +153,7 @@ export class BoxLookup {
             );
           }
         }
+        boxIndex += 1;
       }
     }
     this.logger.info('The BoxLookup serving requests done');

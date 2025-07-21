@@ -160,3 +160,48 @@ for (let i = 0; i < 10; i++) {
     serializedTx: sampleSerializedTx,
   });
 }
+
+SampleTxs.push(
+  prover.signTransaction(
+    new TransactionBuilder(0)
+      .from([SampleTxs[1].outputs[0]])
+      .to([
+        new OutputBuilder(
+          SAFE_MIN_BOX_VALUE * 3n,
+          new ErgoTree(
+            '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
+          ),
+        )
+          .addTokens([
+            {
+              tokenId:
+                '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+              amount: 1000n,
+            },
+          ])
+          .setAdditionalRegisters({
+            R4: '100204a00b08cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041ea02d192a39a8cc7a70173007301',
+          }),
+      ])
+      .build()
+      .toEIP12Object(),
+    [sampleKey],
+  ),
+);
+export const SampleTransactionEntitiesContainsSpecialOutput: TransactionEntity[] =
+  [
+    {
+      txId: 'tx-id-contains-outputs',
+      chain: 'chain-2',
+      txType: 'tx-B',
+      status: TransactionStatus.COMPLETED,
+      requiredSign: 0,
+      lastCheck: 0,
+      lastStatusUpdate: '1685894220',
+      failedInSign: false,
+      signFailedCount: 0,
+      serializedTx: Buffer.from(
+        serializeTransaction(SampleTxs[SampleTxs.length - 1]).toBytes(),
+      ).toString('base64'),
+    },
+  ];
