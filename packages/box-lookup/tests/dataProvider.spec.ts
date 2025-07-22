@@ -90,9 +90,11 @@ describe('DataProvider', () => {
       dataProvider,
     }) => {
       // Act
-      const [unspentBoxesList] = await dataProvider['getUnspentBoxes'](
-        Array.from(boxLookup.getRequests().values()),
-      );
+      const unspentBoxesList = (
+        await dataProvider['getUnspentBoxes'](
+          Array.from(boxLookup.getRequests().values()),
+        )
+      ).unspentBoxes;
 
       // Assert
       expect((unspentBoxesList as ErgoTransactionOutput[]).length).toEqual(4);
@@ -121,9 +123,11 @@ describe('DataProvider', () => {
       dataProvider,
       txRepository,
     }) => {
-      let [unspentBoxesList] = await dataProvider['getUnspentBoxes'](
-        Array.from(boxLookup.getRequests().values()),
-      );
+      let unspentBoxesList = (
+        await dataProvider['getUnspentBoxes'](
+          Array.from(boxLookup.getRequests().values()),
+        )
+      ).unspentBoxes;
       expect(unspentBoxesList.map((ub) => ub.boxId)).toContain(
         SampleTxs[SampleTxs.length - 1].inputs[0].boxId,
       );
@@ -135,9 +139,11 @@ describe('DataProvider', () => {
       await txRepository.insert(SampleTransactionEntitiesContainsSpecialOutput);
 
       // Act
-      [unspentBoxesList] = await dataProvider['getUnspentBoxes'](
-        Array.from(boxLookup.getRequests().values()),
-      );
+      unspentBoxesList = (
+        await dataProvider['getUnspentBoxes'](
+          Array.from(boxLookup.getRequests().values()),
+        )
+      ).unspentBoxes;
       expect(unspentBoxesList.map((ub) => ub.boxId)).not.toContain(
         SampleTxs[SampleTxs.length - 1].inputs[0].boxId,
       );
@@ -163,13 +169,15 @@ describe('DataProvider', () => {
       (dataProvider as any)['getArrangedNodeBoxes'] = vi
         .fn()
         .mockImplementation(async () => {
-          return [[], []];
+          return { spentBoxes: [], unspentBoxes: [] };
         });
 
       // Act
-      const [unspentBoxesList] = await dataProvider['getUnspentBoxes'](
-        Array.from(boxLookup.getRequests().values()),
-      );
+      const unspentBoxesList = (
+        await dataProvider['getUnspentBoxes'](
+          Array.from(boxLookup.getRequests().values()),
+        )
+      ).unspentBoxes;
 
       // Assert
       expect((unspentBoxesList as ErgoTransactionOutput[]).length).toEqual(3);
@@ -200,9 +208,11 @@ describe('DataProvider', () => {
       await txRepository.clear();
 
       // Act
-      const [unspentBoxesList] = await dataProvider['getUnspentBoxes'](
-        Array.from(boxLookup.getRequests().values()),
-      );
+      const unspentBoxesList = (
+        await dataProvider['getUnspentBoxes'](
+          Array.from(boxLookup.getRequests().values()),
+        )
+      ).unspentBoxes;
 
       // Assert
       expect((unspentBoxesList as ErgoTransactionOutput[]).length).toEqual(1);
@@ -233,13 +243,15 @@ describe('DataProvider', () => {
 
       // Mock
       (dataProvider as any)['getArrangedNodeBoxes'] = async () => {
-        return [[], []];
+        return { spentBoxes: [], unspentBoxes: [] };
       };
 
       // Act
-      const [unspentBoxesList] = await dataProvider['getUnspentBoxes'](
-        Array.from(boxLookup.getRequests().values()),
-      );
+      const unspentBoxesList = (
+        await dataProvider['getUnspentBoxes'](
+          Array.from(boxLookup.getRequests().values()),
+        )
+      ).unspentBoxes;
 
       // Assert
       expect(unspentBoxesList.values.length).toEqual(0);

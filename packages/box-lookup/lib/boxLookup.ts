@@ -11,7 +11,7 @@ export class BoxLookup {
 
   constructor(
     protected dataProvider: DataProvider,
-    protected networkType: Network,
+    protected networkType: Network = Network.Mainnet,
     protected logger: AbstractLogger = new DummyLogger(),
   ) {}
 
@@ -58,10 +58,11 @@ export class BoxLookup {
   public serveRequests = async () => {
     if (this.requests.size <= 0) return;
     this.logger.info('The BoxLookup serving requests started');
-    const [lastUnspentBoxes, lastStatusUpdate] =
-      await this.dataProvider.getUnspentBoxes(
-        Array.from(this.requests.values()),
-      );
+    const unspentBoxesData = await this.dataProvider.getUnspentBoxes(
+      Array.from(this.requests.values()),
+    );
+    const lastUnspentBoxes = unspentBoxesData.unspentBoxes;
+    const lastStatusUpdate = unspentBoxesData.lastStatusUpdate;
     let unspentBoxes = lastUnspentBoxes;
     const alreadySelectedUnspentBoxIds: Set<string> = new Set<string>();
     for (const request of this.requests.values()) {
@@ -134,8 +135,9 @@ export class BoxLookup {
             for (const box of selectedBoxes)
               alreadySelectedUnspentBoxIds.add(box.boxId!);
             await request.onSuffice(selectedBoxes, unspentBoxes);
-            const [, newUnspentBoxes] =
-              await this.dataProvider.getArrangedTxPotBoxes(lastStatusUpdate);
+            const newUnspentBoxes = (
+              await this.dataProvider.getArrangedTxPotBoxes(lastStatusUpdate)
+            ).unspentBoxes;
             const totalSpentBoxes = await this.dataProvider.getSpentBoxes();
             unspentBoxes = unspentBoxes
               .concat(newUnspentBoxes)
