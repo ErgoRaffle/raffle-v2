@@ -9,7 +9,7 @@ import JsonBigInt from '@rosen-bridge/json-bigint';
 
 import { Request } from './types';
 import { API_LIMIT } from './constants';
-import { Box, ErgoAddress, ErgoBox, Network } from '@fleet-sdk/core';
+import { ErgoAddress, ErgoBox, Network } from '@fleet-sdk/core';
 import { deserializeTransaction } from '@fleet-sdk/serializer';
 
 export class BoxLookup {
@@ -135,8 +135,17 @@ export class BoxLookup {
         ...deserializedTx.inputs.map((input: { boxId: string }) => input.boxId),
       );
       unspentBoxes = unspentBoxes.concat(
-        ...deserializedTx.outputs.map((outBox) => {
-          return new ErgoBox(outBox as Box);
+        ...deserializedTx.outputs.map((outBox, index) => {
+          return new ErgoBox({
+            boxId: outBox.boxId!,
+            transactionId: tx.txId,
+            index: index,
+            ergoTree: outBox.ergoTree,
+            creationHeight: outBox.creationHeight,
+            value: outBox.value,
+            assets: outBox.assets,
+            additionalRegisters: outBox.additionalRegisters,
+          });
         }),
       );
     }
