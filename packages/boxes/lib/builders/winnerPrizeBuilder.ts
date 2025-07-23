@@ -9,6 +9,8 @@ import {
 } from '@fleet-sdk/core';
 import { SConstant } from '@fleet-sdk/serializer';
 import { raffleInfo } from '@ergo-raffle/contracts';
+import { WinnerBuilder } from './winnerBuilder';
+import { SuccessRaffleBuilder } from './successRaffleBuilder';
 
 /**
  * Builder class for creating Winner Prize boxes in the ErgoRaffle protocol
@@ -36,6 +38,7 @@ export class WinnerPrizeBuilder {
   private giftTokenCount?: bigint;
   private collectingTokenId?: string;
   private collectingTokenAmount?: bigint;
+  private prizeAmount?: bigint;
 
   constructor() {}
 
@@ -160,17 +163,39 @@ export class WinnerPrizeBuilder {
   };
 
   /**
+   * Set the prize amount
+   * @param amount - Prize amount
+   * @returns this builder instance
+   */
+  setPrizeAmount = (amount: bigint): this => {
+    this.prizeAmount = amount;
+    return this;
+  };
+
+  /**
+   * Get the prize amount
+   * @returns Prize amount
+   */
+  getPrizeAmount = (): bigint => {
+    if (this.prizeAmount == undefined) {
+      throw new Error('Prize amount not set');
+    }
+    return this.prizeAmount;
+  };
+
+  /**
    * Validate that all required parameters are set
    * @throws Error if any required parameter is missing
    */
   private validate = (): void => {
     if (!this.value) throw new Error('Value not set');
     if (!this.creationHeight) throw new Error('Creation height not set');
-    if (!this.winnerTicketIndex) throw new Error('Winner ticket index not set');
-    if (!this.giftCount) throw new Error('Gift count not set');
+    if (this.winnerTicketIndex == undefined)
+      throw new Error('Winner ticket index not set');
+    if (this.giftCount == undefined) throw new Error('Gift count not set');
     if (!this.txFee) throw new Error('Transaction fee not set');
     if (!this.winnerIndex) throw new Error('Winner index not set');
-    if (!this.unwrappedGiftCount)
+    if (this.unwrappedGiftCount == undefined)
       throw new Error('Unwrapped gift count not set');
     if (!this.ticketTokenId) throw new Error('Ticket token ID not set');
     if (!this.giftTokenId) throw new Error('Gift token ID not set');
@@ -269,71 +294,63 @@ export class WinnerPrizeBuilder {
 
   /**
    * Create a WinnerPrizeBuilder instance from a winner box
-   * @param box - Winner box to read configuration from
+   * @param winnerBox - Winner box to read configuration from
    * @param successRaffleBox - Success raffle box to get total prize from
    * @returns New WinnerPrizeBuilder instance with configuration from winner box
    * @throws Error if box structure doesn't match winner box requirements
    */
-  static fromWinnerBox = (
-    box: Box<Amount>,
+  static fromWinnerAndSuccessRaffleBox = (
+    winnerBox: Box<Amount>,
     successRaffleBox: Box<Amount>,
   ): WinnerPrizeBuilder => {
-    if (box.assets.length < 2) {
-      throw new Error('Invalid winner box: missing required tokens');
-    }
+    // Use WinnerBuilder to parse the winner box
+    const winnerBuilder = WinnerBuilder.fromBox(winnerBox);
 
-    const registers = box.additionalRegisters;
-    if (!registers.R4 || !registers.R5 || !registers.R6) {
-      throw new Error('Invalid winner box: missing required registers');
-    }
-
-    const r4Data = SConstant.from(registers.R4).data as bigint[];
-    if (r4Data.length < 3) {
-      throw new Error('Invalid winner box: invalid R4 register format');
-    }
-
-    const rewardPercent = r4Data[0];
-    const txFee = r4Data[2];
-    const winnerIndex = SConstant.from(registers.R5).data as number;
-    const giftCount = SConstant.from(registers.R6).data as bigint;
-
-    // Get total prize from success raffle box
-    const successRaffleRegisters = successRaffleBox.additionalRegisters;
-    if (!successRaffleRegisters.R4) {
-      throw new Error('Invalid success raffle box: missing R4 register');
-    }
-    const successRaffleR4Data = SConstant.from(successRaffleRegisters.R4)
-      .data as bigint[];
-    if (successRaffleR4Data.length < 1) {
-      throw new Error('Invalid success raffle box: invalid R4 register format');
-    }
-    const totalPrize = successRaffleR4Data[0];
+    // Use SuccessRaffleBuilder to parse the success raffle box
+    const successRaffleBuilder = SuccessRaffleBuilder.fromBox(successRaffleBox);
 
     // Calculate prize amount
+    const rewardPercent = winnerBuilder.getRewardPercent();
+    const totalPrize = successRaffleBuilder.getTotalPrize();
     const prizeAmount = (totalPrize * rewardPercent) / 1000n;
 
     // Check if it's a token-goal raffle
-    const isTokenGoal = successRaffleBox.assets.length > 2;
 
     const builder = new WinnerPrizeBuilder()
-      .setGiftCount(giftCount)
-      .setTxFee(txFee)
-      .setWinnerIndex(winnerIndex)
+      .setGiftCount(winnerBuilder.getGiftCount())
+      .setTxFee(winnerBuilder.getTxFee())
+      .setWinnerIndex(winnerBuilder.getWinnerIndex())
       .setUnwrappedGiftCount(0n)
-      .setTicketTokenId(box.assets[0].tokenId)
-      .setGiftTokenId(box.assets[1].tokenId)
-      .setGiftTokenCount(BigInt(box.assets[1].amount));
+      .setTicketTokenId(winnerBuilder.getTicketTokenId())
+      .setGiftTokenId(winnerBuilder.getGiftTokenId()!)
+      .setGiftTokenCount(winnerBuilder.getGiftTokenAmount()!)
+      .setPrizeAmount(prizeAmount);
 
     // Set value and collecting token for token-goal raffles
-    if (isTokenGoal) {
+    if (successRaffleBuilder.isErgGoal()) {
+      builder.setValue(prizeAmount + 3n * winnerBuilder.getTxFee());
+    } else {
       builder
-        .setValue(3n * txFee) // Fixed value for token-goal raffles
+        .setValue(3n * winnerBuilder.getTxFee())
         .setCollectingTokenId(successRaffleBox.assets[2].tokenId)
         .setCollectingTokenAmount(prizeAmount);
-    } else {
-      builder.setValue(prizeAmount + 3n * txFee);
     }
 
     return builder;
+  };
+
+  /**
+   * Unwrap a gift
+   * @returns this builder instance
+   */
+  unwrapGift = (): this => {
+    if (this.unwrappedGiftCount == undefined)
+      throw new Error('Unwrapped gift count not set');
+    if (this.giftCount == undefined) throw new Error('Gift count not set');
+    if (!this.giftTokenCount) throw new Error('Gift token count not set');
+
+    this.unwrappedGiftCount = this.unwrappedGiftCount! + 1n;
+    this.giftTokenCount = this.giftTokenCount! + 1n;
+    return this;
   };
 }

@@ -143,21 +143,76 @@ export class WinnerBuilder {
   };
 
   /**
+   * Get the reward percentage (in thousandths)
+   * @returns Reward percentage (e.g., 100 = 10%)
+   */
+  getRewardPercent = (): bigint => {
+    return this.rewardPercent!;
+  };
+
+  /**
+   * Get the transaction fee
+   * @returns Transaction fee amount in nanoERG
+   */
+  getTxFee = (): bigint => {
+    return this.txFee!;
+  };
+
+  /**
+   * Get the winner index
+   * @returns Winner index
+   */
+  getWinnerIndex = (): number => {
+    return this.winnerIndex!;
+  };
+
+  /**
+   * Get the gift count
+   * @returns Gift count
+   */
+  getGiftCount = (): bigint => {
+    return this.giftCount!;
+  };
+
+  /**
+   * Get the ticket token ID
+   * @returns Ticket token ID
+   */
+  getTicketTokenId = (): string => {
+    return this.ticketTokenId!;
+  };
+
+  /**
+   * Get the gift token ID
+   * @returns Gift token ID or undefined if not set
+   */
+  getGiftTokenId = (): string | undefined => {
+    return this.giftTokenId;
+  };
+
+  /**
+   * Get the gift token amount
+   * @returns Gift token amount or undefined if not set
+   */
+  getGiftTokenAmount = (): bigint | undefined => {
+    return this.giftTokenAmount;
+  };
+
+  /**
    * Validate that all required parameters are set
    * @throws Error if any required parameter is missing
    */
   private validate = (): void => {
     if (!this.value) throw new Error('Value not set');
     if (!this.creationHeight) throw new Error('Creation height not set');
-    if (!this.rewardPercent) throw new Error('Reward percent not set');
+    if (this.rewardPercent == undefined)
+      throw new Error('Reward percent not set');
     if (!this.deadline) throw new Error('Deadline not set');
     if (!this.txFee) throw new Error('Transaction fee not set');
     if (!this.winnerIndex) throw new Error('Winner index not set');
-    if (!this.giftCount) throw new Error('Gift count not set');
+    if (this.giftCount == undefined) throw new Error('Gift count not set');
     if (!this.ticketTokenId) throw new Error('Ticket token not set');
     if (!this.ticketTokenAmount) throw new Error('Ticket token amount not set');
-    if (!this.giftTokenId) throw new Error('Gift token not set');
-    if (!this.giftTokenAmount) throw new Error('Gift token amount not set');
   };
 
   /**
@@ -208,13 +263,6 @@ export class WinnerBuilder {
    * @throws Error if required parameters are not set or invalid
    */
   receiveGiftTokens = (giftTokenId: string, giftTokenCount: bigint): this => {
-    if (!this.giftTokenId) {
-      throw new Error('Gift token ID not set');
-    }
-    if (!this.giftCount) {
-      throw new Error('Gift count not set');
-    }
-
     // Set the gift token with the received amount
     this.setGiftToken(giftTokenId, giftTokenCount);
     // Remove the gift token id from the R7 register
@@ -233,7 +281,7 @@ export class WinnerBuilder {
     if (!this.giftTokenId || !this.giftTokenAmount) {
       throw new Error('Gift token not set');
     }
-    if (!this.giftCount) {
+    if (this.giftCount == undefined) {
       throw new Error('Gift count not set');
     }
     if (this.giftTokenAmount < 1n) {
@@ -245,6 +293,28 @@ export class WinnerBuilder {
 
     // Increase gift count by 1
     this.setGiftCount(this.giftCount + 1n);
+
+    return this;
+  };
+
+  /**
+   * Send a gift to the winner or return it to the gift giver
+   * @returns this builder instance
+   * @throws Error if required parameters are not set or insufficient gift tokens
+   */
+  sendGift = (): this => {
+    if (!this.giftTokenId || !this.giftTokenAmount) {
+      throw new Error('Gift token not set');
+    }
+    if (this.giftCount == undefined) {
+      throw new Error('Gift count not set');
+    }
+
+    // Increase gift token amount by 1
+    this.setGiftToken(this.giftTokenId, this.giftTokenAmount + 1n);
+
+    // Decrease gift count by 1
+    this.setGiftCount(this.giftCount - 1n);
 
     return this;
   };

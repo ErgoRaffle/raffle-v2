@@ -77,19 +77,18 @@ export class BoxLookup {
         spentBoxes = spentBoxes.concat(
           ...tx.inputs.map((input: { boxId: string }) => input.boxId),
         );
-         unspentBoxes = unspentBoxes.concat(
-           ...tx.outputs.map(
-             (output) =>
-               new ErgoBox({
-                 ...output,
-                 assets: output.assets ?? [],
-                 boxId: output.boxId ?? '',
-                 index: output.index ?? 0,
-                 transactionId: output.transactionId ?? '',
+        unspentBoxes = unspentBoxes.concat(
+          ...tx.outputs.map(
+            (output) =>
+              new ErgoBox({
+                ...output,
+                assets: output.assets ?? [],
+                boxId: output.boxId ?? '',
+                index: output.index ?? 0,
+                transactionId: output.transactionId ?? '',
               }),
-           ),
+          ),
         );
-
       }
       offset += API_LIMIT;
     } while (results.length == API_LIMIT);

@@ -135,8 +135,8 @@ export class GiftTokenRepoBuilder {
    * @param id - Ticket ID as byte array
    * @returns this builder instance
    */
-  setTicketId = (id: Uint8Array): this => {
-    this.ticketId = id;
+  setTicketId = (id: string): this => {
+    this.ticketId = Buffer.from(id, 'hex');
     return this;
   };
 
@@ -151,6 +151,14 @@ export class GiftTokenRepoBuilder {
   };
 
   /**
+   * Get the number of winners
+   * @returns Number of winners
+   */
+  getWinnersCount = (): number => {
+    return this.winnersCount!;
+  };
+
+  /**
    * Set the current step
    * @param step - Current step number
    * @returns this builder instance
@@ -158,6 +166,14 @@ export class GiftTokenRepoBuilder {
   setStep = (step: number): this => {
     this.step = step;
     return this;
+  };
+
+  /**
+   * Get the current step
+   * @returns Current step
+   */
+  getStep = (): number => {
+    return this.step!;
   };
 
   /**
@@ -178,14 +194,6 @@ export class GiftTokenRepoBuilder {
     if (!this.ticketId) throw new Error('Ticket ID not set');
     if (!this.winnersCount) throw new Error('Winners count not set');
     if (!this.step) throw new Error('Step not set');
-
-    // Validate value constraint: value == (txFee * winnersCount) (as per contract)
-    const expectedValue = this.txFee! * BigInt(this.winnersCount!);
-    if (this.value !== expectedValue) {
-      throw new Error(
-        `Value must be exactly ${expectedValue} nanoERG (txFee * winnersCount)`,
-      );
-    }
   };
 
   /**
@@ -229,10 +237,8 @@ export class GiftTokenRepoBuilder {
     // Increment step
     this.step = this.step + 1;
 
-    // Reduce box value by txFee if not the last step
-    if (this.step < this.winnersCount) {
-      this.value = this.value - this.txFee;
-    }
+    // Reduce box value by txFee
+    this.value = this.value - this.txFee;
 
     return this;
   };
@@ -321,7 +327,11 @@ export class GiftTokenRepoBuilder {
       .setDecimals(SConstant.from(registers.R6).data as Uint8Array)
       .setGiftTokensPerWinner(r7Data[0])
       .setTxFee(r7Data[1])
-      .setTicketId(SConstant.from(registers.R8).data as Uint8Array)
+      .setTicketId(
+        Buffer.from(SConstant.from(registers.R8).data as Uint8Array).toString(
+          'hex',
+        ),
+      )
       .setWinnersCount(r9Data[0])
       .setStep(r9Data[1]);
 
