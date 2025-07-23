@@ -8,5 +8,9 @@
     "composite": true
   },
   "include": ["./src"],
-  "references": [{ "path": "../../packages/extractors/tsconfig.build.json" }]
+  "references": [
+    { "path": "../../packages/extractors/tsconfig.build.json" },
+    { "path": "../../packages/boxes/tsconfig.build.json" },
+    { "path": "../../packages/transactions/tsconfig.build.json" }
+  ]
 }
