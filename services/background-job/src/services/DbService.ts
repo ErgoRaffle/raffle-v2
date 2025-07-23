@@ -6,6 +6,7 @@ import {
 } from '@rosen-bridge/service-manager';
 import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { RaffleBoxEntity, InactiveRaffleEntity } from '@ergo-raffle/extractors';
+import { RaffleBoxType } from '@ergo-raffle/extractors/lib/entities/RaffleBoxEntity';
 
 export class DbService extends AbstractService {
   name = 'DbService';
@@ -90,17 +91,17 @@ export class DbService extends AbstractService {
   /**
    * Get the raffle boxes by raffle id (includes ticketRepo, activeRaffle, giftTokenRepo boxes)
    * @param raffleId - The raffle id
-   * @param ergoTree - The ergo tree of the box to filter by
+   * @param type - The type of the box to filter by
    * @returns The raffle boxes
    */
   getRaffleBoxes = (
     raffleId: string,
-    ergoTree?: string,
+    type?: RaffleBoxType,
   ): Promise<RaffleBoxEntity[]> => {
     return this.dataSource.getRepository(RaffleBoxEntity).find({
       where: {
         raffleId: raffleId,
-        ...(ergoTree ? { ergoTree: ergoTree } : {}),
+        ...(type ? { type: type } : {}),
       },
     });
   };

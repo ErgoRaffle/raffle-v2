@@ -1,4 +1,5 @@
 import { OutputBox } from '@rosen-bridge/scanner-interfaces';
+import { RaffleBoxType } from '../../../lib/entities/RaffleBoxEntity';
 
 export const sampleTicketRepo: OutputBox[] = [
   {
@@ -31,5 +32,5 @@ export const sampleTicketRepoExtractedData = {
   serialized:
     'wMOTBxkGAQEB0XMArtBiAdKd6qXYCV/jCTCEVBKwk9K6dbSOMcJd/58FpnOWdzD7gJTr3AMDDg9UaWNrZXRSZXBvVG9r' +
     'ZW4OAA4BMBBQc4LOwiPc2T0UwTAJ3cuzWF0Tmiasnrl6KwvkxjbSAQ==',
-  ergoTree: '1906010101d17300',
+  type: RaffleBoxType.TicketRepo,
 };

@@ -2,13 +2,13 @@ import { DataSource } from 'typeorm';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { AbstractInitializableErgoExtractorAction } from '@rosen-bridge/abstract-extractor';
 import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
-
-import { BoxInterface } from '../interfaces/types';
-import { RaffleBoxEntity } from '../entities';
 import { pick } from 'lodash-es';
 
+import { RaffleBoxInterface } from '../interfaces/types';
+import { RaffleBoxEntity } from '../entities';
+
 export class RaffleBoxAction extends AbstractInitializableErgoExtractorAction<
-  BoxInterface,
+  RaffleBoxInterface,
   RaffleBoxEntity
 > {
   constructor(dataSource: DataSource, logger?: AbstractLogger) {
@@ -22,7 +22,7 @@ export class RaffleBoxAction extends AbstractInitializableErgoExtractorAction<
    * @param extractor
    */
   createEntity = (
-    boxes: BoxInterface[],
+    boxes: RaffleBoxInterface[],
     block: BlockInfo,
     extractor: string,
   ): Omit<RaffleBoxEntity, 'id'>[] => {
@@ -35,7 +35,7 @@ export class RaffleBoxAction extends AbstractInitializableErgoExtractorAction<
         extractor: extractor,
         txId: box.txId,
         raffleId: box.raffleId,
-        ergoTree: box.ergoTree,
+        type: box.type,
       };
     });
   };
@@ -44,7 +44,7 @@ export class RaffleBoxAction extends AbstractInitializableErgoExtractorAction<
    * convert the database entity back to raw data
    * @param entities
    */
-  convertEntityToData = (entities: RaffleBoxEntity[]): BoxInterface[] => {
+  convertEntityToData = (entities: RaffleBoxEntity[]): RaffleBoxInterface[] => {
     return entities.map((data) =>
       pick(data, [
         'boxId',
@@ -52,7 +52,7 @@ export class RaffleBoxAction extends AbstractInitializableErgoExtractorAction<
         'raffleId',
         'extractor',
         'serialized',
-        'ergoTree',
+        'type',
       ]),
     );
   };

@@ -2,15 +2,16 @@ import { DataSource } from 'typeorm';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { AbstractInitializableErgoExtractor } from '@rosen-bridge/abstract-extractor';
 import { OutputBox, ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
-
-import { RaffleBoxAction } from '../actions/RaffleBoxAction';
-import { BoxInterface } from '../interfaces/types';
-import { RaffleBoxEntity } from '../entities';
 import { ErgoAddress, Box } from '@fleet-sdk/core';
 import { serializeBox } from '@fleet-sdk/serializer';
 
+import { RaffleBoxAction } from '../actions/RaffleBoxAction';
+import { RaffleBoxInterface } from '../interfaces/types';
+import { RaffleBoxEntity } from '../entities';
+import { RaffleBoxType } from '../entities/RaffleBoxEntity';
+
 export class ActiveRaffleExtractor extends AbstractInitializableErgoExtractor<
-  BoxInterface,
+  RaffleBoxInterface,
   RaffleBoxEntity
 > {
   readonly actions: RaffleBoxAction;
@@ -64,7 +65,7 @@ export class ActiveRaffleExtractor extends AbstractInitializableErgoExtractor<
    * @param box
    * @return extracted data in proper format
    */
-  extractBoxData = (box: OutputBox): BoxInterface | undefined => {
+  extractBoxData = (box: OutputBox): RaffleBoxInterface | undefined => {
     const data = {
       boxId: box.boxId.toString(),
       txId: box.transactionId,
@@ -72,7 +73,7 @@ export class ActiveRaffleExtractor extends AbstractInitializableErgoExtractor<
       serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(
         'base64',
       ),
-      ergoTree: box.ergoTree,
+      type: RaffleBoxType.ActiveRaffle,
     };
 
     return data;

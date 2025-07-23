@@ -1,7 +1,6 @@
 import { OnSufficeCallback } from '@ergo-raffle/box-lookup';
 import { InactiveRaffleBuilder } from '@ergo-raffle/boxes/lib/builders/inactiveRaffleBuilder';
-import { ErgoBox, ErgoAddress } from '@fleet-sdk/core';
-import { raffleInfo } from '@ergo-raffle/contracts';
+import { ErgoBox } from '@fleet-sdk/core';
 import { ActivationTxBuilder } from '@ergo-raffle/transactions';
 import { TxPot } from '@rosen-bridge/tx-pot';
 
@@ -10,6 +9,7 @@ import { covertDbBoxesToErgoBoxes, signAndAddTx } from './utils';
 import ErgoNodeNetwork from '../network/ErgoNodeNetwork';
 import { TxType } from '../txPot/types';
 import { DummyLogger, AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { RaffleBoxType } from '@ergo-raffle/extractors/lib/entities/RaffleBoxEntity';
 
 export class BoxLookupCallbacks {
   constructor(
@@ -44,7 +44,7 @@ export class BoxLookupCallbacks {
     // Find ticket repo box from the database
     const ticketRepoEntity = await DbService.getInstance().getRaffleBoxes(
       inactiveRaffle.getTicketId(),
-      ErgoAddress.fromBase58(raffleInfo.addresses.ticketRepo).ergoTree,
+      RaffleBoxType.TicketRepo,
     );
     if (ticketRepoEntity.length === 0) {
       this.logger.error(
