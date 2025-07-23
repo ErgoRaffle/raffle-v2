@@ -4,13 +4,13 @@ import {
   Dependency,
   ServiceStatus,
 } from '@rosen-bridge/service-manager';
-import { BoxLookup } from '@ergo-raffle/box-lookup';
+import { BoxLookup, Request } from '@ergo-raffle/box-lookup';
 import { Network } from '@fleet-sdk/core';
 import { raffleInfo } from '@ergo-raffle/contracts';
 
-import { DbService } from './DbService';
-import { TxPotService } from './TxPotService';
-import { BoxLookupCallbacks } from '../boxLookup/BoxLookupCallbacks';
+import { DbService } from './dbService';
+import { TxPotService } from './txPotService';
+import { BoxLookupCallbacks } from '../boxLookup/boxLookupCallbacks';
 import ErgoNodeNetwork from '../network/ErgoNodeNetwork';
 import { covertDbBoxesToErgoBoxes } from '../boxLookup/utils';
 
@@ -94,7 +94,7 @@ export class BoxLookupService extends AbstractService {
    */
   protected start = async (): Promise<boolean> => {
     try {
-      this.addRequests();
+      this.addBaseRequests();
       this.job();
       this.setStatus(ServiceStatus.running);
     } catch (e) {
@@ -140,7 +140,7 @@ export class BoxLookupService extends AbstractService {
    * Adds a request to the box lookup
    * @param request - The request to add
    */
-  addRequests = () => {
+  private addBaseRequests = () => {
     this.boxLookup.registerRequest({
       address: raffleInfo.addresses.inactiveRaffle,
       value: undefined,
@@ -157,5 +157,21 @@ export class BoxLookupService extends AbstractService {
         );
       },
     });
+  };
+
+  /**
+   * Adds a request to the box lookup
+   * @param request - The request to add
+   */
+  addRequest = (request: Request): number => {
+    return this.boxLookup.registerRequest(request);
+  };
+
+  /**
+   * Removes a request from the box lookup
+   * @param requestId - The id of the request to remove
+   */
+  removeRequest = (requestId: number) => {
+    this.boxLookup.unregisterRequest(requestId);
   };
 }

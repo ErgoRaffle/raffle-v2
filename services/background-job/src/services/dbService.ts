@@ -5,8 +5,15 @@ import {
   ServiceStatus,
 } from '@rosen-bridge/service-manager';
 import { DataSource } from '@rosen-bridge/extended-typeorm';
-import { RaffleBoxEntity, InactiveRaffleEntity } from '@ergo-raffle/extractors';
+import {
+  RaffleBoxEntity,
+  InactiveRaffleEntity,
+  RaffleServiceEntity,
+} from '@ergo-raffle/extractors';
 import { RaffleBoxType } from '@ergo-raffle/extractors/lib/entities/RaffleBoxEntity';
+import { IsNull } from 'typeorm';
+
+import { CreationRequestEntity } from '../database/entities';
 
 export class DbService extends AbstractService {
   name = 'DbService';
@@ -97,11 +104,13 @@ export class DbService extends AbstractService {
   getRaffleBoxes = (
     raffleId: string,
     type?: RaffleBoxType,
+    isUnspent = true,
   ): Promise<RaffleBoxEntity[]> => {
     return this.dataSource.getRepository(RaffleBoxEntity).find({
       where: {
         raffleId: raffleId,
         ...(type ? { type: type } : {}),
+        ...(isUnspent ? { spendBlock: IsNull() } : {}),
       },
     });
   };
@@ -111,6 +120,33 @@ export class DbService extends AbstractService {
    * @returns The inactive raffle boxes
    */
   getInactiveRaffleBoxes = (): Promise<InactiveRaffleEntity[]> => {
-    return this.dataSource.getRepository(InactiveRaffleEntity).find();
+    return this.dataSource
+      .getRepository(InactiveRaffleEntity)
+      .findBy({ spendBlock: IsNull() });
+  };
+
+  /**
+   * Insert a new creation request
+   * @param request - The creation request to insert
+   * @returns The creation request
+   */
+  insertCreateRaffleRequest = (
+    request: Omit<CreationRequestEntity, 'id' | 'timestamp'>,
+  ) => {
+    return this.dataSource
+      .getRepository(CreationRequestEntity)
+      .insert({ ...request, timestamp: Date.now() });
+  };
+
+  /**
+   * Get the unspent service box
+   * @returns The service box
+   */
+  getServiceBox = () => {
+    return this.dataSource.getRepository(RaffleServiceEntity).findOne({
+      where: {
+        spendBlock: IsNull(),
+      },
+    });
   };
 }

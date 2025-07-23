@@ -2,11 +2,11 @@ import { ServiceManager } from '@rosen-bridge/service-manager';
 import { getConfig } from './config/config';
 import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
 
-import { DbService } from './services/DbService';
+import { DbService } from './services/dbService';
 import './bootstrap';
 import dataSource from './dataSource';
-import { ScannerService } from './services/ScannerService';
-import { TxPotService } from './services/TxPotService';
+import { ScannerService } from './services/scannerService';
+import { TxPotService } from './services/txPotService';
 
 const logger = CallbackLoggerFactory.getInstance().getLogger(import.meta.url);
 

@@ -7,7 +7,7 @@ import {
 import { TxPot } from '@rosen-bridge/tx-pot';
 import { DataSource } from 'typeorm';
 import { ErgoNetworkInterface } from '../txPot/ergoNetworkInterface';
-import { DbService } from './DbService';
+import { DbService } from './dbService';
 import * as constants from '../constants';
 
 export class TxPotService extends AbstractService {
