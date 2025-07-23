@@ -45,46 +45,6 @@ export class DataProvider {
   };
 
   /**
-   * Fetch TxPot spent boxes by txId
-   *
-   * @return { string[] }
-   */
-  protected fetchTxPotInputBoxIds = async (tx: TransactionEntity) => {
-    try {
-      return deserializeTransaction(
-        Buffer.from(tx.serializedTx, 'base64'),
-      ).inputs.map((input: { boxId: string }) => input.boxId);
-    } catch (err) {
-      this.logger.error(
-        `Invalid ${tx.txId} tx serialized value: ${tx.serializedTx}`,
-      );
-      throw err;
-    }
-  };
-
-  /**
-   * Fetch TxPot unspent boxes of a transaction
-   *
-   * @return { ErgoBox[] }
-   */
-  protected fetchTxPotOutputBoxes = async (
-    tx: TransactionEntity,
-  ): Promise<ErgoBox[]> => {
-    try {
-      return deserializeTransaction(
-        Buffer.from(tx.serializedTx, 'base64'),
-      ).outputs.map((outBox) => {
-        return new ErgoBox(outBox as Box);
-      });
-    } catch (err) {
-      this.logger.error(
-        `Invalid ${tx.txId} tx serialized value: ${tx.serializedTx}`,
-      );
-    }
-    return [];
-  };
-
-  /**
    * This method get all spent & unspent boxes that currently managed by TxPot instance
    *
    * @return { {spentBoxes: string[], unspentBoxes: ErgoBox[], lastStatusUpdate: number} }, spent-box-ids, unspent-boxes, lastStatusUpdate
@@ -98,24 +58,16 @@ export class DataProvider {
   }> => {
     let spentBoxes: string[] = [];
     let unspentBoxes: ErgoBox[] = [];
-    let activeQuery = await this.txPotRepository
-      .createQueryBuilder('transaction_entity')
-      .andWhere('status IN (:...statuses)', {
-        statuses: [
-          TransactionStatus.SIGNED,
-          TransactionStatus.SENT,
-          TransactionStatus.COMPLETED,
-        ],
-      });
-    if (fromTime != undefined)
-      activeQuery = await activeQuery.andWhere(
-        'CAST(transaction_entity.lastStatusUpdate AS INTEGER) > :fromTime',
-        { fromTime: fromTime },
-      );
+    const activeTxs = [
+      ...(await this.txPot.getTxsByStatus(TransactionStatus.SIGNED, false)),
+      ...(await this.txPot.getTxsByStatus(TransactionStatus.SENT, false)),
+      ...(await this.txPot.getTxsByStatus(TransactionStatus.COMPLETED, false)),
+    ];
 
-    const activeTxs = await activeQuery.getMany();
     let lastStatusUpdate = 0;
     for (const tx of activeTxs) {
+      if (fromTime != undefined && Number(tx.lastStatusUpdate) < fromTime)
+        continue;
       lastStatusUpdate = Math.max(
         lastStatusUpdate,
         Number(tx.lastStatusUpdate),
@@ -204,14 +156,9 @@ export class DataProvider {
     const txPotOutputBoxes = txPotBoxesData.unspentBoxes;
     const lastStatusUpdate = txPotBoxesData.lastStatusUpdate;
     const spentBoxes = await this.getSpentBoxes();
-    const requestsUnspentBoxesArrays = await Promise.all(
-      requests.map((req) => req.getMinedUnspentBoxes(this)),
-    );
-    const requestsUnspentBoxes = requestsUnspentBoxesArrays.flat();
     const unspentBoxes: ErgoBox[] = [
       ...nodeOutputBoxes,
       ...txPotOutputBoxes,
-      ...requestsUnspentBoxes,
     ].filter((val) => val.boxId && !spentBoxes.has(val.boxId));
 
     return { unspentBoxes, lastStatusUpdate };

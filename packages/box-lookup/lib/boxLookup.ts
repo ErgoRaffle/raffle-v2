@@ -63,100 +63,110 @@ export class BoxLookup {
     );
     const lastUnspentBoxes = unspentBoxesData.unspentBoxes;
     const lastStatusUpdate = unspentBoxesData.lastStatusUpdate;
-    let unspentBoxes = lastUnspentBoxes;
+    let newUnspentBoxes = lastUnspentBoxes;
     const alreadySelectedUnspentBoxIds: Set<string> = new Set<string>();
-    for (const request of this.requests.values()) {
-      let selectedBoxes: ErgoBox[] = [];
-      let totalTokenAmounts: Map<string, number> = new Map<string, number>();
-      let totalErgValue = 0n;
+    while (newUnspentBoxes.length > 0) {
+      let unspentBoxes = newUnspentBoxes;
+      newUnspentBoxes = [];
+      for (const request of this.requests.values()) {
+        let selectedBoxes: ErgoBox[] = [];
+        let totalTokenAmounts: Map<string, number> = new Map<string, number>();
+        let totalErgValue = 0n;
+        for (const box of unspentBoxes) {
+          // check if current request unregistered then breaking the loop
+          if (Array.from(this.requests.values()).indexOf(request) < 0) break;
 
-      let boxIndex = 0;
-      while (boxIndex < unspentBoxes.length) {
-        const box = unspentBoxes[boxIndex];
-        // check if current request unregistered then breaking the loop
-        if (Array.from(this.requests.values()).indexOf(request) < 0) break;
+          const isFromCorrectAddress =
+            ErgoAddress.fromErgoTree(
+              box.ergoTree,
+              this.networkType,
+            ).toString() === request.address;
+          const isNewBox =
+            box.boxId && !alreadySelectedUnspentBoxIds.has(box.boxId);
 
-        const isFromCorrectAddress =
-          ErgoAddress.fromErgoTree(
-            box.ergoTree,
-            this.networkType,
-          ).toString() === request.address;
-        const isNewBox =
-          box.boxId && !alreadySelectedUnspentBoxIds.has(box.boxId);
-
-        const hasRequiredTokens = request.tokens.some((token) =>
-          (box.assets ?? []).some((asset) => asset.tokenId === token.tokenId),
-        );
-
-        const requiredErgs = request.value && request.value > 0;
-        const hasRequiredErgs = requiredErgs && request.value;
-
-        if (
-          isFromCorrectAddress &&
-          isNewBox &&
-          (hasRequiredTokens || hasRequiredErgs)
-        ) {
-          totalErgValue += BigInt(box.value);
-          this.logger.debug(
-            `Current collected erg values for request by ${request.address} address is ${totalErgValue}`,
+          const hasRequiredTokens = request.tokens.some((token) =>
+            (box.assets ?? []).some((asset) => asset.tokenId === token.tokenId),
           );
-          selectedBoxes.push(box);
-          for (const token of request.tokens) {
-            const asset = (box.assets ?? []).find(
-              (a) => a.tokenId === token.tokenId,
+
+          const requiredErgs = request.value && request.value > 0;
+          const hasRequiredErgs = requiredErgs && request.value;
+
+          if (
+            isFromCorrectAddress &&
+            isNewBox &&
+            (hasRequiredTokens || hasRequiredErgs)
+          ) {
+            totalErgValue += BigInt(box.value);
+            this.logger.debug(
+              `Current collected erg values for request by ${request.address} address is ${totalErgValue}`,
             );
-            if (asset) {
-              totalTokenAmounts.set(
-                token.tokenId,
-                (totalTokenAmounts.get(token.tokenId) || 0) +
-                  Number(asset.amount),
+            selectedBoxes.push(box);
+            for (const token of request.tokens) {
+              const asset = (box.assets ?? []).find(
+                (a) => a.tokenId === token.tokenId,
+              );
+              if (asset) {
+                totalTokenAmounts.set(
+                  token.tokenId,
+                  (totalTokenAmounts.get(token.tokenId) || 0) +
+                    Number(asset.amount),
+                );
+                this.logger.debug(
+                  `Current collected tokens for request by ${request.address} address are ${JsonBigInt.stringify(Array.from(totalTokenAmounts))}`,
+                );
+              }
+            }
+
+            const isSufficient =
+              request.tokens.every(
+                // Considering tokens
+                (token) =>
+                  (totalTokenAmounts.get(token.tokenId) || -1) >=
+                  Number(token.amount),
+              ) &&
+              // Considering Ergs
+              (!request.value || totalErgValue >= request.value);
+
+            this.logger.debug(
+              `Current collected boxes for request by ${request.address} address are ${JsonBigInt.stringify(selectedBoxes)}, that is ${!isSufficient ? 'not ' : ''}suffice`,
+            );
+
+            if (isSufficient) {
+              for (const box of selectedBoxes)
+                alreadySelectedUnspentBoxIds.add(box.boxId!);
+              await request.onSuffice(selectedBoxes, unspentBoxes);
+              newUnspentBoxes = newUnspentBoxes.concat(
+                await request.getMinedUnspentBoxes(this.dataProvider),
+              );
+              unspentBoxes = unspentBoxes.concat(
+                (
+                  await this.dataProvider.getArrangedTxPotBoxes(
+                    lastStatusUpdate,
+                  )
+                ).unspentBoxes,
+              );
+              const totalSpentBoxes = await this.dataProvider.getSpentBoxes();
+              unspentBoxes = unspentBoxes.filter((val) => {
+                return val.boxId && !totalSpentBoxes.has(val.boxId);
+              });
+              newUnspentBoxes = newUnspentBoxes.filter((val) => {
+                return val.boxId && !totalSpentBoxes.has(val.boxId);
+              });
+              selectedBoxes = []; // reset for next round
+              totalTokenAmounts = new Map<string, number>();
+              totalErgValue = 0n;
+              this.logger.info(
+                `The BoxLookup triggered for ${request.address} request address`,
               );
               this.logger.debug(
-                `Current collected tokens for request by ${request.address} address are ${JsonBigInt.stringify(Array.from(totalTokenAmounts))}`,
+                `The ${request.address} request address sufficed by ${JsonBigInt.stringify(selectedBoxes)} boxes`,
               );
             }
           }
-
-          const isSufficient =
-            request.tokens.every(
-              // Considering tokens
-              (token) =>
-                (totalTokenAmounts.get(token.tokenId) || -1) >=
-                Number(token.amount),
-            ) &&
-            // Considering Ergs
-            (!request.value || totalErgValue >= request.value);
-
-          this.logger.debug(
-            `Current collected boxes for request by ${request.address} address are ${JsonBigInt.stringify(selectedBoxes)}, that is ${!isSufficient ? 'not ' : ''}suffice`,
-          );
-
-          if (isSufficient) {
-            for (const box of selectedBoxes)
-              alreadySelectedUnspentBoxIds.add(box.boxId!);
-            await request.onSuffice(selectedBoxes, unspentBoxes);
-            const newUnspentBoxes = (
-              await this.dataProvider.getArrangedTxPotBoxes(lastStatusUpdate)
-            ).unspentBoxes;
-            const totalSpentBoxes = await this.dataProvider.getSpentBoxes();
-            unspentBoxes = unspentBoxes
-              .concat(newUnspentBoxes)
-              .filter((val) => {
-                return val.boxId && !totalSpentBoxes.has(val.boxId);
-              });
-            selectedBoxes = []; // reset for next round
-            totalTokenAmounts = new Map<string, number>();
-            totalErgValue = 0n;
-            this.logger.info(
-              `The BoxLookup triggered for ${request.address} request address`,
-            );
-            this.logger.debug(
-              `The ${request.address} request address sufficed by ${JsonBigInt.stringify(selectedBoxes)} boxes`,
-            );
-          }
         }
-        boxIndex += 1;
       }
+      if (newUnspentBoxes.length > 0)
+        newUnspentBoxes = newUnspentBoxes.concat(unspentBoxes);
     }
     this.logger.info('The BoxLookup serving requests done');
   };
