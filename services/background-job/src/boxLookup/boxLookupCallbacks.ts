@@ -6,13 +6,13 @@ import {
   CreationTxBuilder,
 } from '@ergo-raffle/transactions';
 import { TxPot } from '@rosen-bridge/tx-pot';
-import { RaffleBoxType } from '@ergo-raffle/extractors/lib/entities/RaffleBoxEntity';
+import { RaffleBoxType } from '@ergo-raffle/extractors/lib/entities/raffleBoxEntity';
 import { DummyLogger, AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { raffleInfo } from '@ergo-raffle/contracts';
 
 import { DbService } from '../services/dbService';
 import { covertDbBoxesToErgoBoxes, signAndAddTx } from './utils';
-import ErgoNodeNetwork from '../network/ErgoNodeNetwork';
+import ErgoNodeNetwork from '../network/ergoNodeNetwork';
 import { TxType } from '../txPot/types';
 import { BoxLookupService } from '../services/boxLoookupService';
 import { CreationRequestEntity } from '../database/entities';

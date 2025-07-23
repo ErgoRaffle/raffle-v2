@@ -1,5 +1,5 @@
 import { OutputBox } from '@rosen-bridge/scanner-interfaces';
-import { RaffleBoxType } from '../../../lib/entities/RaffleBoxEntity';
+import { RaffleBoxType } from '../../../lib/entities/raffleBoxEntity';
 
 export const sampleTicketRepo: OutputBox[] = [
   {

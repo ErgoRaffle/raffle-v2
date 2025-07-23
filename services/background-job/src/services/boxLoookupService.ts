@@ -11,7 +11,7 @@ import { raffleInfo } from '@ergo-raffle/contracts';
 import { DbService } from './dbService';
 import { TxPotService } from './txPotService';
 import { BoxLookupCallbacks } from '../boxLookup/boxLookupCallbacks';
-import ErgoNodeNetwork from '../network/ErgoNodeNetwork';
+import ErgoNodeNetwork from '../network/ergoNodeNetwork';
 import { covertDbBoxesToErgoBoxes } from '../boxLookup/utils';
 
 export class BoxLookupService extends AbstractService {

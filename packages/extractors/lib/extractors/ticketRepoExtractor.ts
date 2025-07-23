@@ -3,14 +3,14 @@ import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { AbstractInitializableErgoExtractor } from '@rosen-bridge/abstract-extractor';
 import { OutputBox, ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 import { ErgoAddress, Box } from '@fleet-sdk/core';
-import { SConstant, serializeBox } from '@fleet-sdk/serializer';
+import { serializeBox } from '@fleet-sdk/serializer';
 
-import { RaffleBoxAction } from '../actions/RaffleBoxAction';
+import { RaffleBoxAction } from '../actions/raffleBoxAction';
 import { RaffleBoxInterface } from '../interfaces/types';
 import { RaffleBoxEntity } from '../entities';
-import { RaffleBoxType } from '../entities/RaffleBoxEntity';
+import { RaffleBoxType } from '../entities/raffleBoxEntity';
 
-export class GiftTokenRepoExtractor extends AbstractInitializableErgoExtractor<
+export class TicketRepoExtractor extends AbstractInitializableErgoExtractor<
   RaffleBoxInterface,
   RaffleBoxEntity
 > {
@@ -44,17 +44,7 @@ export class GiftTokenRepoExtractor extends AbstractInitializableErgoExtractor<
    * @return true if the box has the required data and false otherwise
    */
   hasData = (box: OutputBox): boolean => {
-    try {
-      return (
-        box.ergoTree == this.ergoTree &&
-        Buffer.from(
-          SConstant.from(box.additionalRegisters!.R8!).data as Uint8Array,
-        ).toString('hex').length == 64
-      );
-    } catch (err) {
-      this.logger.error(`GiftTokenRepoExtractor Error: ${err}`);
-      return false;
-    }
+    return box.ergoTree == this.ergoTree && box.assets?.length == 1;
   };
 
   /**
@@ -63,16 +53,15 @@ export class GiftTokenRepoExtractor extends AbstractInitializableErgoExtractor<
    * @return extracted data in proper format
    */
   extractBoxData = (box: OutputBox): RaffleBoxInterface | undefined => {
-    const raffleId = SConstant.from(box.additionalRegisters!.R8!)
-      .data as Uint8Array;
+    const raffleId = box.assets![0].tokenId;
     const data = {
       boxId: box.boxId.toString(),
       txId: box.transactionId,
-      raffleId: Buffer.from(raffleId).toString('hex'),
+      raffleId: raffleId,
       serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(
         'base64',
       ),
-      type: RaffleBoxType.GiftTokenRepo,
+      type: RaffleBoxType.TicketRepo,
     };
 
     return data;

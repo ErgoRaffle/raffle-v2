@@ -10,7 +10,7 @@ import {
   InactiveRaffleEntity,
   RaffleServiceEntity,
 } from '@ergo-raffle/extractors';
-import { RaffleBoxType } from '@ergo-raffle/extractors/lib/entities/RaffleBoxEntity';
+import { RaffleBoxType } from '@ergo-raffle/extractors/lib/entities/raffleBoxEntity';
 import { IsNull } from 'typeorm';
 
 import { CreationRequestEntity } from '../database/entities';

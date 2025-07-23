@@ -3,7 +3,7 @@ import { Network } from '@fleet-sdk/core';
 import { compile } from '@fleet-sdk/compiler';
 import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 
-import { TicketRepoExtractor } from '../../lib/extractors/TicketRepoExtractor';
+import { TicketRepoExtractor } from '../../lib/extractors/ticketRepoExtractor';
 import { createDatabase } from '../utils.mock';
 import {
   sampleTicketRepo,

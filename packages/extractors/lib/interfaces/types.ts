@@ -1,4 +1,4 @@
-import { RaffleBoxType } from '../entities/RaffleBoxEntity';
+import { RaffleBoxType } from '../entities/raffleBoxEntity';
 
 export { SpendInfo } from '@rosen-bridge/abstract-extractor';
 

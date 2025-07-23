@@ -5,18 +5,19 @@ import { OutputBox, ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 import { ErgoAddress, Box } from '@fleet-sdk/core';
 import { serializeBox } from '@fleet-sdk/serializer';
 
-import { RaffleBoxAction } from '../actions/RaffleBoxAction';
+import { RaffleBoxAction } from '../actions/raffleBoxAction';
 import { RaffleBoxInterface } from '../interfaces/types';
 import { RaffleBoxEntity } from '../entities';
-import { RaffleBoxType } from '../entities/RaffleBoxEntity';
+import { RaffleBoxType } from '../entities/raffleBoxEntity';
 
-export class TicketRepoExtractor extends AbstractInitializableErgoExtractor<
+export class ActiveRaffleExtractor extends AbstractInitializableErgoExtractor<
   RaffleBoxInterface,
   RaffleBoxEntity
 > {
   readonly actions: RaffleBoxAction;
   private readonly id: string;
   private readonly ergoTree: string;
+  private readonly raffleLicense: string;
 
   constructor(
     dataSource: DataSource,
@@ -24,6 +25,7 @@ export class TicketRepoExtractor extends AbstractInitializableErgoExtractor<
     url: string,
     type: ErgoNetworkType,
     address: string,
+    raffleLicense: string,
     logger?: AbstractLogger,
     initialize = true,
   ) {
@@ -31,6 +33,7 @@ export class TicketRepoExtractor extends AbstractInitializableErgoExtractor<
     this.id = id;
     this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
     this.actions = new RaffleBoxAction(dataSource, this.logger);
+    this.raffleLicense = raffleLicense;
   }
 
   /**
@@ -44,7 +47,17 @@ export class TicketRepoExtractor extends AbstractInitializableErgoExtractor<
    * @return true if the box has the required data and false otherwise
    */
   hasData = (box: OutputBox): boolean => {
-    return box.ergoTree == this.ergoTree && box.assets?.length == 1;
+    try {
+      return (
+        box.ergoTree == this.ergoTree &&
+        box.assets!.length >= 2 &&
+        box.assets!.length <= 3 &&
+        box.assets![0].tokenId == this.raffleLicense
+      );
+    } catch (err) {
+      this.logger.error(`ActiveRaffleExtractor Error: ${err}`);
+      return false;
+    }
   };
 
   /**
@@ -53,15 +66,14 @@ export class TicketRepoExtractor extends AbstractInitializableErgoExtractor<
    * @return extracted data in proper format
    */
   extractBoxData = (box: OutputBox): RaffleBoxInterface | undefined => {
-    const raffleId = box.assets![0].tokenId;
     const data = {
       boxId: box.boxId.toString(),
       txId: box.transactionId,
-      raffleId: raffleId,
+      raffleId: box.assets![1].tokenId,
       serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(
         'base64',
       ),
-      type: RaffleBoxType.TicketRepo,
+      type: RaffleBoxType.ActiveRaffle,
     };
 
     return data;

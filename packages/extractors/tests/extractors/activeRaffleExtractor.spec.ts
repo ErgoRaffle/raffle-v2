@@ -3,7 +3,7 @@ import { Network } from '@fleet-sdk/core';
 import { compile } from '@fleet-sdk/compiler';
 import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 
-import { ActiveRaffleExtractor } from '../../lib/extractors/ActiveRaffleExtractor';
+import { ActiveRaffleExtractor } from '../../lib/extractors/activeRaffleExtractor';
 import { createDatabase } from '../utils.mock';
 import {
   sampleActiveRaffleBoxes,

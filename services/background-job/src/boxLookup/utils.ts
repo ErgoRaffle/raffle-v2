@@ -7,7 +7,7 @@ import { TransactionStatus, TxPot } from '@rosen-bridge/tx-pot';
 import { deserializeBox, serializeTransaction } from '@fleet-sdk/serializer';
 import { AbstractErgoExtractorEntity } from '@rosen-bridge/abstract-extractor';
 
-import ErgoNodeNetwork from '../network/ErgoNodeNetwork';
+import ErgoNodeNetwork from '../network/ergoNodeNetwork';
 import { TxType } from '../txPot/types';
 import { ERGO_CHAIN_NAME } from '../constants';
 import { getConfig } from '../config/config';
