@@ -7,6 +7,7 @@ interface ConfigType {
   logger: LoggerConfig;
   database: DBConfig;
   scanner: ScannerConfig;
+  txpot: TxPotConfig;
 }
 
 const getOptionalString = (path: string, defaultValue = '') => {
@@ -136,6 +137,18 @@ class ScannerConfig implements ScannerBaseOption {
   }
 }
 
+class TxPotConfig {
+  updateInterval: number;
+  txRequiredConfirmations: number;
+
+  constructor() {
+    const txpot = config.get<TxPotConfig>('txpot');
+    const clonedTxpot = cloneDeep(txpot);
+    this.updateInterval = clonedTxpot.updateInterval;
+    this.txRequiredConfirmations = clonedTxpot.txRequiredConfirmations;
+  }
+}
+
 let internalConfig: ConfigType | undefined;
 
 const getConfig = (): ConfigType => {
@@ -143,11 +156,13 @@ const getConfig = (): ConfigType => {
     const loggerConfig = new LoggerConfig();
     const dbConfig = new DBConfig();
     const scannerConfig = new ScannerConfig();
+    const txpotConfig = new TxPotConfig();
 
     internalConfig = {
       logger: loggerConfig,
       database: dbConfig,
       scanner: scannerConfig,
+      txpot: txpotConfig,
     };
   }
   return internalConfig;
