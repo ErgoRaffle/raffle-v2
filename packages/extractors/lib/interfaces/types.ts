@@ -29,6 +29,7 @@ export interface InactiveRaffleBoxInterface extends ExtractedBox {
 
 export interface BoxInterface extends ExtractedBox {
   raffleId: string;
+  ergoTree: string;
 }
 
 export interface DynamicBoxInterface extends ExtractedBox {

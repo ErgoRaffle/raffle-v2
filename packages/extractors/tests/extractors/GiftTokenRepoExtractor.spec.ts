@@ -3,7 +3,7 @@ import { Network, SByte, SColl } from '@fleet-sdk/core';
 import { compile } from '@fleet-sdk/compiler';
 import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 
-import { GiftTokenRepoExtractor } from '../../lib/extractors/giftTokenRepo';
+import { GiftTokenRepoExtractor } from '../../lib';
 import { createDatabase } from '../utils.mock';
 import {
   sampleGiftTokenRepo,

@@ -5,7 +5,7 @@ export class Postgres1740497015349 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-            CREATE TABLE "box" (
+            CREATE TABLE "raffle_box" (
                 "id" SERIAL NOT NULL,
                 "boxId" character varying NOT NULL,
                 "block" character varying NOT NULL,
@@ -16,6 +16,7 @@ export class Postgres1740497015349 implements MigrationInterface {
                 "serialized" character varying NOT NULL,
                 "txId" character varying NOT NULL,
                 "raffleId" character varying NOT NULL,
+                "ergoTree" character varying NOT NULL,
                 CONSTRAINT "UQ_a5f1a28c854be139a2d7f275e70" UNIQUE ("boxId", "extractor"),
                 CONSTRAINT "PK_a0f519a2b816d1c5d848ac0d528" PRIMARY KEY ("id")
             )
@@ -24,7 +25,7 @@ export class Postgres1740497015349 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-            DROP TABLE "box"
+            DROP TABLE "raffle_box"
         `);
   }
 }

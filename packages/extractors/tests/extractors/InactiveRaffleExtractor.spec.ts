@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { Network, SByte, SColl, SLong } from '@fleet-sdk/core';
 import { compile } from '@fleet-sdk/compiler';
 
-import { InactiveRaffleExtractor } from '../../lib/extractors/inactiveRaffle';
+import { InactiveRaffleExtractor } from '../../lib/extractors/InactiveRaffleExtractor';
 import { createDatabase } from '../utils.mock';
 import { serviceWallet } from '../utils.mock';
 import {

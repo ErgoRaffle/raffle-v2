@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 export { RaffleServiceEntity } from './raffleService';
-export { RaffleEntity } from './inactiveRaffle';
-export { BoxEntity } from './box';
+export { InactiveRaffleEntity } from './InactiveRaffleEntity';
+export { RaffleBoxEntity } from './RaffleBoxEntity';
 export { WinnerEntity } from './winner';
 export { RaffleDetailsEntity } from './raffleDetails';
 export { PictureEntity } from './picture';
