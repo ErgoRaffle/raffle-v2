@@ -4,7 +4,7 @@ import {
   Dependency,
   ServiceStatus,
 } from '@rosen-bridge/service-manager';
-import { BoxLookup, Request } from '@ergo-raffle/box-lookup';
+import { BoxLookup } from '@ergo-raffle/box-lookup';
 import { Network } from '@fleet-sdk/core';
 import { raffleInfo } from '@ergo-raffle/contracts';
 
@@ -12,13 +12,21 @@ import { DbService } from './dbService';
 import { TxPotService } from './txPotService';
 import { BoxLookupCallbacks } from '../boxLookup/boxLookupCallbacks';
 import ErgoNodeNetwork from '../network/ergoNodeNetwork';
-import { covertDbBoxesToErgoBoxes } from '../boxLookup/utils';
+import { covertDbBoxesToErgoBoxes as convertDbBoxesToErgoBoxes } from '../boxLookup/utils';
+import { CreationRequestEntity } from '../database/entities';
+import { ScannerService } from './scannerService';
+import { TxType } from '../txPot/types';
+import { txpotCallBackGenerator } from '../txPot/callbackGenerator';
 
 export class BoxLookupService extends AbstractService {
   name = 'BoxLookupService';
   protected dependencies: Dependency[] = [
     {
       serviceName: DbService.name,
+      allowedStatuses: [ServiceStatus.running],
+    },
+    {
+      serviceName: ScannerService.name,
       allowedStatuses: [ServiceStatus.running],
     },
     {
@@ -37,6 +45,7 @@ export class BoxLookupService extends AbstractService {
   private updateInterval: number;
   private boxLookupCallbacks: BoxLookupCallbacks;
   private network: ErgoNodeNetwork;
+  private activeTxpotCallbackIds: [TxType, string][] = [];
 
   private constructor(
     updateInterval: number,
@@ -53,10 +62,7 @@ export class BoxLookupService extends AbstractService {
     );
     this.updateInterval = updateInterval;
     this.network = new ErgoNodeNetwork(nodeUrl);
-    this.boxLookupCallbacks = new BoxLookupCallbacks(
-      this.network,
-      TxPotService.getInstance().getTxPot(),
-    );
+    this.boxLookupCallbacks = new BoxLookupCallbacks(this.network);
   }
 
   /**
@@ -116,6 +122,10 @@ export class BoxLookupService extends AbstractService {
         this.shouldStopJob = true;
       });
     }
+    this.activeTxpotCallbackIds.forEach(([type, callbackId]) => {
+      TxPotService.getInstance().unregisterCompletionCallback(type, callbackId);
+    });
+    this.activeTxpotCallbackIds = [];
     clearTimeout(this.scheduledJob);
     this.shouldStopJob = false;
     this.setStatus(ServiceStatus.dormant);
@@ -152,7 +162,7 @@ export class BoxLookupService extends AbstractService {
       ],
       onSuffice: this.boxLookupCallbacks.activationCallback,
       getMinBoxes: async () => {
-        return covertDbBoxesToErgoBoxes(
+        return convertDbBoxesToErgoBoxes(
           await DbService.getInstance().getInactiveRaffleBoxes(),
         );
       },
@@ -160,18 +170,62 @@ export class BoxLookupService extends AbstractService {
   };
 
   /**
-   * Adds a request to the box lookup
-   * @param request - The request to add
+   * Removes a request from the box lookup
+   * @param requestId - The id of the request to remove
+   * @param txPotCallbackId - The id of the txpot callback to remove
+   * @param proxyAddress - The proxy address of the request to remove
    */
-  addRequest = (request: Request): number => {
-    return this.boxLookup.registerRequest(request);
+  removeRequest = (
+    requestId: number,
+    txPotCallbackId: string,
+    proxyAddress: string,
+  ) => {
+    this.boxLookup.unregisterRequest(requestId);
+
+    // Unregister the callback
+    TxPotService.getInstance().unregisterCompletionCallback(
+      TxType.Creation,
+      txPotCallbackId,
+    );
+    this.activeTxpotCallbackIds = this.activeTxpotCallbackIds.filter(
+      ([type, callbackId]) => callbackId !== txPotCallbackId,
+    );
+
+    // Remove the proxy address from the scanner
+    ScannerService.getInstance().removeDynamicAddress(proxyAddress);
   };
 
   /**
-   * Removes a request from the box lookup
-   * @param requestId - The id of the request to remove
+   * Adds a creation request to the box lookup
+   * - Adds the proxy address to the scanner dynamic addresses
+   * - Adds the request to the box lookup
+   * - Adds the txpot callback
+   * @param request - The request to add
    */
-  removeRequest = (requestId: number) => {
-    this.boxLookup.unregisterRequest(requestId);
+  addCreationRequest = (request: CreationRequestEntity) => {
+    // Add the proxy address to the scanner
+    ScannerService.getInstance().addDynamicAddress(request.proxyAddress);
+
+    // Add the request to the box lookup
+    this.boxLookup.registerRequest({
+      address: request.proxyAddress,
+      value: 10000, // TODO
+      tokens: [], // TODO
+      onSuffice: this.boxLookupCallbacks.creationCallbackGenerator(request),
+      getMinBoxes: async () => {
+        return convertDbBoxesToErgoBoxes(
+          await DbService.getInstance().getDynamicBoxes(request.proxyAddress),
+        );
+      },
+    });
+
+    // Add the txpot callback
+    const callbackId = `${TxType.Creation}-${request.id}`;
+    this.activeTxpotCallbackIds.push([TxType.Creation, callbackId]);
+    TxPotService.getInstance().registerCompletionCallback(
+      TxType.Creation,
+      callbackId,
+      txpotCallBackGenerator(request.proxyAddress, callbackId, request.id),
+    );
   };
 }

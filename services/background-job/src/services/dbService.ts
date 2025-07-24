@@ -9,6 +9,7 @@ import {
   RaffleBoxEntity,
   InactiveRaffleEntity,
   RaffleServiceEntity,
+  DynamicBoxEntity,
 } from '@ergo-raffle/extractors';
 import { RaffleBoxType } from '@ergo-raffle/extractors/lib/entities/raffleBoxEntity';
 import { IsNull } from 'typeorm';
@@ -146,6 +147,19 @@ export class DbService extends AbstractService {
     return this.dataSource.getRepository(RaffleServiceEntity).findOne({
       where: {
         spendBlock: IsNull(),
+      },
+    });
+  };
+
+  /**
+   * Get the unspent service box
+   * @returns The service box
+   */
+  getDynamicBoxes = (address: string): Promise<DynamicBoxEntity[]> => {
+    return this.dataSource.getRepository(DynamicBoxEntity).find({
+      where: {
+        spendBlock: IsNull(),
+        address: address,
       },
     });
   };

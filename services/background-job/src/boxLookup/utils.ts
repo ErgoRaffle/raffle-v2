@@ -3,14 +3,13 @@ import { Box, ErgoBox, ErgoUnsignedTransaction } from '@fleet-sdk/core';
 import { bigintBE, hex } from '@fleet-sdk/crypto';
 import { ErgoHDKey } from '@fleet-sdk/wallet';
 import { ProverBuilder$ } from 'sigmastate-js/main';
-import { TransactionStatus, TxPot } from '@rosen-bridge/tx-pot';
-import { deserializeBox, serializeTransaction } from '@fleet-sdk/serializer';
+import { deserializeBox } from '@fleet-sdk/serializer';
 import { AbstractErgoExtractorEntity } from '@rosen-bridge/abstract-extractor';
 
 import ErgoNodeNetwork from '../network/ergoNodeNetwork';
 import { TxType } from '../txPot/types';
-import { ERGO_CHAIN_NAME } from '../constants';
 import { getConfig } from '../config/config';
+import { TxPotService } from '../services/txPotService';
 
 /**
  * Signs an unsigned Ergo transaction with the provided keys.
@@ -71,13 +70,11 @@ export const signTransaction = async (
 /**
  * Signs a transaction and adds it to the txpot
  * @param network - The network to use for the transaction.
- * @param txPot - The txpot to add the transaction to
- * @param tx - The transaction to add
+ * @param tx - The unsigned transaction to sign and add to the txpot
  * @param txType - The type of transaction
  */
 export const signAndAddTx = async (
   network: ErgoNodeNetwork,
-  txPot: TxPot,
   tx: ErgoUnsignedTransaction,
   txType: TxType,
 ) => {
@@ -87,14 +84,7 @@ export const signAndAddTx = async (
   } catch (e) {
     throw new Error(`Failed to sign transaction: ${e}`);
   }
-  txPot.addTx(
-    tx.id,
-    ERGO_CHAIN_NAME,
-    txType,
-    0, // no required sign
-    Buffer.from(serializeTransaction(signedTx).toBytes()).toString('hex'),
-    TransactionStatus.APPROVED,
-  );
+  TxPotService.getInstance().addTx(signedTx, txType);
 };
 
 /**

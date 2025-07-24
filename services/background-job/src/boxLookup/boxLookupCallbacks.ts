@@ -5,7 +5,6 @@ import {
   ActivationTxBuilder,
   CreationTxBuilder,
 } from '@ergo-raffle/transactions';
-import { TxPot } from '@rosen-bridge/tx-pot';
 import { RaffleBoxType } from '@ergo-raffle/extractors/lib/entities/raffleBoxEntity';
 import { DummyLogger, AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { raffleInfo } from '@ergo-raffle/contracts';
@@ -14,14 +13,12 @@ import { DbService } from '../services/dbService';
 import { covertDbBoxesToErgoBoxes, signAndAddTx } from './utils';
 import ErgoNodeNetwork from '../network/ergoNodeNetwork';
 import { TxType } from '../txPot/types';
-import { BoxLookupService } from '../services/boxLoookupService';
 import { CreationRequestEntity } from '../database/entities';
 import { getConfig } from '../config/config';
 
 export class BoxLookupCallbacks {
   constructor(
     private readonly network: ErgoNodeNetwork,
-    private readonly txPot: TxPot,
     private readonly logger: AbstractLogger = new DummyLogger(),
   ) {}
 
@@ -80,17 +77,10 @@ export class BoxLookupCallbacks {
         creationTxBuilder.setCollectingTokenId(request.collectingTokenId);
       const creationTx = creationTxBuilder.build();
 
-      await signAndAddTx(
-        this.network,
-        this.txPot,
-        creationTx,
-        TxType.Activation,
-      );
+      await signAndAddTx(this.network, creationTx, TxType.Activation);
       this.logger.info(
         `Creation transaction for request with id [${requestId}] has been added (txId: [${creationTx.id}])`,
       );
-      // Remove the request
-      BoxLookupService.getInstance().removeRequest(requestId);
     };
 
     return creationCallBack;
@@ -152,12 +142,7 @@ export class BoxLookupCallbacks {
       .setWinnersSharePercent(winnersSharePercent)
       .build();
 
-    await signAndAddTx(
-      this.network,
-      this.txPot,
-      activationTx,
-      TxType.Activation,
-    );
+    await signAndAddTx(this.network, activationTx, TxType.Activation);
     this.logger.info(
       `Activation transaction for raffle id [${inactiveRaffle.getTicketId()}] has been added (txId: [${activationTx.id}])`,
     );
