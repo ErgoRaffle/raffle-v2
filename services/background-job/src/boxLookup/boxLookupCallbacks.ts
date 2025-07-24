@@ -32,9 +32,11 @@ export class BoxLookupCallbacks {
   ): OnSufficeCallback => {
     /**
      * Callback for the creation of a raffle
-     * @param boxes
-     * @param unspentBoxes
-     * @param requestId
+     * - Finds the service box and build the creation transaction
+     * - Build the activation transaction and chain it to the creation transaction
+     * @param boxes - fee boxes
+     * @param unspentBoxes - includes the service box if its in the mempool
+     * @param requestId - The id of the request
      */
     const creationCallBack = async (
       boxes: ErgoBox[],
@@ -77,9 +79,35 @@ export class BoxLookupCallbacks {
         creationTxBuilder.setCollectingTokenId(request.collectingTokenId);
       const creationTx = creationTxBuilder.build();
 
-      await signAndAddTx(this.network, creationTx, TxType.Activation);
+      const signedCreationTx = await signAndAddTx(
+        this.network,
+        creationTx,
+        TxType.Activation,
+      );
       this.logger.info(
         `Creation transaction for request with id [${requestId}] has been added (txId: [${creationTx.id}])`,
+      );
+
+      // Build the activation transaction and chain it to the creation transaction
+      const raffleId = serviceBox.boxId;
+      const activationTx = new ActivationTxBuilder()
+        .setInactiveRaffle(signedCreationTx.outputs[1])
+        .setTicketRepo(signedCreationTx.outputs[0])
+        .setTxFee(getConfig().ergo.fee)
+        .setChainHeight(await this.network.getHeight())
+        .setGiftTokenName('ErgoRaffle-Gift-Token-' + raffleId.slice(0, 6))
+        .setGiftTokenDescription(
+          'ErgoRaffle Gift token identifier to identify the gift boxes of raffle with id ' +
+            raffleId,
+        )
+        .setWinnersSharePercent(
+          request.winnersPercentList.split(',').map(BigInt),
+        )
+        .build();
+
+      await signAndAddTx(this.network, activationTx, TxType.Activation);
+      this.logger.info(
+        `Activation transaction for request with id [${requestId}] has been added (txId: [${activationTx.id}])`,
       );
     };
 

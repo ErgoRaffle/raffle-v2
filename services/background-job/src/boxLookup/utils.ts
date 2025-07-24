@@ -85,6 +85,7 @@ export const signAndAddTx = async (
     throw new Error(`Failed to sign transaction: ${e}`);
   }
   TxPotService.getInstance().addTx(signedTx, txType);
+  return signedTx;
 };
 
 /**
