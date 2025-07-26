@@ -5,16 +5,16 @@ import { AbstractInitializableErgoExtractorAction } from '@rosen-bridge/abstract
 import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
 
 import { InactiveRaffleBoxInterface } from '../interfaces/types';
-import { RaffleEntity } from '../entities';
+import { InactiveRaffleEntity } from '../entities';
 
 export class InactiveRaffleAction extends AbstractInitializableErgoExtractorAction<
   InactiveRaffleBoxInterface,
-  RaffleEntity
+  InactiveRaffleEntity
 > {
   private readonly prefix = 'InactiveRaffle';
 
   constructor(dataSource: DataSource, logger?: AbstractLogger) {
-    super(dataSource, RaffleEntity, logger);
+    super(dataSource, InactiveRaffleEntity, logger);
   }
 
   /**
@@ -27,7 +27,7 @@ export class InactiveRaffleAction extends AbstractInitializableErgoExtractorActi
     boxes: InactiveRaffleBoxInterface[],
     block: BlockInfo,
     extractor: string,
-  ): Omit<RaffleEntity, 'id'>[] => {
+  ): Omit<InactiveRaffleEntity, 'id'>[] => {
     return boxes.map((box) => {
       return {
         boxId: box.boxId,
@@ -57,7 +57,7 @@ export class InactiveRaffleAction extends AbstractInitializableErgoExtractorActi
    * @param entities
    */
   convertEntityToData = (
-    entities: RaffleEntity[],
+    entities: InactiveRaffleEntity[],
   ): InactiveRaffleBoxInterface[] => {
     return entities.map((data) =>
       pick(data, [
