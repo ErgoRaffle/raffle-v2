@@ -198,12 +198,7 @@ describe('BoxLookup', () => {
 
       // mock getUnspentBoxes manually to insert desired boxes
       dataProvider['getUnspentBoxes'] = async () => {
-        return {
-          unspentBoxes: SampleTxs[0].outputs.map(
-            (outBox) => new ErgoBox(outBox),
-          ),
-          lastStatusUpdate: 1,
-        };
+        return SampleTxs[0].outputs.map((outBox) => new ErgoBox(outBox));
       };
 
       // register request
@@ -266,14 +261,11 @@ describe('BoxLookup', () => {
     }) => {
       // mock getUnspentBoxes manually to insert desired boxes
       dataProvider['getUnspentBoxes'] = async () => {
-        return {
-          unspentBoxes: [
-            ...(SampleTxs[0].outputs as ErgoBox[]),
-            ...(SampleTxs[1].outputs as ErgoBox[]),
-            ...(SampleTxs[2].outputs as ErgoBox[]),
-          ],
-          lastStatusUpdate: 1,
-        };
+        return [
+          ...(SampleTxs[0].outputs as ErgoBox[]),
+          ...(SampleTxs[1].outputs as ErgoBox[]),
+          ...(SampleTxs[2].outputs as ErgoBox[]),
+        ];
       };
 
       await boxLookup.serveRequests();

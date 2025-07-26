@@ -1,5 +1,4 @@
 import { TokenAmount, Amount, ErgoBox } from '@fleet-sdk/core';
-import { DataProvider } from '../dataProvider';
 
 export interface Request {
   address: string;
@@ -18,5 +17,5 @@ export interface Request {
    * This method return by BoxLookup
    * @param dataProvider
    */
-  getMinedUnspentBoxes: (dataProvider: DataProvider) => Promise<ErgoBox[]>;
+  getMinedUnspentBoxes: () => Promise<ErgoBox[]>;
 }

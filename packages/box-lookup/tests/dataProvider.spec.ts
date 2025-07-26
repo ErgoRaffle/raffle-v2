@@ -86,15 +86,10 @@ describe('DataProvider', () => {
      * - unspentBoxes size must be equal to 4
      */
     it<DataProviderTestContext>('should retrieve and combine unspent boxes from node and TxPot', async ({
-      boxLookup,
       dataProvider,
     }) => {
       // Act
-      const unspentBoxesList = (
-        await dataProvider['getUnspentBoxes'](
-          Array.from(boxLookup.getRequests().values()),
-        )
-      ).unspentBoxes;
+      const unspentBoxesList = await dataProvider['getUnspentBoxes']();
 
       // Assert
       expect((unspentBoxesList as ErgoTransactionOutput[]).length).toEqual(4);
@@ -119,15 +114,10 @@ describe('DataProvider', () => {
      * - unspentBoxes size must be equal to 3
      */
     it<DataProviderTestContext>('should filter unspent boxes from node and TxPot when a box exists as spent and meanwhile unspent transactions', async ({
-      boxLookup,
       dataProvider,
       txRepository,
     }) => {
-      let unspentBoxesList = (
-        await dataProvider['getUnspentBoxes'](
-          Array.from(boxLookup.getRequests().values()),
-        )
-      ).unspentBoxes;
+      let unspentBoxesList = await dataProvider['getUnspentBoxes']();
       expect(unspentBoxesList.map((ub) => ub.boxId)).toContain(
         SampleTxs[SampleTxs.length - 1].inputs[0].boxId,
       );
@@ -136,14 +126,16 @@ describe('DataProvider', () => {
       );
 
       // Insert already unspent boxes to the spent tx-pot boxes
-      await txRepository.insert(SampleTransactionEntitiesContainsSpecialOutput);
+      const SampleTransaction = {
+        ...SampleTransactionEntitiesContainsSpecialOutput[0],
+      };
+      SampleTransaction['lastStatusUpdate'] = Math.round(
+        Date.now() / 1000,
+      ).toString();
+      await txRepository.insert(SampleTransaction);
 
       // Act
-      unspentBoxesList = (
-        await dataProvider['getUnspentBoxes'](
-          Array.from(boxLookup.getRequests().values()),
-        )
-      ).unspentBoxes;
+      unspentBoxesList = await dataProvider['getUnspentBoxes']();
       expect(unspentBoxesList.map((ub) => ub.boxId)).not.toContain(
         SampleTxs[SampleTxs.length - 1].inputs[0].boxId,
       );
@@ -162,7 +154,6 @@ describe('DataProvider', () => {
      * - unspentBoxes size must be equal to 3
      */
     it<DataProviderTestContext>('should retrieve and combine unspent boxes from empty node and TxPot data', async ({
-      boxLookup,
       dataProvider,
     }) => {
       // Mock
@@ -173,11 +164,7 @@ describe('DataProvider', () => {
         });
 
       // Act
-      const unspentBoxesList = (
-        await dataProvider['getUnspentBoxes'](
-          Array.from(boxLookup.getRequests().values()),
-        )
-      ).unspentBoxes;
+      const unspentBoxesList = await dataProvider['getUnspentBoxes']();
 
       // Assert
       expect((unspentBoxesList as ErgoTransactionOutput[]).length).toEqual(3);
@@ -200,7 +187,6 @@ describe('DataProvider', () => {
      * - unspentBoxes size must be equal to 1
      */
     it<DataProviderTestContext>('should retrieve and combine unspent boxes from node and by empty TxPot data', async ({
-      boxLookup,
       dataProvider,
       txRepository,
     }) => {
@@ -208,11 +194,7 @@ describe('DataProvider', () => {
       await txRepository.clear();
 
       // Act
-      const unspentBoxesList = (
-        await dataProvider['getUnspentBoxes'](
-          Array.from(boxLookup.getRequests().values()),
-        )
-      ).unspentBoxes;
+      const unspentBoxesList = await dataProvider['getUnspentBoxes']();
 
       // Assert
       expect((unspentBoxesList as ErgoTransactionOutput[]).length).toEqual(1);
@@ -234,7 +216,6 @@ describe('DataProvider', () => {
      * - unspentBoxes size must be equal to 0
      */
     it<DataProviderTestContext>('should retrieve and combine unspent boxes from empty node and empty TxPot data', async ({
-      boxLookup,
       dataProvider,
       txRepository,
     }) => {
@@ -247,11 +228,7 @@ describe('DataProvider', () => {
       };
 
       // Act
-      const unspentBoxesList = (
-        await dataProvider['getUnspentBoxes'](
-          Array.from(boxLookup.getRequests().values()),
-        )
-      ).unspentBoxes;
+      const unspentBoxesList = await dataProvider['getUnspentBoxes']();
 
       // Assert
       expect(unspentBoxesList.values.length).toEqual(0);
