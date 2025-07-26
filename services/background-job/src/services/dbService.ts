@@ -9,6 +9,7 @@ import {
   RaffleBoxEntity,
   InactiveRaffleEntity,
   RaffleServiceEntity,
+  DynamicBoxEntity,
 } from '@ergo-raffle/extractors';
 import { RaffleBoxType } from '@ergo-raffle/extractors/lib/entities/raffleBoxEntity';
 import { IsNull } from 'typeorm';
@@ -133,5 +134,16 @@ export class DbService extends AbstractService {
         spendBlock: IsNull(),
       },
     });
+  };
+
+  /**
+   * Get the dynamic boxes by address
+   * @param address - The address
+   * @returns The dynamic boxes
+   */
+  getDynamicBoxes = (address: string): Promise<DynamicBoxEntity[]> => {
+    return this.dataSource
+      .getRepository(DynamicBoxEntity)
+      .find({ where: { address: address } });
   };
 }

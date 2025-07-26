@@ -4,11 +4,18 @@ import {
   Dependency,
   ServiceStatus,
 } from '@rosen-bridge/service-manager';
-import { TxPot } from '@rosen-bridge/tx-pot';
+import {
+  CallbackFunction,
+  TransactionStatus,
+  TxPot,
+} from '@rosen-bridge/tx-pot';
 import { DataSource } from 'typeorm';
 import { ErgoNetworkInterface } from '../txPot/ergoNetworkInterface';
 import { DbService } from './dbService';
 import * as constants from '../constants';
+import { SignedTransaction } from '@fleet-sdk/common';
+import { TxType } from '../transactions/types';
+import { serializeTransaction } from '@fleet-sdk/serializer';
 
 export class TxPotService extends AbstractService {
   name = 'TxPotService';
@@ -152,5 +159,53 @@ export class TxPotService extends AbstractService {
    */
   getTxPot = (): TxPot => {
     return TxPot.getInstance();
+  };
+
+  /**
+   * Adds a transaction to the TxPot
+   * @param tx - The transaction to add
+   * @param type - The type of transaction
+   */
+  addTx = (tx: SignedTransaction, type: TxType): void => {
+    TxPot.getInstance().addTx(
+      tx.id,
+      constants.ERGO_CHAIN_NAME,
+      type,
+      0,
+      Buffer.from(serializeTransaction(tx).toBytes()).toString('hex'),
+      TransactionStatus.APPROVED,
+    );
+  };
+
+  /**
+   * Registers a callback for a transaction
+   * @param type - The type of transaction
+   * @param id - The id of the transaction
+   * @param callback - The callback to register
+   */
+  registerCompletionCallback = (
+    type: TxType,
+    id: string,
+    callback: CallbackFunction,
+  ): void => {
+    TxPot.getInstance().registerCallback(
+      type,
+      TransactionStatus.COMPLETED,
+      id,
+      callback,
+    );
+  };
+
+  /**
+   * Unregisters a callback for a transaction
+   * @param type - The type of transaction
+   * @param id - The id of the transaction
+   */
+  unregisterCompletionCallback = (type: TxType, id: string): void => {
+    TxPot.getInstance().unregisterCallback(
+      type,
+      TransactionStatus.COMPLETED,
+      id,
+    );
   };
 }
