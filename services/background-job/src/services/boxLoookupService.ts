@@ -4,23 +4,14 @@ import {
   Dependency,
   ServiceStatus,
 } from '@rosen-bridge/service-manager';
-import { BoxLookup, Request } from '@ergo-raffle/box-lookup';
+import { BoxLookup } from '@ergo-raffle/box-lookup';
 import { Network } from '@fleet-sdk/core';
-import { raffleInfo } from '@ergo-raffle/contracts';
 
-import { DbService } from './dbService';
 import { TxPotService } from './txPotService';
-import { BoxLookupCallbacks } from '../boxLookup/boxLookupCallbacks';
-import ErgoNodeNetwork from '../network/ergoNodeNetwork';
-import { covertDbBoxesToErgoBoxes } from '../boxLookup/utils';
 
 export class BoxLookupService extends AbstractService {
   name = 'BoxLookupService';
   protected dependencies: Dependency[] = [
-    {
-      serviceName: DbService.name,
-      allowedStatuses: [ServiceStatus.running],
-    },
     {
       serviceName: TxPotService.name,
       allowedStatuses: [ServiceStatus.running],
@@ -35,8 +26,6 @@ export class BoxLookupService extends AbstractService {
   private shouldStopJob = false;
   private boxLookup: BoxLookup;
   private updateInterval: number;
-  private boxLookupCallbacks: BoxLookupCallbacks;
-  private network: ErgoNodeNetwork;
 
   private constructor(
     updateInterval: number,
@@ -52,11 +41,6 @@ export class BoxLookupService extends AbstractService {
       logger,
     );
     this.updateInterval = updateInterval;
-    this.network = new ErgoNodeNetwork(nodeUrl);
-    this.boxLookupCallbacks = new BoxLookupCallbacks(
-      this.network,
-      TxPotService.getInstance().getTxPot(),
-    );
   }
 
   /**
@@ -94,7 +78,6 @@ export class BoxLookupService extends AbstractService {
    */
   protected start = async (): Promise<boolean> => {
     try {
-      this.addBaseRequests();
       this.job();
       this.setStatus(ServiceStatus.running);
     } catch (e) {
@@ -134,29 +117,6 @@ export class BoxLookupService extends AbstractService {
       this.shouldStopJob = false;
       this.continueStop();
     }
-  };
-
-  /**
-   * Adds a request to the box lookup
-   * @param request - The request to add
-   */
-  private addBaseRequests = () => {
-    this.boxLookup.registerRequest({
-      address: raffleInfo.addresses.inactiveRaffle,
-      value: undefined,
-      tokens: [
-        {
-          tokenId: raffleInfo.tokens.raffleLicense,
-          amount: 1n,
-        },
-      ],
-      onSuffice: this.boxLookupCallbacks.activationCallback,
-      getMinBoxes: async () => {
-        return covertDbBoxesToErgoBoxes(
-          await DbService.getInstance().getInactiveRaffleBoxes(),
-        );
-      },
-    });
   };
 
   /**
