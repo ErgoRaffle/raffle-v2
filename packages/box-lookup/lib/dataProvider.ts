@@ -1,3 +1,4 @@
+import { ErgoBox } from '@fleet-sdk/core';
 import { deserializeTransaction } from '@fleet-sdk/serializer';
 import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
 import {
@@ -6,33 +7,37 @@ import {
   TxPot,
 } from '@rosen-bridge/tx-pot';
 import ergoNodeClientFactory from '@rosen-clients/ergo-node';
-import { Box, ErgoBox } from '@fleet-sdk/core';
-import { API_LIMIT } from './constants';
 import { DataSource, Repository } from 'typeorm';
+import { API_LIMIT } from './constants';
 import { Request } from './types';
 
+/**
+ * DataProvider is responsible for interacting with both Ergo node and TxPot.
+ * It fetches, deserializes, and filters unspent and spent boxes to support transaction building.
+ */
 export class DataProvider {
   protected nodeAPI: ReturnType<typeof ergoNodeClientFactory>;
+  protected txPotRepository: Repository<TransactionEntity>;
   protected txPot: TxPot;
   protected logger: AbstractLogger;
-  protected txPotRepository: Repository<TransactionEntity>;
-  public lastTxPotStatusUpdate: number = 0;
+  public lastTxPotStatusUpdate = 0;
 
   constructor(
     protected dataSource: DataSource,
-    nodeURL: string,
+    protected nodeURL: string,
     logger: AbstractLogger = new DummyLogger(),
   ) {
-    this.txPotRepository = this.dataSource.getRepository(TransactionEntity);
-    this.txPot = TxPot.setup(dataSource);
     this.nodeAPI = ergoNodeClientFactory(nodeURL);
+    this.txPot = TxPot.setup(dataSource);
+    this.txPotRepository = dataSource.getRepository(TransactionEntity);
     this.logger = logger;
   }
 
   /**
-   * Get a encoded transaction and return deserialized
-   *
-   * @return { Transaction }
+   * Deserializes a base64-encoded serialized transaction.
+   * Logs an error if deserialization fails.
+   * @param tx Transaction entity from TxPot
+   * @returns Deserialized transaction object
    */
   protected deserializeTx = async (tx: TransactionEntity) => {
     try {
@@ -46,147 +51,142 @@ export class DataProvider {
   };
 
   /**
-   * This method get all spent & unspent boxes that currently managed by TxPot instance
-   *
-   * @return { {spentBoxes: string[], unspentBoxes: ErgoBox[]} }, spent-box-ids, unspent-boxes
-   */
-  public getArrangedTxPotBoxes = async (): Promise<{
-    spentBoxes: string[];
-    unspentBoxes: ErgoBox[];
-  }> => {
-    let spentBoxes: string[] = [];
-    let unspentBoxes: ErgoBox[] = [];
-    const fromTime = this.lastTxPotStatusUpdate;
-    const activeTxs = [
-      ...(await this.txPot.getTxsByStatus(TransactionStatus.SIGNED, false)),
-      ...(await this.txPot.getTxsByStatus(TransactionStatus.SENT, false)),
-      ...(await this.txPot.getTxsByStatus(TransactionStatus.COMPLETED, false)),
-    ];
-
-    this.lastTxPotStatusUpdate = 0;
-    for (const tx of activeTxs) {
-      if (fromTime != undefined && Number(tx.lastStatusUpdate) < fromTime)
-        continue;
-      this.lastTxPotStatusUpdate = Math.max(
-        this.lastTxPotStatusUpdate,
-        Number(tx.lastStatusUpdate),
-      );
-      const deserializedTx = await this.deserializeTx(tx);
-      spentBoxes = spentBoxes.concat(
-        ...deserializedTx.inputs.map((input: { boxId: string }) => input.boxId),
-      );
-      unspentBoxes = unspentBoxes.concat(
-        ...deserializedTx.outputs.map((outBox) => {
-          return new ErgoBox(outBox as Box);
-        }),
-      );
-    }
-
-    return { spentBoxes, unspentBoxes };
-  };
-
-  /**
-   * This method return all spent & unspent boxes that currently placed on the mempool
-   *
-   * @return { {spentBoxes: string[],  unspentBoxes: ErgoBox[]} }
+   * Retrieves and arranges all unconfirmed transactions from the node,
+   * and extracts their input/output boxes.
+   * @returns Object with spentBoxes and unspentBoxes
    */
   protected getArrangedNodeBoxes = async (): Promise<{
     spentBoxes: string[];
     unspentBoxes: ErgoBox[];
   }> => {
+    const txs = [];
     let results;
-    let spentBoxes: string[] = [];
-    let unspentBoxes: ErgoBox[] = [];
-    const offset = 0;
+    let offset = 0;
     do {
       results = await this.nodeAPI.getUnconfirmedTransactions({
         limit: API_LIMIT,
-        offset: offset,
+        offset,
       });
-      for (const tx of results) {
-        spentBoxes = spentBoxes.concat(
-          ...tx.inputs.map((input: { boxId: string }) => input.boxId),
-        );
-        unspentBoxes = unspentBoxes.concat(
-          ...tx.outputs.map(
-            (output) =>
-              new ErgoBox({
-                ...output,
-                assets: output.assets ?? [],
-                boxId: output.boxId ?? '',
-                index: output.index ?? 0,
-                transactionId: output.transactionId ?? '',
-              }),
-          ),
-        );
-      }
-    } while (results.length == API_LIMIT);
-    return { spentBoxes, unspentBoxes };
+      txs.push(...results);
+      offset += API_LIMIT;
+    } while (results.length === API_LIMIT);
+    const spentBoxes = txs.map((tx) => tx.inputs.map((ib) => ib.boxId)).flat();
+    const unspentBoxes = txs
+      .map((tx) =>
+        tx.outputs.map(
+          (ob, index) =>
+            new ErgoBox({
+              ...ob,
+              assets: ob.assets ?? [],
+              boxId: ob.boxId!,
+              index: index,
+              transactionId: tx.id!,
+            }),
+        ),
+      )
+      .flat();
+    return {
+      spentBoxes,
+      unspentBoxes,
+    };
   };
 
   /**
-   * Collect unspent Boxes by node & TxPot data
-   *
-   * @return { string[] }, a Set of box ids
+   * Retrieves recent signed/sent/completed transactions from TxPot,
+   * deserializes them, and extracts their boxes.
+   * Only includes transactions updated after the last known time.
+   * @returns Object with spentBoxes and unspentBoxes
+   */
+  public getArrangedTxPotBoxes = async (): Promise<{
+    spentBoxes: string[];
+    unspentBoxes: ErgoBox[];
+  }> => {
+    const fromTime = this.lastTxPotStatusUpdate;
+    const txs = (
+      await Promise.all([
+        this.txPot.getTxsByStatus(TransactionStatus.SIGNED, false),
+        this.txPot.getTxsByStatus(TransactionStatus.SENT, false),
+        this.txPot.getTxsByStatus(TransactionStatus.COMPLETED, false),
+      ])
+    ).flat();
+    this.lastTxPotStatusUpdate = 0;
+
+    const spent: string[] = [],
+      unspent: ErgoBox[] = [];
+    let i = 0;
+    for (const tx of txs) {
+      if (fromTime && Number(tx.lastStatusUpdate) < fromTime) continue;
+      this.lastTxPotStatusUpdate = Math.max(
+        this.lastTxPotStatusUpdate,
+        Number(tx.lastStatusUpdate),
+      );
+      const deserialized = await this.deserializeTx(tx);
+      spent.push(...deserialized.inputs.map((i) => i.boxId));
+      unspent.push(
+        ...deserialized.outputs.map(
+          (o) =>
+            new ErgoBox({
+              ...o,
+              boxId: o.boxId!,
+              transactionId: tx.txId,
+              index: i,
+            }),
+        ),
+      );
+      i++;
+    }
+
+    return { spentBoxes: spent, unspentBoxes: unspent };
+  };
+
+  /**
+   * Returns a combined Set of all known spent boxIds from both node and TxPot.
    */
   public getSpentBoxes = async (): Promise<Set<string>> => {
-    const nodeInputBoxesIds = (await this.getArrangedNodeBoxes()).spentBoxes;
-    const txPotInputBoxesIds = (await this.getArrangedTxPotBoxes()).spentBoxes;
-    const spentBoxes = new Set<string>([
-      ...nodeInputBoxesIds,
-      ...txPotInputBoxesIds,
+    const [node, txPot] = await Promise.all([
+      this.getArrangedNodeBoxes(),
+      this.getArrangedTxPotBoxes(),
     ]);
-
-    return spentBoxes;
+    return new Set([...node.spentBoxes, ...txPot.spentBoxes]);
   };
 
   /**
-   * Collect unspent Boxes by node & TxPot data
-   *
-   * @return { ErgoBox[] } unspent-boxes
+   * Returns unspent boxes from both node and TxPot that are not in the spent set.
    */
   public getUnspentBoxes = async (): Promise<ErgoBox[]> => {
-    const nodeOutputBoxes = (await this.getArrangedNodeBoxes()).unspentBoxes;
-    const txPotBoxesData = await this.getArrangedTxPotBoxes();
-    const txPotOutputBoxes = txPotBoxesData.unspentBoxes;
-    const spentBoxes = await this.getSpentBoxes();
-    const unspentBoxes: ErgoBox[] = [
-      ...nodeOutputBoxes,
-      ...txPotOutputBoxes,
-    ].filter((val) => val.boxId && !spentBoxes.has(val.boxId));
-
-    return unspentBoxes;
+    const [node, txPot, spent] = await Promise.all([
+      this.getArrangedNodeBoxes(),
+      this.getArrangedTxPotBoxes(),
+      this.getSpentBoxes(),
+    ]);
+    return [...node.unspentBoxes, ...txPot.unspentBoxes].filter(
+      (box) => box.boxId && !spent.has(box.boxId),
+    );
   };
 
   /**
-   * Returns filtered unspent boxes, excluding those already spent.
-   *
-   * Combines internal and request-specific boxes, removing spent ones.
-   *
-   * @param request
-   * @returns { unspentBoxes: ErgoBox[], requestUnspentBoxes: ErgoBox[] }
+   * Returns filtered unspent boxes for the given request,
+   * excluding those that are already spent or included in in-flight transactions.
+   * @param request Request object implementing `getMinedUnspentBoxes`
+   * @returns unspentBoxes for general usage, and filtered request-specific unspentBoxes
    */
   public update = async (
     request: Request,
   ): Promise<{ unspentBoxes: ErgoBox[]; requestUnspentBoxes: ErgoBox[] }> => {
-    let unspentBoxes = await this.getUnspentBoxes();
-    unspentBoxes = unspentBoxes.concat(
-      (await this.getArrangedTxPotBoxes()).unspentBoxes,
+    const [baseUnspent, txPotExtra, spent] = await Promise.all([
+      this.getUnspentBoxes(),
+      this.getArrangedTxPotBoxes(),
+      this.getSpentBoxes(),
+    ]);
+
+    const unspentBoxes = [...baseUnspent, ...txPotExtra.unspentBoxes].filter(
+      (box) => box.boxId && !spent.has(box.boxId),
     );
-    const totalSpentBoxes = await this.getSpentBoxes();
-    unspentBoxes = unspentBoxes.filter((val) => {
-      return val.boxId && !totalSpentBoxes.has(val.boxId);
-    });
 
     const requestUnspentBoxes = (await request.getMinedUnspentBoxes()).filter(
-      (val) => {
-        return val.boxId && !totalSpentBoxes.has(val.boxId);
-      },
+      (box) => box.boxId && !spent.has(box.boxId),
     );
 
-    return {
-      unspentBoxes,
-      requestUnspentBoxes,
-    };
+    return { unspentBoxes, requestUnspentBoxes };
   };
 }
