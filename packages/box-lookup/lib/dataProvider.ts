@@ -9,6 +9,7 @@ import ergoNodeClientFactory from '@rosen-clients/ergo-node';
 import { Box, ErgoBox } from '@fleet-sdk/core';
 import { API_LIMIT } from './constants';
 import { DataSource, Repository } from 'typeorm';
+import { Request } from './types';
 
 export class DataProvider {
   protected nodeAPI: ReturnType<typeof ergoNodeClientFactory>;
@@ -155,5 +156,37 @@ export class DataProvider {
     ].filter((val) => val.boxId && !spentBoxes.has(val.boxId));
 
     return unspentBoxes;
+  };
+
+  /**
+   * Returns filtered unspent boxes, excluding those already spent.
+   *
+   * Combines internal and request-specific boxes, removing spent ones.
+   *
+   * @param request
+   * @returns { unspentBoxes: ErgoBox[], requestUnspentBoxes: ErgoBox[] }
+   */
+  public update = async (
+    request: Request,
+  ): Promise<{ unspentBoxes: ErgoBox[]; requestUnspentBoxes: ErgoBox[] }> => {
+    let unspentBoxes = await this.getUnspentBoxes();
+    unspentBoxes = unspentBoxes.concat(
+      (await this.getArrangedTxPotBoxes()).unspentBoxes,
+    );
+    const totalSpentBoxes = await this.getSpentBoxes();
+    unspentBoxes = unspentBoxes.filter((val) => {
+      return val.boxId && !totalSpentBoxes.has(val.boxId);
+    });
+
+    const requestUnspentBoxes = (await request.getMinedUnspentBoxes()).filter(
+      (val) => {
+        return val.boxId && !totalSpentBoxes.has(val.boxId);
+      },
+    );
+
+    return {
+      unspentBoxes,
+      requestUnspentBoxes,
+    };
   };
 }

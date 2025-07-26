@@ -18,8 +18,8 @@
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {
-    "@fleet-sdk/mock-chain": "^0.8.5",
-    "@fleet-sdk/wallet": "^0.8.5",
+    "@fleet-sdk/mock-chain": "^0.11.0",
+    "@fleet-sdk/wallet": "^0.11.0",
     "@types/node": "^20.11.9",
     "@typescript-eslint/eslint-plugin": "^6.19.1",
     "@typescript-eslint/parser": "^6.19.1",
@@ -32,8 +32,8 @@
     "node": ">=20.11.0"
   },
   "dependencies": {
-    "@fleet-sdk/core": "^0.8.5",
-    "@fleet-sdk/serializer": "^0.8.5",
+    "@fleet-sdk/core": "^0.11.0",
+    "@fleet-sdk/serializer": "^0.11.0",
     "@rosen-bridge/abstract-logger": "^2.0.1",
     "@rosen-bridge/tx-pot": "^1.0.3",
     "@rosen-bridge/winston-logger": "^1.0.3",

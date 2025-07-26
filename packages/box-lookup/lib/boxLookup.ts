@@ -58,24 +58,16 @@ export class BoxLookup {
   public serveRequests = async () => {
     if (this.requests.size <= 0) return;
     this.logger.info('The BoxLookup serving requests started');
-    const unspentBoxesData = await this.dataProvider.getUnspentBoxes();
     const alreadySelectedUnspentBoxIds: Set<string> = new Set<string>();
-    let unspentBoxes: ErgoBox[] = unspentBoxesData;
     for (const request of this.requests.values()) {
-      const newUnspentBoxes = await request.getMinedUnspentBoxes();
-      unspentBoxes = unspentBoxes.concat(newUnspentBoxes);
-      unspentBoxes = unspentBoxes.concat(
-        (await this.dataProvider.getArrangedTxPotBoxes()).unspentBoxes,
-      );
-      const totalSpentBoxes = await this.dataProvider.getSpentBoxes();
-      unspentBoxes = unspentBoxes.filter((val) => {
-        return val.boxId && !totalSpentBoxes.has(val.boxId);
-      });
+      const { unspentBoxes, requestUnspentBoxes } =
+        await this.dataProvider.update(request);
+      const totalUnspentBoxes = unspentBoxes.concat(requestUnspentBoxes);
 
       let selectedBoxes: ErgoBox[] = [];
       let totalTokenAmounts: Map<string, number> = new Map<string, number>();
       let totalErgValue = 0n;
-      for (const box of unspentBoxes) {
+      for (const box of totalUnspentBoxes) {
         // check if current request unregistered then breaking the loop
         if (Array.from(this.requests.values()).indexOf(request) < 0) break;
 
