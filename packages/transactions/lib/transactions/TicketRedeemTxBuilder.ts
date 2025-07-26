@@ -7,6 +7,7 @@ import {
   SColl,
   SByte,
 } from '@fleet-sdk/core';
+
 import { TicketRedeemBuilder } from '@ergo-raffle/boxes';
 import { SafePayBuilder } from '@ergo-raffle/boxes';
 
@@ -24,8 +25,6 @@ export class TicketRedeemTxBuilder {
   private chainHeight?: number;
   private txFee?: bigint;
   private ticketCount?: bigint;
-
-  constructor() {}
 
   /**
    * Set the ticket redeem box input

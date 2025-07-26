@@ -7,6 +7,7 @@ import {
   SColl,
   SLong,
 } from '@fleet-sdk/core';
+
 import { SuccessRaffleBuilder } from '@ergo-raffle/boxes';
 import { WinnerPrizeBuilder } from '@ergo-raffle/boxes';
 
@@ -24,8 +25,6 @@ export class PrizeCreationTxBuilder {
   private winnerIndexList?: bigint[];
   private chainHeight?: number;
   private txFee?: bigint;
-
-  constructor() {}
 
   /**
    * Set the success raffle box input

@@ -7,6 +7,7 @@ import {
   SColl,
   SByte,
 } from '@fleet-sdk/core';
+
 import { SafePayBuilder } from '@ergo-raffle/boxes';
 
 /**
@@ -22,8 +23,6 @@ export class FinalPrizeTxBuilder {
   private winnerErgoTree?: string;
   private chainHeight?: number;
   private txFee?: bigint;
-
-  constructor() {}
 
   /**
    * Set the winner prize box input

@@ -143,6 +143,62 @@ export class WinnerBuilder {
   };
 
   /**
+   * Get the reward percentage (in thousandths)
+   * @returns Reward percentage (e.g., 100 = 10%)
+   */
+  getRewardPercent = (): bigint => {
+    return this.rewardPercent!;
+  };
+
+  /**
+   * Get the transaction fee
+   * @returns Transaction fee amount in nanoERG
+   */
+  getTxFee = (): bigint => {
+    return this.txFee!;
+  };
+
+  /**
+   * Get the winner index
+   * @returns Winner index
+   */
+  getWinnerIndex = (): number => {
+    return this.winnerIndex!;
+  };
+
+  /**
+   * Get the gift count
+   * @returns Gift count
+   */
+  getGiftCount = (): bigint => {
+    return this.giftCount!;
+  };
+
+  /**
+   * Get the ticket token ID
+   * @returns Ticket token ID
+   */
+  getTicketTokenId = (): string => {
+    return this.ticketTokenId!;
+  };
+
+  /**
+   * Get the gift token ID
+   * @returns Gift token ID or undefined if not set
+   */
+  getGiftTokenId = (): string | undefined => {
+    return this.giftTokenId;
+  };
+
+  /**
+   * Get the gift token amount
+   * @returns Gift token amount or undefined if not set
+   */
+  getGiftTokenAmount = (): bigint | undefined => {
+    return this.giftTokenAmount;
+  };
+
+  /**
    * Validate that all required parameters are set
    * @throws Error if any required parameter is missing
    */

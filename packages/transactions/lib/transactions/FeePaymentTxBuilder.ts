@@ -7,6 +7,7 @@ import {
   SColl,
   SByte,
 } from '@fleet-sdk/core';
+
 import { ActiveRaffleBuilder, SuccessRaffleBuilder } from '@ergo-raffle/boxes';
 import { SafePayBuilder } from '@ergo-raffle/boxes';
 
@@ -25,8 +26,6 @@ export class FeePaymentTxBuilder {
   private implementerErgoTree?: string;
   private chainHeight?: number;
   private txFee?: bigint;
-
-  constructor() {}
 
   /**
    * Set the active raffle box input

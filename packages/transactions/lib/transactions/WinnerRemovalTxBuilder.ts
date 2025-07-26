@@ -4,6 +4,7 @@ import {
   Amount,
   ErgoUnsignedTransaction,
 } from '@fleet-sdk/core';
+
 import { GiftRedeemBuilder } from '@ergo-raffle/boxes';
 
 /**
@@ -18,8 +19,6 @@ export class WinnerRemovalTxBuilder {
   private winner?: Box<Amount>;
   private chainHeight?: number;
   private txFee?: bigint;
-
-  constructor() {}
 
   /**
    * Set the gift redeem box input

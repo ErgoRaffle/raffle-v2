@@ -149,6 +149,38 @@ export class ServiceBuilder {
   };
 
   /**
+   * Get the service fee percentage (in thousandths)
+   * @returns Service fee percentage (in thousandths)
+   */
+  getServiceFeePercent = (): bigint => {
+    return this.serviceFeePercent!;
+  };
+
+  /**
+   * Get the implementer fee percentage (in thousandths)
+   * @returns Implementer fee percentage (in thousandths)
+   */
+  getImplementerFeePercent = (): bigint => {
+    return this.implementerFeePercent!;
+  };
+
+  /**
+   * Get the transaction fee
+   * @returns Transaction fee amount in nanoERG
+   */
+  getTxFee = (): bigint => {
+    return this.txFee!;
+  };
+
+  /**
+   * Get the service fee ergo tree hash
+   * @returns Service fee ergo tree hash
+   */
+  getServiceFeeErgoTreeHash = (): Uint8Array => {
+    return this.ownerErgoTreeHash!;
+  };
+
+  /**
    * Validate that all required parameters are set
    * @throws Error if any required parameter is missing
    */

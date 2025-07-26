@@ -9,7 +9,6 @@ import {
   ErgoAddress,
 } from '@fleet-sdk/core';
 
-// Import box builders from the boxes package
 import { ActiveRaffleBuilder, TicketBuilder } from '@ergo-raffle/boxes';
 
 /**
@@ -21,7 +20,6 @@ import { ActiveRaffleBuilder, TicketBuilder } from '@ergo-raffle/boxes';
  * 4. Sends change back to the donator
  */
 export class DonateTxBuilder {
-  // Private fields for transaction configuration
   private activeRaffle?: Box<Amount>;
   private donatorUtxos: Box<Amount>[] = [];
   private donatorErgoTree?: string;
@@ -29,8 +27,6 @@ export class DonateTxBuilder {
   private donationTicketCount?: bigint;
   private chainHeight?: number;
   private txFee?: bigint;
-
-  constructor() {}
 
   /**
    * Set the active raffle box input

@@ -10,7 +10,6 @@ import {
   ErgoUnsignedTransaction,
 } from '@fleet-sdk/core';
 
-// Import box builders directly from their files
 import { ServiceBuilder } from '@ergo-raffle/boxes';
 import { InactiveRaffleBuilder } from '@ergo-raffle/boxes';
 import { TicketRepoBuilder } from '@ergo-raffle/boxes';
@@ -25,7 +24,6 @@ import { TicketRepoBuilder } from '@ergo-raffle/boxes';
  * 5. Sends change to the creator
  */
 export class CreationTxBuilder {
-  // Private fields for transaction configuration
   private serviceBox?: Box<Amount>;
   private feeBoxes: Box<Amount>[] = [];
   private creatorErgoTree?: string;
@@ -47,8 +45,6 @@ export class CreationTxBuilder {
   private ticketTokenDescription?: string;
   private ticketTokenCount?: bigint;
   private raffleId?: string;
-
-  constructor() {}
 
   /**
    * Set the service box input

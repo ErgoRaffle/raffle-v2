@@ -4,9 +4,8 @@ import {
   Amount,
   ErgoUnsignedTransaction,
 } from '@fleet-sdk/core';
-import { raffleInfo } from '@ergo-raffle/contracts';
 
-// Import box builders from the boxes package
+import { raffleInfo } from '@ergo-raffle/contracts';
 import { ActiveRaffleBuilder } from '@ergo-raffle/boxes';
 import { RaffleDetailsBuilder } from '@ergo-raffle/boxes';
 import { GiftTokenRepoBuilder } from '@ergo-raffle/boxes';
@@ -22,7 +21,6 @@ import { WinnerBuilder } from '@ergo-raffle/boxes';
  * 5. Creates winner boxes for each winner
  */
 export class ActivationTxBuilder {
-  // Private fields for transaction configuration
   private inactiveRaffle?: Box<Amount>;
   private ticketRepo?: Box<Amount>;
   private winnersSharePercent?: bigint[];
@@ -33,8 +31,6 @@ export class ActivationTxBuilder {
   private winnersCount?: number;
   private giftTokenName?: Buffer;
   private giftTokenDescription?: Buffer;
-
-  constructor() {}
 
   /**
    * Set the inactive raffle box input

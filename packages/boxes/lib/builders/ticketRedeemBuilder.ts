@@ -8,6 +8,7 @@ import {
 } from '@fleet-sdk/core';
 import { SConstant } from '@fleet-sdk/serializer';
 import { raffleInfo } from '@ergo-raffle/contracts';
+import { GiftRedeemBuilder } from './giftRedeemBuilder';
 
 /**
  * Builder class for creating Ticket Redeem boxes in the ErgoRaffle protocol
@@ -144,6 +145,14 @@ export class TicketRedeemBuilder {
   };
 
   /**
+   * Check if the ticket redeem box is an ERG goal raffle
+   * @returns True if the raffle is an ERG goal raffle, false otherwise
+   */
+  isErgGoal = (): boolean => {
+    return this.collectingTokenId === undefined;
+  };
+
+  /**
    * Validate that all required parameters are set
    * @throws Error if any required parameter is missing
    */
@@ -252,34 +261,25 @@ export class TicketRedeemBuilder {
    * @throws Error if box structure doesn't match gift redeem box requirements
    */
   static fromGiftRedeemBox = (box: Box<Amount>): TicketRedeemBuilder => {
-    if (box.assets.length < 2) {
-      throw new Error('Invalid gift redeem box: missing required tokens');
-    }
-
-    const registers = box.additionalRegisters;
-    if (!registers.R4 || !registers.R5 || !registers.R6) {
-      throw new Error('Invalid gift redeem box: missing required registers');
-    }
-
-    const r4Data = SConstant.from(registers.R4).data as bigint[];
-    if (r4Data.length < 3) {
-      throw new Error('Invalid gift redeem box: invalid R4 register format');
-    }
+    // Use GiftRedeemBuilder to parse the box
+    const giftRedeemBuilder = GiftRedeemBuilder.fromBox(box);
 
     const builder = new TicketRedeemBuilder()
       .setValue(BigInt(box.value))
-      .setTotalSoldTickets(r4Data[0])
-      .setTicketPrice(r4Data[1])
-      .setTxFee(r4Data[2])
+      .setTotalSoldTickets(giftRedeemBuilder.getTotalSoldTickets())
+      .setTicketPrice(giftRedeemBuilder.getTicketPrice())
+      .setTxFee(giftRedeemBuilder.getTxFee())
       .setRedeemedTickets(0n) // Start with 0 redeemed tickets
-      .setTicketTokenId(box.assets[1].tokenId)
-      .setTicketTokenCount(BigInt(box.assets[1].amount));
+      .setTicketTokenId(giftRedeemBuilder.getTicketTokenId())
+      .setTicketTokenCount(giftRedeemBuilder.getTicketTokenAmount());
 
     // Set collecting token if present
-    if (box.assets.length > 2) {
+    const collectingTokenId = giftRedeemBuilder.getCollectingTokenId();
+    const collectingTokenAmount = giftRedeemBuilder.getCollectingTokenAmount();
+    if (collectingTokenId && collectingTokenAmount) {
       builder
-        .setCollectingTokenId(box.assets[2].tokenId)
-        .setCollectingTokenAmount(BigInt(box.assets[2].amount));
+        .setCollectingTokenId(collectingTokenId)
+        .setCollectingTokenAmount(collectingTokenAmount);
     }
 
     return builder;
@@ -307,6 +307,9 @@ export class TicketRedeemBuilder {
     if (ticketCount > this.ticketTokenCount) {
       throw new Error('Requested ticket count exceeds available tickets');
     }
+    if (!this.isErgGoal() && !this.collectingTokenAmount) {
+      throw new Error('Collecting token amount not set');
+    }
 
     // Calculate value to deduct
     const valueToDeduct = ticketCount * this.ticketPrice;
@@ -317,14 +320,14 @@ export class TicketRedeemBuilder {
     ).setTicketTokenCount(this.ticketTokenCount + ticketCount);
 
     // Deduct value from box value or collecting tokens
-    if (this.collectingTokenId && this.collectingTokenAmount) {
-      // Token-goal raffle: deduct from collecting tokens
-      updatedBuilder.setCollectingTokenAmount(
-        this.collectingTokenAmount - valueToDeduct,
-      );
+    if (this.isErgGoal()) {
+      updatedBuilder.setValue(this.value! - valueToDeduct);
     } else {
-      // ERG-goal raffle: deduct from box value
-      updatedBuilder.setValue(this.value - valueToDeduct);
+      console.log('deducting from collecting tokens', valueToDeduct);
+      console.log('collecting token amount', this.collectingTokenAmount);
+      updatedBuilder.setCollectingTokenAmount(
+        this.collectingTokenAmount! - valueToDeduct,
+      );
     }
 
     return updatedBuilder;

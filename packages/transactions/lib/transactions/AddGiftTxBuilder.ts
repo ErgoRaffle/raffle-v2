@@ -10,7 +10,6 @@ import {
   ErgoAddress,
 } from '@fleet-sdk/core';
 
-// Import box builders from the boxes package
 import { WinnerBuilder } from '@ergo-raffle/boxes';
 import { GiftBuilder } from '@ergo-raffle/boxes';
 
@@ -22,7 +21,6 @@ import { GiftBuilder } from '@ergo-raffle/boxes';
  * 3. Creates a gift box with the gift tokens
  */
 export class AddGiftTxBuilder {
-  // Private fields for transaction configuration
   private winner?: Box<Amount>;
   private giftGiverUtxos: Box<Amount>[] = [];
   private giftGiverErgoTree?: string;
@@ -31,8 +29,6 @@ export class AddGiftTxBuilder {
   private chainHeight?: number;
   private txFee?: bigint;
   private giftTokens?: TokenAmount<bigint>[];
-
-  constructor() {}
 
   /**
    * Set the winner box input

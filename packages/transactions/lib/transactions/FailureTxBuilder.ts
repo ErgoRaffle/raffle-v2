@@ -5,7 +5,6 @@ import {
   ErgoUnsignedTransaction,
 } from '@fleet-sdk/core';
 
-// Import box builders from the boxes package
 import { GiftRedeemBuilder } from '@ergo-raffle/boxes';
 
 /**
@@ -15,7 +14,6 @@ import { GiftRedeemBuilder } from '@ergo-raffle/boxes';
  * 2. Creates a gift redeem box for handling gift returns and ticket redemptions
  */
 export class FailureTxBuilder {
-  // Private fields for transaction configuration
   private activeRaffle?: Box<Amount>;
   private raffleDetails?: Box<Amount>;
   private chainHeight?: number;
