@@ -25,7 +25,6 @@ import * as scanner from '@rosen-bridge/scanner';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
-import { Network } from '@fleet-sdk/core';
 
 import { DbService } from './dbService';
 import { ScannerBaseOption } from '../types';

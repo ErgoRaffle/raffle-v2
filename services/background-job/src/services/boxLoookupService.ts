@@ -4,7 +4,7 @@ import {
   Dependency,
   ServiceStatus,
 } from '@rosen-bridge/service-manager';
-import { BoxLookup } from '@ergo-raffle/box-lookup';
+import { BoxLookup, Request } from '@ergo-raffle/box-lookup';
 import { Network } from '@fleet-sdk/core';
 
 import { TxPotService } from './txPotService';

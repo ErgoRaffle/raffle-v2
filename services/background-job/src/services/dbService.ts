@@ -13,8 +13,6 @@ import {
 import { RaffleBoxType } from '@ergo-raffle/extractors/lib/entities/raffleBoxEntity';
 import { IsNull } from 'typeorm';
 
-import { CreationRequestEntity } from '../database/entities';
-
 export class DbService extends AbstractService {
   name = 'DbService';
   private static instance: DbService;
@@ -123,19 +121,6 @@ export class DbService extends AbstractService {
     return this.dataSource
       .getRepository(InactiveRaffleEntity)
       .findBy({ spendBlock: IsNull() });
-  };
-
-  /**
-   * Insert a new creation request
-   * @param request - The creation request to insert
-   * @returns The creation request
-   */
-  insertCreateRaffleRequest = (
-    request: Omit<CreationRequestEntity, 'id' | 'timestamp'>,
-  ) => {
-    return this.dataSource
-      .getRepository(CreationRequestEntity)
-      .insert({ ...request, timestamp: Date.now() });
   };
 
   /**
