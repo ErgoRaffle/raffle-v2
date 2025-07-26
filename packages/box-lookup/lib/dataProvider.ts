@@ -109,7 +109,6 @@ export class DataProvider {
         this.txPot.getTxsByStatus(TransactionStatus.COMPLETED, false),
       ])
     ).flat();
-    this.lastTxPotStatusUpdate = 0;
 
     const spent: string[] = [],
       unspent: ErgoBox[] = [];
@@ -188,5 +187,14 @@ export class DataProvider {
     );
 
     return { unspentBoxes, requestUnspentBoxes };
+  };
+
+  /**
+   * reset the lastTxPotStatusUpdate value to zero
+   *
+   * @returns
+   */
+  public resetCounter = () => {
+    this.lastTxPotStatusUpdate = 0;
   };
 }

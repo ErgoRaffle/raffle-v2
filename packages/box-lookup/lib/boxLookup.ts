@@ -143,6 +143,7 @@ export class BoxLookup {
         }
       }
     }
+    this.dataProvider.resetCounter();
     this.logger.info('The BoxLookup serving requests done');
   };
 }
