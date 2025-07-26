@@ -14,7 +14,7 @@ export interface Request {
   ) => Promise<void>;
 
   /**
-   * This method return by BoxLookup
+   * This method return related mined boxes
    * @param dataProvider
    */
   getMinedUnspentBoxes: () => Promise<ErgoBox[]>;

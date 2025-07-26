@@ -15,10 +15,6 @@ export class BoxLookup {
     protected logger: AbstractLogger = new DummyLogger(),
   ) {}
 
-  getRequests = () => {
-    return this.requests;
-  };
-
   /**
    * register a new lookup request and return its assigned ID
    * @param request
