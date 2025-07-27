@@ -3,8 +3,8 @@ import { getConfig } from './config/config';
 
 import {
   RaffleServiceEntity,
-  RaffleEntity,
-  BoxEntity,
+  InactiveRaffleEntity,
+  RaffleBoxEntity,
   WinnerEntity,
   RaffleDetailsEntity,
   PictureEntity,
@@ -15,6 +15,7 @@ import {
   SuccessRaffleEntity,
   TicketRedeemEntity,
   SafePayEntity,
+  DynamicBoxEntity,
 } from '@ergo-raffle/extractors';
 import {
   BlockEntity,
@@ -34,8 +35,8 @@ const commonConfigs = {
     BlockEntity,
     ExtractorStatusEntity,
     RaffleServiceEntity,
-    RaffleEntity,
-    BoxEntity,
+    InactiveRaffleEntity,
+    RaffleBoxEntity,
     WinnerEntity,
     RaffleDetailsEntity,
     PictureEntity,
@@ -47,6 +48,7 @@ const commonConfigs = {
     TicketRedeemEntity,
     SafePayEntity,
     TransactionEntity,
+    DynamicBoxEntity,
   ],
   synchronize: false,
   logging: false,

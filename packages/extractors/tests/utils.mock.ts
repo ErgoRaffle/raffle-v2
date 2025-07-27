@@ -10,8 +10,8 @@ import {
 import { migrations } from '../lib/migrations';
 import {
   RaffleServiceEntity,
-  RaffleEntity,
-  BoxEntity,
+  InactiveRaffleEntity,
+  RaffleBoxEntity,
   WinnerEntity,
   RaffleDetailsEntity,
   PictureEntity,
@@ -52,8 +52,8 @@ export const createDatabase = async (): Promise<DataSource> => {
       BlockEntity,
       ExtractorStatusEntity,
       RaffleServiceEntity,
-      RaffleEntity,
-      BoxEntity,
+      InactiveRaffleEntity,
+      RaffleBoxEntity,
       WinnerEntity,
       RaffleDetailsEntity,
       PictureEntity,

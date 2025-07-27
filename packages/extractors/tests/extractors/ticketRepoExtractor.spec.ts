@@ -1,14 +1,14 @@
 import { describe, it, expect } from 'vitest';
-import { Network, SByte, SColl } from '@fleet-sdk/core';
+import { Network } from '@fleet-sdk/core';
 import { compile } from '@fleet-sdk/compiler';
 import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 
-import { GiftTokenRepoExtractor } from '../../lib/extractors/giftTokenRepo';
+import { TicketRepoExtractor } from '../../lib/extractors/ticketRepoExtractor';
 import { createDatabase } from '../utils.mock';
 import {
-  sampleGiftTokenRepo,
-  sampleGiftTokenRepoExtractedData,
-} from './mocked/giftTokenRepo.mock';
+  sampleTicketRepo,
+  sampleTicketRepoExtractedData,
+} from './mocked/ticketRepo.mock';
 
 /*
  * create fixtures that contains below steps data:
@@ -16,15 +16,15 @@ import {
  *   - create extractor
  * @returns vitest customized "it" object
  */
-const createGiftTokenRepoExtractorTest = async () => {
+const createTicketRepoExtractorTest = async () => {
   const dataSource = await createDatabase();
   const boxErgoTree = compile('{sigmaProp(true);}');
   const boxFalseErgoTree = compile('{sigmaProp(false);}');
 
   return it.extend({
-    extractor: new GiftTokenRepoExtractor(
+    extractor: new TicketRepoExtractor(
       dataSource,
-      'GiftTokenRepo',
+      'TicketRepo',
       'http://127.0.0.1/',
       ErgoNetworkType.Node,
       boxErgoTree.toAddress(Network.Testnet).toString(),
@@ -33,66 +33,66 @@ const createGiftTokenRepoExtractorTest = async () => {
   });
 };
 
-const extractorTest = await createGiftTokenRepoExtractorTest();
+const extractorTest = await createTicketRepoExtractorTest();
 
-describe('GiftTokenRepoExtractor', () => {
+describe('TicketRepoExtractor', () => {
   describe('extractBoxData', () => {
     /**
-     * @target should successfully extract data from a sample GiftTokenRepo box
+     * @target should successfully extract data from a sample TicketRepo box
      * @dependencies
      * @scenario
      * - call the extractBoxData functions
-     * - check if GiftTokenRepo box data extracted correctly
+     * - check if TicketRepo box data extracted correctly
      * @expected
-     * - GiftTokenRepos should extract successfully
+     * - TicketRepos should extract successfully
      */
     extractorTest(
-      `should successfully extract data from a sample GiftTokenRepo box`,
+      `should successfully extract data from a sample TicketRepo box`,
       async ({ extractor }) => {
         const extractedData = await extractor.extractBoxData(
-          sampleGiftTokenRepo[0],
+          sampleTicketRepo[0],
         );
 
-        expect(extractedData).toEqual(sampleGiftTokenRepoExtractedData);
+        expect(extractedData).toEqual(sampleTicketRepoExtractedData);
       },
     );
   });
 
   describe('hasData', () => {
     /**
-     * @target should return true when the box contains valid data
+     * @target should return true for hasData method when the box contains valid data
      * @dependencies
      * @scenario
      * - call the hasData functions
-     * - check if GiftTokenRepo box
+     * - check if TicketRepo box
      * - result must be true
      * @expected
-     * - GiftTokenRepos box checking result must be true
+     * - TicketRepos box checking result must be true
      */
     extractorTest(
-      `should return true when the box contains valid data`,
+      `should return true for hasData method when the box contains valid data`,
       async ({ extractor }) => {
-        const extractedData = await extractor.hasData(sampleGiftTokenRepo[0]);
+        const extractedData = await extractor.hasData(sampleTicketRepo[0]);
 
         expect(extractedData).toBeTruthy();
       },
     );
 
     /**
-     * @target should return false when provided with an invalid box address
+     * @target should return false for hasData method when provided with an invalid box address
      * @dependencies
      * @scenario
      * - call the hasData functions
-     * - check if GiftTokenRepo box ergoTree is valid
+     * - check if TicketRepo box ergoTree is valid
      * - result must be false
      * @expected
-     * - GiftTokenRepos box checking result must be false
+     * - TicketRepos box checking result must be false
      */
     extractorTest(
-      `should return false when provided with an invalid box address`,
+      `should return false for hasData method when provided with an invalid box address`,
       async ({ extractor, boxFalseErgoTree }) => {
         const extractedData = await extractor.hasData({
-          ...sampleGiftTokenRepo[0],
+          ...sampleTicketRepo[0],
           // set invalid ergoTree
           ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
         });
@@ -102,24 +102,21 @@ describe('GiftTokenRepoExtractor', () => {
     );
 
     /**
-     * @target should return false when R8 is empty
+     * @target should return false for hasData method when the assets list is empty
      * @dependencies
-     * @scenario
      * - call the hasData functions
-     * - check if GiftTokenRepo box R8 is empty
+     * - check if TicketRepo box assets is undefined
      * - result must be false
+     * @scenario
      * @expected
-     * - GiftTokenRepos box checking result must be false
+     * - TicketRepos box checking result must be false
      */
     extractorTest(
-      `should return false when R8 is empty`,
+      `should return false for hasData method when the assets list is empty`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
-          ...sampleGiftTokenRepo[0],
-          additionalRegisters: {
-            ...sampleGiftTokenRepo[0].additionalRegisters,
-            R8: undefined,
-          },
+          ...sampleTicketRepo[0],
+          assets: [],
         });
 
         expect(extractedData).toBeFalsy();
@@ -127,24 +124,30 @@ describe('GiftTokenRepoExtractor', () => {
     );
 
     /**
-     * @target should return false when R8 length is not valid
+     * @target should return false for hasData method when the assets list contains more than one item
      * @dependencies
      * @scenario
      * - call the hasData functions
-     * - check if GiftTokenRepo box R8 length is not valid
+     * - check if TicketRepo box assets is more than 1
      * - result must be false
      * @expected
-     * - GiftTokenRepos box checking result must be false
+     * - TicketRepos box checking result must be false
      */
     extractorTest(
-      `should return false when R8 length is not valid`,
+      `should return false for hasData method when the assets list contains more than one item`,
       async ({ extractor }) => {
         const extractedData = await extractor.hasData({
-          ...sampleGiftTokenRepo[0],
-          additionalRegisters: {
-            ...sampleGiftTokenRepo[0].additionalRegisters,
-            R8: SColl(SByte, '1234').toHex(),
-          },
+          ...sampleTicketRepo[0],
+          assets: [
+            {
+              tokenId: '1'.repeat(64),
+              amount: 1n,
+            },
+            {
+              tokenId: '2'.repeat(64),
+              amount: 1n,
+            },
+          ],
         });
 
         expect(extractedData).toBeFalsy();

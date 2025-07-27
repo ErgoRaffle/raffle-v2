@@ -1,4 +1,5 @@
 import { OutputBox } from '@rosen-bridge/scanner-interfaces';
+import { RaffleBoxType } from '../../../lib/entities/raffleBoxEntity';
 
 export const sampleGiftTokenRepo: OutputBox[] = [
   {
@@ -34,4 +35,5 @@ export const sampleGiftTokenRepoExtractedData = {
   serialized:
     'wMOTBxkGAQEB0XMArtBiAY9AqS8igJRS6gvIGTMV9sPau8ug3v5s2T+iRE/FZP8K0A8GEAECEAEEEAEGEQKgH4CHpw4OINKd6qXYCV' +
     '/jCTCEVBKwk9K6dbSOMcJd/58FpnOWdzD7EAICAjbb2iA9IUOlGVeUHXo/pYh5WSHIZv9AdePubpkfDGLVAg==',
+  type: RaffleBoxType.GiftTokenRepo,
 };

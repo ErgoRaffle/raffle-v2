@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ErgoAddress } from '@fleet-sdk/core';
 
-import { DynamicExtractor } from '../../lib/extractors/DynamicExtractor';
+import { DynamicExtractor } from '../../lib/extractors/dynamicExtractor';
 import { createDatabase } from '../utils.mock';
 import {
   sampleDynamicBoxes,
