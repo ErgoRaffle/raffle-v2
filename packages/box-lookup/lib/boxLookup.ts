@@ -55,9 +55,14 @@ export class BoxLookup {
     if (this.requests.size <= 0) return;
     this.logger.info('The BoxLookup serving requests started');
     const alreadySelectedUnspentBoxIds: Set<string> = new Set<string>();
+    let unspentBoxes = await this.dataProvider.getUnspentBoxes();
     for (const request of this.requests.values()) {
-      const { unspentBoxes, requestUnspentBoxes } =
-        await this.dataProvider.update(request);
+      const updateResult = await this.dataProvider.update(
+        unspentBoxes,
+        request,
+      );
+      unspentBoxes = updateResult.unspentBoxes;
+      const requestUnspentBoxes = updateResult.requestUnspentBoxes;
       const totalUnspentBoxes = unspentBoxes.concat(requestUnspentBoxes);
 
       let selectedBoxes: ErgoBox[] = [];

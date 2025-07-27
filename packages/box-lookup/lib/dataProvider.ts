@@ -166,21 +166,22 @@ export class DataProvider {
   /**
    * Returns filtered unspent boxes for the given request,
    * excluding those that are already spent or included in in-flight transactions.
+   * @param unspentBoxes A list of unspent boxes
    * @param request Request object implementing `getMinedUnspentBoxes`
    * @returns unspentBoxes for general usage, and filtered request-specific unspentBoxes
    */
   public update = async (
+    unspentBoxes: ErgoBox[],
     request: Request,
   ): Promise<{ unspentBoxes: ErgoBox[]; requestUnspentBoxes: ErgoBox[] }> => {
-    const [baseUnspent, txPotExtra, spent] = await Promise.all([
-      this.getUnspentBoxes(),
+    const [txPotExtra, spent] = await Promise.all([
       this.getArrangedTxPotBoxes(),
       this.getSpentBoxes(),
     ]);
 
-    const unspentBoxes = [...baseUnspent, ...txPotExtra.unspentBoxes].filter(
-      (box) => box.boxId && !spent.has(box.boxId),
-    );
+    unspentBoxes = unspentBoxes
+      .concat(txPotExtra.unspentBoxes)
+      .filter((box) => box.boxId && !spent.has(box.boxId));
 
     const requestUnspentBoxes = (await request.getMinedUnspentBoxes()).filter(
       (box) => box.boxId && !spent.has(box.boxId),
