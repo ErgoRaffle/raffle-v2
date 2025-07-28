@@ -9,9 +9,9 @@ import {
   Box,
   Amount,
 } from '@fleet-sdk/core';
-import { SConstant } from '@fleet-sdk/serializer';
 import { raffleInfo } from '@ergo-raffle/contracts';
 import { blake2b256 } from '@fleet-sdk/crypto';
+import { WinnerBuilder } from './winnerBuilder';
 
 /**
  * Builder class for creating Gift boxes in the ErgoRaffle protocol
@@ -34,7 +34,7 @@ export class GiftBuilder {
   private txFee?: bigint;
   private giftTokenId?: string;
   private giftTokenAmount?: bigint;
-  private gifts: TokenAmount<bigint>[] = [];
+  private gifts: TokenAmount<Amount>[] = [];
 
   /**
    * Set the box value in nanoERG
@@ -106,7 +106,7 @@ export class GiftBuilder {
    * @param amount - Number of gifts
    * @returns this builder instance
    */
-  addGift = (gift: TokenAmount<bigint>): this => {
+  addGift = (gift: TokenAmount<Amount>): this => {
     this.gifts.push(gift);
     return this;
   };
@@ -116,7 +116,7 @@ export class GiftBuilder {
    * @param gifts - Array of gift tokens to add
    * @returns this builder instance
    */
-  addGifts = (gifts: TokenAmount<bigint>[]): this => {
+  addGifts = (gifts: TokenAmount<Amount>[]): this => {
     this.gifts.push(...gifts);
     return this;
   };
@@ -153,7 +153,6 @@ export class GiftBuilder {
       throw new Error('Donator ErgoTree hash not set');
     if (!this.winnerIndex) throw new Error('Winner index not set');
     if (!this.giftTokenId) throw new Error('Gift token not set');
-    if (this.gifts.length === 0) throw new Error('No gifts added');
   };
 
   /**
@@ -189,28 +188,18 @@ export class GiftBuilder {
    * @throws Error if box structure doesn't match winner box requirements
    */
   static giftForWinner = (winnerBox: Box<Amount>): GiftBuilder => {
-    if (winnerBox.assets.length < 2) {
-      throw new Error('Invalid winner box: missing required tokens');
-    }
-
-    const registers = winnerBox.additionalRegisters;
-    if (!registers.R4 || !registers.R5 || !registers.R6) {
-      throw new Error('Invalid winner box: missing required registers');
-    }
-
-    // Extract register data using SConstant
-    const r4Data = SConstant.from(registers.R4).data as bigint[];
-    const winnerIndex = SConstant.from(registers.R5).data as number;
+    // Use WinnerBuilder to parse the box
+    const winnerBuilder = WinnerBuilder.fromBox(winnerBox);
 
     // Create new builder instance
     const builder = new GiftBuilder();
 
     // Set all parameters using setters
     builder
-      .setValue(2n * r4Data[2]) // 2 * txFee from R4[2]
-      .setWinnerIndex(winnerIndex)
-      .setTxFee(r4Data[2]) // txFee from R4[2]
-      .setGiftToken(winnerBox.assets[1].tokenId);
+      .setValue(2n * winnerBuilder.getTxFee()) // 2 * txFee
+      .setWinnerIndex(winnerBuilder.getWinnerIndex())
+      .setTxFee(winnerBuilder.getTxFee())
+      .setGiftToken(winnerBuilder.getGiftTokenId()!);
 
     return builder;
   };

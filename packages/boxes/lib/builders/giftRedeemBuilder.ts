@@ -132,6 +132,62 @@ export class GiftRedeemBuilder {
   };
 
   /**
+   * Get the total sold tickets
+   * @returns Total sold tickets count
+   */
+  getTotalSoldTickets = (): bigint => {
+    return this.totalSoldTickets!;
+  };
+
+  /**
+   * Get the ticket price
+   * @returns Ticket price in nanoERG/CollectingToken
+   */
+  getTicketPrice = (): bigint => {
+    return this.ticketPrice!;
+  };
+
+  /**
+   * Get the transaction fee
+   * @returns Transaction fee amount in nanoERG
+   */
+  getTxFee = (): bigint => {
+    return this.txFee!;
+  };
+
+  /**
+   * Get the ticket token ID
+   * @returns Ticket token ID
+   */
+  getTicketTokenId = (): string => {
+    return this.ticketTokenId!;
+  };
+
+  /**
+   * Get the ticket token amount
+   * @returns Ticket token amount
+   */
+  getTicketTokenAmount = (): bigint => {
+    return this.ticketTokenAmount!;
+  };
+
+  /**
+   * Get the collecting token ID
+   * @returns Collecting token ID or undefined if not set
+   */
+  getCollectingTokenId = (): string | undefined => {
+    return this.collectingTokenId;
+  };
+
+  /**
+   * Get the collecting token amount
+   * @returns Collecting token amount or undefined if not set
+   */
+  getCollectingTokenAmount = (): bigint | undefined => {
+    return this.collectingTokenAmount;
+  };
+
+  /**
    * Validate that all required parameters are set
    * @throws Error if any required parameter is missing
    */

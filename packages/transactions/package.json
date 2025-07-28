@@ -1,0 +1,27 @@
+{
+  "name": "@ergo-raffle/transactions",
+  "version": "0.0.1",
+  "description": "A package to manage transactions",
+  "license": "GPL-3.0",
+  "author": "Ergo Raffle Team",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc --build tsconfig.build.json",
+    "lint": "eslint --fix . && npm run prettify",
+    "prettify": "prettier --write . --ignore-path ./.gitignore",
+    "release": "npm run build && npm publish --access public",
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=20.11.0"
+  },
+  "dependencies": {
+    "@ergo-raffle/boxes": "^0.1.0",
+    "@ergo-raffle/contracts": "^0.1.0"
+  }
+}

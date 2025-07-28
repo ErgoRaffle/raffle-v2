@@ -11,6 +11,7 @@ import {
 import { SConstant } from '@fleet-sdk/serializer';
 import { raffleInfo } from '@ergo-raffle/contracts';
 import { blake2b256 } from '@fleet-sdk/crypto';
+import { ActiveRaffleBuilder } from './activeRaffleBuilder';
 
 /**
  * Builder class for creating Success Raffle boxes in the ErgoRaffle protocol
@@ -76,6 +77,22 @@ export class SuccessRaffleBuilder {
   };
 
   /**
+   * Get the total prize amount
+   * @returns Total prize amount in nanoERG
+   */
+  getTotalPrize = (): bigint => {
+    return this.totalPrize!;
+  };
+
+  /**
+   * Check if the raffle is an ERG goal raffle
+   * @returns True if the raffle is an ERG goal raffle, false otherwise
+   */
+  isErgGoal = (): boolean => {
+    return this.collectingTokenId === undefined;
+  };
+
+  /**
    * Set the total number of tickets sold
    * @param count - Number of tickets sold
    * @returns this builder instance
@@ -83,6 +100,14 @@ export class SuccessRaffleBuilder {
   setTotalSoldTickets = (count: bigint): this => {
     this.totalSoldTickets = count;
     return this;
+  };
+
+  /**
+   * Get the total number of tickets sold
+   * @returns Total number of tickets sold
+   */
+  getTotalSoldTickets = (): bigint => {
+    return this.totalSoldTickets!;
   };
 
   /**
@@ -136,6 +161,14 @@ export class SuccessRaffleBuilder {
   setSeed = (seed: Uint8Array): this => {
     this.seed = seed;
     return this;
+  };
+
+  /**
+   * Get the seed for winner selection
+   * @returns The seed bytes
+   */
+  getSeed = (): Uint8Array => {
+    return this.seed!;
   };
 
   /**
@@ -205,7 +238,7 @@ export class SuccessRaffleBuilder {
   private validate = (): void => {
     if (!this.value) throw new Error('Value not set');
     if (!this.creationHeight) throw new Error('Creation height not set');
-    if (!this.totalPrize) throw new Error('Total prize not set');
+    if (this.totalPrize == undefined) throw new Error('Total prize not set');
     if (!this.totalSoldTickets) throw new Error('Total sold tickets not set');
     if (!this.txFee) throw new Error('Transaction fee not set');
     if (!this.winnerCount) throw new Error('Winner count not set');
@@ -318,7 +351,7 @@ export class SuccessRaffleBuilder {
       .setTxFee(r4Data[2])
       .setWinnerCount(winnerCount)
       .setProjectErgoTreeHash(projectErgoTreeHash)
-      .setSeed(r7Data[0])
+      .setSeed(blake2b256(Buffer.from(r7Data[0])))
       .setStep(step)
       .setTicketTokenId(box.assets[1].tokenId)
       .setTicketTokenAmount(BigInt(box.assets[1].amount));
@@ -336,55 +369,61 @@ export class SuccessRaffleBuilder {
   /**
    * Create a SuccessRaffleBuilder instance from an active raffle box
    * @param box - Active raffle box to read configuration from
-   * @param oracleBoxId - The oracle box ID to use as seed
    * @returns New SuccessRaffleBuilder instance with configuration from active raffle
    * @throws Error if box structure doesn't match active raffle box requirements
    */
   static fromActiveRaffleBox = (box: Box<Amount>): SuccessRaffleBuilder => {
-    if (box.assets.length < 2) {
-      throw new Error('Invalid active raffle box: missing required tokens');
-    }
-
-    const registers = box.additionalRegisters;
-    if (!registers.R4 || !registers.R5 || !registers.R6 || !registers.R7) {
-      throw new Error('Invalid active raffle box: missing required registers');
-    }
-
-    const r4Data = SConstant.from(registers.R4).data as bigint[];
-    if (r4Data.length < 7) {
-      throw new Error('Invalid active raffle box: invalid R4 register format');
-    }
-
-    const r5Data = SConstant.from(registers.R5).data as Uint8Array[];
-    if (r5Data.length < 3) {
-      throw new Error('Invalid active raffle box: invalid R5 register format');
-    }
-
-    const winnersCount = SConstant.from(registers.R6).data as number;
-    const totalSoldTickets = SConstant.from(registers.R7).data as bigint;
+    // Use ActiveRaffleBuilder to parse the box
+    const activeRaffleBuilder = ActiveRaffleBuilder.fromBox(box);
 
     // Calculate total prize based on winners percent
-    const winnersPercent = r4Data[0];
-    const ticketPrice = r4Data[3];
+    const winnersPercent = activeRaffleBuilder.getWinnersPercent();
+    const ticketPrice = activeRaffleBuilder.getTicketPrice();
+    const txFee = activeRaffleBuilder.getTxFee();
+    const totalSoldTickets = activeRaffleBuilder.getTotalSoldTickets();
     const totalRaised = ticketPrice * totalSoldTickets;
     const totalPrize = (totalRaised * winnersPercent) / 1000n;
 
+    // Calculate fee amount
+    const serviceFeePercent = activeRaffleBuilder.getServiceFeePercent();
+    const implementerFeePercent =
+      activeRaffleBuilder.getImplementerFeePercent();
+    const totalFeePercent = serviceFeePercent + implementerFeePercent;
+    const totalFeeAmount = (totalRaised * totalFeePercent) / 1000n;
+
+    // Calculate success raffle value and collecting token amount
+    const activeRaffleValue = BigInt(box.value);
+
+    let successRaffleValue: bigint;
+    let collectingTokenAmount: bigint | undefined;
+
+    if (activeRaffleBuilder.isErgGoal()) {
+      // For ERG goal raffles, deduct fees from ERG value
+      successRaffleValue = activeRaffleValue - totalFeeAmount - 4n * txFee;
+    } else {
+      // For token goal raffles, keep ERG value but deduct fees from collecting token
+      successRaffleValue = activeRaffleValue - 4n * txFee;
+      const totalCollectingTokenAmount = BigInt(box.assets[2].amount);
+      collectingTokenAmount = totalCollectingTokenAmount - totalFeeAmount;
+    }
+
     const builder = new SuccessRaffleBuilder()
-      .setValue(BigInt(box.value))
+      .setValue(successRaffleValue)
       .setTotalPrize(totalPrize)
       .setTotalSoldTickets(totalSoldTickets)
-      .setTxFee(r4Data[6])
-      .setWinnerCount(winnersCount)
-      .setProjectErgoTreeHash(r5Data[2])
+      .setTxFee(txFee)
+      .setWinnerCount(activeRaffleBuilder.getWinnersCount())
+      .setProjectErgoTreeHash(activeRaffleBuilder.getProjectErgoTreeHash())
       .setStep(1)
-      .setTicketTokenId(box.assets[1].tokenId)
-      .setTicketTokenAmount(BigInt(box.assets[1].amount) + 1n);
+      .setTicketTokenId(activeRaffleBuilder.getTicketId())
+      .setTicketTokenAmount(activeRaffleBuilder.getTicketCount() + 1n);
 
     // Set collecting token if present
-    if (box.assets.length > 2) {
+    const collectingTokenId = activeRaffleBuilder.getCollectingTokenId();
+    if (collectingTokenId && collectingTokenAmount) {
       builder
-        .setCollectingTokenId(box.assets[2].tokenId)
-        .setCollectingTokenAmount(BigInt(box.assets[2].amount));
+        .setCollectingTokenId(collectingTokenId)
+        .setCollectingTokenAmount(collectingTokenAmount);
     }
 
     return builder;
@@ -398,47 +437,24 @@ export class SuccessRaffleBuilder {
    * @returns Updated SuccessRaffleBuilder instance
    * @throws Error if required parameters are not set or invalid
    */
-  subtractPrize = (
-    winnerBox: Box<Amount>,
-    winnerTicketIndex: bigint,
-  ): SuccessRaffleBuilder => {
+  subtractPrize = (prizeAmount: bigint): SuccessRaffleBuilder => {
     if (!this.value) throw new Error('Value not set');
-    if (!this.totalPrize) throw new Error('Total prize not set');
+    if (this.totalPrize == undefined) throw new Error('Total prize not set');
     if (!this.winnerCount) throw new Error('Winners count not set');
     if (!this.step) throw new Error('Step not set');
     if (!this.seed) throw new Error('Seed not set');
     if (!this.txFee) throw new Error('Transaction fee not set');
-    if (this.selectedWinners.length >= this.winnerCount) {
-      throw new Error('Cannot add more winners: winner count limit reached');
-    }
-
-    // Get winner's reward percent from their box
-    const winnerRegisters = winnerBox.additionalRegisters;
-    if (!winnerRegisters.R4) {
-      throw new Error('Invalid winner box: missing R4 register');
-    }
-    const winnerR4Data = SConstant.from(winnerRegisters.R4).data as bigint[];
-    if (winnerR4Data.length < 1) {
-      throw new Error('Invalid winner box: invalid R4 register format');
-    }
-    const rewardPercent = winnerR4Data[0];
-
-    // Calculate winner's reward
-    const winnerReward = (this.totalPrize * rewardPercent) / 1000n;
 
     // Create updated builder with only the changed parameters
-    const updatedBuilder = new SuccessRaffleBuilder()
-      .setSeed(blake2b256(this.seed))
-      .setStep(this.step + 1)
-      .setSelectedWinners([...this.selectedWinners, winnerTicketIndex]);
+    const updatedBuilder = this.setStep(this.step + 1);
 
     // For token goal raffles, subtract from collecting token amount instead of box value
     if (this.collectingTokenId && this.collectingTokenAmount) {
       updatedBuilder
-        .setCollectingTokenAmount(this.collectingTokenAmount - winnerReward)
+        .setCollectingTokenAmount(this.collectingTokenAmount - prizeAmount)
         .setValue(this.value); // Keep box value unchanged
     } else {
-      updatedBuilder.setValue(this.value - winnerReward);
+      updatedBuilder.setValue(this.value - prizeAmount);
     }
 
     return updatedBuilder;

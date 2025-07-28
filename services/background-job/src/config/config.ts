@@ -1,6 +1,8 @@
 import config from 'config';
 import { cloneDeep } from 'lodash-es';
 import { TransportOptions } from '@rosen-bridge/winston-logger';
+import { Network } from '@fleet-sdk/core';
+
 import { DataBaseOption, ScannerBaseOption, NodeBaseOption } from '../types';
 
 interface ConfigType {
@@ -8,6 +10,7 @@ interface ConfigType {
   database: DBConfig;
   scanner: ScannerConfig;
   txpot: TxPotConfig;
+  ergo: ErgoConfig;
 }
 
 const getOptionalString = (path: string, defaultValue = '') => {
@@ -149,6 +152,17 @@ class TxPotConfig {
   }
 }
 
+class ErgoConfig {
+  fee: bigint;
+  network: Network;
+
+  constructor() {
+    this.fee = config.get<bigint>('ergo.fee');
+    const networkType = config.get<string>('ergo.network');
+    this.network = networkType == 'mainnet' ? Network.Mainnet : Network.Testnet;
+  }
+}
+
 let internalConfig: ConfigType | undefined;
 
 const getConfig = (): ConfigType => {
@@ -157,12 +171,14 @@ const getConfig = (): ConfigType => {
     const dbConfig = new DBConfig();
     const scannerConfig = new ScannerConfig();
     const txpotConfig = new TxPotConfig();
+    const ergoConfig = new ErgoConfig();
 
     internalConfig = {
       logger: loggerConfig,
       database: dbConfig,
       scanner: scannerConfig,
       txpot: txpotConfig,
+      ergo: ergoConfig,
     };
   }
   return internalConfig;

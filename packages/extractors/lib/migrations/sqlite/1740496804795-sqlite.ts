@@ -5,7 +5,7 @@ export class Sqlite1740496804795 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-            CREATE TABLE "box" (
+            CREATE TABLE "raffle_box" (
                 "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
                 "boxId" varchar NOT NULL,
                 "block" varchar NOT NULL,
@@ -16,6 +16,9 @@ export class Sqlite1740496804795 implements MigrationInterface {
                 "serialized" varchar NOT NULL,
                 "txId" varchar NOT NULL,
                 "raffleId" varchar NOT NULL,
+                "type" varchar CHECK(
+                    "type" IN ('ticket_repo', 'gift_token_repo', 'active_raffle')
+                ) NOT NULL,
                 CONSTRAINT "UQ_a5f1a28c854be139a2d7f275e70" UNIQUE ("boxId", "extractor")
             )
         `);
@@ -23,7 +26,7 @@ export class Sqlite1740496804795 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-            DROP TABLE "box"
+            DROP TABLE "raffle_box"
         `);
   }
 }
