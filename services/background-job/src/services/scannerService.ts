@@ -18,6 +18,7 @@ import {
   SuccessRaffleExtractor,
   TicketRedeemExtractor,
   SafePayExtractor,
+  DynamicExtractor,
 } from '@ergo-raffle/extractors';
 import { raffleInfo } from '@ergo-raffle/contracts';
 import * as scanner from '@rosen-bridge/scanner';
@@ -25,14 +26,15 @@ import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
 
-import { DBService } from './db';
+import { DbService } from './dbService';
 import { ScannerBaseOption } from '../types';
 
 export class ScannerService extends AbstractService {
   name = 'ScannerService';
   private static instance: ScannerService;
-  readonly dbService: DBService;
+  readonly dbService: DbService;
   readonly scannerConfig: ScannerBaseOption;
+  private dynamicExtractor: DynamicExtractor;
   private shouldStop = false;
   private latestTimeOut: undefined | ReturnType<typeof setTimeout>;
   private continueStop = () => {
@@ -40,7 +42,7 @@ export class ScannerService extends AbstractService {
   };
   protected dependencies: Dependency[] = [
     {
-      serviceName: DBService.name,
+      serviceName: DbService.name,
       allowedStatuses: [ServiceStatus.running],
     },
   ];
@@ -48,7 +50,7 @@ export class ScannerService extends AbstractService {
 
   private constructor(
     scannerConfig: ScannerBaseOption,
-    dbService: DBService,
+    dbService: DbService,
     logger?: AbstractLogger,
   ) {
     super(logger);
@@ -233,6 +235,13 @@ export class ScannerService extends AbstractService {
       CallbackLoggerFactory.getInstance().getLogger('raffle-safePay-extractor'),
     );
     await this.ergoScanner.registerExtractor(safePayExtractor);
+
+    this.dynamicExtractor = new DynamicExtractor(
+      this.dbService.dataSource,
+      'Dynamic',
+      CallbackLoggerFactory.getInstance().getLogger('dynamic-extractor'),
+    );
+    await this.ergoScanner.registerExtractor(this.dynamicExtractor);
   };
 
   /**
@@ -240,12 +249,12 @@ export class ScannerService extends AbstractService {
    *
    * @static
    * @param {ScannerBaseOption} scannerConfig
-   * @param {DBService} [dbService]
+   * @param {DbService} [dbService]
    * @memberof ScannerService
    */
   static readonly init = async (
     scannerConfig: ScannerBaseOption,
-    dbService: DBService,
+    dbService: DbService,
   ) => {
     if (this.instance != undefined) {
       return;
@@ -337,5 +346,21 @@ export class ScannerService extends AbstractService {
 
     this.setStatus(ServiceStatus.dormant);
     return true;
+  };
+
+  /**
+   * Add a new address to the dynamic extractor
+   * @param address - The address to add
+   */
+  addDynamicAddress = (address: string) => {
+    this.dynamicExtractor.addNewAddress(address);
+  };
+
+  /**
+   * Remove an address from the dynamic extractor
+   * @param address - The address to remove
+   */
+  removeDynamicAddress = (address: string) => {
+    this.dynamicExtractor.removeAddress(address);
   };
 }

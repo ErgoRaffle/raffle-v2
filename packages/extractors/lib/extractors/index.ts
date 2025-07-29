@@ -1,8 +1,8 @@
 export * from './raffleService';
-export * from './inactiveRaffle';
-export * from './ticketRepo';
-export * from './activeRaffle';
-export * from './giftTokenRepo';
+export * from './inactiveRaffleExtractor';
+export * from './ticketRepoExtractor';
+export * from './activeRaffleExtractor';
+export * from './giftTokenRepoExtractor';
 export * from './winner';
 export * from './raffleDetails';
 export * from './gift';
@@ -12,3 +12,4 @@ export * from './giftRedeem';
 export * from './successRaffle';
 export * from './ticketRedeem';
 export * from './safePay';
+export * from './dynamicExtractor';

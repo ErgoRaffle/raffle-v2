@@ -6,6 +6,13 @@ import { AxiosError } from 'axios';
 import handleApiError from './utils';
 import { FailedError } from './error';
 import { TX_FETCHING_PAGE_SIZE } from '../constants';
+import {
+  BlockchainStateContext,
+  Header,
+  AvlTree$,
+  GroupElement$,
+  BlockchainParameters,
+} from 'sigmastate-js/main';
 
 class ErgoNodeNetwork {
   private client: ReturnType<typeof ergoNodeClientFactory>;
@@ -29,6 +36,25 @@ class ErgoNodeNetwork {
       return Number(nodeInfo.fullHeight);
     } catch (error) {
       return handleApiError(error, 'Failed to get height from Ergo Node:');
+    }
+  };
+
+  /**
+   * get current blockchain parameters
+   */
+  public getBlockchainParameters = async (): Promise<BlockchainParameters> => {
+    try {
+      const nodeInfo = await this.client.getNodeInfo();
+      this.logger.debug(
+        `requested 'getNodeInfo'. res: ${JsonBigInt.stringify(nodeInfo)}`,
+      );
+      return {
+        ...nodeInfo.parameters,
+        softForkStartingHeight: undefined,
+        softForkVotesCollected: undefined,
+      } as BlockchainParameters;
+    } catch (error) {
+      return handleApiError(error, 'Failed to get node info from Ergo Node:');
     }
   };
 
@@ -144,6 +170,46 @@ class ErgoNodeNetwork {
           );
         },
       });
+    }
+  };
+
+  /**
+   * get current state context of blockchain using last ten blocks
+   */
+  public getStateContext = async (): Promise<BlockchainStateContext> => {
+    try {
+      const lastBlocks = await this.client.getLastHeaders(10);
+      this.logger.debug(
+        `requested 'getLastHeaders' for last 10 blocks. res: ${JsonBigInt.stringify(
+          lastBlocks,
+        )}`,
+      );
+
+      // Convert each block header JSON to a sigmastate-js Header
+      const headers: Header[] = lastBlocks.map((h) => ({
+        ...h,
+        ADProofsRoot: h.adProofsRoot,
+        // @ts-expect-error AvlTree$.fromDigest is present at runtime but not recognized by TS
+        stateRoot: AvlTree$.fromDigest(h.stateRoot),
+        timestamp: BigInt(h.timestamp),
+        nBits: BigInt(h.nBits),
+        extensionRoot: h.extensionHash,
+        minerPk: GroupElement$.fromPointHex(h.powSolutions.pk),
+        powOnetimePk: GroupElement$.fromPointHex(h.powSolutions.w),
+        powNonce: h.powSolutions.n,
+        powDistance: BigInt(h.powSolutions.d),
+      }));
+
+      return {
+        sigmaLastHeaders: headers.slice(1),
+        previousStateDigest: headers[1].stateRoot.digest,
+        sigmaPreHeader: headers[0],
+      };
+    } catch (error) {
+      return handleApiError(
+        error,
+        'Failed to get state context from Ergo Node:',
+      );
     }
   };
 }

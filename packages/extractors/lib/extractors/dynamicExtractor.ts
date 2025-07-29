@@ -3,7 +3,7 @@ import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { AbstractErgoExtractor } from '@rosen-bridge/abstract-extractor';
 import { OutputBox } from '@rosen-bridge/scanner-interfaces';
 
-import { DynamicBoxAction } from '../actions/DynamicBoxAction';
+import { DynamicBoxAction } from '../actions/dynamicBoxAction';
 import { DynamicBoxInterface } from '../interfaces/types';
 import { DynamicBoxEntity } from '../entities';
 import { ErgoAddress, Box, Network } from '@fleet-sdk/core';

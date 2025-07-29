@@ -7,14 +7,14 @@ import {
 import { TxPot } from '@rosen-bridge/tx-pot';
 import { DataSource } from 'typeorm';
 import { ErgoNetworkInterface } from '../txPot/ergoNetworkInterface';
-import { DBService } from './db';
+import { DbService } from './dbService';
 import * as constants from '../constants';
 
 export class TxPotService extends AbstractService {
   name = 'TxPotService';
   protected dependencies: Dependency[] = [
     {
-      serviceName: DBService.name,
+      serviceName: DbService.name,
       allowedStatuses: [ServiceStatus.running],
     },
   ];
@@ -144,5 +144,13 @@ export class TxPotService extends AbstractService {
       this.shouldStopJob = false;
       this.continueStop();
     }
+  };
+
+  /**
+   * Returns the TxPot instance
+   * @returns TxPot instance
+   */
+  getTxPot = (): TxPot => {
+    return TxPot.getInstance();
   };
 }
