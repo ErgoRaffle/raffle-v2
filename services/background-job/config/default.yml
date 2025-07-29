@@ -1,23 +1,11 @@
-logs:
-  - type: console
-    level: info
-  - type: file
-    maxSize: 20m
-    maxFiles: 14d
-    path: ./logs/
-    level: debug
 database:
-  type: 'sqlite'
-  path: 'job.sqlite'
+  type: postgres
+  host: localhost
+  username: postgres
+  password: ''
+  name: raffle_v2_background_job
 scanner:
   node:
-    url: 'http://127.0.0.1:9052/'
-    timeout: 1000000
-    initialHeight: 1698712
-  rescanDelaySeconds: 10
-txpot:
-  updateInterval: 60
-  txRequiredConfirmations: 5
+    url: http://127.0.0.1:9052/
 ergo:
-  fee: 1500000n
-  network: 'mainnet'
+  network: mainnet
