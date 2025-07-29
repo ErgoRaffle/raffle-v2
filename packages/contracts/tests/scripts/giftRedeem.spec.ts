@@ -16,7 +16,7 @@ import { mockUTxO } from '@fleet-sdk/mock-chain';
 const createRaffleGiftRedeemTest = (collectingToken?: TokenAmount<bigint>) => {
   const winnersCount = 2;
   const totalSoldTickets = 10n;
-  const ticketPrice = testUtils.FEE * 2n;
+  const ticketPrice = testUtils.TestConstants.FEE * 2n;
   const step = 1;
 
   const boxFactory = new testUtils.RaffleBoxFactory(
@@ -27,25 +27,25 @@ const createRaffleGiftRedeemTest = (collectingToken?: TokenAmount<bigint>) => {
   );
   boxFactory.chain.setTip(100);
   const { creator, someone } = boxFactory.createPartners({
-    creator: testUtils.CREATOR_DEFAULT_BALANCE,
-    someone: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    creator: testUtils.TestConstants.CREATOR_DEFAULT_BALANCE,
+    someone: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
   });
   someone.addBalance({
-    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 100n }],
+    tokens: [{ tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 100n }],
   });
 
   // create input winner box
   const winnerBox = boxFactory.createWinnerSingleBoxMock(
     step,
     winnersCount,
-    testUtils.TICKET_TOKEN_ID,
+    testUtils.TestConstants.TICKET_TOKEN_ID,
     undefined,
     2000n,
     0n,
-    testUtils.GIFT_TOKEN_ID,
+    testUtils.TestConstants.GIFT_TOKEN_ID,
     [
       {
-        tokenId: testUtils.GIFT_TOKEN_ID,
+        tokenId: testUtils.TestConstants.GIFT_TOKEN_ID,
         amount: 1000n,
       },
     ],
@@ -55,20 +55,20 @@ const createRaffleGiftRedeemTest = (collectingToken?: TokenAmount<bigint>) => {
   const giftRedeemBox = boxFactory.createGiftRedeemBoxMock(
     1_000_000_000n,
     totalSoldTickets,
-    testUtils.FEE * 2n,
+    testUtils.TestConstants.FEE * 2n,
     winnersCount,
     step,
-    testUtils.TICKET_TOKEN_ID,
+    testUtils.TestConstants.TICKET_TOKEN_ID,
     1n,
     collectingToken,
   );
   const giftRedeemBoxForTicketRedeemBox = boxFactory.createGiftRedeemBoxMock(
     1_000_000_000n,
     totalSoldTickets,
-    testUtils.FEE * 2n,
+    testUtils.TestConstants.FEE * 2n,
     winnersCount,
     step + 2,
-    testUtils.TICKET_TOKEN_ID,
+    testUtils.TestConstants.TICKET_TOKEN_ID,
     1n,
     collectingToken,
   );
@@ -77,18 +77,18 @@ const createRaffleGiftRedeemTest = (collectingToken?: TokenAmount<bigint>) => {
   const giftRedeemOutputBox = boxFactory.createGiftRedeemOutputBox(
     BigInt(giftRedeemBox.value.toString()) +
       BigInt(winnerBox.value) -
-      testUtils.FEE,
+      testUtils.TestConstants.FEE,
     totalSoldTickets,
     ticketPrice,
     winnersCount,
     step + 1,
-    testUtils.TICKET_TOKEN_ID,
+    testUtils.TestConstants.TICKET_TOKEN_ID,
     BigInt(giftRedeemBox.assets[1].amount.toString()) + 1n,
     giftRedeemBox.assets[2],
   );
 
   const ticketRedeemOutputBox = boxFactory.createTicketRedeemOutputBox(
-    BigInt(giftRedeemBox.value.toString()) - testUtils.FEE,
+    BigInt(giftRedeemBox.value.toString()) - testUtils.TestConstants.FEE,
     totalSoldTickets,
     ticketPrice,
     0n,
@@ -113,7 +113,7 @@ const createRaffleGiftRedeemTest = (collectingToken?: TokenAmount<bigint>) => {
 describe('giftRedeem', () => {
   const giftRedeemTest = createRaffleGiftRedeemTest();
   const giftRedeemTokenGoalTest = createRaffleGiftRedeemTest({
-    tokenId: testUtils.X_TOKEN_ID,
+    tokenId: testUtils.TestConstants.X_TOKEN_ID,
     amount: 100n,
   });
 
@@ -137,7 +137,7 @@ describe('giftRedeem', () => {
             selector.defineStrategy((inputs) => inputs);
           })
           .burnTokens(winnerBox.assets[1]!)
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(boxFactory.chain.execute(transaction)).true;
@@ -158,19 +158,19 @@ describe('giftRedeem', () => {
       ({ boxFactory, someoneWallet, winnerBox, giftRedeemBox }) => {
         const winnersCount = 2;
         const totalSoldTickets = 10n;
-        const ticketPrice = testUtils.FEE * 2n;
+        const ticketPrice = testUtils.TestConstants.FEE * 2n;
         const step = 1;
 
         const giftRedeemOutputBox = boxFactory.createGiftRedeemOutputBox(
           // reduced value of the box and move to the someoneWallet
           BigInt(giftRedeemBox.value.toString()) +
             BigInt(winnerBox.value) -
-            testUtils.FEE * 2n,
+            testUtils.TestConstants.FEE * 2n,
           totalSoldTickets,
           ticketPrice,
           winnersCount,
           step + 1,
-          testUtils.TICKET_TOKEN_ID,
+          testUtils.TestConstants.TICKET_TOKEN_ID,
           BigInt(giftRedeemBox.assets[1].amount.toString()) + 1n,
           giftRedeemBox.assets[2],
         );
@@ -183,7 +183,7 @@ describe('giftRedeem', () => {
           })
           .sendChangeTo(someoneWallet.address)
           .burnTokens(winnerBox.assets[1]!)
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -205,25 +205,25 @@ describe('giftRedeem', () => {
       ({ boxFactory, someoneWallet, winnerBox, giftRedeemBox }) => {
         const winnersCount = 2;
         const totalSoldTickets = 10n;
-        const ticketPrice = testUtils.FEE * 2n;
+        const ticketPrice = testUtils.TestConstants.FEE * 2n;
         const step = 1;
 
         const giftRedeemOutputBox = boxFactory.createGiftRedeemOutputBox(
           BigInt(giftRedeemBox.value.toString()) +
             BigInt(winnerBox.value) -
-            testUtils.FEE,
+            testUtils.TestConstants.FEE,
           totalSoldTickets,
           ticketPrice,
           winnersCount,
           step + 1,
-          testUtils.TICKET_TOKEN_ID,
+          testUtils.TestConstants.TICKET_TOKEN_ID,
           // preventing of adding one extra ticket token to this box
           BigInt(giftRedeemBox.assets[1].amount.toString()),
           giftRedeemBox.assets[2],
         );
 
         const extraErgInputBox = mockUTxO({
-          value: testUtils.FEE,
+          value: testUtils.TestConstants.FEE,
           ergoTree: someoneWallet.ergoTree,
         });
 
@@ -235,7 +235,7 @@ describe('giftRedeem', () => {
           })
           .sendChangeTo(someoneWallet.address)
           .burnTokens(winnerBox.assets[1]!)
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -256,24 +256,24 @@ describe('giftRedeem', () => {
       ({ boxFactory, someoneWallet, winnerBox, giftRedeemBox }) => {
         const winnersCount = 2;
         const totalSoldTickets = 10n;
-        const ticketPrice = testUtils.FEE * 2n;
+        const ticketPrice = testUtils.TestConstants.FEE * 2n;
         const step = 1;
 
         const giftRedeemOutputBox = boxFactory.createGiftRedeemOutputBox(
           BigInt(giftRedeemBox.value.toString()) +
             BigInt(winnerBox.value) -
-            testUtils.FEE,
+            testUtils.TestConstants.FEE,
           totalSoldTickets,
           ticketPrice,
           winnersCount,
           step + 1,
-          testUtils.TICKET_TOKEN_ID,
+          testUtils.TestConstants.TICKET_TOKEN_ID,
           // put extra amount of collecting token
           BigInt(giftRedeemBox.assets[1].amount.toString()) + 1n,
         );
 
         const extraErgInputBox = mockUTxO({
-          value: testUtils.FEE,
+          value: testUtils.TestConstants.FEE,
           ergoTree: someoneWallet.ergoTree,
         });
 
@@ -285,7 +285,7 @@ describe('giftRedeem', () => {
           })
           .sendChangeTo(someoneWallet.address)
           .burnTokens(winnerBox.assets[1]!)
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -306,19 +306,19 @@ describe('giftRedeem', () => {
       ({ boxFactory, winnerBox, giftRedeemBox }) => {
         const winnersCount = 2;
         const totalSoldTickets = 10n;
-        const ticketPrice = testUtils.FEE * 2n;
+        const ticketPrice = testUtils.TestConstants.FEE * 2n;
         const step = 1;
 
         const giftRedeemOutputBox = boxFactory.createGiftRedeemOutputBox(
           BigInt(giftRedeemBox.value.toString()) +
             BigInt(winnerBox.value) -
-            testUtils.FEE,
+            testUtils.TestConstants.FEE,
           totalSoldTickets,
           ticketPrice,
           // set invalid R5 value
           winnersCount + 1,
           step + 1,
-          testUtils.TICKET_TOKEN_ID,
+          testUtils.TestConstants.TICKET_TOKEN_ID,
           BigInt(giftRedeemBox.assets[1].amount.toString()) + 1n,
           giftRedeemBox.assets[2],
         );
@@ -330,7 +330,7 @@ describe('giftRedeem', () => {
             selector.defineStrategy((inputs) => inputs);
           })
           .burnTokens(winnerBox.assets[1]!)
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -351,19 +351,19 @@ describe('giftRedeem', () => {
       ({ boxFactory, winnerBox, giftRedeemBox }) => {
         const winnersCount = 2;
         const totalSoldTickets = 10n;
-        const ticketPrice = testUtils.FEE * 2n;
+        const ticketPrice = testUtils.TestConstants.FEE * 2n;
         const step = 1;
 
         const giftRedeemOutputBox = boxFactory.createGiftRedeemOutputBox(
           BigInt(giftRedeemBox.value.toString()) +
             BigInt(winnerBox.value) -
-            testUtils.FEE,
+            testUtils.TestConstants.FEE,
           totalSoldTickets,
           ticketPrice,
           winnersCount,
           // set invalid R6 value
           step + 2,
-          testUtils.TICKET_TOKEN_ID,
+          testUtils.TestConstants.TICKET_TOKEN_ID,
           BigInt(giftRedeemBox.assets[1].amount.toString()) + 1n,
           giftRedeemBox.assets[2],
         );
@@ -375,7 +375,7 @@ describe('giftRedeem', () => {
             selector.defineStrategy((inputs) => inputs);
           })
           .burnTokens(winnerBox.assets[1]!)
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -399,23 +399,25 @@ describe('giftRedeem', () => {
         const step = 1;
 
         const extraTicketTokenInputBox = mockUTxO({
-          value: testUtils.FEE,
+          value: testUtils.TestConstants.FEE,
           ergoTree: someoneWallet.ergoTree,
-          assets: [{ tokenId: testUtils.TICKET_TOKEN_ID, amount: 1n }],
+          assets: [
+            { tokenId: testUtils.TestConstants.TICKET_TOKEN_ID, amount: 1n },
+          ],
         });
 
         const winnerBox = boxFactory.createWinnerSingleBoxMock(
           step,
           winnersCount,
           // set different ticket token id
-          testUtils.X_TOKEN_ID,
+          testUtils.TestConstants.X_TOKEN_ID,
           undefined,
           2000n,
           0n,
-          testUtils.GIFT_TOKEN_ID,
+          testUtils.TestConstants.GIFT_TOKEN_ID,
           [
             {
-              tokenId: testUtils.GIFT_TOKEN_ID,
+              tokenId: testUtils.TestConstants.GIFT_TOKEN_ID,
               amount: 1000n,
             },
           ],
@@ -429,7 +431,7 @@ describe('giftRedeem', () => {
           })
           .burnTokens(winnerBox.assets[1]!)
           .sendChangeTo(someoneWallet.address)
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -454,14 +456,14 @@ describe('giftRedeem', () => {
           // set invalid step
           2,
           winnersCount,
-          testUtils.TICKET_TOKEN_ID,
+          testUtils.TestConstants.TICKET_TOKEN_ID,
           undefined,
           2000n,
           0n,
-          testUtils.GIFT_TOKEN_ID,
+          testUtils.TestConstants.GIFT_TOKEN_ID,
           [
             {
-              tokenId: testUtils.GIFT_TOKEN_ID,
+              tokenId: testUtils.TestConstants.GIFT_TOKEN_ID,
               amount: 1000n,
             },
           ],
@@ -475,7 +477,7 @@ describe('giftRedeem', () => {
           })
           .burnTokens(winnerBox.assets[1]!)
           .sendChangeTo(someoneWallet.address)
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -506,7 +508,7 @@ describe('giftRedeem', () => {
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
           })
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(boxFactory.chain.execute(transaction)).true;
@@ -531,11 +533,12 @@ describe('giftRedeem', () => {
         giftRedeemBoxForTicketRedeemBox,
       }) => {
         const totalSoldTickets = 10n;
-        const ticketPrice = testUtils.FEE * 2n;
+        const ticketPrice = testUtils.TestConstants.FEE * 2n;
 
         const ticketRedeemOutputBox = boxFactory.createTicketRedeemOutputBox(
           // reduced value of the box and move to the someoneWallet
-          BigInt(giftRedeemBox.value.toString()) - testUtils.FEE * 2n,
+          BigInt(giftRedeemBox.value.toString()) -
+            testUtils.TestConstants.FEE * 2n,
           totalSoldTickets,
           ticketPrice,
           0n,
@@ -550,7 +553,7 @@ describe('giftRedeem', () => {
             selector.defineStrategy((inputs) => inputs);
           })
           .sendChangeTo(someoneWallet.address)
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -575,14 +578,14 @@ describe('giftRedeem', () => {
         giftRedeemBoxForTicketRedeemBox,
       }) => {
         const totalSoldTickets = 10n;
-        const ticketPrice = testUtils.FEE * 2n;
+        const ticketPrice = testUtils.TestConstants.FEE * 2n;
 
         const ticketRedeemOutputBox = boxFactory.createTicketRedeemOutputBox(
-          BigInt(giftRedeemBox.value.toString()) - testUtils.FEE,
+          BigInt(giftRedeemBox.value.toString()) - testUtils.TestConstants.FEE,
           totalSoldTickets,
           ticketPrice,
           0n,
-          testUtils.X_TOKEN_ID,
+          testUtils.TestConstants.X_TOKEN_ID,
           // prevent of inserting any ticket token
           0n,
         );
@@ -595,7 +598,7 @@ describe('giftRedeem', () => {
           })
           .sendChangeTo(someoneWallet.address)
           .burnTokens(giftRedeemBox.assets[1])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -620,10 +623,10 @@ describe('giftRedeem', () => {
         giftRedeemBoxForTicketRedeemBox,
       }) => {
         const totalSoldTickets = 10n;
-        const ticketPrice = testUtils.FEE * 2n;
+        const ticketPrice = testUtils.TestConstants.FEE * 2n;
 
         const ticketRedeemOutputBox = boxFactory.createTicketRedeemOutputBox(
-          BigInt(giftRedeemBox.value.toString()) - testUtils.FEE,
+          BigInt(giftRedeemBox.value.toString()) - testUtils.TestConstants.FEE,
           // set invalid totalSoldTickets value
           totalSoldTickets - 1n,
           ticketPrice,
@@ -639,7 +642,7 @@ describe('giftRedeem', () => {
             selector.defineStrategy((inputs) => inputs);
           })
           .sendChangeTo(someoneWallet.address)
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -664,10 +667,10 @@ describe('giftRedeem', () => {
         giftRedeemBoxForTicketRedeemBox,
       }) => {
         const totalSoldTickets = 10n;
-        const ticketPrice = testUtils.FEE * 2n;
+        const ticketPrice = testUtils.TestConstants.FEE * 2n;
 
         const ticketRedeemOutputBox = boxFactory.createTicketRedeemOutputBox(
-          BigInt(giftRedeemBox.value.toString()) - testUtils.FEE,
+          BigInt(giftRedeemBox.value.toString()) - testUtils.TestConstants.FEE,
           totalSoldTickets,
           ticketPrice,
           // set invalid redeemedTickets value
@@ -683,7 +686,7 @@ describe('giftRedeem', () => {
             selector.defineStrategy((inputs) => inputs);
           })
           .sendChangeTo(someoneWallet.address)
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();

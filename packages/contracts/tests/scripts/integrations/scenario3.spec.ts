@@ -25,6 +25,7 @@ import {
  * @returns vitest customized "it" object
  */
 const createRaffleTest = () => {
+  testUtils.TestConstants.overrideBySampleConfigs();
   const boxFactory = new testUtils.RaffleBoxFactory({ height: 1000 });
   const {
     owner,
@@ -38,41 +39,53 @@ const createRaffleTest = () => {
     donator4,
     donator5,
   } = boxFactory.createPartners({
-    owner: testUtils.CREATOR_DEFAULT_BALANCE,
-    creator: testUtils.CREATOR_DEFAULT_BALANCE,
-    implementer: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
-    giftGiver1: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
-    giftGiver2: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
-    donator1: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
-    donator2: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
-    donator3: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
-    donator4: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
-    donator5: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    owner: testUtils.TestConstants.CREATOR_DEFAULT_BALANCE,
+    creator: testUtils.TestConstants.CREATOR_DEFAULT_BALANCE,
+    implementer: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    giftGiver1: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    giftGiver2: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    donator1: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    donator2: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    donator3: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    donator4: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    donator5: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
   });
   creator.addBalance({
-    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000_000n }],
+    tokens: [
+      { tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 1_000_000n },
+    ],
   });
   donator1.addBalance({
-    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000_000n }],
+    tokens: [
+      { tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 1_000_000n },
+    ],
   });
   donator2.addBalance({
-    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000_000n }],
+    tokens: [
+      { tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 1_000_000n },
+    ],
   });
   donator3.addBalance({
-    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000_000n }],
+    tokens: [
+      { tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 1_000_000n },
+    ],
   });
   donator4.addBalance({
-    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000_000n }],
+    tokens: [
+      { tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 1_000_000n },
+    ],
   });
   donator5.addBalance({
-    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 1_000_000n }],
+    tokens: [
+      { tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 1_000_000n },
+    ],
   });
 
   // Created input service-box
-  const creationFee = testUtils.CREATION_FEE;
+  const creationFee = testUtils.TestConstants.CREATION_FEE;
   const serviceBox = boxFactory.createServiceBoxMock(
     owner.ergoTree,
-    testUtils.LICENSE_TOKEN_COUNT,
+    testUtils.TestConstants.LICENSE_TOKEN_COUNT,
     100n,
     100n,
     creationFee,
@@ -149,16 +162,16 @@ describe('Raffle', () => {
           .setWinnersSharePercent(200n)
           .setGoal(1000n)
           .setInactiveRaffleValue(
-            8n * testUtils.FEE +
-              5n * testUtils.FEE * BigInt(winnersCount) +
-              testUtils.CREATION_FEE,
+            8n * testUtils.TestConstants.FEE +
+              5n * testUtils.TestConstants.FEE * BigInt(winnersCount) +
+              testUtils.TestConstants.CREATION_FEE,
           )
           .setRaffleName('Test success token-goal raffle')
           .setRaffleDescription('Test Raffle Description')
           .setTicketTokenCount(100n)
           .setChainHeight(boxFactory.chain.height)
-          .setTxFee(testUtils.FEE)
-          .setCollectingTokenId(testUtils.X_TOKEN_ID);
+          .setTxFee(testUtils.TestConstants.FEE)
+          .setCollectingTokenId(testUtils.TestConstants.X_TOKEN_ID);
 
         const createRaffleTx = boxFactory.chain.executeAndReturnOutputs(
           createRaffleBuilder.build(),
@@ -177,7 +190,7 @@ describe('Raffle', () => {
           .setTicketRepo(ticketRepo)
           .setWinnersSharePercent(winnersPercent)
           .setChainHeight(boxFactory.chain.height)
-          .setTxFee(testUtils.FEE);
+          .setTxFee(testUtils.TestConstants.FEE);
 
         const activationTx = boxFactory.chain.executeAndReturnOutputs(
           activationBuilder.build(),
@@ -190,19 +203,17 @@ describe('Raffle', () => {
           3,
           3 + winnersCount,
         );
-        let step = 1;
         const winnerBoxes = [];
         for (const winnerBox of emptyWinnerBoxes) {
           const giftTokenReceiptBuilder = new GiftTokenReceiptTxBuilder()
             .setWinner(winnerBox)
             .setGiftTokenRepo(giftTokenRepo)
             .setChainHeight(boxFactory.chain.height)
-            .setTxFee(testUtils.FEE);
+            .setTxFee(testUtils.TestConstants.FEE);
 
           const giftTokenReceiptTx = boxFactory.chain.executeAndReturnOutputs(
             giftTokenReceiptBuilder.build(),
           );
-          step++;
           expect(giftTokenReceiptTx.success).true;
           winnerBoxes.push(giftTokenReceiptTx.outputs[0]);
           giftTokenRepo = giftTokenReceiptTx.outputs[1];
@@ -220,9 +231,9 @@ describe('Raffle', () => {
             .setGiftGiverAddress(
               (giftGiverWallets as KeyedMockChainParty[])[i].address.toString(),
             )
-            .setGiftValue(10n * testUtils.FEE)
+            .setGiftValue(10n * testUtils.TestConstants.FEE)
             .setChainHeight(boxFactory.chain.height)
-            .setTxFee(testUtils.FEE);
+            .setTxFee(testUtils.TestConstants.FEE);
 
           const addGiftTx = boxFactory.chain.executeAndReturnOutputs(
             addGiftBuilder.build(),
@@ -255,7 +266,7 @@ describe('Raffle', () => {
             )
             .setDonationTicketCount(ticketCount)
             .setChainHeight(boxFactory.chain.height)
-            .setTxFee(testUtils.FEE);
+            .setTxFee(testUtils.TestConstants.FEE);
 
           const donateTx = boxFactory.chain.executeAndReturnOutputs(
             donateBuilder.build(),
@@ -280,7 +291,9 @@ describe('Raffle', () => {
         boxFactory.chain.setTip(2001);
 
         // Step 6: Success transaction and fee payment after passing the deadline
-        const oracleBox = boxFactory.createMockedOracleUTxO(testUtils.FEE);
+        const oracleBox = boxFactory.createMockedOracleUTxO(
+          testUtils.TestConstants.FEE,
+        );
         const feePaymentBuilder = new FeePaymentTxBuilder()
           .setActiveRaffle(activeRaffle)
           .setRaffleDetails(raffleDetails)
@@ -288,7 +301,7 @@ describe('Raffle', () => {
           .setServiceErgoTree(ownerErgoTree)
           .setImplementerErgoTree(implementerErgoTree)
           .setChainHeight(boxFactory.chain.height)
-          .setTxFee(testUtils.FEE);
+          .setTxFee(testUtils.TestConstants.FEE);
 
         const feePaymentTx = boxFactory.chain.executeAndReturnOutputs(
           feePaymentBuilder.build(),
@@ -300,7 +313,7 @@ describe('Raffle', () => {
           .setSafePay(serviceFeeSafePayBox)
           .setReceiverAddress(ownerErgoTree)
           .setChainHeight(boxFactory.chain.height)
-          .setTxFee(testUtils.FEE);
+          .setTxFee(testUtils.TestConstants.FEE);
 
         const serviceFeeSafeWithdrawTx =
           boxFactory.chain.executeAndReturnOutputs(
@@ -313,7 +326,7 @@ describe('Raffle', () => {
           .setSafePay(implementerFeeSafePayBox)
           .setReceiverAddress(implementerErgoTree)
           .setChainHeight(boxFactory.chain.height)
-          .setTxFee(testUtils.FEE);
+          .setTxFee(testUtils.TestConstants.FEE);
 
         const implementerFeeSafeWithdrawTx =
           boxFactory.chain.executeAndReturnOutputs(
@@ -347,7 +360,7 @@ describe('Raffle', () => {
             .setWinnerTicketIndex(newWinnerTicketIndex)
             .setWinnerIndexList(winnerTicketsList)
             .setChainHeight(boxFactory.chain.height)
-            .setTxFee(testUtils.FEE);
+            .setTxFee(testUtils.TestConstants.FEE);
 
           const prizeCreationTx = boxFactory.chain.executeAndReturnOutputs(
             prizeCreationBuilder.build(),
@@ -375,7 +388,7 @@ describe('Raffle', () => {
             .setTicket(winnerTicket)
             .setWinnerErgoTree(winnerAddress)
             .setChainHeight(boxFactory.chain.height)
-            .setTxFee(testUtils.FEE);
+            .setTxFee(testUtils.TestConstants.FEE);
 
           const giftUnwrappedTx = boxFactory.chain.executeAndReturnOutputs(
             giftUnwrapBuilder.build(),
@@ -388,7 +401,7 @@ describe('Raffle', () => {
             .setSafePay(giftSafePayBox)
             .setReceiverAddress(winnerAddress)
             .setChainHeight(boxFactory.chain.height)
-            .setTxFee(testUtils.FEE);
+            .setTxFee(testUtils.TestConstants.FEE);
 
           const giftSafeWithdrawTx = boxFactory.chain.executeAndReturnOutputs(
             giftSafeWithdrawBuilder.build(),
@@ -412,7 +425,7 @@ describe('Raffle', () => {
             .setTicket(winnerTicket)
             .setWinnerErgoTree(winnerAddress)
             .setChainHeight(boxFactory.chain.height)
-            .setTxFee(testUtils.FEE);
+            .setTxFee(testUtils.TestConstants.FEE);
 
           const finalPrizeTx = boxFactory.chain.executeAndReturnOutputs(
             finalPrizeBuilder.build(),
@@ -424,7 +437,7 @@ describe('Raffle', () => {
             .setSafePay(prizeSafePayBox)
             .setReceiverAddress(winnerAddress)
             .setChainHeight(boxFactory.chain.height)
-            .setTxFee(testUtils.FEE);
+            .setTxFee(testUtils.TestConstants.FEE);
 
           const prizeSafeWithdrawTx = boxFactory.chain.executeAndReturnOutputs(
             prizeSafeWithdrawBuilder.build(),
@@ -439,7 +452,7 @@ describe('Raffle', () => {
           .setService(finalServiceBox)
           .setChangeErgoTree(creator.ergoTree)
           .setChainHeight(boxFactory.chain.height)
-          .setTxFee(testUtils.FEE);
+          .setTxFee(testUtils.TestConstants.FEE);
 
         const returnLicenseTx = boxFactory.chain.executeAndReturnOutputs(
           returnLicenseBuilder.build(),
@@ -451,7 +464,7 @@ describe('Raffle', () => {
           .setSafePay(projectSafePayBox)
           .setReceiverAddress(creator.ergoTree)
           .setChainHeight(boxFactory.chain.height)
-          .setTxFee(testUtils.FEE);
+          .setTxFee(testUtils.TestConstants.FEE);
 
         const projectSafeWithdrawTx = boxFactory.chain.executeAndReturnOutputs(
           projectSafeWithdrawBuilder.build(),
