@@ -4,11 +4,6 @@ import { blake2b256 } from '@fleet-sdk/crypto';
 import { SByte, SColl, SConstant } from '@fleet-sdk/serializer';
 
 import * as testUtils from '../testUtils';
-import {
-  X_TOKEN_ID,
-  CREATOR_DEFAULT_BALANCE,
-  UNKNOWN_WALLET_DEFAULT_BALANCE,
-} from '../testUtils';
 import * as constants from '../../constants';
 import { ScriptNamesType } from '../../lib/types';
 
@@ -35,23 +30,25 @@ const createRaffleGiftTest = (extraGiftTokens: TokenAmount<bigint>[] = []) => {
   );
   boxFactory.chain.setTip(100);
   const { creator, someone } = boxFactory.createPartners({
-    creator: CREATOR_DEFAULT_BALANCE,
-    someone: UNKNOWN_WALLET_DEFAULT_BALANCE,
+    creator: testUtils.TestConstants.CREATOR_DEFAULT_BALANCE,
+    someone: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
   });
-  creator.addBalance({ tokens: [{ tokenId: X_TOKEN_ID, amount: 100n }] });
+  creator.addBalance({
+    tokens: [{ tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 100n }],
+  });
 
   // create winner input boxes
   const winnerBox = boxFactory.createWinnerSingleBoxMock(
     1,
     1,
-    testUtils.TICKET_TOKEN_ID,
+    testUtils.TestConstants.TICKET_TOKEN_ID,
     undefined,
     1n,
     0n,
-    testUtils.GIFT_TOKEN_ID,
+    testUtils.TestConstants.GIFT_TOKEN_ID,
     [
       {
-        tokenId: testUtils.GIFT_TOKEN_ID,
+        tokenId: testUtils.TestConstants.GIFT_TOKEN_ID,
         amount: 1n,
       },
     ],
@@ -60,8 +57,8 @@ const createRaffleGiftTest = (extraGiftTokens: TokenAmount<bigint>[] = []) => {
   // create winner output boxes
   const winnerOutputBox = boxFactory.createWinnerOutputBoxWithConstantRegisters(
     SConstant.from(winnerBox.additionalRegisters.R4!).data as bigint[],
-    testUtils.TICKET_TOKEN_ID,
-    testUtils.GIFT_TOKEN_ID,
+    testUtils.TestConstants.TICKET_TOKEN_ID,
+    testUtils.TestConstants.GIFT_TOKEN_ID,
     BigInt(winnerBox.assets[1].amount.toString()) + 1n,
     giftCount - 1n,
   );
@@ -70,16 +67,16 @@ const createRaffleGiftTest = (extraGiftTokens: TokenAmount<bigint>[] = []) => {
   const giftRedeemBox = boxFactory.createGiftRedeemBoxMock(
     1_000_000_000n,
     0n,
-    testUtils.FEE * 2n,
+    testUtils.TestConstants.FEE * 2n,
     1,
     0,
-    testUtils.TICKET_TOKEN_ID,
+    testUtils.TestConstants.TICKET_TOKEN_ID,
     1n,
   );
 
   // Create prize input box
   const prizeBox = boxFactory.createWinnerPrizeBoxMock(
-    testUtils.FEE * 3n + BigInt(prizeAmount),
+    testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
     winnerIndex,
     winnerTicketIndex,
     giftCount,
@@ -89,7 +86,7 @@ const createRaffleGiftTest = (extraGiftTokens: TokenAmount<bigint>[] = []) => {
 
   // Create prize output box
   const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
-    testUtils.FEE * 3n + BigInt(prizeAmount),
+    testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
     winnerIndex,
     winnerTicketIndex,
     giftCount,
@@ -101,8 +98,8 @@ const createRaffleGiftTest = (extraGiftTokens: TokenAmount<bigint>[] = []) => {
   const giftBox = boxFactory.createGiftBoxMock(
     1,
     blake2b256(Buffer.from(creator.ergoTree, 'hex')),
-    testUtils.FEE * 3n,
-    testUtils.GIFT_TOKEN_ID,
+    testUtils.TestConstants.FEE * 3n,
+    testUtils.TestConstants.GIFT_TOKEN_ID,
     1n,
     extraGiftTokens,
   );
@@ -115,14 +112,14 @@ const createRaffleGiftTest = (extraGiftTokens: TokenAmount<bigint>[] = []) => {
 
   // Create redeemedGift output box
   const redeemedGiftOutputBox = boxFactory.createSafePayOutputBox(
-    BigInt(giftBox.value.toString()) - testUtils.FEE,
+    BigInt(giftBox.value.toString()) - testUtils.TestConstants.FEE,
     giftBox.assets.slice(1),
     SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
   );
 
   // Create unwrappedGift output Box
   const unwrappedGiftOutputBox = boxFactory.createSafePayOutputBox(
-    BigInt(giftBox.value) - testUtils.FEE,
+    BigInt(giftBox.value) - testUtils.TestConstants.FEE,
     giftOutputBoxTokens,
     blake2b256(Buffer.from(creator.ergoTree, 'hex')),
   );
@@ -131,7 +128,7 @@ const createRaffleGiftTest = (extraGiftTokens: TokenAmount<bigint>[] = []) => {
   const ticketBox = boxFactory.createTicketBoxMock(
     creator.ergoTree,
     5n,
-    testUtils.TICKET_TOKEN_ID,
+    testUtils.TestConstants.TICKET_TOKEN_ID,
     [0n, 5n, 100_000n], // from-ticket-range, to-ticket-range, ticket-price
   );
 
@@ -154,7 +151,7 @@ const createRaffleGiftTest = (extraGiftTokens: TokenAmount<bigint>[] = []) => {
 describe('gift', () => {
   const raffleGiftErgTest = createRaffleGiftTest();
   const raffleGiftTokenTest = createRaffleGiftTest([
-    { tokenId: X_TOKEN_ID, amount: 100n },
+    { tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 100n },
   ]);
 
   describe('Gift return', () => {
@@ -183,7 +180,7 @@ describe('gift', () => {
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
           })
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(boxFactory.chain.execute(transaction)).true;
@@ -215,7 +212,7 @@ describe('gift', () => {
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
           })
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(boxFactory.chain.execute(transaction)).true;
@@ -237,15 +234,15 @@ describe('gift', () => {
         const winnerBox = boxFactory.createWinnerSingleBoxMock(
           1,
           1,
-          testUtils.TICKET_TOKEN_ID,
+          testUtils.TestConstants.TICKET_TOKEN_ID,
           undefined,
           1n,
           0n,
-          testUtils.X_TOKEN_ID,
+          testUtils.TestConstants.X_TOKEN_ID,
           [
             {
               // set different gift token id
-              tokenId: testUtils.X_TOKEN_ID,
+              tokenId: testUtils.TestConstants.X_TOKEN_ID,
               amount: 2n,
             },
           ],
@@ -254,9 +251,9 @@ describe('gift', () => {
         const winnerOutputBox =
           boxFactory.createWinnerOutputBoxWithConstantRegisters(
             SConstant.from(winnerBox.additionalRegisters.R4!).data as bigint[],
-            testUtils.TICKET_TOKEN_ID,
+            testUtils.TestConstants.TICKET_TOKEN_ID,
             // set different gift token id
-            testUtils.X_TOKEN_ID,
+            testUtils.TestConstants.X_TOKEN_ID,
             2n,
             0n,
           );
@@ -269,8 +266,11 @@ describe('gift', () => {
             selector.defineStrategy((inputs) => inputs);
           })
           // burn unused gift token
-          .burnTokens({ tokenId: testUtils.GIFT_TOKEN_ID, amount: 1n })
-          .payFee(testUtils.FEE)
+          .burnTokens({
+            tokenId: testUtils.TestConstants.GIFT_TOKEN_ID,
+            amount: 1n,
+          })
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -302,15 +302,15 @@ describe('gift', () => {
         const giftBox2 = boxFactory.createGiftBoxMock(
           1,
           blake2b256(Buffer.from(creator.ergoTree, 'hex')),
-          testUtils.FEE * 3n,
-          testUtils.GIFT_TOKEN_ID,
+          testUtils.TestConstants.FEE * 3n,
+          testUtils.TestConstants.GIFT_TOKEN_ID,
           1n,
         );
 
         const stoleBox = boxFactory.createSafePayOutputBox(
-          testUtils.FEE * 3n,
+          testUtils.TestConstants.FEE * 3n,
           // stole one gift token
-          [{ tokenId: testUtils.GIFT_TOKEN_ID, amount: 1n }],
+          [{ tokenId: testUtils.TestConstants.GIFT_TOKEN_ID, amount: 1n }],
           blake2b256(Buffer.from(someoneWallet.ergoTree, 'hex')),
         );
 
@@ -321,7 +321,7 @@ describe('gift', () => {
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
           })
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -348,7 +348,7 @@ describe('gift', () => {
         giftRedeemBox,
       }) => {
         const redeemedGiftOutputBox = boxFactory.createSafePayOutputBox(
-          BigInt(giftBox.value.toString()) - testUtils.FEE * 2n,
+          BigInt(giftBox.value.toString()) - testUtils.TestConstants.FEE * 2n,
           giftBox.assets.slice(1),
           SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
         );
@@ -361,7 +361,7 @@ describe('gift', () => {
             selector.defineStrategy((inputs) => inputs);
           })
           .sendChangeTo(someoneWallet.ergoTree)
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -388,7 +388,7 @@ describe('gift', () => {
         giftRedeemBox,
       }) => {
         const redeemedGiftOutputBox = boxFactory.createSafePayOutputBox(
-          BigInt(giftBox.value.toString()) - testUtils.FEE,
+          BigInt(giftBox.value.toString()) - testUtils.TestConstants.FEE,
           // missing tokens
           [],
           SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
@@ -403,7 +403,7 @@ describe('gift', () => {
           })
           .sendChangeTo(someoneWallet.ergoTree)
           .burnTokens(giftBox.assets[1])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -430,7 +430,7 @@ describe('gift', () => {
         giftRedeemBox,
       }) => {
         const redeemedGiftOutputBox = boxFactory.createSafePayOutputBox(
-          BigInt(giftBox.value.toString()) - testUtils.FEE,
+          BigInt(giftBox.value.toString()) - testUtils.TestConstants.FEE,
           giftBox.assets.slice(1),
           // set different destination address
           blake2b256(Buffer.from(someoneWallet.ergoTree, 'hex')),
@@ -443,7 +443,7 @@ describe('gift', () => {
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
           })
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -477,7 +477,7 @@ describe('gift', () => {
             selector.defineStrategy((inputs) => inputs);
           })
           .withDataFrom([ticketBox])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(boxFactory.chain.execute(transaction)).true;
@@ -509,7 +509,7 @@ describe('gift', () => {
             selector.defineStrategy((inputs) => inputs);
           })
           .withDataFrom([ticketBox])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(boxFactory.chain.execute(transaction)).true;
@@ -539,7 +539,7 @@ describe('gift', () => {
         const differentRaffleGiftTokenId = 'ab'.repeat(32);
 
         const prizeBox = boxFactory.createWinnerPrizeBoxMock(
-          testUtils.FEE * 3n + BigInt(prizeAmount),
+          testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
           winnerIndex,
           winnerTicketIndex,
           giftCount,
@@ -551,7 +551,7 @@ describe('gift', () => {
         );
 
         const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 3n + BigInt(prizeAmount),
+          testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
           winnerIndex,
           winnerTicketIndex,
           giftCount,
@@ -570,8 +570,11 @@ describe('gift', () => {
           })
           .withDataFrom([ticketBox])
           // burn giftTokens on the gift box
-          .burnTokens({ tokenId: testUtils.GIFT_TOKEN_ID, amount: 1n })
-          .payFee(testUtils.FEE)
+          .burnTokens({
+            tokenId: testUtils.TestConstants.GIFT_TOKEN_ID,
+            amount: 1n,
+          })
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -603,15 +606,15 @@ describe('gift', () => {
         const giftBox2 = boxFactory.createGiftBoxMock(
           1,
           blake2b256(Buffer.from(creator.ergoTree, 'hex')),
-          testUtils.FEE * 3n,
-          testUtils.GIFT_TOKEN_ID,
+          testUtils.TestConstants.FEE * 3n,
+          testUtils.TestConstants.GIFT_TOKEN_ID,
           1n,
         );
 
         const stoleBox = boxFactory.createSafePayOutputBox(
-          testUtils.FEE * 3n,
+          testUtils.TestConstants.FEE * 3n,
           // stole one gift token
-          [{ tokenId: testUtils.GIFT_TOKEN_ID, amount: 1n }],
+          [{ tokenId: testUtils.TestConstants.GIFT_TOKEN_ID, amount: 1n }],
           blake2b256(Buffer.from(someoneWallet.ergoTree, 'hex')),
         );
 
@@ -622,7 +625,7 @@ describe('gift', () => {
             selector.defineStrategy((inputs) => inputs);
           })
           .withDataFrom([ticketBox])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -655,7 +658,7 @@ describe('gift', () => {
         );
         const unwrappedGiftOutputBox = boxFactory.createSafePayOutputBox(
           // reduced by one fee from Erg value
-          BigInt(giftBox.value) - testUtils.FEE * 2n,
+          BigInt(giftBox.value) - testUtils.TestConstants.FEE * 2n,
           giftOutputBoxTokens,
           blake2b256(creator.ergoTree),
         );
@@ -668,7 +671,7 @@ describe('gift', () => {
           })
           .withDataFrom([ticketBox])
           .sendChangeTo(someoneWallet.address)
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -695,7 +698,7 @@ describe('gift', () => {
         ticketBox,
       }) => {
         const unwrappedGiftOutputBox = boxFactory.createSafePayOutputBox(
-          BigInt(giftBox.value) - testUtils.FEE,
+          BigInt(giftBox.value) - testUtils.TestConstants.FEE,
           // missing tokens
           [],
           blake2b256(creator.ergoTree),
@@ -709,7 +712,7 @@ describe('gift', () => {
           })
           .withDataFrom([ticketBox])
           .burnTokens(giftBox.assets[1])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -740,7 +743,7 @@ describe('gift', () => {
           giftBox.assets.length,
         );
         const unwrappedGiftOutputBox = boxFactory.createSafePayOutputBox(
-          BigInt(giftBox.value) - testUtils.FEE,
+          BigInt(giftBox.value) - testUtils.TestConstants.FEE,
           giftOutputBoxTokens,
           // set invalid destination address
           blake2b256(Buffer.from(someoneWallet.ergoTree, 'hex')),
@@ -753,7 +756,7 @@ describe('gift', () => {
             selector.defineStrategy((inputs) => inputs);
           })
           .withDataFrom([ticketBox])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();

@@ -5,11 +5,6 @@ import { TransactionBuilder, OutputBuilder } from '@fleet-sdk/core';
 
 import * as constants from '../../constants';
 import * as testUtils from '../testUtils';
-import {
-  X_TOKEN_ID,
-  CREATOR_DEFAULT_BALANCE,
-  UNKNOWN_WALLET_DEFAULT_BALANCE,
-} from '../testUtils';
 import { ScriptNamesType } from '../../lib/types';
 
 /*
@@ -28,8 +23,8 @@ function createInactiveRaffleTest(winnersCount: number = 1) {
     ) as ScriptNamesType[],
   );
   const { creator, someone } = boxFactory.createPartners({
-    creator: CREATOR_DEFAULT_BALANCE,
-    someone: UNKNOWN_WALLET_DEFAULT_BALANCE,
+    creator: testUtils.TestConstants.CREATOR_DEFAULT_BALANCE,
+    someone: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
   });
 
   const ticketRepoInputBox = boxFactory.createTicketRepoBoxMock();
@@ -95,7 +90,7 @@ describe('inactiveRaffle', () => {
             giftTokenRepoOutputBox,
             ...winnersBoxes,
           ])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
@@ -146,7 +141,7 @@ describe('inactiveRaffle', () => {
               inactiveRaffleInputBox.boxId.toString(),
             ),
           ])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
@@ -175,7 +170,7 @@ describe('inactiveRaffle', () => {
           someoneWallet.ergoTree,
           creator.ergoTree,
           1,
-          { tokenId: X_TOKEN_ID, amount: 1n },
+          { tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 1n },
         );
         const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
           creator.ergoTree,
@@ -183,7 +178,7 @@ describe('inactiveRaffle', () => {
           creator.ergoTree,
           1,
           undefined,
-          { tokenId: X_TOKEN_ID, amount: 1n },
+          { tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 1n },
         );
         const raffleDetailsOutputBox =
           boxFactory.createRaffleDetailsOutputBox();
@@ -202,7 +197,7 @@ describe('inactiveRaffle', () => {
             giftTokenRepoOutputBox,
             ...winnersBoxes,
           ])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         const res = boxFactory.chain.execute(transaction, {
@@ -243,9 +238,11 @@ describe('inactiveRaffle', () => {
           boxFactory.createGiftTokenRepoOutputBox(1);
 
         // remove license token
-        activeRaffleOutputBox.assets.remove(testUtils.LICENSE_TOKEN_ID);
+        activeRaffleOutputBox.assets.remove(
+          testUtils.TestConstants.LICENSE_TOKEN_ID,
+        );
         giftTokenRepoOutputBox.assets.add({
-          tokenId: testUtils.LICENSE_TOKEN_ID,
+          tokenId: testUtils.TestConstants.LICENSE_TOKEN_ID,
           amount: 1n,
         });
 
@@ -260,7 +257,7 @@ describe('inactiveRaffle', () => {
               inactiveRaffleInputBox.boxId.toString(),
             ),
           ])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
@@ -320,7 +317,7 @@ describe('inactiveRaffle', () => {
             giftTokenRepoOutputBox,
             ...winnerBoxes,
           ])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
@@ -388,7 +385,7 @@ describe('inactiveRaffle', () => {
               inactiveRaffleInputBox.boxId.toString(),
             ),
           ])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
@@ -437,7 +434,7 @@ describe('inactiveRaffle', () => {
             1000n, // Goal,
             0n, // Deadline,
             1n, // WinnersCount,
-            testUtils.FEE, // TxFee
+            testUtils.TestConstants.FEE, // TxFee
           ]).toHex(),
           R5: SColl(SLong, [5n, 6n]).toHex(),
           R6: SColl(SLong, [0n]).toHex(),
@@ -454,7 +451,7 @@ describe('inactiveRaffle', () => {
               inactiveRaffleInputBox.boxId.toString(),
             ),
           ])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
@@ -507,7 +504,7 @@ describe('inactiveRaffle', () => {
               inactiveRaffleInputBox.boxId.toString(),
             ),
           ])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
@@ -543,13 +540,13 @@ describe('inactiveRaffle', () => {
           creator.ergoTree,
           1,
           undefined,
-          { tokenId: X_TOKEN_ID, amount: 1n }, // set collecting token
+          { tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 1n }, // set collecting token
         );
         const extraInputBox = mockUTxO({
           ergoTree: creator.ergoTree,
           value: 11_000_000n,
           creationHeight: 4,
-          assets: [{ tokenId: X_TOKEN_ID, amount: 1n }],
+          assets: [{ tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 1n }],
         });
         const raffleDetailsOutputBox =
           boxFactory.createRaffleDetailsOutputBox();
@@ -566,7 +563,7 @@ describe('inactiveRaffle', () => {
               inactiveRaffleInputBox.boxId.toString(),
             ),
           ])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
@@ -594,7 +591,7 @@ describe('inactiveRaffle', () => {
           someoneWallet.ergoTree,
           creator.ergoTree,
           1,
-          { tokenId: X_TOKEN_ID, amount: 1n }, // Set collecting token as X-Token that missed on the active box
+          { tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 1n }, // Set collecting token as X-Token that missed on the active box
         );
 
         const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
@@ -607,7 +604,10 @@ describe('inactiveRaffle', () => {
         const giftTokenRepoOutputBox =
           boxFactory.createGiftTokenRepoOutputBox(1);
         // added X-Token to the gift box to prevent burn token error raising
-        giftTokenRepoOutputBox.addTokens({ tokenId: X_TOKEN_ID, amount: 1n });
+        giftTokenRepoOutputBox.addTokens({
+          tokenId: testUtils.TestConstants.X_TOKEN_ID,
+          amount: 1n,
+        });
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([inactiveRaffleInputBox, ticketRepoInputBox])
@@ -620,7 +620,7 @@ describe('inactiveRaffle', () => {
               inactiveRaffleInputBox.boxId.toString(),
             ),
           ])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
@@ -665,7 +665,7 @@ describe('inactiveRaffle', () => {
 
         // Set winner box wrong percentage on the R4 second cell
         winnersBoxes[0].setAdditionalRegisters({
-          R4: SColl(SLong, [BigInt(1), 2000n, 0n, testUtils.FEE]),
+          R4: SColl(SLong, [BigInt(1), 2000n, 0n, testUtils.TestConstants.FEE]),
         });
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([inactiveRaffleInputBox, ticketRepoInputBox])
@@ -675,7 +675,7 @@ describe('inactiveRaffle', () => {
             giftTokenRepoOutputBox,
             ...winnersBoxes,
           ])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
@@ -720,7 +720,12 @@ describe('inactiveRaffle', () => {
 
         // Set winner box wrong index on the R4 first cell
         winnersBoxes[0].setAdditionalRegisters({
-          R4: SColl(SLong, [BigInt(43), 1000n, 0n, testUtils.FEE]),
+          R4: SColl(SLong, [
+            BigInt(43),
+            1000n,
+            0n,
+            testUtils.TestConstants.FEE,
+          ]),
         });
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([inactiveRaffleInputBox, ticketRepoInputBox])
@@ -730,7 +735,7 @@ describe('inactiveRaffle', () => {
             giftTokenRepoOutputBox,
             ...winnersBoxes,
           ])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
@@ -758,7 +763,7 @@ describe('inactiveRaffle', () => {
           someoneWallet.ergoTree,
           creator.ergoTree,
           1,
-          { tokenId: X_TOKEN_ID, amount: 1n },
+          { tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 1n },
         );
         const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
           creator.ergoTree,
@@ -775,14 +780,16 @@ describe('inactiveRaffle', () => {
         );
 
         // Replace wrong ticket-token data
-        winnersBoxes[0].assets.remove(testUtils.TICKET_TOKEN_ID);
+        winnersBoxes[0].assets.remove(testUtils.TestConstants.TICKET_TOKEN_ID);
         winnersBoxes[0].assets.add({
-          tokenId: testUtils.X_TOKEN_ID,
+          tokenId: testUtils.TestConstants.X_TOKEN_ID,
           amount: 1n,
         });
-        activeRaffleOutputBox.assets.remove(testUtils.TICKET_TOKEN_ID);
+        activeRaffleOutputBox.assets.remove(
+          testUtils.TestConstants.TICKET_TOKEN_ID,
+        );
         activeRaffleOutputBox.addTokens({
-          tokenId: testUtils.TICKET_TOKEN_ID,
+          tokenId: testUtils.TestConstants.TICKET_TOKEN_ID,
           amount: 1_000_000_000n - 1n - 1n + 1n, // at last + 1n added to prevent burn token error
         });
 
@@ -794,7 +801,7 @@ describe('inactiveRaffle', () => {
             giftTokenRepoOutputBox,
             ...winnersBoxes,
           ])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
@@ -834,9 +841,11 @@ describe('inactiveRaffle', () => {
 
         // Remove ticket token from raffle-details box
         raffleDetailsOutputBox.assets.remove(0);
-        activeRaffleOutputBox.assets.remove(testUtils.TICKET_TOKEN_ID);
+        activeRaffleOutputBox.assets.remove(
+          testUtils.TestConstants.TICKET_TOKEN_ID,
+        );
         activeRaffleOutputBox.addTokens({
-          tokenId: testUtils.TICKET_TOKEN_ID,
+          tokenId: testUtils.TestConstants.TICKET_TOKEN_ID,
           amount: 1_000_000_000n - 1n - 1n + 1n, // at last + 1n added to prevent burn token error
         });
 
@@ -853,7 +862,7 @@ describe('inactiveRaffle', () => {
               inactiveRaffleInputBox.boxId.toString(),
             ),
           ])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
@@ -912,7 +921,7 @@ describe('inactiveRaffle', () => {
               inactiveRaffleInputBox.boxId.toString(),
             ),
           ])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
@@ -967,7 +976,7 @@ describe('inactiveRaffle', () => {
               inactiveRaffleInputBox.boxId.toString(),
             ),
           ])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
@@ -1011,7 +1020,7 @@ describe('inactiveRaffle', () => {
           R4: SColl(SInt, [1]).toHex(),
           R5: SColl(SInt, [2]).toHex(),
           R6: SColl(SInt, [3]).toHex(),
-          R7: SColl(SInt, [1, 1, Number(testUtils.FEE)]).toHex(),
+          R7: SColl(SInt, [1, 1, Number(testUtils.TestConstants.FEE)]).toHex(),
           R8: SColl(SByte, Array.from(Buffer.from('abcd', 'hex'))),
         });
 
@@ -1026,7 +1035,7 @@ describe('inactiveRaffle', () => {
               inactiveRaffleInputBox.boxId.toString(),
             ),
           ])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
@@ -1098,7 +1107,7 @@ describe('inactiveRaffle', () => {
             ),
             changeBox,
           ])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         // Check execution result
@@ -1142,7 +1151,7 @@ describe('inactiveRaffle', () => {
 
         // Replace Ticket-Token with another token
         const extraInputBox = mockUTxO({
-          value: testUtils.FEE,
+          value: testUtils.TestConstants.FEE,
           ergoTree: creator.ergoTree,
           assets: [
             {
@@ -1165,7 +1174,7 @@ describe('inactiveRaffle', () => {
             giftTokenRepoOutputBox,
             ...winnersOutputBoxes,
           ])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
@@ -1216,7 +1225,7 @@ describe('inactiveRaffle', () => {
 
         // Move one extra Ticket-Token to the giftTokenRepoOutputBox
         giftTokenRepoOutputBox.assets.add({
-          tokenId: testUtils.TICKET_TOKEN_ID,
+          tokenId: testUtils.TestConstants.TICKET_TOKEN_ID,
           amount: 1n,
         });
 
@@ -1228,7 +1237,7 @@ describe('inactiveRaffle', () => {
             giftTokenRepoOutputBox,
             ...winnersOutputBoxes,
           ])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           // .sendChangeTo(creator.address)
           .build();
 
@@ -1265,7 +1274,7 @@ describe('inactiveRaffle', () => {
           0n,
         );
         const extraInputBox = mockUTxO({
-          value: testUtils.FEE,
+          value: testUtils.TestConstants.FEE,
           ergoTree: creator.ergoTree,
           assets: [
             {
@@ -1297,7 +1306,7 @@ describe('inactiveRaffle', () => {
             giftTokenRepoOutputBox,
             ...winnersOutputBoxes,
           ])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
