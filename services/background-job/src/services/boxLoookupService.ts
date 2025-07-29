@@ -26,6 +26,7 @@ export class BoxLookupService extends AbstractService {
     return;
   };
   private shouldStopJob = false;
+  private dataProvider: DataProvider;
   private boxLookup: BoxLookup;
   private dataProvider: DataProvider;
   private updateInterval: number;
