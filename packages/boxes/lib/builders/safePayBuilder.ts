@@ -4,8 +4,11 @@ import {
   SLong,
   SByte,
   ErgoAddress,
+  TokenAmount,
+  Amount,
 } from '@fleet-sdk/core';
 import { raffleInfo } from '@ergo-raffle/contracts';
+import { blake2b256 } from '@fleet-sdk/crypto';
 
 /**
  * Builder class for creating Safe Pay boxes in the ErgoRaffle protocol
@@ -22,6 +25,7 @@ export class SafePayBuilder {
   private txFee?: bigint;
   private value?: bigint;
   private creationHeight?: number;
+  private tokens?: TokenAmount<Amount>[];
 
   constructor() {}
 
@@ -31,10 +35,19 @@ export class SafePayBuilder {
    * @returns this builder instance
    */
   setReceiverAddress = (address: string): this => {
-    const receiverErgoAddress = ErgoAddress.fromBase58(address);
-    this.receiverErgoTreeHash = new Uint8Array(
-      Buffer.from(receiverErgoAddress.ergoTree, 'hex'),
+    this.receiverErgoTreeHash = blake2b256(
+      ErgoAddress.fromBase58(address).ergoTree,
     );
+    return this;
+  };
+
+  /**
+   * Set the receiver's address and convert it to ErgoTree hash
+   * @param address - Base58 encoded Ergo address
+   * @returns this builder instance
+   */
+  setReceiverErgoTree = (ergoTree: string): this => {
+    this.receiverErgoTreeHash = blake2b256(ergoTree);
     return this;
   };
 
@@ -79,6 +92,16 @@ export class SafePayBuilder {
   };
 
   /**
+   * Set the tokens to be added to the box
+   * @param tokens - Array of token amounts
+   * @returns this builder instance
+   */
+  setTokens = (tokens: TokenAmount<Amount>[]): this => {
+    this.tokens = tokens;
+    return this;
+  };
+
+  /**
    * Validate that all required parameters are set
    * @throws Error if any required parameter is missing
    */
@@ -106,7 +129,7 @@ export class SafePayBuilder {
   build = (): OutputBuilder => {
     this.validate();
 
-    return new OutputBuilder(
+    const builder = new OutputBuilder(
       this.value!,
       ErgoAddress.fromBase58(raffleInfo.addresses.safePay).ergoTree,
       this.creationHeight!,
@@ -114,5 +137,9 @@ export class SafePayBuilder {
       R4: SColl(SByte, Array.from(this.receiverErgoTreeHash!)).toHex(),
       R5: SLong(this.txFee!).toHex(),
     });
+    if (this.tokens) {
+      builder.addTokens(this.tokens);
+    }
+    return builder;
   };
 }

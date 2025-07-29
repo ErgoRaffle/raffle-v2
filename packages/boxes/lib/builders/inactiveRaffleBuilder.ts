@@ -12,6 +12,7 @@ import { SConstant } from '@fleet-sdk/serializer';
 import { raffleInfo } from '@ergo-raffle/contracts';
 import { blake2b256 } from '@fleet-sdk/crypto';
 import { bigIntToUint8Array } from '../utils';
+import { ServiceBuilder } from './serviceBuilder';
 
 /**
  * Builder class for creating Inactive Raffle boxes in the ErgoRaffle protocol
@@ -48,6 +49,7 @@ export class InactiveRaffleBuilder {
   private implementerErgoTreeHash?: Uint8Array;
   private creatorErgoTreeHash?: Uint8Array;
   private collectingTokenId?: string;
+  private collectingTokenAmount: bigint = 1n;
 
   constructor() {}
 
@@ -223,41 +225,32 @@ export class InactiveRaffleBuilder {
   };
 
   /**
-   * Set the service address and hash its ergoTree
-   * @param address - Base58 encoded Ergo address
+   * Set the service ergoTree and hash it
+   * @param ergoTree - ErgoTree in hex format
    * @returns this builder instance
    */
-  setServiceAddress = (address: string): this => {
-    const ergoAddress = ErgoAddress.fromBase58(address);
-    this.serviceErgoTreeHash = blake2b256(
-      Buffer.from(ergoAddress.ergoTree, 'hex'),
-    );
+  setServiceErgoTree = (ergoTree: string): this => {
+    this.serviceErgoTreeHash = blake2b256(Buffer.from(ergoTree, 'hex'));
     return this;
   };
 
   /**
-   * Set the implementer address and hash its ergoTree
-   * @param address - Base58 encoded Ergo address
+   * Set the implementer ergoTree and hash it
+   * @param ergoTree - ErgoTree in hex format
    * @returns this builder instance
    */
-  setImplementerAddress = (address: string): this => {
-    const ergoAddress = ErgoAddress.fromBase58(address);
-    this.implementerErgoTreeHash = blake2b256(
-      Buffer.from(ergoAddress.ergoTree, 'hex'),
-    );
+  setImplementerErgoTree = (ergoTree: string): this => {
+    this.implementerErgoTreeHash = blake2b256(Buffer.from(ergoTree, 'hex'));
     return this;
   };
 
   /**
-   * Set the creator address and hash its ergoTree
-   * @param address - Base58 encoded Ergo address
+   * Set the creator ergoTree and hash it
+   * @param ergoTree - ErgoTree in hex format
    * @returns this builder instance
    */
-  setCreatorAddress = (address: string): this => {
-    const ergoAddress = ErgoAddress.fromBase58(address);
-    this.creatorErgoTreeHash = blake2b256(
-      Buffer.from(ergoAddress.ergoTree, 'hex'),
-    );
+  setCreatorErgoTree = (ergoTree: string): this => {
+    this.creatorErgoTreeHash = blake2b256(Buffer.from(ergoTree, 'hex'));
     return this;
   };
 
@@ -272,38 +265,172 @@ export class InactiveRaffleBuilder {
   };
 
   /**
+   * Set the collecting token amount
+   * @param amount - The amount of collecting tokens
+   * @returns this builder instance
+   */
+  setCollectingTokenAmount = (amount: bigint): this => {
+    this.collectingTokenAmount = amount;
+    return this;
+  };
+
+  /**
+   * Get the raffle name
+   * @returns Raffle name
+   */
+  getName = (): string => {
+    return this.name!;
+  };
+
+  /**
+   * Get the raffle description
+   * @returns Raffle description
+   */
+  getDescription = (): string => {
+    return this.description!;
+  };
+
+  /**
+   * Get the raffle pictures
+   * @returns Array of picture URLs or data
+   */
+  getPictures = (): string[] => {
+    return this.pictures || [];
+  };
+
+  /**
+   * Get the ticket ID
+   * @returns Ticket ID
+   */
+  getTicketId = (): string => {
+    return this.ticketId!;
+  };
+
+  /**
+   * Get the transaction fee
+   * @returns Transaction fee amount in nanoERG
+   */
+  getTxFee = (): bigint => {
+    return this.txFee!;
+  };
+
+  /**
+   * Get the winners percentage (in thousandths)
+   * @returns Winners percentage (e.g., 200 = 20%)
+   */
+  getWinnersPercentage = (): bigint => {
+    return this.winnersPercentage!;
+  };
+
+  /**
+   * Get the service fee percentage (in thousandths)
+   * @returns Service fee percentage (in thousandths)
+   */
+  getServiceFeePercent = (): bigint => {
+    return this.serviceFeePercent!;
+  };
+
+  /**
+   * Get the implementer fee percentage (in thousandths)
+   * @returns Implementer fee percentage (in thousandths)
+   */
+  getImplementerFeePercent = (): bigint => {
+    return this.implementerFeePercent!;
+  };
+
+  /**
+   * Get the ticket price
+   * @returns Ticket price in nanoERG/CollectingToken
+   */
+  getTicketPrice = (): bigint => {
+    return this.ticketPrice!;
+  };
+
+  /**
+   * Get the raffle goal
+   * @returns Goal amount in nanoERG/CollectingToken
+   */
+  getGoal = (): bigint => {
+    return this.goal!;
+  };
+
+  /**
+   * Get the raffle deadline in blocks
+   * @returns Deadline in blocks
+   */
+  getDeadline = (): bigint => {
+    return this.deadline!;
+  };
+
+  /**
+   * Get the number of winners
+   * @returns Number of winners
+   */
+  getWinnersCount = (): number => {
+    return this.winnersCount!;
+  };
+
+  /**
+   * Get the service ergo tree hash
+   * @returns Service ergo tree hash
+   */
+  getServiceErgoTreeHash = (): Uint8Array => {
+    return this.serviceErgoTreeHash!;
+  };
+
+  /**
+   * Get the implementer ergo tree hash
+   * @returns Implementer ergo tree hash
+   */
+  getImplementerErgoTreeHash = (): Uint8Array => {
+    return this.implementerErgoTreeHash!;
+  };
+
+  /**
+   * Get the creator ergo tree hash
+   * @returns Creator ergo tree hash
+   */
+  getCreatorErgoTreeHash = (): Uint8Array => {
+    return this.creatorErgoTreeHash!;
+  };
+
+  /**
+   * Get the collecting token ID
+   * @returns Collecting token ID or undefined if not set
+   */
+  getCollectingTokenId = (): string | undefined => {
+    return this.collectingTokenId;
+  };
+
+  getCollectingTokenAmount = (): bigint => {
+    return this.collectingTokenAmount!;
+  };
+
+  /**
+   * Check if the raffle is an ERG goal raffle
+   * @returns True if the raffle is an ERG goal raffle, false otherwise
+   */
+  isErgGoal = (): boolean => {
+    return this.collectingTokenId === undefined;
+  };
+
+  /**
    * Fill data from a service box
    * @param serviceBox - The service box to get information from
    * @returns this builder instance
    * @throws Error if service box is invalid
    */
   fromServiceBox = (serviceBox: Box<Amount>): this => {
-    if (serviceBox.assets.length < 2) {
-      throw new Error('Invalid service box: missing required tokens');
-    }
+    // Use ServiceBuilder to parse the box
+    const serviceBuilder = ServiceBuilder.fromBox(serviceBox);
 
-    const registers = serviceBox.additionalRegisters;
-    if (!registers.R4 || !registers.R5) {
-      throw new Error('Invalid service box: missing required registers');
-    }
-
-    // Get configuration from R4: [ServiceFeePercent, ImplementerFeePercent, CreationFee, TxFee]
-    const r4Data = SConstant.from(registers.R4).data as bigint[];
-    if (r4Data.length < 4) {
-      throw new Error('Invalid service box: invalid R4 register format');
-    }
-
-    // Get service fee ergoTree hash from R5
-    const serviceFeeErgoTreeHash = SConstant.from(registers.R5)
-      .data as Uint8Array;
-
-    // Set the service fee percent and implementer fee percent from R4
-    this.setServiceFeePercent(r4Data[0])
-      .setImplementerFeePercent(r4Data[1])
-      .setTxFee(r4Data[3]);
+    // Set the service fee percent and implementer fee percent from service box
+    this.setServiceFeePercent(serviceBuilder.getServiceFeePercent())
+      .setImplementerFeePercent(serviceBuilder.getImplementerFeePercent())
+      .setTxFee(serviceBuilder.getTxFee());
 
     // Store the service fee ergoTree hash for later use
-    this.serviceErgoTreeHash = serviceFeeErgoTreeHash;
+    this.serviceErgoTreeHash = serviceBuilder.getServiceFeeErgoTreeHash();
 
     return this;
   };
@@ -358,7 +485,7 @@ export class InactiveRaffleBuilder {
     if (this.collectingTokenId) {
       tokens.push({
         tokenId: this.collectingTokenId,
-        amount: 1n,
+        amount: this.collectingTokenAmount!,
       });
     }
 
@@ -396,5 +523,100 @@ export class InactiveRaffleBuilder {
         ]).toHex(),
         R8: SInt(this.winnersCount!).toHex(),
       });
+  };
+
+  /**
+   * Create an InactiveRaffleBuilder instance from an existing box
+   * @param box - Existing inactive raffle box to copy configuration from
+   * @returns New InactiveRaffleBuilder instance with copied configuration
+   * @throws Error if box structure doesn't match inactive raffle box requirements
+   */
+  static fromBox = (box: Box<Amount>): InactiveRaffleBuilder => {
+    if (box.assets.length < 1) {
+      throw new Error('Invalid inactive raffle box: missing required tokens');
+    }
+
+    const registers = box.additionalRegisters;
+    if (
+      !registers.R4 ||
+      !registers.R5 ||
+      !registers.R6 ||
+      !registers.R7 ||
+      !registers.R8
+    ) {
+      throw new Error(
+        'Invalid inactive raffle box: missing required registers',
+      );
+    }
+
+    const r4Data = SConstant.from(registers.R4).data as bigint[];
+    const r5Data = SConstant.from(registers.R5).data as Uint8Array[];
+    const r6Data = SConstant.from(registers.R6).data as Uint8Array[];
+    const r7Data = SConstant.from(registers.R7).data as Uint8Array[];
+    const r8Data = SConstant.from(registers.R8).data as number;
+
+    if (r4Data.length < 7) {
+      throw new Error(
+        'Invalid inactive raffle box: invalid R4 register format',
+      );
+    }
+
+    if (r5Data.length < 3) {
+      throw new Error(
+        'Invalid inactive raffle box: invalid R5 register format',
+      );
+    }
+
+    if (r6Data.length < 2) {
+      throw new Error(
+        'Invalid inactive raffle box: invalid R6 register format',
+      );
+    }
+
+    if (r7Data.length < 2) {
+      throw new Error(
+        'Invalid inactive raffle box: invalid R7 register format',
+      );
+    }
+
+    const builder = new InactiveRaffleBuilder();
+
+    // Set all parameters using setters
+    builder
+      .setValue(BigInt(box.value))
+      .setWinnersPercentage(r4Data[0])
+      .setServiceFeePercent(r4Data[1])
+      .setImplementerFeePercent(r4Data[2])
+      .setTicketPrice(r4Data[3])
+      .setGoal(r4Data[4])
+      .setDeadline(r4Data[5])
+      .setTxFee(r4Data[6])
+      .setWinnersCount(r8Data)
+      .setName(Buffer.from(r6Data[0]).toString())
+      .setDescription(Buffer.from(r6Data[1]).toString())
+      .setTicketId(Buffer.from(r7Data[0]).toString('hex'));
+
+    // Set ergoTree hashes
+    builder.serviceErgoTreeHash = r5Data[0];
+    builder.implementerErgoTreeHash = r5Data[1];
+    builder.creatorErgoTreeHash = r5Data[2];
+
+    // Set pictures if present
+    if (r6Data.length > 2) {
+      const pictures = r6Data
+        .slice(2)
+        .map((arr) => Buffer.from(arr).toString());
+      builder.setPictures(pictures);
+    }
+
+    // Set winners percent list hash
+    builder.winnersPercentListHash = r7Data[1];
+
+    // Set collecting token if present
+    if (box.assets.length > 1) {
+      builder.setCollectingTokenId(box.assets[1].tokenId);
+    }
+
+    return builder;
   };
 }

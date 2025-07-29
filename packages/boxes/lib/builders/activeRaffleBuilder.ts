@@ -11,6 +11,7 @@ import {
 import { SConstant } from '@fleet-sdk/serializer';
 import { raffleInfo } from '@ergo-raffle/contracts';
 import { blake2b256 } from '@fleet-sdk/crypto';
+import { InactiveRaffleBuilder } from './inactiveRaffleBuilder';
 
 /**
  * Builder class for creating Active Raffle boxes in the ErgoRaffle protocol
@@ -98,6 +99,22 @@ export class ActiveRaffleBuilder {
   };
 
   /**
+   * Get the service fee percentage (in thousandths)
+   * @returns Service fee percentage (in thousandths)
+   */
+  getServiceFeePercent = (): bigint => {
+    return this.serviceFeePercent!;
+  };
+
+  /**
+   * Get the implementer fee percentage (in thousandths)
+   * @returns Implementer fee percentage (in thousandths)
+   */
+  getImplementerFeePercent = (): bigint => {
+    return this.implementerFeePercent!;
+  };
+
+  /**
    * Set the ticket price in nanoERG/CollectingToken
    * @param price - Price in nanoERG/CollectingToken
    * @returns this builder instance
@@ -105,6 +122,14 @@ export class ActiveRaffleBuilder {
   setTicketPrice = (price: bigint): this => {
     this.ticketPrice = price;
     return this;
+  };
+
+  /**
+   * Get the ticket price in nanoERG/CollectingToken
+   * @returns Ticket price in nanoERG/CollectingToken
+   */
+  getTicketPrice = (): bigint => {
+    return this.ticketPrice!;
   };
 
   /**
@@ -128,6 +153,14 @@ export class ActiveRaffleBuilder {
   };
 
   /**
+   * Get the raffle deadline in blocks
+   * @returns Deadline in blocks
+   */
+  getDeadline = (): bigint => {
+    return this.deadline!;
+  };
+
+  /**
    * Set the transaction fee
    * @param fee - Fee amount in nanoERG
    * @returns this builder instance
@@ -135,6 +168,14 @@ export class ActiveRaffleBuilder {
   setTxFee = (fee: bigint): this => {
     this.txFee = fee;
     return this;
+  };
+
+  /**
+   * Get the transaction fee
+   * @returns Transaction fee amount in nanoERG
+   */
+  getTxFee = (): bigint => {
+    return this.txFee!;
   };
 
   /**
@@ -148,6 +189,14 @@ export class ActiveRaffleBuilder {
   };
 
   /**
+   * Get the number of winners
+   * @returns Number of winners
+   */
+  getWinnersCount = (): number => {
+    return this.winnersCount!;
+  };
+
+  /**
    * Set the total number of tickets sold
    * @param count - Number of tickets sold
    * @returns this builder instance
@@ -155,6 +204,70 @@ export class ActiveRaffleBuilder {
   setTotalSoldTickets = (count: bigint): this => {
     this.totalSoldTickets = count;
     return this;
+  };
+
+  /**
+   * Get the total number of tickets sold
+   * @returns Total number of tickets sold
+   */
+  getTotalSoldTickets = (): bigint => {
+    return this.totalSoldTickets!;
+  };
+
+  /**
+   * Get the winners percentage (in thousandths)
+   * @returns Winners percentage (e.g., 200 = 20%)
+   */
+  getWinnersPercent = (): bigint => {
+    return this.winnersPercent!;
+  };
+
+  /**
+   * Get the project ergo tree hash
+   * @returns Project ergo tree hash
+   */
+  getProjectErgoTreeHash = (): Uint8Array => {
+    return this.projectErgoTreeHash!;
+  };
+
+  /**
+   * Get the collecting token ID
+   * @returns Collecting token ID or undefined if not set
+   */
+  getCollectingTokenId = (): string | undefined => {
+    return this.collectingTokenId;
+  };
+
+  /**
+   * Get the collecting token count
+   * @returns Collecting token count or undefined if not set
+   */
+  getCollectingTokenCount = (): bigint | undefined => {
+    return this.collectingTokenCount;
+  };
+
+  /**
+   * Get the ticket token ID
+   * @returns Ticket token ID
+   */
+  getTicketId = (): string => {
+    return this.ticketId!;
+  };
+
+  /**
+   * Get the ticket token count
+   * @returns Ticket token count
+   */
+  getTicketCount = (): bigint => {
+    return this.ticketCount!;
+  };
+
+  /**
+   * Check if the raffle is an ERG goal raffle
+   * @returns True if the raffle is an ERG goal raffle, false otherwise
+   */
+  isErgGoal = (): boolean => {
+    return this.collectingTokenId === undefined;
   };
 
   /**
@@ -251,7 +364,7 @@ export class ActiveRaffleBuilder {
     if (this.ticketCount < ticketCount) {
       throw new Error('Insufficient tickets available');
     }
-    if (!this.totalSoldTickets) {
+    if (this.totalSoldTickets === undefined) {
       throw new Error('Total sold tickets not set');
     }
     if (!this.ticketPrice) {
@@ -298,7 +411,8 @@ export class ActiveRaffleBuilder {
     if (!this.deadline) throw new Error('Deadline not set');
     if (!this.txFee) throw new Error('Transaction fee not set');
     if (!this.winnersCount) throw new Error('Winners count not set');
-    if (!this.totalSoldTickets) throw new Error('Total sold tickets not set');
+    if (this.totalSoldTickets === undefined)
+      throw new Error('Total sold tickets not set');
     if (!this.serviceErgoTreeHash)
       throw new Error('Service ergoTree hash not set');
     if (!this.implementerErgoTreeHash)
@@ -439,72 +553,45 @@ export class ActiveRaffleBuilder {
    * @throws Error if box structure doesn't match inactive raffle box requirements
    */
   static fromInactiveRaffleBox = (box: Box<Amount>): ActiveRaffleBuilder => {
-    if (box.assets.length < 1) {
-      throw new Error('Invalid inactive raffle box: missing required tokens');
-    }
+    // Use InactiveRaffleBuilder to parse the box
+    const inactiveRaffleBuilder = InactiveRaffleBuilder.fromBox(box);
 
-    const registers = box.additionalRegisters;
-    if (
-      !registers.R4 ||
-      !registers.R5 ||
-      !registers.R6 ||
-      !registers.R7 ||
-      !registers.R8
-    ) {
-      throw new Error(
-        'Invalid inactive raffle box: missing required registers',
-      );
-    }
-
-    const r4Data = SConstant.from(registers.R4).data as bigint[];
-    const r5Data = SConstant.from(registers.R5).data as Uint8Array[];
-    const r7Data = SConstant.from(registers.R7).data as Uint8Array[];
-    const r8Data = SConstant.from(registers.R8).data as number;
-
-    if (r4Data.length < 7) {
-      throw new Error(
-        'Invalid inactive raffle box: invalid R4 register format',
-      );
-    }
-
-    if (r5Data.length < 3) {
-      throw new Error(
-        'Invalid inactive raffle box: invalid R5 register format',
-      );
-    }
-
-    if (r7Data.length < 2) {
-      throw new Error(
-        'Invalid inactive raffle box: invalid R7 register format',
-      );
-    }
-
-    const builder = new ActiveRaffleBuilder();
-
-    // Set all parameters using setters
-    builder
-      .setValue(BigInt(box.value) - 5n * r4Data[6] * BigInt(r8Data) - r4Data[6]) // Value calculation from contract
-      .setWinnersPercent(r4Data[0])
-      .setServiceFeePercent(r4Data[1])
-      .setImplementerFeePercent(r4Data[2])
-      .setTicketPrice(r4Data[3])
-      .setGoal(r4Data[4])
-      .setDeadline(r4Data[5])
-      .setTxFee(r4Data[6])
-      .setWinnersCount(r8Data)
+    const builder = new ActiveRaffleBuilder()
+      .setValue(
+        BigInt(box.value) -
+          5n *
+            inactiveRaffleBuilder.getTxFee() *
+            BigInt(inactiveRaffleBuilder.getWinnersCount()) -
+          inactiveRaffleBuilder.getTxFee(),
+      ) // Value calculation from contract
+      .setWinnersPercent(inactiveRaffleBuilder.getWinnersPercentage())
+      .setServiceFeePercent(inactiveRaffleBuilder.getServiceFeePercent())
+      .setImplementerFeePercent(
+        inactiveRaffleBuilder.getImplementerFeePercent(),
+      )
+      .setTicketPrice(inactiveRaffleBuilder.getTicketPrice())
+      .setGoal(inactiveRaffleBuilder.getGoal())
+      .setDeadline(inactiveRaffleBuilder.getDeadline())
+      .setTxFee(inactiveRaffleBuilder.getTxFee())
+      .setWinnersCount(inactiveRaffleBuilder.getWinnersCount())
       .setTotalSoldTickets(0n) // No sold tickets at beginning
-      .setTicketId(Buffer.from(r7Data[0]).toString('hex'));
+      .setTicketId(inactiveRaffleBuilder.getTicketId());
 
     // Set ergoTree hashes
-    builder.serviceErgoTreeHash = r5Data[0];
-    builder.implementerErgoTreeHash = r5Data[1];
-    builder.projectErgoTreeHash = r5Data[2];
+    builder.serviceErgoTreeHash =
+      inactiveRaffleBuilder.getServiceErgoTreeHash();
+    builder.implementerErgoTreeHash =
+      inactiveRaffleBuilder.getImplementerErgoTreeHash();
+    builder.projectErgoTreeHash =
+      inactiveRaffleBuilder.getCreatorErgoTreeHash();
 
     // Set collecting token ID and count if present
-    if (box.assets.length > 1) {
+    if (!inactiveRaffleBuilder.isErgGoal()) {
       builder
-        .setCollectingTokenId(box.assets[1].tokenId)
-        .setCollectingTokenCount(BigInt(box.assets[1].amount));
+        .setCollectingTokenId(inactiveRaffleBuilder.getCollectingTokenId()!)
+        .setCollectingTokenCount(
+          inactiveRaffleBuilder.getCollectingTokenAmount()!,
+        );
     }
 
     return builder;

@@ -2,17 +2,17 @@ import { DataSource } from 'typeorm';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { AbstractInitializableErgoExtractorAction } from '@rosen-bridge/abstract-extractor';
 import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
-
-import { BoxInterface } from '../interfaces/types';
-import { BoxEntity } from '../entities';
 import { pick } from 'lodash-es';
 
-export class BoxAction extends AbstractInitializableErgoExtractorAction<
-  BoxInterface,
-  BoxEntity
+import { RaffleBoxInterface } from '../interfaces/types';
+import { RaffleBoxEntity } from '../entities';
+
+export class RaffleBoxAction extends AbstractInitializableErgoExtractorAction<
+  RaffleBoxInterface,
+  RaffleBoxEntity
 > {
   constructor(dataSource: DataSource, logger?: AbstractLogger) {
-    super(dataSource, BoxEntity, logger);
+    super(dataSource, RaffleBoxEntity, logger);
   }
 
   /**
@@ -22,10 +22,10 @@ export class BoxAction extends AbstractInitializableErgoExtractorAction<
    * @param extractor
    */
   createEntity = (
-    boxes: BoxInterface[],
+    boxes: RaffleBoxInterface[],
     block: BlockInfo,
     extractor: string,
-  ): Omit<BoxEntity, 'id'>[] => {
+  ): Omit<RaffleBoxEntity, 'id'>[] => {
     return boxes.map((box) => {
       return {
         boxId: box.boxId,
@@ -35,6 +35,7 @@ export class BoxAction extends AbstractInitializableErgoExtractorAction<
         extractor: extractor,
         txId: box.txId,
         raffleId: box.raffleId,
+        type: box.type,
       };
     });
   };
@@ -43,9 +44,16 @@ export class BoxAction extends AbstractInitializableErgoExtractorAction<
    * convert the database entity back to raw data
    * @param entities
    */
-  convertEntityToData = (entities: BoxEntity[]): BoxInterface[] => {
+  convertEntityToData = (entities: RaffleBoxEntity[]): RaffleBoxInterface[] => {
     return entities.map((data) =>
-      pick(data, ['boxId', 'txId', 'raffleId', 'extractor', 'serialized']),
+      pick(data, [
+        'boxId',
+        'txId',
+        'raffleId',
+        'extractor',
+        'serialized',
+        'type',
+      ]),
     );
   };
 }

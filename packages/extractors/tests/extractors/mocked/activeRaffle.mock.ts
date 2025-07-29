@@ -1,4 +1,5 @@
 import { OutputBox } from '@rosen-bridge/scanner-interfaces';
+import { RaffleBoxType } from '../../../lib/entities/raffleBoxEntity';
 
 export const sampleActiveRaffleBoxes: OutputBox[] = [
   {
@@ -41,4 +42,5 @@ export const sampleActiveRaffleExtractedData = {
     'ZJ79sHshG1m9DRxiaBuqi44PEQQCBQA229ogPSFDpRlXlB16P6WIeVkhyGb/QHXj' +
     '7m6ZHwxi1QA=',
   raffleId: 'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
+  type: RaffleBoxType.ActiveRaffle,
 };

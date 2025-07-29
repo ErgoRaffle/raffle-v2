@@ -15,3 +15,9 @@ scanner:
     timeout: 1000000
     initialHeight: 1698712
   rescanDelaySeconds: 10
+txpot:
+  updateInterval: 60
+  txRequiredConfirmations: 5
+ergo:
+  fee: 1500000n
+  network: 'mainnet'

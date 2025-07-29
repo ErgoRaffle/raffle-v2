@@ -6,8 +6,8 @@ import {
   SByte,
   ErgoAddress,
 } from '@fleet-sdk/core';
-import { SConstant } from '@fleet-sdk/serializer';
 import { raffleInfo } from '@ergo-raffle/contracts';
+import { InactiveRaffleBuilder } from './inactiveRaffleBuilder';
 
 /**
  * Builder class for creating Raffle Details boxes in the ErgoRaffle protocol
@@ -40,60 +40,22 @@ export class RaffleDetailsBuilder {
   static fromInactiveRaffle = (
     inactiveRaffleBox: Box<Amount>,
   ): RaffleDetailsBuilder => {
-    if (inactiveRaffleBox.assets.length < 1) {
-      throw new Error('Invalid inactive raffle box: missing required tokens');
-    }
-
-    const registers = inactiveRaffleBox.additionalRegisters;
-    if (!registers.R4 || !registers.R6 || !registers.R7) {
-      throw new Error(
-        'Invalid inactive raffle box: missing required registers',
-      );
-    }
-
-    // Get raffle details from R6
-    const r6Data = SConstant.from(registers.R6).data as Uint8Array[];
-    if (r6Data.length < 2) {
-      throw new Error(
-        'Invalid inactive raffle box: invalid R6 register format',
-      );
-    }
-
-    // Extract name and description
-    const name = Buffer.from(r6Data[0]).toString();
-    const description = Buffer.from(r6Data[1]).toString();
-
-    // Extract any pictures
-    const pictures = r6Data.slice(2).map((arr) => Buffer.from(arr).toString());
-
-    // Get ticket ID from R7
-    const r7Data = SConstant.from(registers.R7).data as Uint8Array[];
-    if (r7Data.length < 1) {
-      throw new Error(
-        'Invalid inactive raffle box: invalid R7 register format',
-      );
-    }
-    const ticketId = Buffer.from(r7Data[0]).toString('hex');
-
-    // Get txFee from R4 for value calculation
-    const r4Data = SConstant.from(registers.R4).data as bigint[];
-    if (r4Data.length < 7) {
-      throw new Error(
-        'Invalid inactive raffle box: invalid R4 register format',
-      );
-    }
-    const txFee = r4Data[6];
+    // Use InactiveRaffleBuilder to parse the box
+    const inactiveRaffleBuilder =
+      InactiveRaffleBuilder.fromBox(inactiveRaffleBox);
 
     const builder = new RaffleDetailsBuilder();
     builder
-      .setName(name)
-      .setDescription(description)
-      .setValue(txFee)
-      .setTicketToken(ticketId, 1n)
-      .setTxFee(txFee);
+      .setName(inactiveRaffleBuilder.getName())
+      .setDescription(inactiveRaffleBuilder.getDescription())
+      .setValue(inactiveRaffleBuilder.getTxFee())
+      .setTicketToken(inactiveRaffleBuilder.getTicketId(), 1n)
+      .setTxFee(inactiveRaffleBuilder.getTxFee());
 
     // Add all pictures
-    pictures.forEach((pic) => builder.addPicture(pic));
+    inactiveRaffleBuilder
+      .getPictures()
+      .forEach((pic: string) => builder.addPicture(pic));
 
     return builder;
   };

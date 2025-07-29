@@ -1,3 +1,5 @@
+import { RaffleBoxType } from '../entities/raffleBoxEntity';
+
 export { SpendInfo } from '@rosen-bridge/abstract-extractor';
 
 export interface ExtractedBox {
@@ -27,8 +29,13 @@ export interface InactiveRaffleBoxInterface extends ExtractedBox {
   raffleId: string;
 }
 
-export interface BoxInterface extends ExtractedBox {
+export interface RaffleBoxInterface extends ExtractedBox {
   raffleId: string;
+  type: RaffleBoxType;
+}
+
+export interface DynamicBoxInterface extends ExtractedBox {
+  address: string;
 }
 
 export interface WinnerBoxInterface extends ExtractedBox {
