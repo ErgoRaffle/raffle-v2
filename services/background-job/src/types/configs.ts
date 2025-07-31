@@ -44,6 +44,6 @@ export interface Txpot {
 }
 
 export interface Ergo {
-  fee?: number;
-  network?: 'mainnet' | 'testnet';
+  fee: number;
+  network: 'mainnet' | 'testnet';
 }

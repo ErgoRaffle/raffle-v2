@@ -10,5 +10,9 @@ scanner:
     url: http://127.0.0.1:9052/
     timeout: 10
   scannerInterval: 30
+txpot:
+  updateInterval: 60
+  txRequiredConfirmations: 5
 ergo:
+  fee: 1500000
   network: mainnet

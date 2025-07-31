@@ -211,18 +211,22 @@
       "updateInterval": {
         "type": "number",
         "description": "tx-pot update interval in seconds",
+        "default": 60,
         "validations": [
           {
-            "required": true
+            "required": true,
+            "error": "tx-pot update interval must be specified"
           }
         ]
       },
       "txRequiredConfirmations": {
         "type": "number",
+        "default": 5,
         "description": "tx-pot required confirmations",
         "validations": [
           {
-            "required": true
+            "required": true,
+            "error": "tx-pot required confirmations must be specified"
           }
         ]
       }
@@ -232,15 +236,26 @@
     "type": "object",
     "children": {
       "fee": {
-        "type": "number"
+        "type": "number",
+        "default": 1500000,
+        "description": "ergo node fee in nano erg",
+        "validations": [
+          {
+            "required": true,
+            "error": "ergo node fee must be specified"
+          }
+        ]
       },
       "network": {
         "type": "string",
         "default": "mainnet",
+        "description": "ergo network",
         "validations": [
           {
-            "choices": ["mainnet", "testnet"]
-          }
+            "required": true,
+            "error": "ergo network must be specified"
+          },
+          { "choices": ["mainnet", "testnet"] }
         ]
       }
     }
