@@ -141,6 +141,14 @@ export class GiftTokenRepoBuilder {
   };
 
   /**
+   * Get the ticket ID
+   * @returns Ticket ID as hex string
+   */
+  getTicketId = (): string => {
+    return Buffer.from(this.ticketId!).toString('hex');
+  };
+
+  /**
    * Set the number of winners
    * @param count - Number of winners
    * @returns this builder instance

@@ -103,7 +103,7 @@ export const signAndAddTx = async (
  * @param dbBoxes - The list of BoxEntity objects to convert
  * @returns The list of ErgoBox objects
  */
-export const covertDbBoxesToErgoBoxes = (
+export const convertDbBoxesToErgoBoxes = (
   dbBoxes: AbstractErgoExtractorEntity[],
 ): ErgoBox[] => {
   return dbBoxes.map((dbBox) => {

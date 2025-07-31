@@ -4,6 +4,7 @@ import { raffleInfo } from '@ergo-raffle/contracts';
 import {
   ActivationTxBuilder,
   CreationTxBuilder,
+  GiftTokenReceiptTxBuilder,
 } from '@ergo-raffle/transactions';
 import { ErgoBox } from '@fleet-sdk/core';
 
@@ -14,7 +15,7 @@ import { TxPotService } from '../txPotService';
 import { getConfig } from '../../config/config';
 import {
   signAndAddTx,
-  covertDbBoxesToErgoBoxes,
+  convertDbBoxesToErgoBoxes,
   txpotCallBackGenerator,
 } from '../../transactions/utils';
 import { TxType } from '../../transactions/types';
@@ -47,6 +48,9 @@ export class CreationService extends AbstractTxService {
 
   /**
    * Generator function for a raffle creation callback
+   * - Build the creation transaction
+   * - Build the activation transaction by chaining it to the creation transaction
+   * - Build the gift receipt transactions by chaining it to the activation transaction
    * @param raffleParams - The raffle creation parameters
    * @returns A callback for the creation of a raffle
    */
@@ -74,8 +78,11 @@ export class CreationService extends AbstractTxService {
           );
           return;
         }
-        serviceBox = covertDbBoxesToErgoBoxes([serviceBoxEntity])[0];
+        serviceBox = convertDbBoxesToErgoBoxes([serviceBoxEntity])[0];
       }
+      this.logger.debug(
+        `Service box found with id [${serviceBox.boxId}], building creation transaction`,
+      );
       const creationTxBuilder = new CreationTxBuilder()
         .setServiceBox(serviceBox)
         .setFeeBoxes(boxes)
@@ -90,8 +97,12 @@ export class CreationService extends AbstractTxService {
         .setChainHeight(await this.network.getHeight())
         .setTxFee(getConfig().ergo.fee);
 
-      if (raffleParams.collectingTokenId)
+      if (raffleParams.collectingTokenId) {
+        this.logger.debug(
+          `Collecting token id is set, creating a token-goal raffle with token [${raffleParams.collectingTokenId}]`,
+        );
         creationTxBuilder.setCollectingTokenId(raffleParams.collectingTokenId);
+      }
       const creationTx = creationTxBuilder.build();
 
       const signedCreationTx = await signAndAddTx(
@@ -105,7 +116,7 @@ export class CreationService extends AbstractTxService {
 
       // Build the activation transaction and chain it to the creation transaction
       const raffleId = serviceBox.boxId;
-      const activationTx = new ActivationTxBuilder()
+      const activationTxBuilder = new ActivationTxBuilder()
         .setInactiveRaffle(signedCreationTx.outputs[1])
         .setTicketRepo(signedCreationTx.outputs[0])
         .setTxFee(getConfig().ergo.fee)
@@ -117,13 +128,37 @@ export class CreationService extends AbstractTxService {
         )
         .setWinnersSharePercent(
           raffleParams.winnersPercentList.split(',').map(BigInt),
-        )
-        .build();
+        );
 
-      await signAndAddTx(this.network, activationTx, TxType.Activation);
+      const activationTx = await signAndAddTx(
+        this.network,
+        activationTxBuilder.build(),
+        TxType.Activation,
+      );
       this.logger.info(
         `Activation transaction for request with id [${requestId}] has been added (txId: [${activationTx.id}])`,
       );
+
+      // Build the gift receipt transactions by chaining it to the activation transaction
+      let giftTokenRepo = activationTx.outputs[2];
+      let step = 1;
+      for (const winnerBox of activationTx.outputs.slice(3)) {
+        const giftReceiptTxBuilder = new GiftTokenReceiptTxBuilder()
+          .setGiftTokenRepo(giftTokenRepo)
+          .setWinner(winnerBox)
+          .setTxFee(getConfig().ergo.fee)
+          .setChainHeight(await this.network.getHeight());
+        const giftReceiptTx = await signAndAddTx(
+          this.network,
+          giftReceiptTxBuilder.build(),
+          TxType.GiftTokenReceipt,
+        );
+        this.logger.info(
+          `Gift receipt transaction for request with id [${requestId}] has been added (txId: [${giftReceiptTx.id}]) for step [${step}]`,
+        );
+        giftTokenRepo = giftReceiptTx.outputs[1];
+        step++;
+      }
     };
     return creationCallBack;
   };
@@ -144,7 +179,7 @@ export class CreationService extends AbstractTxService {
       tokens: [], // TODO: Add tokens to request
       onSuffice: this.creationCallbackGenerator(raffleParams),
       getMinedBoxes: async () => {
-        return covertDbBoxesToErgoBoxes(
+        return convertDbBoxesToErgoBoxes(
           await DbService.getInstance().getDynamicBoxes(
             raffleParams.proxyAddress,
           ),

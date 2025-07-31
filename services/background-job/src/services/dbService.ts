@@ -10,6 +10,7 @@ import {
   InactiveRaffleEntity,
   RaffleServiceEntity,
   DynamicBoxEntity,
+  WinnerEntity,
 } from '@ergo-raffle/extractors';
 import { RaffleBoxType } from '@ergo-raffle/extractors/lib/entities/raffleBoxEntity';
 import { IsNull } from 'typeorm';
@@ -101,13 +102,13 @@ export class DbService extends AbstractService {
    * @returns The raffle boxes
    */
   getRaffleBoxes = (
-    raffleId: string,
+    raffleId?: string,
     type?: RaffleBoxType,
     isUnspent = true,
   ): Promise<RaffleBoxEntity[]> => {
     return this.dataSource.getRepository(RaffleBoxEntity).find({
       where: {
-        raffleId: raffleId,
+        ...(raffleId ? { raffleId: raffleId } : {}),
         ...(type ? { type: type } : {}),
         ...(isUnspent ? { spendBlock: IsNull() } : {}),
       },
@@ -145,5 +146,23 @@ export class DbService extends AbstractService {
     return this.dataSource
       .getRepository(DynamicBoxEntity)
       .find({ where: { address: address } });
+  };
+
+  /**
+   * Get the winner box by raffle id and index
+   * @param raffleId - The raffle id
+   * @param index - The index of the winner
+   * @returns The winner box
+   */
+  getWinnerBox = (
+    raffleId: string,
+    index: number,
+  ): Promise<WinnerEntity | null> => {
+    return this.dataSource.getRepository(WinnerEntity).findOne({
+      where: {
+        raffleId,
+        index,
+      },
+    });
   };
 }
