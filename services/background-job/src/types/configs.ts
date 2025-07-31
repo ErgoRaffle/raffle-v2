@@ -29,7 +29,7 @@ export interface Database {
 
 export interface Scanner {
   node: Node;
-  rescanDelaySeconds: number;
+  scannerInterval: number;
 }
 
 export interface Node {

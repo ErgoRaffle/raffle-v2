@@ -1,11 +1,14 @@
 database:
   type: postgres
   host: localhost
+  port: 5432
   username: postgres
   password: ''
   name: raffle_v2_background_job
 scanner:
   node:
     url: http://127.0.0.1:9052/
+    timeout: 10
+  scannerInterval: 30
 ergo:
   network: mainnet

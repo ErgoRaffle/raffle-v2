@@ -112,6 +112,7 @@
       },
       "port": {
         "type": "number",
+        "default": 5432,
         "validations": [
           {
             "required": true,
@@ -160,38 +161,45 @@
           "url": {
             "type": "string",
             "default": "http://127.0.0.1:9052/",
+            "description": "scanner node url",
             "validations": [
               {
-                "required": true
+                "required": true,
+                "error": "scanner node url must be specified"
               }
             ]
           },
           "timeout": {
             "type": "number",
-            "description": "timeout in milliseconds",
+            "default": 10,
+            "description": "ergo node timeout in seconds",
             "validations": [
               {
-                "required": true
+                "required": true,
+                "error": "ergo node timeout must be specified"
               }
             ]
           },
           "initialHeight": {
             "type": "number",
-            "description": "scanner initial-height",
+            "description": "ergo node scanner initial-height",
             "validations": [
               {
-                "required": true
+                "required": true,
+                "error": "scanner initial-height must be specified"
               }
             ]
           }
         }
       },
-      "rescanDelaySeconds": {
+      "scannerInterval": {
         "type": "number",
-        "description": "delay between rescan process in seconds",
+        "default": 30,
+        "description": "scanner update interval in seconds",
         "validations": [
           {
-            "required": true
+            "required": true,
+            "error": "scanner update interval must be specified"
           }
         ]
       }
