@@ -9,11 +9,15 @@ import { BoxLookupService } from '../boxLoookupService';
 import { DbService } from '../dbService';
 import {
   signAndAddTx,
-  covertDbBoxesToErgoBoxes,
+  convertDbBoxesToErgoBoxes,
 } from '../../transactions/utils';
 import { TxType } from '../../transactions/types';
 import { RaffleBoxType } from '@ergo-raffle/extractors/lib/entities/raffleBoxEntity';
 import { AbstractTxService } from './abstractTxService';
+import {
+  GIFT_TOKEN_DESCRIPTION_PREFIX,
+  GIFT_TOKEN_NAME_PREFIX,
+} from '../../constants';
 
 export class ActivationService extends AbstractTxService {
   name = 'ActivationService';
@@ -62,7 +66,7 @@ export class ActivationService extends AbstractTxService {
       );
       return;
     }
-    const ticketRepo = covertDbBoxesToErgoBoxes(ticketRepoEntity)[0];
+    const ticketRepo = convertDbBoxesToErgoBoxes(ticketRepoEntity)[0];
 
     // Get winners share percent from raffle entity
     const winnersSharePercent = raffleEntity.winnersPercentList
@@ -75,11 +79,10 @@ export class ActivationService extends AbstractTxService {
       .setTxFee(inactiveRaffle.getTxFee())
       .setChainHeight(await this.network.getHeight())
       .setGiftTokenName(
-        'ErgoRaffle-Gift-Token-' + raffleEntity.raffleId.slice(0, 6),
+        GIFT_TOKEN_NAME_PREFIX + raffleEntity.raffleId.slice(0, 6),
       )
       .setGiftTokenDescription(
-        'ErgoRaffle Gift token identifier to identify the gift boxes of raffle with id ' +
-          raffleEntity.raffleId,
+        GIFT_TOKEN_DESCRIPTION_PREFIX + raffleEntity.raffleId,
       )
       .setWinnersSharePercent(winnersSharePercent)
       .build();
@@ -105,7 +108,7 @@ export class ActivationService extends AbstractTxService {
       ],
       onSuffice: this.activationCallback,
       getMinedBoxes: async () => {
-        return covertDbBoxesToErgoBoxes(
+        return convertDbBoxesToErgoBoxes(
           await DbService.getInstance().getInactiveRaffleBoxes(),
         );
       },

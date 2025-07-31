@@ -21,6 +21,12 @@ import {
 import { TxType } from '../../transactions/types';
 import { DbService } from '../dbService';
 import { AbstractTxService } from './abstractTxService';
+import {
+  GIFT_TOKEN_DESCRIPTION_PREFIX,
+  GIFT_TOKEN_NAME_PREFIX,
+  TICKET_TOKEN_DESCRIPTION_PREFIX,
+  TICKET_TOKEN_NAME_PREFIX,
+} from '../../constants';
 
 export class CreationService extends AbstractTxService {
   name = 'CreationService';
@@ -99,7 +105,11 @@ export class CreationService extends AbstractTxService {
         .setImplementerAddress(raffleParams.implementorAddress)
         .setCreatorAddress(raffleParams.creatorAddress)
         .setChainHeight(await this.network.getHeight())
-        .setTxFee(getConfig().ergo.fee);
+        .setTxFee(getConfig().ergo.fee)
+        .setTicketTokenName(TICKET_TOKEN_NAME_PREFIX + raffleParams.name)
+        .setTicketTokenDescription(
+          TICKET_TOKEN_DESCRIPTION_PREFIX + raffleParams.name,
+        );
 
       if (raffleParams.collectingTokenId) {
         this.logger.debug(
@@ -125,11 +135,8 @@ export class CreationService extends AbstractTxService {
         .setTicketRepo(signedCreationTx.outputs[0])
         .setTxFee(getConfig().ergo.fee)
         .setChainHeight(await this.network.getHeight())
-        .setGiftTokenName('ErgoRaffle-Gift-Token-' + raffleId.slice(0, 6))
-        .setGiftTokenDescription(
-          'ErgoRaffle Gift token identifier to identify the gift boxes of raffle with id ' +
-            raffleId,
-        )
+        .setGiftTokenName(GIFT_TOKEN_NAME_PREFIX + raffleId.slice(0, 6))
+        .setGiftTokenDescription(GIFT_TOKEN_DESCRIPTION_PREFIX + raffleId)
         .setWinnersSharePercent(
           raffleParams.winnersPercentList.split(',').map(BigInt),
         );
