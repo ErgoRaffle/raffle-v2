@@ -88,7 +88,11 @@ export class CreationService extends AbstractTxService {
         .setFeeBoxes(boxes)
         .setRaffleName(raffleParams.name)
         .setRaffleDescription(raffleParams.description)
-        .setRafflePictures([]) // TODO: Add pics to params
+        .setRafflePictures(
+          raffleParams.pictures
+            .sort((a, b) => a.orderIndex - b.orderIndex)
+            .map((picture) => picture.content),
+        )
         .setTicketPrice(raffleParams.ticketPrice)
         .setGoal(raffleParams.goal)
         .setWinnersSharePercent(raffleParams.winnersPercent)
@@ -175,8 +179,10 @@ export class CreationService extends AbstractTxService {
     // Build the box lookup request
     const boxLookupRequest: Request = {
       address: raffleParams.proxyAddress,
-      value: 0, // TODO: Add value to request
-      tokens: [], // TODO: Add tokens to request
+      value: raffleParams.requiredValue,
+      tokens: raffleParams.requiredTokenId
+        ? [{ tokenId: raffleParams.requiredTokenId, amount: 1n }]
+        : [],
       onSuffice: this.creationCallbackGenerator(raffleParams),
       getMinedBoxes: async () => {
         return convertDbBoxesToErgoBoxes(

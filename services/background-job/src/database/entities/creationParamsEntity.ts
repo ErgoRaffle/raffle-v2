@@ -1,7 +1,8 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { BigIntValueTransformer } from '@rosen-bridge/extended-typeorm';
+import { CreationPictureEntity } from './creationPictureEntity';
 
-@Entity('creation_request')
+@Entity('creation_params')
 export class CreationParamsEntity {
   @PrimaryGeneratedColumn()
   id: number;
@@ -11,6 +12,9 @@ export class CreationParamsEntity {
 
   @Column({ type: 'varchar' })
   description: string;
+
+  @OneToMany(() => CreationPictureEntity, (picture) => picture.params)
+  pictures: CreationPictureEntity[];
 
   @Column({ type: 'varchar' })
   serviceAddress: string;
@@ -50,6 +54,12 @@ export class CreationParamsEntity {
    */
   @Column({ type: 'varchar' })
   winnersPercentList: string;
+
+  @Column({ type: 'bigint', transformer: new BigIntValueTransformer() })
+  requiredValue: bigint;
+
+  @Column({ type: 'varchar', nullable: true })
+  requiredTokenId?: string;
 
   @Column({ type: 'varchar' })
   proxyAddress: string;
