@@ -19,6 +19,7 @@ import { TxType } from './types';
 import { getConfig } from '../config/config';
 import { TxPotService } from '../services/txPotService';
 import { AbstractTxService } from '../services/transactions/abstractTxService';
+import { BoxValue } from '../types/box';
 
 const logger = CallbackLoggerFactory.getInstance().getLogger(import.meta.url);
 /**
@@ -148,5 +149,30 @@ export const txpotCallBackGenerator = (
       service.finishRequest(requestId, callbackId, txType, proxyAddress);
       return;
     }
+  };
+};
+
+/**
+ * Calculates the sum of the assets of a list of boxes
+ * @param boxes - The list of boxes to calculate the sum of
+ * @returns The sum of the assets of the boxes
+ */
+export const calculateBoxesAssetSum = (boxes: ErgoBox[]): BoxValue => {
+  const tokenMap = new Map<string, bigint>();
+
+  // Collect all tokens and sum their amounts
+  for (const box of boxes) {
+    for (const asset of box.assets) {
+      const currentAmount = tokenMap.get(asset.tokenId) || 0n;
+      tokenMap.set(asset.tokenId, currentAmount + BigInt(asset.amount));
+    }
+  }
+
+  return {
+    value: boxes.reduce((sum, box) => sum + box.value, 0n),
+    tokens: Array.from(tokenMap.entries()).map(([tokenId, amount]) => ({
+      tokenId,
+      amount,
+    })),
   };
 };
