@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { vi, it, beforeEach, describe, expect, Mock } from 'vitest';
 import { TransactionEntity, TxPot } from '@rosen-bridge/tx-pot';
 
@@ -8,77 +6,44 @@ import { Request } from '../lib/types/request';
 import {
   mockDataSource,
   SampleTransactionEntities,
-  SampleTxs,
+  SampleTransactionEntitiesContainsSpecialOutput,
   unconfirmedTxList,
 } from './mocked/boxLookup.mock';
 import { Repository } from 'typeorm';
-import { Transactions } from '@rosen-clients/ergo-node';
-import {
-  ErgoAddress,
-  ErgoBox,
-  Network,
-  SAFE_MIN_BOX_VALUE,
-} from '@fleet-sdk/core';
-import { afterEach } from 'node:test';
-import { DataProvider } from '../lib/dataProvider';
+import { ErgoTransactionOutput, Transactions } from '@rosen-clients/ergo-node';
+import { ErgoAddress, Network, SAFE_MIN_BOX_VALUE } from '@fleet-sdk/core';
 
 interface BoxLookupTestContext {
   txRepository: Repository<TransactionEntity>;
   txPot: TxPot;
-  dataProvider: DataProvider;
   boxLookup: BoxLookup;
   request: Request;
   request2: Request;
 }
 
 beforeEach<BoxLookupTestContext>(async (context) => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date(1685894400001));
+
   const dataSource = await mockDataSource();
+  const txPot = TxPot.setup(dataSource);
   const txRepository = dataSource.getRepository(TransactionEntity);
   await txRepository.insert(SampleTransactionEntities);
-  const dataProvider = new DataProvider(dataSource, 'http://127.0.0.1:9052');
-  const boxLookup = new BoxLookup(dataProvider, Network.Mainnet);
-  vi.mock('@rosen-clients/ergo-node', async () => {
-    const actual = await vi.importActual<
-      typeof import('@rosen-clients/ergo-node')
-    >('@rosen-clients/ergo-node');
-    return {
-      ...actual,
-      default: vi.fn().mockImplementation(() => ({
-        getUnconfirmedTransactions: vi
-          .fn()
-          .mockResolvedValue(unconfirmedTxList as unknown as Transactions),
-      })),
-    };
-  });
-
-  vi.mock('@fleet-sdk/serializer', async () => {
-    const actual = await vi.importActual<
-      typeof import('@fleet-sdk/serializer')
-    >('@fleet-sdk/serializer');
-
-    return {
-      ...actual,
-      deserializeTransaction: vi.fn().mockImplementation(async (tx) => {
-        return (
-          SampleTxs[
-            SampleTransactionEntities.map((stx) => stx.serializedTx).indexOf(
-              Buffer.from(tx).toString('base64'),
-            )
-          ] ?? SampleTxs[SampleTxs.length - 1]
-        );
-      }),
-    };
-  });
+  const boxLookup = new BoxLookup(
+    txPot,
+    'http://127.0.0.1:9052/',
+    Network.Mainnet,
+  );
+  vi.spyOn(
+    boxLookup['nodeAPI'],
+    'getUnconfirmedTransactions',
+  ).mockResolvedValue(unconfirmedTxList as unknown as Transactions);
 
   context.txRepository = txRepository;
-  context.dataProvider = (boxLookup as any).dataProvider;
+  context.txPot = txPot;
   context.boxLookup = boxLookup;
   context.request = {} as Request;
   context.request2 = {} as Request;
-});
-
-afterEach(async () => {
-  vi.restoreAllMocks();
 });
 
 describe('BoxLookup', () => {
@@ -176,29 +141,177 @@ describe('BoxLookup', () => {
     });
   });
 
+  describe('getUnspentBoxes', () => {
+    /**
+     * should retrieve and combine unspent boxes from node and TxPot
+     * @scenario
+     * - call the getUnspentBoxes method
+     * - assert unspentBoxes size must be equal to the TxPot unspent boxes plus node unspent boxes
+     * @expected
+     * - unspentBoxes size must be equal to 4
+     */
+    it<BoxLookupTestContext>('should retrieve and combine unspent boxes from node and TxPot', async ({
+      boxLookup,
+    }) => {
+      // Act
+      const unspentBoxesList = await boxLookup['getUnspentBoxes']();
+
+      // Assert
+      expect((unspentBoxesList as ErgoTransactionOutput[]).length).toEqual(4);
+      expect(
+        (unspentBoxesList as ErgoTransactionOutput[]).map((box) => box.boxId),
+      ).toEqual([
+        '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+        '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd122',
+        '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd124',
+        '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd125',
+      ]);
+    });
+
+    /**
+     * should filter unspent boxes from node and TxPot when a box exists as spent and meanwhile unspent transactions
+     * @scenario
+     * - insert a certain output box id to the tx-pot that already exists on the unspent boxes
+     * - call the getUnspentBoxes method
+     * - assert unspentBoxes size must be equal to the TxPot unspent boxes plus node unspent boxes minus one spent box
+     * @expected
+     * - unspentBoxes size must be equal to 3
+     */
+    it<BoxLookupTestContext>('should filter unspent boxes from node and TxPot when a box exists as spent and meanwhile unspent transactions', async ({
+      boxLookup,
+      txRepository,
+    }) => {
+      // Empty TxPot DB data
+      await txRepository.insert(SampleTransactionEntitiesContainsSpecialOutput);
+
+      // Act
+      const unspentBoxesList = await boxLookup['getUnspentBoxes']();
+
+      // Assert
+      expect((unspentBoxesList as ErgoTransactionOutput[]).length).toEqual(3);
+      expect(
+        (unspentBoxesList as ErgoTransactionOutput[]).map((box) => box.boxId),
+      ).toEqual([
+        '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+        '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd122',
+        '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd124',
+      ]);
+    });
+
+    /**
+     * should retrieve and combine unspent boxes from empty node and TxPot data
+     * @scenario
+     * - mock node api to return empty tx data
+     * - call the getUnspentBoxes method
+     * - assert unspentBoxes size must be equal to the TxPot unspent boxes plus node unspent boxes
+     * @expected
+     * - unspentBoxes size must be equal to 3
+     */
+    it<BoxLookupTestContext>('should retrieve and combine unspent boxes from empty node and TxPot data', async ({
+      boxLookup,
+    }) => {
+      // Mock
+      vi.spyOn(
+        boxLookup['nodeAPI'],
+        'getUnconfirmedTransactions',
+      ).mockImplementation(async () => []);
+
+      // Act
+      const unspentBoxesList = await boxLookup['getUnspentBoxes']();
+
+      // Assert
+      expect((unspentBoxesList as ErgoTransactionOutput[]).length).toEqual(3);
+      expect(
+        (unspentBoxesList as ErgoTransactionOutput[]).map((box) => box.boxId),
+      ).toEqual([
+        '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd122',
+        '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd124',
+        '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd125',
+      ]);
+    });
+
+    /**
+     * should retrieve and combine unspent boxes from node and by empty TxPot data
+     * @scenario
+     * - remove total tx from TxPot DB
+     * - call the getUnspentBoxes method
+     * - assert unspentBoxes size must be equal to the TxPot unspent boxes plus node unspent boxes
+     * @expected
+     * - unspentBoxes size must be equal to 1
+     */
+    it<BoxLookupTestContext>('should retrieve and combine unspent boxes from node and by empty TxPot data', async ({
+      boxLookup,
+      txRepository,
+    }) => {
+      // Empty TxPot DB data
+      await txRepository.clear();
+
+      // Act
+      const unspentBoxesList = await boxLookup['getUnspentBoxes']();
+
+      // Assert
+      expect((unspentBoxesList as ErgoTransactionOutput[]).length).toEqual(1);
+      expect(
+        (unspentBoxesList as ErgoTransactionOutput[]).map((box) => box.boxId),
+      ).toEqual([
+        '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+      ]);
+    });
+
+    /**
+     * should retrieve and combine unspent boxes from empty node and empty TxPot data
+     * @scenario
+     * - remove total tx from TxPot DB
+     * - mock node api to return empty tx data
+     * - call the getUnspentBoxes method
+     * - assert unspentBoxes size must be equal to the TxPot unspent boxes plus node unspent boxes
+     * @expected
+     * - unspentBoxes size must be equal to 0
+     */
+    it<BoxLookupTestContext>('should retrieve and combine unspent boxes from empty node and empty TxPot data', async ({
+      boxLookup,
+      txRepository,
+    }) => {
+      // Empty TxPot DB data
+      await txRepository.clear();
+
+      // Mock
+      vi.spyOn(
+        boxLookup['nodeAPI'],
+        'getUnconfirmedTransactions',
+      ).mockImplementation(async () => []);
+
+      // Act
+      const unspentBoxesList = await boxLookup['getUnspentBoxes']();
+
+      // Assert
+      expect(unspentBoxesList.values.length).toEqual(0);
+      expect(
+        (unspentBoxesList as ErgoTransactionOutput[]).map((box) => box.boxId),
+      ).toEqual([]);
+    });
+  });
+
   describe('serveRequests', () => {
     interface ServeRequestsInterface {
       boxLookup: BoxLookup;
-      dataProvider: DataProvider;
       mockOnSuffice: () => Promise<void>;
     }
 
-    beforeEach<ServeRequestsInterface>(async (context) => {
-      const mockOnSuffice = vi.fn();
-      const dataSource = await mockDataSource();
-      const dataProvider = new DataProvider(
-        dataSource,
-        'http://127.0.0.1:9052',
-      );
-      (dataProvider as any).txPot = {
+    beforeEach<ServeRequestsInterface>((context) => {
+      const mockTxPot = {
         getTxsByStatus: vi.fn().mockResolvedValue([]),
       } as unknown as TxPot;
-
-      const boxLookup = new BoxLookup(dataProvider, Network.Mainnet);
+      const mockOnSuffice = vi.fn();
+      const boxLookup = new BoxLookup(
+        mockTxPot,
+        'http://127.0.0.1:9052',
+        Network.Mainnet,
+      );
 
       // mock getUnspentBoxes manually to insert desired boxes
-      dataProvider['getUnspentBoxes'] = async () => {
-        return SampleTxs[0].outputs.map((outBox) => new ErgoBox(outBox));
+      boxLookup['getUnspentBoxes'] = async () => {
+        return JSON.parse(SampleTransactionEntities[0].serializedTx).outputs;
       };
 
       // register request
@@ -215,15 +328,11 @@ describe('BoxLookup', () => {
           },
         ],
         onSuffice: mockOnSuffice,
-        getMinedUnspentBoxes: async () => {
-          return [];
-        },
       });
 
       mockOnSuffice.mockClear();
 
       context.boxLookup = boxLookup;
-      context.dataProvider = dataProvider;
       context.mockOnSuffice = mockOnSuffice;
     });
 
@@ -240,10 +349,9 @@ describe('BoxLookup', () => {
     }) => {
       await boxLookup.serveRequests();
       expect(mockOnSuffice).toBeCalledTimes(1);
-      expect(mockOnSuffice).toBeCalledWith(
-        [new ErgoBox(SampleTxs[0].outputs[0])],
-        [new ErgoBox(SampleTxs[0].outputs[0])],
-      );
+      expect(mockOnSuffice).toBeCalledWith([
+        JSON.parse(SampleTransactionEntities[0].serializedTx).outputs[0],
+      ]);
     });
 
     /**
@@ -256,36 +364,26 @@ describe('BoxLookup', () => {
      */
     it<ServeRequestsInterface>('request callback must fired when sufficient token is found in unspent boxes multiple times', async ({
       boxLookup,
-      dataProvider,
       mockOnSuffice,
     }) => {
       // mock getUnspentBoxes manually to insert desired boxes
-      dataProvider['getUnspentBoxes'] = async () => {
+      boxLookup['getUnspentBoxes'] = async () => {
         return [
-          ...(SampleTxs[0].outputs as ErgoBox[]),
-          ...(SampleTxs[1].outputs as ErgoBox[]),
-          ...(SampleTxs[2].outputs as ErgoBox[]),
+          ...JSON.parse(SampleTransactionEntities[0].serializedTx).outputs,
+          ...JSON.parse(SampleTransactionEntities[1].serializedTx).outputs,
+          ...JSON.parse(SampleTransactionEntities[2].serializedTx).outputs,
         ];
       };
 
       await boxLookup.serveRequests();
       expect(mockOnSuffice).toBeCalledTimes(2);
-      expect(mockOnSuffice).toBeCalledWith(
-        [SampleTxs[0].outputs[0]],
-        [
-          ...(SampleTxs[0].outputs as ErgoBox[]),
-          ...(SampleTxs[1].outputs as ErgoBox[]),
-          ...(SampleTxs[2].outputs as ErgoBox[]),
-        ],
-      );
-      expect(mockOnSuffice).toBeCalledWith(
-        [SampleTxs[1].outputs[0]],
-        [
-          ...(SampleTxs[0].outputs as ErgoBox[]),
-          ...(SampleTxs[1].outputs as ErgoBox[]),
-          ...(SampleTxs[2].outputs as ErgoBox[]),
-        ],
-      );
+      expect(mockOnSuffice).toBeCalledWith([
+        JSON.parse(SampleTransactionEntities[0].serializedTx).outputs[0],
+      ]);
+      expect(mockOnSuffice).toBeCalledWith([
+        JSON.parse(SampleTransactionEntities[1].serializedTx).outputs[0],
+        JSON.parse(SampleTransactionEntities[2].serializedTx).outputs[0],
+      ]);
     });
 
     /**
@@ -310,15 +408,13 @@ describe('BoxLookup', () => {
         value: Number(SAFE_MIN_BOX_VALUE * 3n),
         tokens: [],
         onSuffice: mockOnSuffice,
-        getMinedUnspentBoxes: async () => [],
       });
 
       await boxLookup.serveRequests();
       expect(mockOnSuffice).toBeCalledTimes(1);
-      expect(mockOnSuffice as Mock).toBeCalledWith(
-        [new ErgoBox(SampleTxs[0].outputs[0])],
-        [new ErgoBox(SampleTxs[0].outputs[0])],
-      );
+      expect(mockOnSuffice as Mock).toBeCalledWith([
+        JSON.parse(SampleTransactionEntities[0].serializedTx).outputs[0],
+      ]);
     });
 
     /**
@@ -349,15 +445,13 @@ describe('BoxLookup', () => {
           },
         ],
         onSuffice: mockOnSuffice,
-        getMinedUnspentBoxes: async () => [],
       });
 
       await boxLookup.serveRequests();
       expect(mockOnSuffice).toBeCalledTimes(1);
-      expect(mockOnSuffice as Mock).toBeCalledWith(
-        [new ErgoBox(SampleTxs[0].outputs[0])],
-        [new ErgoBox(SampleTxs[0].outputs[0])],
-      );
+      expect(mockOnSuffice as Mock).toBeCalledWith([
+        JSON.parse(SampleTransactionEntities[0].serializedTx).outputs[0],
+      ]);
     });
 
     /**
@@ -385,7 +479,6 @@ describe('BoxLookup', () => {
           },
         ],
         onSuffice: mockOnSuffice,
-        getMinedUnspentBoxes: async () => [],
       });
 
       await boxLookup.serveRequests();

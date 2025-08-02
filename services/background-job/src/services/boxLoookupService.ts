@@ -8,8 +8,6 @@ import { BoxLookup, Request } from '@ergo-raffle/box-lookup';
 import { Network } from '@fleet-sdk/core';
 
 import { TxPotService } from './txPotService';
-import { DataProvider } from '@ergo-raffle/box-lookup/lib/dataProvider';
-import { DataSource } from 'typeorm';
 
 export class BoxLookupService extends AbstractService {
   name = 'BoxLookupService';
@@ -26,20 +24,22 @@ export class BoxLookupService extends AbstractService {
     return;
   };
   private shouldStopJob = false;
-  private dataProvider: DataProvider;
   private boxLookup: BoxLookup;
   private updateInterval: number;
 
   private constructor(
-    dataSource: DataSource,
     updateInterval: number,
     nodeUrl: string,
     networkType: Network,
     logger?: AbstractLogger,
   ) {
     super(logger);
-    this.dataProvider = new DataProvider(dataSource, nodeUrl);
-    this.boxLookup = new BoxLookup(this.dataProvider, networkType, logger);
+    this.boxLookup = new BoxLookup(
+      TxPotService.getInstance().getTxPot(),
+      nodeUrl,
+      networkType,
+      logger,
+    );
     this.updateInterval = updateInterval;
   }
 
@@ -47,7 +47,6 @@ export class BoxLookupService extends AbstractService {
    * Initializes the singleton instance of BoxLookupService
    */
   static init = (
-    dataSource: DataSource,
     updateInterval: number,
     nodeUrl: string,
     networkType: Network = Network.Mainnet,
@@ -57,7 +56,6 @@ export class BoxLookupService extends AbstractService {
       return;
     }
     this.instance = new BoxLookupService(
-      dataSource,
       updateInterval,
       nodeUrl,
       networkType,
