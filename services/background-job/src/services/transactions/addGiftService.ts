@@ -3,7 +3,7 @@ import { Request, OnSufficeCallback } from '@ergo-raffle/box-lookup';
 import { AddGiftTxBuilder } from '@ergo-raffle/transactions';
 import { ErgoBox } from '@fleet-sdk/core';
 
-import { AddGiftParamsEntity } from '../../database/entities/addGiftParamsEntity';
+import { AddGiftParamsEntity } from '../../database/entities';
 import { BoxLookupService } from '../boxLoookupService';
 import { ScannerService } from '../scannerService';
 import { TxPotService } from '../txPotService';

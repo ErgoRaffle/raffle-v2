@@ -11,8 +11,8 @@ import {
   RaffleServiceEntity,
   DynamicBoxEntity,
   WinnerEntity,
+  RaffleBoxType,
 } from '@ergo-raffle/extractors';
-import { RaffleBoxType } from '@ergo-raffle/extractors/lib/entities/raffleBoxEntity';
 import { IsNull } from 'typeorm';
 
 export class DbService extends AbstractService {

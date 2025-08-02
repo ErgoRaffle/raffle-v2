@@ -11,10 +11,10 @@ import {
   convertDbBoxesToErgoBoxes,
 } from '../../transactions/utils';
 import { TxType } from '../../transactions/types';
-import { RaffleBoxType } from '@ergo-raffle/extractors/lib/entities/raffleBoxEntity';
+import { RaffleBoxType } from '@ergo-raffle/extractors';
 import { AbstractTxService } from './abstractTxService';
 import { getConfig } from '../../config/config';
-import { GiftTokenRepoBuilder, WinnerBuilder } from '@ergo-raffle/boxes';
+import { GiftTokenRepoBuilder } from '@ergo-raffle/boxes';
 import { findWinner } from '../../transactions/boxFinder';
 
 export class GiftTokenReceiptService extends AbstractTxService {

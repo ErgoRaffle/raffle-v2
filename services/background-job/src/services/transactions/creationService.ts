@@ -8,7 +8,7 @@ import {
 } from '@ergo-raffle/transactions';
 import { ErgoBox } from '@fleet-sdk/core';
 
-import { CreationParamsEntity } from '../../database/entities/creationParamsEntity';
+import { CreationParamsEntity } from '../../database/entities';
 import { BoxLookupService } from '../boxLoookupService';
 import { ScannerService } from '../scannerService';
 import { TxPotService } from '../txPotService';
