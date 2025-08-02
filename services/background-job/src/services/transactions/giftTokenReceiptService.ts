@@ -15,6 +15,7 @@ import { RaffleBoxType } from '@ergo-raffle/extractors/lib/entities/raffleBoxEnt
 import { AbstractTxService } from './abstractTxService';
 import { getConfig } from '../../config/config';
 import { GiftTokenRepoBuilder, WinnerBuilder } from '@ergo-raffle/boxes';
+import { findWinner } from '../../transactions/boxFinder';
 
 export class GiftTokenReceiptService extends AbstractTxService {
   name = 'GiftTokenReceiptService';
@@ -49,31 +50,13 @@ export class GiftTokenReceiptService extends AbstractTxService {
       `Processing gift token receipt transaction for gift token repo with id [${giftTokenRepo.boxId}], for raffle id [${ticketId}] and step [${step}]`,
     );
 
-    // Find winner boxes in unspent boxes
-    const winnerBoxes = unspentBoxes.filter(
-      (box) =>
-        box.ergoTree === raffleInfo.addresses.winner &&
-        box.assets[0].tokenId === ticketId,
-    );
-    let winnerBox = winnerBoxes.find((box) => {
-      const winnerBoxBuilder = WinnerBuilder.fromBox(box);
-      return winnerBoxBuilder.getWinnerIndex() === step;
-    });
+    // Find winner box for the raffle by its index
+    const winnerBox = await findWinner(unspentBoxes, ticketId, step);
     if (!winnerBox) {
-      this.logger.debug(
-        `The related winner box not found, searching database for winner box`,
+      this.logger.error(
+        `The related winner box not found, skipping gift token receipt transaction for gift token repo with id [${giftTokenRepo.boxId}]`,
       );
-      const winnerBoxEntity = await DbService.getInstance().getWinnerBox(
-        ticketId,
-        step,
-      );
-      if (!winnerBoxEntity) {
-        this.logger.error(
-          `The related winner box not found, skipping gift token receipt transaction for gift token repo with id [${giftTokenRepo.boxId}]`,
-        );
-        return;
-      }
-      winnerBox = convertDbBoxesToErgoBoxes([winnerBoxEntity])[0];
+      return;
     }
 
     this.logger.debug(

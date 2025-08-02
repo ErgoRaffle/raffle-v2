@@ -37,7 +37,12 @@ export class ActivationService extends AbstractTxService {
   };
 
   /**
-   * Callback for activation transaction
+   * Generator function for an activation callback
+   * - Build the activation transaction
+   * Note: This callback assumes that the creation transaction has been already
+   * mined and the boxes are available in the database
+   * @param boxes - The boxes
+   * @returns A callback for the activation of a raffle
    */
   private activationCallback: OnSufficeCallback = async (
     boxes: ErgoBox[],

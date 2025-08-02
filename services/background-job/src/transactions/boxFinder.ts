@@ -7,6 +7,13 @@ import { convertDbBoxesToErgoBoxes } from './utils';
 
 const logger = CallbackLoggerFactory.getInstance().getLogger(import.meta.url);
 
+/**
+ * Find the winner box for a raffle by its index
+ * @param unspentBoxes - The unspent boxes
+ * @param raffleId - The raffle id
+ * @param winnerIndex - The winner index
+ * @returns The winner box
+ */
 export const findWinner = async (
   unspentBoxes: ErgoBox[],
   raffleId: string,
@@ -41,4 +48,29 @@ export const findWinner = async (
     return undefined;
   }
   return convertDbBoxesToErgoBoxes([winnerBoxEntity])[0];
+};
+
+/**
+ * Find the service box for a raffle
+ * @param unspentBoxes - The unspent boxes
+ * @returns The service box
+ */
+export const findServiceBox = async (
+  unspentBoxes: ErgoBox[],
+): Promise<ErgoBox | undefined> => {
+  // Find the service box in unspent boxes
+  let serviceBox = unspentBoxes.find(
+    (box) => box.assets[0]?.tokenId === raffleInfo.tokens.serviceNft,
+  );
+  if (serviceBox) {
+    return serviceBox;
+  }
+  // Find the service box in the database
+  logger.debug(`Service box not found, trying to find in the database`);
+  const serviceBoxEntity = await DbService.getInstance().getServiceBox();
+  if (!serviceBoxEntity) {
+    logger.error(`Service box not found in database`);
+    return undefined;
+  }
+  return convertDbBoxesToErgoBoxes([serviceBoxEntity])[0];
 };

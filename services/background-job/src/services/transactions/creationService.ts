@@ -27,6 +27,7 @@ import {
   TICKET_TOKEN_DESCRIPTION_PREFIX,
   TICKET_TOKEN_NAME_PREFIX,
 } from '../../constants';
+import { findServiceBox } from '../../transactions/boxFinder';
 
 export class CreationService extends AbstractTxService {
   name = 'CreationService';
@@ -68,27 +69,17 @@ export class CreationService extends AbstractTxService {
       unspentBoxes: ErgoBox[],
       requestId: number,
     ): Promise<void> => {
-      // Find the service box in unspent boxes
-      let serviceBox = unspentBoxes.find(
-        (box) => box.assets[0]?.tokenId === raffleInfo.tokens.serviceNft,
-      );
+      const serviceBox = await findServiceBox(unspentBoxes);
       if (!serviceBox) {
-        // Find the service box in the database
-        this.logger.debug(
-          `Service box not found for request id: [${requestId}], trying to find in the database`,
+        this.logger.error(
+          `Service box not found for request id: [${requestId}], skipping raffle creation`,
         );
-        const serviceBoxEntity = await DbService.getInstance().getServiceBox();
-        if (!serviceBoxEntity) {
-          this.logger.error(
-            `Service box not found for request id: [${requestId}], skipping creation`,
-          );
-          return;
-        }
-        serviceBox = convertDbBoxesToErgoBoxes([serviceBoxEntity])[0];
+        return;
       }
       this.logger.debug(
         `Service box found with id [${serviceBox.boxId}], building creation transaction`,
       );
+
       const creationTxBuilder = new CreationTxBuilder()
         .setServiceBox(serviceBox)
         .setFeeBoxes(boxes)
