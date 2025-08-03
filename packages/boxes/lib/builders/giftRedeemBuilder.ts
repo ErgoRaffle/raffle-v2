@@ -98,6 +98,15 @@ export class GiftRedeemBuilder {
   };
 
   /**
+   * Get the number of winners
+   * @returns Winners count
+   */
+  getWinnersCount = (): number => {
+    if (!this.winnersCount) throw new Error('Winners count not set');
+    return this.winnersCount!;
+  };
+
+  /**
    * Set the current step
    * @param step - Current step number
    * @returns this builder instance
@@ -185,6 +194,14 @@ export class GiftRedeemBuilder {
    */
   getCollectingTokenAmount = (): bigint | undefined => {
     return this.collectingTokenAmount;
+  };
+
+  /**
+   * Get the current step
+   * @returns Current step number
+   */
+  getStep = (): number => {
+    return this.step!;
   };
 
   /**

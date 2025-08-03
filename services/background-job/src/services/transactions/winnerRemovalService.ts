@@ -1,0 +1,118 @@
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { Request, OnSufficeCallback } from '@ergo-raffle/box-lookup';
+import { raffleInfo } from '@ergo-raffle/contracts';
+import { WinnerRemovalTxBuilder } from '@ergo-raffle/transactions';
+import { ErgoBox } from '@fleet-sdk/core';
+import { GiftRedeemBuilder, WinnerBuilder } from '@ergo-raffle/boxes';
+
+import { BoxLookupService } from '../boxLoookupService';
+import { DbService } from '../dbService';
+import {
+  signAndAddTx,
+  convertDbBoxesToErgoBoxes,
+} from '../../transactions/utils';
+import { TxType } from '../../types/transaction';
+import { AbstractTxService } from './abstractTxService';
+import { getConfig } from '../../config/config';
+import { findAllWinners } from '../../transactions/boxFinder';
+
+export class WinnerRemovalService extends AbstractTxService {
+  name = 'WinnerRemovalService';
+
+  constructor(nodeUrl: string, logger: AbstractLogger) {
+    super(nodeUrl, logger);
+  }
+
+  /**
+   * Initialize the service
+   * @param nodeUrl - The node url
+   * @param logger - The logger
+   */
+  static init = (nodeUrl: string, logger: AbstractLogger) => {
+    if (this.instance != undefined) return;
+    this.instance = new WinnerRemovalService(nodeUrl, logger);
+  };
+
+  /**
+   * Callback for winner removal transaction
+   */
+  private winnerRemovalCallback: OnSufficeCallback = async (
+    boxes: ErgoBox[],
+    unspentBoxes: ErgoBox[],
+  ): Promise<void> => {
+    const giftRedeemBox = boxes[0];
+    const giftRedeemBuilder = GiftRedeemBuilder.fromBox(giftRedeemBox);
+    const raffleId = giftRedeemBuilder.getTicketTokenId();
+    const step = giftRedeemBuilder.getStep();
+
+    this.logger.info(
+      `Processing winner removal for gift redeem box [${giftRedeemBox.boxId}] with raffle id [${raffleId}], step [${step}]`,
+    );
+
+    // Find the winner box for this step
+    const winnerBoxes = await findAllWinners(unspentBoxes, raffleId);
+
+    // Process each winner box
+    for (let i = step; i <= giftRedeemBuilder.getWinnersCount(); i++) {
+      const winnerBox = winnerBoxes.find((box) => {
+        const winnerBoxBuilder = WinnerBuilder.fromBox(box);
+        this.logger.debug(
+          `Winner box [${box.boxId}] with index [${winnerBoxBuilder.getWinnerIndex()}] has [${winnerBoxBuilder.getGiftCount()}] gifts left`,
+        );
+        return (
+          winnerBoxBuilder.getWinnerIndex() === i &&
+          winnerBoxBuilder.getGiftCount() === 0n
+        );
+      });
+      if (!winnerBox) {
+        this.logger.debug(
+          `Winner box not found with index ${i} and zero gifts, waiting for gift unwrap before winner removal transaction for gift redeem box [${giftRedeemBox.boxId}]`,
+        );
+        return;
+      }
+
+      this.logger.debug(
+        `Creating winner removal transaction for winner box [${winnerBox.boxId}] with index [${i}]`,
+      );
+
+      // Build the winner removal transaction
+      const winnerRemovalTx = new WinnerRemovalTxBuilder()
+        .setGiftRedeem(giftRedeemBox)
+        .setWinner(winnerBox)
+        .setChainHeight(await this.network.getHeight())
+        .setTxFee(getConfig().ergo.fee)
+        .build();
+
+      await signAndAddTx(this.network, winnerRemovalTx, TxType.WinnerRemoval);
+
+      this.logger.info(
+        `Winner removal transaction for winner [${i}] of raffle [${raffleId}] has been added (txId: [${winnerRemovalTx.id}])`,
+      );
+    }
+  };
+
+  /**
+   * Add the gift redeem box-lookup request to the service
+   */
+  addBaseRequests(): void {
+    const request: Request = {
+      address: raffleInfo.addresses.giftRedeem,
+      value: undefined,
+      tokens: [
+        {
+          tokenId: raffleInfo.tokens.raffleLicense,
+          amount: 1n,
+        },
+      ],
+      onSuffice: this.winnerRemovalCallback,
+      getMinedBoxes: async () => {
+        return convertDbBoxesToErgoBoxes(
+          await DbService.getInstance().getGiftRedeemBoxes(),
+        );
+      },
+    };
+
+    const requestId = BoxLookupService.getInstance().addRequest(request);
+    this.activeBoxLookupRequestIds.push(requestId);
+  }
+}

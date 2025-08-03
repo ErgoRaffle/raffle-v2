@@ -16,6 +16,7 @@ import {
   SuccessRaffleEntity,
   WinnerPrizeEntity,
   GiftEntity,
+  GiftRedeemEntity,
   TicketEntity,
 } from '@ergo-raffle/extractors';
 import { IsNull, LessThan, MoreThanOrEqual } from 'typeorm';
@@ -231,6 +232,20 @@ export class DbService extends AbstractService {
       where: {
         raffleId,
         ...(winnerIndex ? { winnerIndex } : {}),
+        spendBlock: IsNull(),
+      },
+    });
+  };
+
+  /**
+   * Get the unspent gift redeem boxes
+   * @param raffleId - The raffle id
+   * @returns The gift redeem boxes
+   */
+  getGiftRedeemBoxes = (raffleId?: string): Promise<GiftRedeemEntity[]> => {
+    return this.dataSource.getRepository(GiftRedeemEntity).find({
+      where: {
+        ...(raffleId ? { raffleId: raffleId } : {}),
         spendBlock: IsNull(),
       },
     });
