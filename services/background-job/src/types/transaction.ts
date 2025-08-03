@@ -8,5 +8,7 @@ export enum TxType {
   PrizeCreation = 'prize_creation',
   GiftUnwrap = 'gift_unwrap',
   FinalPrize = 'final_prize',
+  Failure = 'failure',
+  WinnerRemoval = 'winner_removal',
   // TODO: to be continued
 }

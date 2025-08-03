@@ -1,7 +1,7 @@
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { Request, OnSufficeCallback } from '@ergo-raffle/box-lookup';
 import { raffleInfo } from '@ergo-raffle/contracts';
-import { FeePaymentTxBuilder } from '@ergo-raffle/transactions';
+import { FailureTxBuilder } from '@ergo-raffle/transactions';
 import { ErgoBox } from '@fleet-sdk/core';
 import { RaffleBoxType } from '@ergo-raffle/extractors';
 import { ActiveRaffleBuilder } from '@ergo-raffle/boxes';
@@ -16,8 +16,8 @@ import { TxType } from '../../types/transaction';
 import { AbstractTxService } from './abstractTxService';
 import { getConfig } from '../../config/config';
 
-export class FeePaymentService extends AbstractTxService {
-  name = 'FeePaymentService';
+export class FailureService extends AbstractTxService {
+  name = 'FailureService';
 
   constructor(nodeUrl: string, logger: AbstractLogger) {
     super(nodeUrl, logger);
@@ -30,13 +30,13 @@ export class FeePaymentService extends AbstractTxService {
    */
   static init = (nodeUrl: string, logger: AbstractLogger) => {
     if (this.instance != undefined) return;
-    this.instance = new FeePaymentService(nodeUrl, logger);
+    this.instance = new FailureService(nodeUrl, logger);
   };
 
   /**
-   * Callback for fee payment transaction
+   * Callback for failure transaction
    */
-  private feePaymentCallback: OnSufficeCallback = async (
+  private failureCallback: OnSufficeCallback = async (
     boxes: ErgoBox[],
   ): Promise<void> => {
     const activeRaffleBox = boxes[0];
@@ -55,34 +55,15 @@ export class FeePaymentService extends AbstractTxService {
     }
 
     this.logger.info(
-      `Raffle [${raffleId}] is ended. Creating fee payment transaction for the active raffle box [${activeRaffleBox.boxId}]`,
+      `Raffle [${raffleId}] is ended. Creating failure transaction for the active raffle box [${activeRaffleBox.boxId}]`,
     );
-
-    // Find the oracle box (there is only one oracle box)
-    const oracleBox = (
-      await this.network.getUnspentBoxesByTokenId(
-        raffleInfo.tokens.oracleTokenId,
-      )
-    )[0];
-    if (!oracleBox) {
-      this.logger.error(
-        `Oracle box not found for raffle [${raffleId}], skipping fee payment`,
-      );
-      return;
-    }
-    if (oracleBox.creationHeight < endHeight) {
-      this.logger.info(
-        `Oracle box with id [${oracleBox.boxId}] is not created yet after the raffle deadline [${raffleId}] creation height: [${oracleBox.creationHeight}] vs deadline: [${endHeight}], skipping fee payment`,
-      );
-      return;
-    }
 
     // Find the raffle details box
     const raffleDetailsBoxEntity =
       await DbService.getInstance().getRaffleDetailsBox(raffleId);
     if (!raffleDetailsBoxEntity) {
       this.logger.error(
-        `Raffle details box not found for raffle [${raffleId}], skipping fee payment`,
+        `Raffle details box not found for raffle [${raffleId}], skipping failure transaction`,
       );
       return;
     }
@@ -90,31 +71,19 @@ export class FeePaymentService extends AbstractTxService {
       raffleDetailsBoxEntity,
     ])[0];
 
-    // Get the raffle data for service and implementer addresses from database
-    const raffleEntity = await DbService.getInstance().getRaffleData(raffleId);
-    if (!raffleEntity) {
-      this.logger.error(
-        `Impossible case: Raffle entity not found for raffle [${raffleId}], skipping fee payment`,
-      );
-      return;
-    }
-
-    // Build the fee payment transaction
-    const feePaymentTxBuilder = new FeePaymentTxBuilder()
+    // Build the failure transaction
+    const failureTxBuilder = new FailureTxBuilder()
       .setActiveRaffle(activeRaffleBox)
       .setRaffleDetails(raffleDetailsBox)
-      .setOracleBox(oracleBox)
-      .setServiceErgoTree(raffleEntity.serviceErgoTree)
-      .setImplementerErgoTree(raffleEntity.implementorErgoTree)
       .setChainHeight(currentHeight)
       .setTxFee(getConfig().ergo.fee);
 
-    const feePaymentTx = feePaymentTxBuilder.build();
+    const failureTx = failureTxBuilder.build();
 
-    await signAndAddTx(this.network, feePaymentTx, TxType.FeePayment);
+    await signAndAddTx(this.network, failureTx, TxType.Failure);
 
     this.logger.info(
-      `Fee payment transaction for raffle [${raffleId}] has been added (txId: [${feePaymentTx.id}])`,
+      `Failure transaction for raffle [${raffleId}] has been added (txId: [${failureTx.id}])`,
     );
   };
 
@@ -131,7 +100,7 @@ export class FeePaymentService extends AbstractTxService {
           amount: 1n,
         },
       ],
-      onSuffice: this.feePaymentCallback,
+      onSuffice: this.failureCallback,
       getMinedBoxes: async () => {
         return convertDbBoxesToErgoBoxes(
           await DbService.getInstance().getRaffleBoxes(
