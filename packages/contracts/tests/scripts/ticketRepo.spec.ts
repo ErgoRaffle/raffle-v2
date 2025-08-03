@@ -21,8 +21,8 @@ function createTicketRepoTest(winnersCount: number = 1) {
     ) as ScriptNamesType[],
   );
   const { creator, someone } = boxFactory.createPartners({
-    Creator: testUtils.CREATOR_DEFAULT_BALANCE,
-    Someone: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    Creator: testUtils.TestConstants.CREATOR_DEFAULT_BALANCE,
+    Someone: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
   });
 
   const ticketRepoInputBox = boxFactory.createTicketRepoBoxMock();
@@ -35,7 +35,7 @@ function createTicketRepoTest(winnersCount: number = 1) {
     undefined,
     10n,
     undefined,
-    testUtils.CREATION_FEE,
+    testUtils.TestConstants.CREATION_FEE,
     undefined,
     0n,
   );
@@ -95,7 +95,7 @@ describe('ticketRepo', () => {
             giftTokenRepoOutputBox,
             ...winnersBoxes,
           ])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
@@ -146,7 +146,7 @@ describe('ticketRepo', () => {
               inactiveRaffleInputBox.boxId.toString(),
             ),
           ])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
@@ -192,7 +192,7 @@ describe('ticketRepo', () => {
 
         // Replace Ticket-Token with another token
         const extraInputBox = mockUTxO({
-          value: testUtils.FEE,
+          value: testUtils.TestConstants.FEE,
           ergoTree: creator.ergoTree,
           assets: [
             {
@@ -215,7 +215,7 @@ describe('ticketRepo', () => {
             giftTokenRepoOutputBox,
             ...winnersOutputBoxes,
           ])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
@@ -266,7 +266,7 @@ describe('ticketRepo', () => {
 
         // Move one extra Ticket-Token to the giftTokenRepoOutputBox
         giftTokenRepoOutputBox.assets.add({
-          tokenId: testUtils.TICKET_TOKEN_ID,
+          tokenId: testUtils.TestConstants.TICKET_TOKEN_ID,
           amount: 1n,
         });
 
@@ -278,7 +278,7 @@ describe('ticketRepo', () => {
             giftTokenRepoOutputBox,
             ...winnersOutputBoxes,
           ])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() =>
@@ -314,7 +314,7 @@ describe('ticketRepo', () => {
           0n,
         );
         const extraInputBox = mockUTxO({
-          value: testUtils.FEE,
+          value: testUtils.TestConstants.FEE,
           ergoTree: creator.ergoTree,
           assets: [
             {
@@ -346,7 +346,7 @@ describe('ticketRepo', () => {
             giftTokenRepoOutputBox,
             ...winnersOutputBoxes,
           ])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
@@ -400,7 +400,7 @@ describe('ticketRepo', () => {
           giftTokenRepoOutputBox,
           ...winnerBoxes,
         ])
-        .payFee(testUtils.FEE)
+        .payFee(testUtils.TestConstants.FEE)
         .sendChangeTo(creator.address)
         .burnTokens({
           tokenId: activeRaffleOutputBox.assets.at(1).tokenId!.toString(),
