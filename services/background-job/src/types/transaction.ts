@@ -6,5 +6,7 @@ export enum TxType {
   AddGift = 'add_gift',
   FeePayment = 'fee_payment',
   PrizeCreation = 'prize_creation',
+  GiftUnwrap = 'gift_unwrap',
+  FinalPrize = 'final_prize',
   // TODO: to be continued
 }

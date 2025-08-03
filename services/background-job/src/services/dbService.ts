@@ -14,8 +14,11 @@ import {
   RaffleBoxType,
   RaffleDetailsEntity,
   SuccessRaffleEntity,
+  WinnerPrizeEntity,
+  GiftEntity,
+  TicketEntity,
 } from '@ergo-raffle/extractors';
-import { IsNull } from 'typeorm';
+import { IsNull, LessThan, MoreThanOrEqual } from 'typeorm';
 
 export class DbService extends AbstractService {
   name = 'DbService';
@@ -196,6 +199,62 @@ export class DbService extends AbstractService {
     return this.dataSource.getRepository(SuccessRaffleEntity).find({
       where: {
         ...(raffleId ? { raffleId: raffleId } : {}),
+        spendBlock: IsNull(),
+      },
+    });
+  };
+
+  /**
+   * Get the unspent winner prize boxes
+   * @param raffleId - The raffle id
+   * @returns The winner prize boxes
+   */
+  getWinnerPrizeBoxes = (raffleId?: string): Promise<WinnerPrizeEntity[]> => {
+    return this.dataSource.getRepository(WinnerPrizeEntity).find({
+      where: {
+        ...(raffleId ? { raffleId: raffleId } : {}),
+        spendBlock: IsNull(),
+      },
+    });
+  };
+
+  /**
+   * Get the unspent gift boxes
+   * @param raffleId - The raffle id
+   * @returns The gift boxes
+   */
+  getGifts = (
+    raffleId: string,
+    winnerIndex?: number,
+  ): Promise<GiftEntity[]> => {
+    return this.dataSource.getRepository(GiftEntity).find({
+      where: {
+        raffleId,
+        ...(winnerIndex ? { winnerIndex } : {}),
+        spendBlock: IsNull(),
+      },
+    });
+  };
+
+  /**
+   * Get the unspent ticket boxes
+   * @param raffleId - The raffle id
+   * @param index - The index of the ticket
+   * @returns The ticket boxes
+   */
+  getTicket = (
+    raffleId: string,
+    index?: bigint,
+  ): Promise<TicketEntity | null> => {
+    return this.dataSource.getRepository(TicketEntity).findOne({
+      where: {
+        raffleId,
+        ...(index
+          ? {
+              rangeStart: MoreThanOrEqual(index),
+              rangeEnd: LessThan(index),
+            }
+          : {}),
         spendBlock: IsNull(),
       },
     });
