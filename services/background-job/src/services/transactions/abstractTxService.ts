@@ -117,7 +117,7 @@ export abstract class AbstractTxService extends AbstractService {
 
     TxPotService.getInstance().unregisterCompletionCallback(txType, callbackId);
     this.activeTxpotCallbackIds = this.activeTxpotCallbackIds.filter(
-      ([txType, callbackId]) => callbackId !== callbackId,
+      ([, callbackId]) => callbackId !== callbackId,
     );
 
     ScannerService.getInstance().removeDynamicAddress(proxyAddress);

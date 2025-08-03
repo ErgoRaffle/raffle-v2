@@ -10,5 +10,6 @@ export enum TxType {
   FinalPrize = 'final_prize',
   Failure = 'failure',
   WinnerRemoval = 'winner_removal',
+  GiftReturn = 'gift_return',
   // TODO: to be continued
 }

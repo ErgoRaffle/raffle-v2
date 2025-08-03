@@ -145,3 +145,37 @@ export const findActiveRaffle = async (
   }
   return convertDbBoxesToErgoBoxes(boxEntities)[0];
 };
+
+/**
+ * Find the gift redeem box for a raffle
+ * @param unspentBoxes - The unspent boxes (optional)
+ * @param raffleId - The raffle id
+ * @returns The gift redeem box
+ */
+export const findGiftRedeemBox = async (
+  unspentBoxes: ErgoBox[] = [],
+  raffleId: string,
+): Promise<ErgoBox | undefined> => {
+  // Find the gift redeem box in unspent boxes
+  let box = unspentBoxes.find(
+    (box) =>
+      box.ergoTree === raffleInfo.addresses.giftRedeem &&
+      box.assets[1]?.tokenId === raffleId,
+  );
+  if (box) {
+    return box;
+  }
+  // Find the gift redeem box in the database
+  logger.debug(
+    `Gift redeem box for raffle [${raffleId}] not found in unspent boxes, trying to search the database`,
+  );
+  const boxEntities =
+    await DbService.getInstance().getGiftRedeemBoxes(raffleId);
+  if (!boxEntities || boxEntities.length === 0) {
+    logger.error(
+      `Gift redeem box for raffle [${raffleId}] not found in database`,
+    );
+    return undefined;
+  }
+  return convertDbBoxesToErgoBoxes(boxEntities)[0];
+};

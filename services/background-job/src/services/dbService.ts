@@ -161,12 +161,12 @@ export class DbService extends AbstractService {
    * @returns The winner box
    */
   getWinnerBoxes = (
-    raffleId: string,
+    raffleId?: string,
     index?: number,
   ): Promise<WinnerEntity[]> => {
     return this.dataSource.getRepository(WinnerEntity).find({
       where: {
-        raffleId,
+        ...(raffleId ? { raffleId: raffleId } : {}),
         ...(index ? { index } : {}),
         spendBlock: IsNull(),
       },
