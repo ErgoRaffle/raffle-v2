@@ -2,11 +2,46 @@ import { WinnerBuilder } from '@ergo-raffle/boxes';
 import { raffleInfo } from '@ergo-raffle/contracts';
 import { ErgoBox } from '@fleet-sdk/core';
 import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
-import { DbService } from '../services/dbService';
-import { convertDbBoxesToErgoBoxes } from './utils';
 import { RaffleBoxType } from '@ergo-raffle/extractors';
 
+import { DbService } from '../services/dbService';
+import { convertDbBoxesToErgoBoxes } from './utils';
+
 const logger = CallbackLoggerFactory.getInstance().getLogger(import.meta.url);
+
+/**
+ * Find all winner boxes for a raffle
+ * @param unspentBoxes - The unspent boxes
+ * @param raffleId - The raffle id
+ * @returns The winner box
+ */
+export const findAllWinners = async (
+  unspentBoxes: ErgoBox[],
+  raffleId: string,
+): Promise<ErgoBox[]> => {
+  logger.debug(`Searching winner boxes for raffle [${raffleId}]`);
+  const winnerBoxes = unspentBoxes.filter(
+    (box) =>
+      box.ergoTree === raffleInfo.addresses.winner &&
+      box.assets[0].tokenId === raffleId,
+  );
+  logger.debug(
+    `Found ${winnerBoxes.length} unspent winner boxes in unspent boxes for raffle [${raffleId}] with boxIds: ${winnerBoxes.map((box) => box.boxId).join(', ')}`,
+  );
+
+  // Search the database for winner boxes that are not in the unspent boxes
+  const winnerBoxEntities = (
+    await DbService.getInstance().getWinnerBoxes(raffleId)
+  ).filter((dbBox) => {
+    return !winnerBoxes.some((box) => box.boxId === dbBox.boxId);
+  });
+
+  logger.debug(
+    `Found ${winnerBoxEntities.length} winner boxes in the database for raffle [${raffleId}] with boxIds: ${winnerBoxEntities.map((box) => box.boxId).join(', ')}`,
+  );
+  // Sort the winner boxes by winner index
+  return winnerBoxes.concat(convertDbBoxesToErgoBoxes(winnerBoxEntities));
+};
 
 /**
  * Find the winner box for a raffle by its index
@@ -38,10 +73,9 @@ export const findWinner = async (
   logger.debug(
     `The related winner box not found, searching database for winner box`,
   );
-  const winnerBoxEntity = await DbService.getInstance().getWinnerBox(
-    raffleId,
-    winnerIndex,
-  );
+  const winnerBoxEntity = (
+    await DbService.getInstance().getWinnerBoxes(raffleId, winnerIndex)
+  )[0];
   if (!winnerBoxEntity) {
     logger.warn(
       `Winner box not found for raffle [${raffleId}] and winner index [${winnerIndex}]`,
