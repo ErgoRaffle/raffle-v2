@@ -11,7 +11,7 @@ import {
   signAndAddTx,
   convertDbBoxesToErgoBoxes,
 } from '../../transactions/utils';
-import { TxType } from '../../transactions/types';
+import { TxType } from '../../types/transaction';
 import { RaffleBoxType } from '@ergo-raffle/extractors/lib/entities/raffleBoxEntity';
 import { AbstractTxService } from './abstractTxService';
 import {

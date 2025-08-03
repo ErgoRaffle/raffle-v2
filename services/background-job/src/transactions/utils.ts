@@ -15,7 +15,7 @@ import { TransactionEntity, CallbackFunction } from '@rosen-bridge/tx-pot';
 import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
 
 import ErgoNodeNetwork from '../network/ergoNodeNetwork';
-import { TxType } from './types';
+import { TxType } from '../types/transaction';
 import { getConfig } from '../config/config';
 import { TxPotService } from '../services/txPotService';
 import { AbstractTxService } from '../services/transactions/abstractTxService';

@@ -2,6 +2,7 @@ import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
 import ergoNodeClientFactory from '@rosen-clients/ergo-node';
 import JsonBigInt from '@rosen-bridge/json-bigint';
 import { AxiosError } from 'axios';
+import { ErgoBox } from '@fleet-sdk/core';
 
 import handleApiError from './utils';
 import { FailedError } from './error';
@@ -211,6 +212,31 @@ class ErgoNodeNetwork {
         'Failed to get state context from Ergo Node:',
       );
     }
+  };
+
+  /**
+   * get boxes by token id
+   * @param tokenId
+   */
+  public getUnspentBoxesByTokenId = async (
+    tokenId: string,
+  ): Promise<ErgoBox[]> => {
+    const boxes = await this.client.getBoxesByTokenIdUnspent(tokenId);
+    this.logger.debug(
+      `requested 'getBoxesByTokenId' for tokenId [${tokenId}]. res: ${JsonBigInt.stringify(
+        boxes,
+      )}`,
+    );
+    return boxes.map(
+      (box) =>
+        new ErgoBox({
+          ...box,
+          assets: box.assets ?? [],
+          boxId: box.boxId ?? '',
+          index: box.index ?? 0,
+          transactionId: box.transactionId ?? '',
+        }),
+    );
   };
 }
 

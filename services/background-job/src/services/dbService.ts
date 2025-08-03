@@ -12,6 +12,7 @@ import {
   DynamicBoxEntity,
   WinnerEntity,
   RaffleBoxType,
+  RaffleDetailsEntity,
 } from '@ergo-raffle/extractors';
 import { IsNull } from 'typeorm';
 
@@ -145,7 +146,7 @@ export class DbService extends AbstractService {
   getDynamicBoxes = (address: string): Promise<DynamicBoxEntity[]> => {
     return this.dataSource
       .getRepository(DynamicBoxEntity)
-      .find({ where: { address: address } });
+      .find({ where: { address: address, spendBlock: IsNull() } });
   };
 
   /**
@@ -162,6 +163,23 @@ export class DbService extends AbstractService {
       where: {
         raffleId,
         index,
+        spendBlock: IsNull(),
+      },
+    });
+  };
+
+  /**
+   * Get the raffle details box by raffle id
+   * @param raffleId - The raffle id
+   * @returns The raffle details box
+   */
+  getRaffleDetailsBox = (
+    raffleId: string,
+  ): Promise<RaffleDetailsEntity | null> => {
+    return this.dataSource.getRepository(RaffleDetailsEntity).findOne({
+      where: {
+        raffleId,
+        spendBlock: IsNull(),
       },
     });
   };

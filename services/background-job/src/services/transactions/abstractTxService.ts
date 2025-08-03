@@ -11,7 +11,7 @@ import { BoxLookupService } from '../boxLoookupService';
 import { ScannerService } from '../scannerService';
 import { TxPotService } from '../txPotService';
 import ErgoNodeNetwork from '../../network/ergoNodeNetwork';
-import { TxType } from '../../transactions/types';
+import { TxType } from '../../types/transaction';
 import { deserializeTransaction } from '@fleet-sdk/serializer';
 
 export abstract class AbstractTxService extends AbstractService {

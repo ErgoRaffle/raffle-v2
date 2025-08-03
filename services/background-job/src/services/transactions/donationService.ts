@@ -13,7 +13,7 @@ import {
   convertDbBoxesToErgoBoxes,
   txpotCallBackGenerator,
 } from '../../transactions/utils';
-import { TxType } from '../../transactions/types';
+import { TxType } from '../../types/transaction';
 import { DbService } from '../dbService';
 import { AbstractTxService } from './abstractTxService';
 import { findActiveRaffle } from '../../transactions/boxFinder';
