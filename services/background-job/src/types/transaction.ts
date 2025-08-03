@@ -11,5 +11,6 @@ export enum TxType {
   Failure = 'failure',
   WinnerRemoval = 'winner_removal',
   GiftReturn = 'gift_return',
+  ForwardToTicketRedeem = 'forward_to_ticket_redeem',
   // TODO: to be continued
 }

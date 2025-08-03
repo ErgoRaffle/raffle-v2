@@ -1,7 +1,10 @@
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { Request, OnSufficeCallback } from '@ergo-raffle/box-lookup';
 import { raffleInfo } from '@ergo-raffle/contracts';
-import { WinnerRemovalTxBuilder } from '@ergo-raffle/transactions';
+import {
+  ForwardToTicketRedeemTxBuilder,
+  WinnerRemovalTxBuilder,
+} from '@ergo-raffle/transactions';
 import { ErgoBox } from '@fleet-sdk/core';
 import { GiftRedeemBuilder, WinnerBuilder } from '@ergo-raffle/boxes';
 
@@ -89,6 +92,25 @@ export class WinnerRemovalService extends AbstractTxService {
         `Winner removal transaction for winner [${i}] of raffle [${raffleId}] has been added (txId: [${winnerRemovalTx.id}])`,
       );
     }
+
+    this.logger.info(
+      `Winner removal transactions for all winners of raffle [${raffleId}] have been successfully executed`,
+    );
+    const forwardToTicketRedeemTx = new ForwardToTicketRedeemTxBuilder()
+      .setGiftRedeem(giftRedeemBox)
+      .setChainHeight(await this.network.getHeight())
+      .setTxFee(getConfig().ergo.fee)
+      .build();
+
+    await signAndAddTx(
+      this.network,
+      forwardToTicketRedeemTx,
+      TxType.ForwardToTicketRedeem,
+    );
+
+    this.logger.info(
+      `Forward to ticket redeem transaction for gift redeem box [${giftRedeemBox.boxId}] has been added (txId: [${forwardToTicketRedeemTx.id}])`,
+    );
   };
 
   /**

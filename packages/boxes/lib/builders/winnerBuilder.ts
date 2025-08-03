@@ -159,6 +159,14 @@ export class WinnerBuilder {
   };
 
   /**
+   * Get the deadline height
+   * @returns Deadline height
+   */
+  getDeadline = (): bigint => {
+    return this.deadline!;
+  };
+
+  /**
    * Get the winner index
    * @returns Winner index
    */
