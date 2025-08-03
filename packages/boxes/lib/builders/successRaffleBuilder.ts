@@ -131,6 +131,14 @@ export class SuccessRaffleBuilder {
   };
 
   /**
+   * Get the winner count
+   * @returns The winner count
+   */
+  getWinnerCount = (): number => {
+    return this.winnerCount!;
+  };
+
+  /**
    * Set the project ergo tree hash
    * @param hash - The project's ergo tree hash
    * @returns this builder instance
@@ -182,6 +190,14 @@ export class SuccessRaffleBuilder {
   };
 
   /**
+   * Get the current step
+   * @returns The current step number
+   */
+  getStep = (): number => {
+    return this.step!;
+  };
+
+  /**
    * Set the ticket token ID
    * @param tokenId - The ticket token ID
    * @returns this builder instance
@@ -189,6 +205,14 @@ export class SuccessRaffleBuilder {
   setTicketTokenId = (tokenId: string): this => {
     this.ticketTokenId = tokenId;
     return this;
+  };
+
+  /**
+   * Get the ticket token ID
+   * @returns The ticket token ID
+   */
+  getTicketTokenId = (): string => {
+    return this.ticketTokenId!;
   };
 
   /**

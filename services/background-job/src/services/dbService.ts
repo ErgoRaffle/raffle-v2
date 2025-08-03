@@ -13,6 +13,7 @@ import {
   WinnerEntity,
   RaffleBoxType,
   RaffleDetailsEntity,
+  SuccessRaffleEntity,
 } from '@ergo-raffle/extractors';
 import { IsNull } from 'typeorm';
 
@@ -179,6 +180,22 @@ export class DbService extends AbstractService {
     return this.dataSource.getRepository(RaffleDetailsEntity).findOne({
       where: {
         raffleId,
+        spendBlock: IsNull(),
+      },
+    });
+  };
+
+  /**
+   * Get the unspent success raffle boxes
+   * @param raffleId - The raffle id
+   * @returns The success raffle boxes
+   */
+  getSuccessRaffleBoxes = (
+    raffleId?: string,
+  ): Promise<SuccessRaffleEntity[]> => {
+    return this.dataSource.getRepository(SuccessRaffleEntity).find({
+      where: {
+        ...(raffleId ? { raffleId: raffleId } : {}),
         spendBlock: IsNull(),
       },
     });

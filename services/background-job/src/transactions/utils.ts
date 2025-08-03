@@ -176,3 +176,22 @@ export const calculateBoxesAssetSum = (boxes: ErgoBox[]): BoxValue => {
     })),
   };
 };
+
+/**
+ * Convert uint8Array to signed bigint
+ * @param buffer
+ * @returns signed bigint
+ */
+export const uint8ArrayToSignedBigInt = (buffer: Uint8Array): bigint => {
+  const hexStr = Buffer.from(buffer).toString('hex');
+  const bigIntValue = BigInt('0x' + hexStr);
+  const bitLength = BigInt(hexStr.length * 4); // Each hex digit represents 4 bits
+  const maxValue = BigInt(1) << bitLength; // 2^bitLength
+
+  // Check if the number should be negative (if MSB is set)
+  if (bigIntValue >= maxValue >> BigInt(1)) {
+    return bigIntValue - maxValue;
+  }
+
+  return bigIntValue;
+};
