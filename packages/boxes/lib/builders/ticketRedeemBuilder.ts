@@ -135,6 +135,14 @@ export class TicketRedeemBuilder {
   };
 
   /**
+   * Get the ticket token ID
+   * @returns the ticket token ID
+   */
+  getTicketTokenId = (): string => {
+    return this.ticketTokenId!;
+  };
+
+  /**
    * Set the ticket token count
    * @param count - Number of ticket tokens
    * @returns this builder instance

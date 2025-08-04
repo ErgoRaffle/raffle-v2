@@ -67,10 +67,9 @@ export class GiftAndPrizeService extends AbstractTxService {
     );
 
     // Find the ticket box with the winner ticket index from database
-    const ticketBoxEntity = await DbService.getInstance().getTicket(
-      raffleId,
-      winnerTicketIndex,
-    );
+    const ticketBoxEntity = (
+      await DbService.getInstance().getTickets(raffleId, winnerTicketIndex)
+    )[0];
     if (!ticketBoxEntity) {
       this.logger.error(
         `Impossible case: Ticket box not found for raffle [${raffleId}] and winner ticket index [${winnerTicketIndex}], skipping gift unwrap`,
