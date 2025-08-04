@@ -2,6 +2,7 @@ import { ErgoAddress, ErgoBox, Network } from '@fleet-sdk/core';
 import { BoxValue } from './types/box';
 import { Request } from './types';
 import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
+import { cloneDeep } from 'lodash-es';
 
 export class BoxSelector {
   private boxes: ErgoBox[] = [];
@@ -31,8 +32,16 @@ export class BoxSelector {
     const hasRequiredTokens = this.request.tokens.some((token) =>
       box.assets.some((asset) => asset.tokenId === token.tokenId),
     );
-    const requiresErgs = this.request.value && this.request.value > 0n;
+    const requiresErgs =
+      this.request.value !== undefined && this.request.value > 0n;
 
+    if (sameAddress) {
+      this.logger.debug(
+        `Box ${box.boxId} has the requested address [${this.request.address}]` +
+          (hasRequiredTokens ? ` and required tokens` : '') +
+          (requiresErgs ? ` and required ergs` : ''),
+      );
+    }
     return sameAddress && (hasRequiredTokens || requiresErgs);
   }
 
@@ -41,19 +50,23 @@ export class BoxSelector {
    * @param box - The box to add
    * @param boxValue - The value of the box
    */
-  addBox(box: ErgoBox, boxValue: BoxValue) {
+  addBox(box: ErgoBox) {
     this.boxes.push(box);
-    this.sumValue.value += boxValue.value;
-    for (const token of boxValue.tokens) {
+    this.sumValue.value += box.value;
+    for (const token of box.assets) {
       const existingToken = this.sumValue.tokens.find(
         (t) => t.tokenId === token.tokenId,
       );
       if (existingToken) {
         existingToken.amount += token.amount;
       } else {
-        this.sumValue.tokens.push(token);
+        this.sumValue.tokens.push(cloneDeep(token));
       }
     }
+    this.logger.debug(
+      `Box ${box.boxId} added to the selected boxes` +
+        ` and updated the sum value to ${this.sumValue.value}`,
+    );
   }
 
   /**
@@ -71,7 +84,7 @@ export class BoxSelector {
       ),
     );
     this.logger.debug(
-      `Selected boxes are covering the request value: ${coveringValue} && tokens: ${coveringTokens}`,
+      `Selected boxes covering statue for request value: ${coveringValue} && tokens: ${coveringTokens}`,
     );
     return coveringValue && coveringTokens;
   }

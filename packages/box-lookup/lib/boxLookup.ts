@@ -78,10 +78,7 @@ export class BoxLookup {
         if (Array.from(this.requests.values()).indexOf(request) < 0) break;
 
         if (boxSelector.isRelatedToRequest(box)) {
-          boxSelector.addBox(box, {
-            value: box.value,
-            tokens: box.assets,
-          });
+          boxSelector.addBox(box);
 
           if (boxSelector.isCovering()) {
             await request.onSuffice(
