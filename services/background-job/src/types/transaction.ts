@@ -13,5 +13,6 @@ export enum TxType {
   GiftReturn = 'gift_return',
   ForwardToTicketRedeem = 'forward_to_ticket_redeem',
   TicketRedeem = 'ticket_redeem',
+  ReturnRaffleLicense = 'return_raffle_license',
   // TODO: to be continued
 }

@@ -67,6 +67,14 @@ export class TicketRedeemBuilder {
   };
 
   /**
+   * Get the total number of sold tickets
+   * @returns Total ticket count
+   */
+  getTotalSoldTickets = (): bigint => {
+    return this.totalSoldTickets!;
+  };
+
+  /**
    * Set the ticket price
    * @param price - Price in nanoERG/CollectingToken
    * @returns this builder instance
@@ -102,6 +110,14 @@ export class TicketRedeemBuilder {
   setRedeemedTickets = (count: bigint): this => {
     this.redeemedTickets = count;
     return this;
+  };
+
+  /**
+   * Get the number of redeemed tickets
+   * @returns redeemed ticket count
+   */
+  getRedeemedTickets = (): bigint => {
+    return this.redeemedTickets!;
   };
 
   /**
