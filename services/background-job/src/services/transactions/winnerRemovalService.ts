@@ -38,6 +38,12 @@ export class WinnerRemovalService extends AbstractTxService {
 
   /**
    * Callback for winner removal transaction
+   * - Check the winners that have no gifts left
+   * - Builds the winner removal transaction for each winner and chain them to each other
+   * - Builds the forward to ticket redeem transaction and chains it to the last winner removal transaction
+   * @param boxes - The boxes to process
+   * @param unspentBoxes - The unspent boxes
+   * @returns void
    */
   private winnerRemovalCallback: OnSufficeCallback = async (
     boxes: ErgoBox[],

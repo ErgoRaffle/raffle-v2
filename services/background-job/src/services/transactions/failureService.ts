@@ -35,6 +35,8 @@ export class FailureService extends AbstractTxService {
 
   /**
    * Callback for failure transaction
+   * @param boxes - The boxes to process
+   * @returns void
    */
   private failureCallback: OnSufficeCallback = async (
     boxes: ErgoBox[],

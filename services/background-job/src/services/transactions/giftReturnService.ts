@@ -16,8 +16,8 @@ import { AbstractTxService } from './abstractTxService';
 import { getConfig } from '../../config/config';
 import { findGiftRedeemBox } from '../../transactions/boxFinder';
 
-export class GiftRedeemService extends AbstractTxService {
-  name = 'GiftRedeemService';
+export class GiftReturnService extends AbstractTxService {
+  name = 'GiftReturnService';
 
   constructor(nodeUrl: string, logger: AbstractLogger) {
     super(nodeUrl, logger);
@@ -30,13 +30,17 @@ export class GiftRedeemService extends AbstractTxService {
    */
   static init = (nodeUrl: string, logger: AbstractLogger) => {
     if (this.instance != undefined) return;
-    this.instance = new GiftRedeemService(nodeUrl, logger);
+    this.instance = new GiftReturnService(nodeUrl, logger);
   };
 
   /**
-   * Callback for gift redeem transaction
+   * Callback for gift return transaction
+   * - Builds the gift return transaction for each gift and chains them to each other
+   * Note: This callback assumes that the gift boxes are available in the database
+   * @param boxes - The boxes to process
+   * @returns void
    */
-  private giftRedeemCallback: OnSufficeCallback = async (
+  private giftReturnCallback: OnSufficeCallback = async (
     boxes: ErgoBox[],
   ): Promise<void> => {
     const winnerBox = boxes[0];
@@ -120,7 +124,7 @@ export class GiftRedeemService extends AbstractTxService {
       address: raffleInfo.addresses.winner,
       value: undefined,
       tokens: [],
-      onSuffice: this.giftRedeemCallback,
+      onSuffice: this.giftReturnCallback,
       getMinedBoxes: async () => {
         return convertDbBoxesToErgoBoxes(
           await DbService.getInstance().getWinnerBoxes(),

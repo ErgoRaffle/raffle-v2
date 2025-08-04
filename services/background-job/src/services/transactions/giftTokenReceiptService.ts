@@ -36,6 +36,10 @@ export class GiftTokenReceiptService extends AbstractTxService {
 
   /**
    * Callback for gift token receipt transaction
+   * - Builds the gift token receipt transaction for each winner and chains them to each other
+   * @param boxes - The boxes to process
+   * @param unspentBoxes - The unspent boxes
+   * @returns void
    */
   private giftTokenReceiptCallback: OnSufficeCallback = async (
     boxes: ErgoBox[],

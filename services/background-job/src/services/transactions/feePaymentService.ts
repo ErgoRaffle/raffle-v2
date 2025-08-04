@@ -35,6 +35,8 @@ export class FeePaymentService extends AbstractTxService {
 
   /**
    * Callback for fee payment transaction
+   * @param boxes - The boxes to process
+   * @returns void
    */
   private feePaymentCallback: OnSufficeCallback = async (
     boxes: ErgoBox[],

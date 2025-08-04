@@ -37,6 +37,12 @@ export class GiftAndPrizeService extends AbstractTxService {
 
   /**
    * Callback for gift unwrap transaction
+   * - Finds all the gifts belonging to the winner prize
+   * - Builds the gift unwrap transaction for each gift and chains them to each other
+   * - Builds the final prize transaction and chains it to the last gift unwrap transaction
+   * Note: This callback assumes that the gift and ticket boxes are available in the database
+   * @param boxes - The boxes to process
+   * @returns void
    */
   private giftUnwrapCallback: OnSufficeCallback = async (
     boxes: ErgoBox[],

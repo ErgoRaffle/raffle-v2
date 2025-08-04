@@ -36,6 +36,11 @@ export class PrizeCreationService extends AbstractTxService {
 
   /**
    * Callback for prize creation transaction
+   * - Calculates the next winner ticket index for each winner from random seed
+   * using the raffle winner selection algorithm
+   * - Builds the prize creation transaction for each winner and chains them to each other
+   * @param boxes - The boxes to process
+   * @returns void
    */
   private prizeCreationCallback: OnSufficeCallback = async (
     boxes: ErgoBox[],
