@@ -1,1 +1,6 @@
-export { Request } from './request';
+export {
+  Request,
+  RequestWithId,
+  OnSufficeCallback,
+  GetMinedBoxes,
+} from './request';

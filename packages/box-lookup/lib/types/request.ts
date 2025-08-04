@@ -8,5 +8,18 @@ export interface Request {
    * This method is called by BoxLookup when the preferred condition occurs
    * @param boxes
    */
-  onSuffice: (boxes: ErgoBox[]) => Promise<void>;
+  onSuffice: OnSufficeCallback;
+  getMinedBoxes: GetMinedBoxes;
+}
+
+export interface RequestWithId extends Request {
+  id: number;
+}
+
+export interface OnSufficeCallback {
+  (boxes: ErgoBox[], unspentBoxes: ErgoBox[], requestId: number): Promise<void>;
+}
+
+export interface GetMinedBoxes {
+  (): Promise<ErgoBox[]>;
 }

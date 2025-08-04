@@ -1,14 +1,14 @@
 import { TxPot } from '@rosen-bridge/tx-pot';
 import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
 
-import { Request } from './types';
+import { Request, RequestWithId } from './types';
 import { Network } from '@fleet-sdk/core';
 import { DataProvider } from './dataProvider';
 import { BoxSelector } from './boxSelector';
 
 export class BoxLookup {
   protected requestsIdCounter: number = 0;
-  protected requests = new Map<number, Request>();
+  protected requests = new Map<number, RequestWithId>();
   protected dataProvider: DataProvider;
 
   constructor(
@@ -26,7 +26,10 @@ export class BoxLookup {
    * @returns {number}
    */
   readonly registerRequest = (request: Request) => {
-    this.requests.set(++this.requestsIdCounter, request);
+    this.requests.set(++this.requestsIdCounter, {
+      ...request,
+      id: this.requestsIdCounter,
+    });
     this.logger.info(
       `New BoxLookupRequest registered by ${this.requestsIdCounter} id`,
     );
@@ -67,7 +70,10 @@ export class BoxLookup {
       let boxSelector = new BoxSelector(this.logger, request, this.networkType);
 
       const roundState = await this.dataProvider.getCurrentRoundState();
-      for (const box of roundState.unspentBoxes) {
+      const unspentMinedBoxes = (await request.getMinedBoxes()).filter(
+        (box) => !roundState.spentBoxIds.has(box.boxId),
+      );
+      for (const box of [...roundState.unspentBoxes, ...unspentMinedBoxes]) {
         // Break the loop if the request is unregistered from the box lookup
         if (Array.from(this.requests.values()).indexOf(request) < 0) break;
 
@@ -78,7 +84,11 @@ export class BoxLookup {
           });
 
           if (boxSelector.isCovering()) {
-            await request.onSuffice(boxSelector.getBoxes());
+            await request.onSuffice(
+              boxSelector.getBoxes(),
+              roundState.unspentBoxes,
+              request.id,
+            );
             boxSelector = new BoxSelector(
               this.logger,
               request,
