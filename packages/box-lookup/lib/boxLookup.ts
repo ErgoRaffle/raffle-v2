@@ -2,8 +2,9 @@ import { TxPot } from '@rosen-bridge/tx-pot';
 import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
 
 import { Request } from './types';
-import { ErgoAddress, ErgoBox, Network } from '@fleet-sdk/core';
+import { Network } from '@fleet-sdk/core';
 import { DataProvider } from './dataProvider';
+import { BoxSelector } from './boxSelector';
 
 export class BoxLookup {
   protected requestsIdCounter: number = 0;
@@ -52,93 +53,42 @@ export class BoxLookup {
 
   /**
    * Serve requests by considering unspent-boxes
-   *
-   * @returns
+   * - For each request, it will select boxes that are related to the request
+   * - If the selected boxes are covering the request, it will call the request.onSuffice method
+   * - If the selected boxes are not covering the request, it will select more boxes
+   * - It will continue until the request is covered or the unspent boxes are exhausted
    */
   public serveRequests = async () => {
     if (this.requests.size <= 0) return;
     this.dataProvider.startNewRound();
     this.logger.info('The BoxLookup serving requests started');
-    const state = this.dataProvider.getCurrentRoundState();
-    const unspentBoxes = state.unspentBoxes;
-    const alreadySelectedUnspentBoxIds: Set<string> = new Set<string>();
     for (const request of this.requests.values()) {
       this.dataProvider.updateRoundWithTxPotData();
-      let selectedBoxes: ErgoBox[] = [];
-      let totalTokenAmounts: Map<string, number> = new Map<string, number>();
-      let totalErgValue = 0n;
+      let boxSelector = new BoxSelector(this.logger, request, this.networkType);
 
-      for (const box of unspentBoxes) {
-        // check if current request unregistered then breaking the loop
+      const roundState = await this.dataProvider.getCurrentRoundState();
+      for (const box of roundState.unspentBoxes) {
+        // Break the loop if the request is unregistered from the box lookup
         if (Array.from(this.requests.values()).indexOf(request) < 0) break;
 
-        const isFromCorrectAddress =
-          ErgoAddress.fromErgoTree(
-            box.ergoTree,
-            this.networkType,
-          ).toString() === request.address;
-        const isNewBox =
-          box.boxId && !alreadySelectedUnspentBoxIds.has(box.boxId);
+        if (boxSelector.isRelatedToRequest(box)) {
+          boxSelector.addBox(box, {
+            value: box.value,
+            tokens: box.assets,
+          });
 
-        const hasRequiredTokens = request.tokens.some((token) =>
-          (box.assets ?? []).some((asset) => asset.tokenId === token.tokenId),
-        );
-
-        const requiredErgs = request.value && request.value > 0;
-        const hasRequiredErgs = requiredErgs && request.value;
-
-        if (
-          isFromCorrectAddress &&
-          isNewBox &&
-          (hasRequiredTokens || hasRequiredErgs)
-        ) {
-          totalErgValue += BigInt(box.value);
-          this.logger.debug(
-            `Current collected erg values for request by ${request.address} address is ${totalErgValue}`,
-          );
-          selectedBoxes.push(box);
-          for (const token of request.tokens) {
-            const asset = (box.assets ?? []).find(
-              (a) => a.tokenId === token.tokenId,
+          if (boxSelector.isCovering()) {
+            await request.onSuffice(boxSelector.getBoxes());
+            boxSelector = new BoxSelector(
+              this.logger,
+              request,
+              this.networkType,
             );
-            if (asset) {
-              totalTokenAmounts.set(
-                token.tokenId,
-                (totalTokenAmounts.get(token.tokenId) || 0) +
-                  Number(asset.amount),
-              );
-              this.logger.debug(
-                `Current collected tokens for request by ${request.address} address are ${JSON.stringify(Array.from(totalTokenAmounts))}`,
-              );
-            }
-          }
-
-          const isSufficient =
-            request.tokens.every(
-              // Considering tokens
-              (token) =>
-                (totalTokenAmounts.get(token.tokenId) || -1) >=
-                Number(token.amount),
-            ) &&
-            // Considering Ergs
-            (!request.value || totalErgValue >= request.value);
-
-          this.logger.debug(
-            `Current collected boxes for request by ${request.address} address are ${JSON.stringify(selectedBoxes)}, that is ${!isSufficient ? 'not ' : ''}suffice`,
-          );
-
-          if (isSufficient) {
-            for (const box of selectedBoxes)
-              alreadySelectedUnspentBoxIds.add(box.boxId!);
-            await request.onSuffice(selectedBoxes);
-            selectedBoxes = []; // reset for next round
-            totalTokenAmounts = new Map<string, number>();
-            totalErgValue = 0n;
             this.logger.info(
               `The BoxLookup triggered for ${request.address} request address`,
             );
             this.logger.debug(
-              `The ${request.address} request address sufficed by ${JSON.stringify(selectedBoxes)} boxes`,
+              `The ${request.address} request address sufficed by ${JSON.stringify(boxSelector.getBoxes())} boxes`,
             );
           }
         }

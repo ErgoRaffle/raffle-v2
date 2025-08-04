@@ -1,9 +1,9 @@
-import { TokenAmount, Amount, ErgoBox } from '@fleet-sdk/core';
+import { TokenAmount, ErgoBox } from '@fleet-sdk/core';
 
 export interface Request {
   address: string;
-  value: number | undefined;
-  tokens: TokenAmount<Amount>[];
+  value: bigint | undefined;
+  tokens: TokenAmount<bigint>[];
   /**
    * This method is called by BoxLookup when the preferred condition occurs
    * @param boxes
