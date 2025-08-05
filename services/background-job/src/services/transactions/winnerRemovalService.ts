@@ -16,7 +16,7 @@ import {
 } from '../../transactions/utils';
 import { TxType } from '../../types/transaction';
 import { AbstractTxService } from './abstractTxService';
-import { getConfig } from '../../config/config';
+import { configs } from '../../config';
 import { findAllWinners } from '../../transactions/boxFinder';
 
 export class WinnerRemovalService extends AbstractTxService {
@@ -89,7 +89,7 @@ export class WinnerRemovalService extends AbstractTxService {
         .setGiftRedeem(giftRedeemBox)
         .setWinner(winnerBox)
         .setChainHeight(await this.network.getHeight())
-        .setTxFee(getConfig().ergo.fee)
+        .setTxFee(configs.ergo.fee)
         .build();
 
       await signAndAddTx(this.network, winnerRemovalTx, TxType.WinnerRemoval);
@@ -105,7 +105,7 @@ export class WinnerRemovalService extends AbstractTxService {
     const forwardToTicketRedeemTx = new ForwardToTicketRedeemTxBuilder()
       .setGiftRedeem(giftRedeemBox)
       .setChainHeight(await this.network.getHeight())
-      .setTxFee(getConfig().ergo.fee)
+      .setTxFee(configs.ergo.fee)
       .build();
 
     await signAndAddTx(

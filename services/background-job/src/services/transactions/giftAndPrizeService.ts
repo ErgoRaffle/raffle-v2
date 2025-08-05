@@ -16,7 +16,7 @@ import {
 } from '../../transactions/utils';
 import { TxType } from '../../types/transaction';
 import { AbstractTxService } from './abstractTxService';
-import { getConfig } from '../../config/config';
+import { configs } from '../../config';
 
 export class GiftAndPrizeService extends AbstractTxService {
   name = 'GiftAndPrizeService';
@@ -94,7 +94,7 @@ export class GiftAndPrizeService extends AbstractTxService {
         .setTicket(ticketBox)
         .setWinnerErgoTree(winnerAddress)
         .setChainHeight(await this.network.getHeight())
-        .setTxFee(getConfig().ergo.fee);
+        .setTxFee(configs.ergo.fee);
 
       const giftUnwrapTx = giftUnwrapTxBuilder.build();
 
@@ -119,7 +119,7 @@ export class GiftAndPrizeService extends AbstractTxService {
       .setTicket(ticketBox)
       .setWinnerErgoTree(winnerAddress)
       .setChainHeight(await this.network.getHeight())
-      .setTxFee(getConfig().ergo.fee);
+      .setTxFee(configs.ergo.fee);
 
     const finalPrizeTx = finalPrizeTxBuilder.build();
     await signAndAddTx(this.network, finalPrizeTx, TxType.FinalPrize);

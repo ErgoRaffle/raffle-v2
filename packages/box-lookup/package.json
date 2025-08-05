@@ -31,7 +31,7 @@
     "node": ">=20.11.0"
   },
   "dependencies": {
-    "@fleet-sdk/core": "^0.11.0",
+    "@fleet-sdk/core": "^0.12.0",
     "@fleet-sdk/serializer": "^0.11.0",
     "@rosen-bridge/abstract-logger": "^2.0.1",
     "@rosen-bridge/tx-pot": "^1.0.3",

@@ -13,7 +13,7 @@ import {
 } from '../../transactions/utils';
 import { TxType } from '../../types/transaction';
 import { AbstractTxService } from './abstractTxService';
-import { getConfig } from '../../config/config';
+import { configs } from '../../config';
 
 export class TicketRedeemService extends AbstractTxService {
   name = 'TicketRedeemService';
@@ -72,7 +72,7 @@ export class TicketRedeemService extends AbstractTxService {
         .setTicket(convertDbBoxesToErgoBoxes([ticketEntity])[0])
         .setDonatorErgoTree(donatorAddress)
         .setChainHeight(currentHeight)
-        .setTxFee(getConfig().ergo.fee);
+        .setTxFee(configs.ergo.fee);
 
       const ticketRedeemTx = ticketRedeemTxBuilder.build();
 

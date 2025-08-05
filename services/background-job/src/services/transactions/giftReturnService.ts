@@ -13,7 +13,7 @@ import {
 } from '../../transactions/utils';
 import { TxType } from '../../types/transaction';
 import { AbstractTxService } from './abstractTxService';
-import { getConfig } from '../../config/config';
+import { configs } from '../../config';
 import { findGiftRedeemBox } from '../../transactions/boxFinder';
 
 export class GiftReturnService extends AbstractTxService {
@@ -95,7 +95,7 @@ export class GiftReturnService extends AbstractTxService {
         .setGift(convertDbBoxesToErgoBoxes([giftEntity])[0])
         .setGiftGiverErgoTree(donatorAddress)
         .setChainHeight(currentHeight)
-        .setTxFee(getConfig().ergo.fee);
+        .setTxFee(configs.ergo.fee);
 
       const giftReturnTx = giftReturnTxBuilder.build();
 

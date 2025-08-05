@@ -14,7 +14,7 @@ import {
 } from '../../transactions/utils';
 import { TxType } from '../../types/transaction';
 import { AbstractTxService } from './abstractTxService';
-import { getConfig } from '../../config/config';
+import { configs } from '../../config';
 import { findAllWinners } from '../../transactions/boxFinder';
 
 export class PrizeCreationService extends AbstractTxService {
@@ -107,7 +107,7 @@ export class PrizeCreationService extends AbstractTxService {
         .setWinnerTicketIndex(nextWinnerTicketIndex)
         .setWinnerIndexList([...selectedWinnerTickets, nextWinnerTicketIndex])
         .setChainHeight(await this.network.getHeight())
-        .setTxFee(getConfig().ergo.fee)
+        .setTxFee(configs.ergo.fee)
         .build();
 
       const signedTx = await signAndAddTx(

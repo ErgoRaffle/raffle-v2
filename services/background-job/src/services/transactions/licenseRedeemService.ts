@@ -13,7 +13,7 @@ import {
 } from '../../transactions/utils';
 import { TxType } from '../../types/transaction';
 import { AbstractTxService } from './abstractTxService';
-import { getConfig } from '../../config/config';
+import { configs } from '../../config';
 import { findServiceBox } from '../../transactions/boxFinder';
 
 /**
@@ -174,7 +174,7 @@ export class LicenseRedeemService extends AbstractTxService {
           await this.getChangeErgoTree(validation.raffleId, validation.boxType),
         )
         .setChainHeight(currentHeight)
-        .setTxFee(getConfig().ergo.fee);
+        .setTxFee(configs.ergo.fee);
 
       const returnLicenseTx = returnLicenseTxBuilder.build();
 

@@ -7,7 +7,7 @@ import { AddGiftParamsEntity } from '../../database/entities';
 import { BoxLookupService } from '../boxLoookupService';
 import { ScannerService } from '../scannerService';
 import { TxPotService } from '../txPotService';
-import { getConfig } from '../../config/config';
+import { configs } from '../../config';
 import {
   signAndAddTx,
   convertDbBoxesToErgoBoxes,
@@ -79,7 +79,7 @@ export class AddGiftService extends AbstractTxService {
 
       // Calculate total value and collect all assets from proxy boxes
       const sum = calculateBoxesAssetSum(boxes);
-      const txFee = getConfig().ergo.fee;
+      const txFee = configs.ergo.fee;
 
       const addGiftTx = new AddGiftTxBuilder()
         .setWinner(winnerBox)
@@ -111,7 +111,7 @@ export class AddGiftService extends AbstractTxService {
     // Build the box lookup request
     const boxLookupRequest: Request = {
       address: addGiftParams.proxyAddress,
-      value: 3n * getConfig().ergo.fee, // minimum value for add gift transaction
+      value: 3n * configs.ergo.fee, // minimum value for add gift transaction
       tokens: [], // We'll collect all tokens from the boxes
       onSuffice: this.addGiftCallbackGenerator(addGiftParams),
       getMinedBoxes: async () => {

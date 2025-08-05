@@ -14,7 +14,7 @@ import {
 } from '../../transactions/utils';
 import { TxType } from '../../types/transaction';
 import { AbstractTxService } from './abstractTxService';
-import { getConfig } from '../../config/config';
+import { configs } from '../../config';
 import { findAllWinners } from '../../transactions/boxFinder';
 
 export class GiftTokenReceiptService extends AbstractTxService {
@@ -71,7 +71,7 @@ export class GiftTokenReceiptService extends AbstractTxService {
       const giftReceiptTxBuilder = new GiftTokenReceiptTxBuilder()
         .setGiftTokenRepo(giftTokenRepo)
         .setWinner(winnerBox)
-        .setTxFee(getConfig().ergo.fee)
+        .setTxFee(configs.ergo.fee)
         .setChainHeight(await this.network.getHeight());
 
       const giftReceiptTx = await signAndAddTx(

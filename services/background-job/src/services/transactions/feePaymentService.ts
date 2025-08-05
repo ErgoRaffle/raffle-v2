@@ -14,8 +14,7 @@ import {
 } from '../../transactions/utils';
 import { TxType } from '../../types/transaction';
 import { AbstractTxService } from './abstractTxService';
-import { getConfig } from '../../config/config';
-
+import { configs } from '../../config';
 export class FeePaymentService extends AbstractTxService {
   name = 'FeePaymentService';
 
@@ -109,7 +108,7 @@ export class FeePaymentService extends AbstractTxService {
       .setServiceErgoTree(raffleEntity.serviceErgoTree)
       .setImplementerErgoTree(raffleEntity.implementorErgoTree)
       .setChainHeight(currentHeight)
-      .setTxFee(getConfig().ergo.fee);
+      .setTxFee(configs.ergo.fee);
 
     const feePaymentTx = feePaymentTxBuilder.build();
 

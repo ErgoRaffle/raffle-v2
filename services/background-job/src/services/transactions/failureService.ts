@@ -14,7 +14,7 @@ import {
 } from '../../transactions/utils';
 import { TxType } from '../../types/transaction';
 import { AbstractTxService } from './abstractTxService';
-import { getConfig } from '../../config/config';
+import { configs } from '../../config';
 
 export class FailureService extends AbstractTxService {
   name = 'FailureService';
@@ -78,7 +78,7 @@ export class FailureService extends AbstractTxService {
       .setActiveRaffle(activeRaffleBox)
       .setRaffleDetails(raffleDetailsBox)
       .setChainHeight(currentHeight)
-      .setTxFee(getConfig().ergo.fee);
+      .setTxFee(configs.ergo.fee);
 
     const failureTx = failureTxBuilder.build();
 

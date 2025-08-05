@@ -236,7 +236,7 @@
     "type": "object",
     "children": {
       "fee": {
-        "type": "number",
+        "type": "bigint",
         "default": 1500000,
         "description": "ergo node fee in nano erg",
         "validations": [

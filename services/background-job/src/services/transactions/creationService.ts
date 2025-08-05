@@ -1,6 +1,5 @@
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { Request, OnSufficeCallback } from '@ergo-raffle/box-lookup';
-import { raffleInfo } from '@ergo-raffle/contracts';
 import {
   ActivationTxBuilder,
   CreationTxBuilder,
@@ -12,7 +11,7 @@ import { CreationParamsEntity } from '../../database/entities';
 import { BoxLookupService } from '../boxLoookupService';
 import { ScannerService } from '../scannerService';
 import { TxPotService } from '../txPotService';
-import { getConfig } from '../../config/config';
+import { configs } from '../../config';
 import {
   signAndAddTx,
   convertDbBoxesToErgoBoxes,
@@ -96,7 +95,7 @@ export class CreationService extends AbstractTxService {
         .setImplementerAddress(raffleParams.implementorAddress)
         .setCreatorAddress(raffleParams.creatorAddress)
         .setChainHeight(await this.network.getHeight())
-        .setTxFee(getConfig().ergo.fee)
+        .setTxFee(configs.ergo.fee)
         .setTicketTokenName(TICKET_TOKEN_NAME_PREFIX + raffleParams.name)
         .setTicketTokenDescription(
           TICKET_TOKEN_DESCRIPTION_PREFIX + raffleParams.name,
@@ -124,7 +123,7 @@ export class CreationService extends AbstractTxService {
       const activationTxBuilder = new ActivationTxBuilder()
         .setInactiveRaffle(signedCreationTx.outputs[1])
         .setTicketRepo(signedCreationTx.outputs[0])
-        .setTxFee(getConfig().ergo.fee)
+        .setTxFee(configs.ergo.fee)
         .setChainHeight(await this.network.getHeight())
         .setGiftTokenName(GIFT_TOKEN_NAME_PREFIX + raffleId.slice(0, 6))
         .setGiftTokenDescription(GIFT_TOKEN_DESCRIPTION_PREFIX + raffleId)
@@ -148,7 +147,7 @@ export class CreationService extends AbstractTxService {
         const giftReceiptTxBuilder = new GiftTokenReceiptTxBuilder()
           .setGiftTokenRepo(giftTokenRepo)
           .setWinner(winnerBox)
-          .setTxFee(getConfig().ergo.fee)
+          .setTxFee(configs.ergo.fee)
           .setChainHeight(await this.network.getHeight());
         const giftReceiptTx = await signAndAddTx(
           this.network,

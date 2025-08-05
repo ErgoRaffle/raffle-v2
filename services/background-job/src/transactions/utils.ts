@@ -4,6 +4,7 @@ import {
   ErgoAddress,
   ErgoBox,
   ErgoUnsignedTransaction,
+  Network,
 } from '@fleet-sdk/core';
 import { bigintBE, hex } from '@fleet-sdk/crypto';
 import { ErgoHDKey } from '@fleet-sdk/wallet';
@@ -16,10 +17,10 @@ import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
 
 import ErgoNodeNetwork from '../network/ergoNodeNetwork';
 import { TxType } from '../types/transaction';
-import { getConfig } from '../config/config';
 import { TxPotService } from '../services/txPotService';
 import { AbstractTxService } from '../services/transactions/abstractTxService';
 import { BoxValue } from '../types/box';
+import { configs } from '../config';
 
 const logger = CallbackLoggerFactory.getInstance().getLogger(import.meta.url);
 /**
@@ -50,7 +51,8 @@ export const signTransaction = async (
   const params = {
     context: await network.getStateContext(),
     parameters: await network.getBlockchainParameters(),
-    network: getConfig().ergo.network,
+    network:
+      configs.ergo.network === 'mainnet' ? Network.Mainnet : Network.Testnet,
     baseCost: 0,
   };
 

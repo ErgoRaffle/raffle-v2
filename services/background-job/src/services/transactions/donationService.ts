@@ -7,7 +7,7 @@ import { DonationParamsEntity } from '../../database/entities';
 import { BoxLookupService } from '../boxLoookupService';
 import { ScannerService } from '../scannerService';
 import { TxPotService } from '../txPotService';
-import { getConfig } from '../../config/config';
+import { configs } from '../../config';
 import {
   signAndAddTx,
   convertDbBoxesToErgoBoxes,
@@ -84,7 +84,7 @@ export class DonationService extends AbstractTxService {
         .setDonatorAddress(donationParams.donatorAddress)
         .setDonationTicketCount(BigInt(donationParams.ticketCount))
         .setChainHeight(await this.network.getHeight())
-        .setTxFee(getConfig().ergo.fee)
+        .setTxFee(configs.ergo.fee)
         .build();
 
       await signAndAddTx(this.network, donateTx, TxType.Donation);
