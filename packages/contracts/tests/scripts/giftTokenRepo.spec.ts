@@ -21,16 +21,16 @@ const createGiftTokenRepoTest = (winnersCount: number = 1) => {
     ) as ScriptNamesType[],
   );
   const { creator } = boxFactory.createPartners({
-    Creator: testUtils.CREATOR_DEFAULT_BALANCE,
+    Creator: testUtils.TestConstants.CREATOR_DEFAULT_BALANCE,
   });
 
   const winnersInputBoxes = boxFactory.createWinnersBoxMock(
     winnersCount,
-    testUtils.TICKET_TOKEN_ID,
+    testUtils.TestConstants.TICKET_TOKEN_ID,
     undefined,
     BigInt(boxFactory.chain.height + 1000),
     0n,
-    testUtils.GIFT_TOKEN_ID,
+    testUtils.TestConstants.GIFT_TOKEN_ID,
     undefined,
   );
 
@@ -61,15 +61,15 @@ describe('giftTokenRepo', () => {
         const winnerOutputBox = boxFactory.createWinnerOutputBox();
         const giftTokenInputBox = boxFactory.createGiftTokenRepoBoxMock(1);
         winnerOutputBox.addTokens({
-          tokenId: testUtils.GIFT_TOKEN_ID,
-          amount: testUtils.GIFT_TOKEN_COUNT,
+          tokenId: testUtils.TestConstants.GIFT_TOKEN_ID,
+          amount: testUtils.TestConstants.GIFT_TOKEN_COUNT,
         });
 
         const outBoxes = [winnerOutputBox];
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([(winnersInputBoxes as Box[])[0], giftTokenInputBox])
           .to(outBoxes)
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         const res = boxFactory.chain.execute(transaction);
@@ -94,12 +94,12 @@ describe('giftTokenRepo', () => {
         const giftTokenInputBox = boxFactory.createGiftTokenRepoBoxMock(
           5,
           5,
-          testUtils.FEE * 1n,
-          testUtils.GIFT_TOKEN_COUNT,
+          testUtils.TestConstants.FEE * 1n,
+          testUtils.TestConstants.GIFT_TOKEN_COUNT,
         );
         winnerOutputBox.addTokens({
           tokenId: giftTokenInputBox.assets[0].tokenId,
-          amount: testUtils.GIFT_TOKEN_COUNT,
+          amount: testUtils.TestConstants.GIFT_TOKEN_COUNT,
         });
 
         const outBoxes = [winnerOutputBox];
@@ -107,7 +107,7 @@ describe('giftTokenRepo', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([(winnersInputBoxes as Box[])[4], giftTokenInputBox])
           .to(outBoxes)
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         const res = boxFactory.chain.execute(transaction);
@@ -132,27 +132,27 @@ describe('giftTokenRepo', () => {
         const giftTokenInputBox = boxFactory.createGiftTokenRepoBoxMock(
           5,
           2,
-          testUtils.FEE * 4n,
-          testUtils.GIFT_TOKEN_COUNT * 4n,
+          testUtils.TestConstants.FEE * 4n,
+          testUtils.TestConstants.GIFT_TOKEN_COUNT * 4n,
         );
         winnerOutputBox.addTokens({
           tokenId: giftTokenInputBox.assets[0].tokenId,
-          amount: testUtils.GIFT_TOKEN_COUNT,
+          amount: testUtils.TestConstants.GIFT_TOKEN_COUNT,
         });
 
         const giftTokenOutputBox = boxFactory.createGiftTokenRepoOutputBox(
           5,
           'add',
           3,
-          testUtils.FEE * 3n,
-          testUtils.GIFT_TOKEN_COUNT * 3n,
+          testUtils.TestConstants.FEE * 3n,
+          testUtils.TestConstants.GIFT_TOKEN_COUNT * 3n,
         );
         const outBoxes = [winnerOutputBox, giftTokenOutputBox];
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([(winnersInputBoxes as Box[])[0], giftTokenInputBox])
           .to(outBoxes)
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
         const res = boxFactory.chain.execute(transaction);
 
@@ -175,16 +175,16 @@ describe('giftTokenRepo', () => {
       ({ boxFactory, creator, winnersInputBoxes }) => {
         const winnerOutputBox = boxFactory.createWinnerOutputBox(5);
         const extraInput = mockUTxO({
-          value: testUtils.FEE,
+          value: testUtils.TestConstants.FEE,
           ergoTree: creator.ergoTree,
         });
         const giftTokenInputBox = boxFactory.createGiftTokenRepoBoxMock(5);
         winnerOutputBox.addTokens({
           tokenId: giftTokenInputBox.assets[0].tokenId,
-          amount: testUtils.GIFT_TOKEN_COUNT - 1n,
+          amount: testUtils.TestConstants.GIFT_TOKEN_COUNT - 1n,
         });
         const extraOutputBox = new OutputBuilder(
-          testUtils.FEE,
+          testUtils.TestConstants.FEE,
           creator.ergoTree,
         ).addTokens({
           tokenId: giftTokenInputBox.assets[0].tokenId,
@@ -194,8 +194,8 @@ describe('giftTokenRepo', () => {
           5,
           'add',
           2,
-          testUtils.FEE * 4n,
-          testUtils.GIFT_TOKEN_COUNT * 4n,
+          testUtils.TestConstants.FEE * 4n,
+          testUtils.TestConstants.GIFT_TOKEN_COUNT * 4n,
         );
         const outBoxes = [winnerOutputBox, giftTokenOutputBox, extraOutputBox];
 
@@ -206,7 +206,7 @@ describe('giftTokenRepo', () => {
             extraInput,
           ])
           .to(outBoxes)
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -231,21 +231,21 @@ describe('giftTokenRepo', () => {
         winnerOutputBox.addTokens({
           tokenId: giftTokenInputBox.assets[0].tokenId,
           // Move 1 more token to winner box
-          amount: testUtils.GIFT_TOKEN_COUNT + 1n,
+          amount: testUtils.TestConstants.GIFT_TOKEN_COUNT + 1n,
         });
         const giftTokenOutputBox = boxFactory.createGiftTokenRepoOutputBox(
           5,
           'add',
           2,
-          testUtils.FEE * 4n,
-          testUtils.GIFT_TOKEN_COUNT * 4n - 1n,
+          testUtils.TestConstants.FEE * 4n,
+          testUtils.TestConstants.GIFT_TOKEN_COUNT * 4n - 1n,
         );
         const outBoxes = [winnerOutputBox, giftTokenOutputBox];
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([(winnersInputBoxes as Box[])[0], giftTokenInputBox])
           .to(outBoxes)
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -269,14 +269,14 @@ describe('giftTokenRepo', () => {
         const giftTokenInputBox = boxFactory.createGiftTokenRepoBoxMock(5);
         winnerOutputBox.addTokens({
           tokenId: giftTokenInputBox.assets[0].tokenId,
-          amount: testUtils.GIFT_TOKEN_COUNT,
+          amount: testUtils.TestConstants.GIFT_TOKEN_COUNT,
         });
         const giftTokenOutputBox = boxFactory.createGiftTokenRepoOutputBox(
           5,
           'add',
           2,
-          testUtils.FEE * 4n,
-          testUtils.GIFT_TOKEN_COUNT * 4n,
+          testUtils.TestConstants.FEE * 4n,
+          testUtils.TestConstants.GIFT_TOKEN_COUNT * 4n,
           undefined,
           undefined,
           1000n,
@@ -286,7 +286,7 @@ describe('giftTokenRepo', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([(winnersInputBoxes as Box[])[0], giftTokenInputBox])
           .to(outBoxes)
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -310,22 +310,22 @@ describe('giftTokenRepo', () => {
         const giftTokenInputBox = boxFactory.createGiftTokenRepoBoxMock(5);
         winnerOutputBox.addTokens({
           tokenId: giftTokenInputBox.assets[0].tokenId,
-          amount: testUtils.GIFT_TOKEN_COUNT,
+          amount: testUtils.TestConstants.GIFT_TOKEN_COUNT,
         });
 
         const giftTokenOutputBox = boxFactory.createGiftTokenRepoOutputBox(
           6, // invalid winner count
           'add',
           2,
-          testUtils.FEE * 4n,
-          testUtils.GIFT_TOKEN_COUNT * 4n,
+          testUtils.TestConstants.FEE * 4n,
+          testUtils.TestConstants.GIFT_TOKEN_COUNT * 4n,
         );
         const outBoxes = [winnerOutputBox, giftTokenOutputBox];
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([(winnersInputBoxes as Box[])[0], giftTokenInputBox])
           .to(outBoxes)
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -349,22 +349,22 @@ describe('giftTokenRepo', () => {
         const giftTokenInputBox = boxFactory.createGiftTokenRepoBoxMock(5);
         winnerOutputBox.addTokens({
           tokenId: giftTokenInputBox.assets[0].tokenId,
-          amount: testUtils.GIFT_TOKEN_COUNT,
+          amount: testUtils.TestConstants.GIFT_TOKEN_COUNT,
         });
 
         const giftTokenOutputBox = boxFactory.createGiftTokenRepoOutputBox(
           5,
           'add',
           1, // invalid step number
-          testUtils.FEE * 4n,
-          testUtils.GIFT_TOKEN_COUNT * 4n,
+          testUtils.TestConstants.FEE * 4n,
+          testUtils.TestConstants.GIFT_TOKEN_COUNT * 4n,
         );
         const outBoxes = [winnerOutputBox, giftTokenOutputBox];
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([(winnersInputBoxes as Box[])[0], giftTokenInputBox])
           .to(outBoxes)
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -388,22 +388,22 @@ describe('giftTokenRepo', () => {
         const giftTokenInputBox = boxFactory.createGiftTokenRepoBoxMock(5);
         winnerOutputBox.addTokens({
           tokenId: giftTokenInputBox.assets[0].tokenId,
-          amount: testUtils.GIFT_TOKEN_COUNT,
+          amount: testUtils.TestConstants.GIFT_TOKEN_COUNT,
         });
 
         const giftTokenOutputBox = boxFactory.createGiftTokenRepoOutputBox(
           5,
           'add',
           2,
-          testUtils.FEE * 3n,
-          testUtils.GIFT_TOKEN_COUNT * 4n,
+          testUtils.TestConstants.FEE * 3n,
+          testUtils.TestConstants.GIFT_TOKEN_COUNT * 4n,
         );
         const outBoxes = [winnerOutputBox, giftTokenOutputBox];
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([(winnersInputBoxes as Box[])[0], giftTokenInputBox])
           .to(outBoxes)
-          .payFee(testUtils.FEE * 2n) // Over paying fee value
+          .payFee(testUtils.TestConstants.FEE * 2n) // Over paying fee value
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -429,12 +429,12 @@ describe('giftTokenRepo', () => {
         const giftTokenInputBox = boxFactory.createGiftTokenRepoBoxMock(
           5,
           4,
-          testUtils.FEE,
-          testUtils.GIFT_TOKEN_COUNT,
+          testUtils.TestConstants.FEE,
+          testUtils.TestConstants.GIFT_TOKEN_COUNT,
         );
         winnerOutputBox.addTokens({
           tokenId: giftTokenInputBox.assets[0].tokenId,
-          amount: testUtils.GIFT_TOKEN_COUNT,
+          amount: testUtils.TestConstants.GIFT_TOKEN_COUNT,
         });
 
         const outBoxes = [winnerOutputBox];
@@ -442,7 +442,7 @@ describe('giftTokenRepo', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([(winnersInputBoxes as Box[])[4], giftTokenInputBox])
           .to(outBoxes)
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -468,18 +468,18 @@ describe('giftTokenRepo', () => {
         const winnerOutputBox = boxFactory.createWinnerOutputBox(
           5,
           5,
-          testUtils.GIFT_TOKEN_ID,
+          testUtils.TestConstants.GIFT_TOKEN_ID,
           '1234'.repeat(16),
         );
         const giftTokenInputBox = boxFactory.createGiftTokenRepoBoxMock(
           5,
           5,
-          testUtils.FEE,
-          testUtils.GIFT_TOKEN_COUNT,
+          testUtils.TestConstants.FEE,
+          testUtils.TestConstants.GIFT_TOKEN_COUNT,
         );
         winnerOutputBox.addTokens({
           tokenId: giftTokenInputBox.assets[0].tokenId,
-          amount: testUtils.GIFT_TOKEN_COUNT,
+          amount: testUtils.TestConstants.GIFT_TOKEN_COUNT,
         });
 
         const outBoxes = [winnerOutputBox];
@@ -487,7 +487,7 @@ describe('giftTokenRepo', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([(anotherWinnersInputBoxes as Box[])[4], giftTokenInputBox])
           .to(outBoxes)
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.ergoTree)
           .build();
 
@@ -511,19 +511,19 @@ describe('giftTokenRepo', () => {
         const giftTokenInputBox = boxFactory.createGiftTokenRepoBoxMock(
           5,
           4,
-          testUtils.FEE * 2n,
-          testUtils.GIFT_TOKEN_COUNT * 2n,
+          testUtils.TestConstants.FEE * 2n,
+          testUtils.TestConstants.GIFT_TOKEN_COUNT * 2n,
         );
         winnerOutputBox.addTokens({
           tokenId: giftTokenInputBox.assets[0].tokenId,
-          amount: testUtils.GIFT_TOKEN_COUNT - 1n,
+          amount: testUtils.TestConstants.GIFT_TOKEN_COUNT - 1n,
         });
         const giftTokenOutputBox = boxFactory.createGiftTokenRepoOutputBox(
           5,
           'add',
           5,
-          testUtils.FEE,
-          testUtils.GIFT_TOKEN_COUNT + 1n,
+          testUtils.TestConstants.FEE,
+          testUtils.TestConstants.GIFT_TOKEN_COUNT + 1n,
         );
 
         const outBoxes = [winnerOutputBox, giftTokenOutputBox];
@@ -531,7 +531,7 @@ describe('giftTokenRepo', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([(winnersInputBoxes as Box[])[3], giftTokenInputBox])
           .to(outBoxes)
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.ergoTree)
           .build();
 

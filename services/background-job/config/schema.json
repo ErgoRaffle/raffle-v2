@@ -1,0 +1,263 @@
+{
+  "logs": {
+    "type": "array",
+    "items": {
+      "type": "object",
+      "children": {
+        "type": {
+          "type": "string",
+          "description": "options: file, console, loki",
+          "default": "file",
+          "validations": [
+            {
+              "required": true,
+              "error": "log type must be specified"
+            },
+            { "choices": ["file", "console", "loki"] }
+          ]
+        },
+        "maxSize": {
+          "type": "string",
+          "default": "20m",
+          "validations": [
+            {
+              "required": true,
+              "error": "maxSize for file log type must be specified",
+              "when": { "path": "logs.type", "value": "file" }
+            }
+          ]
+        },
+        "maxFiles": {
+          "type": "string",
+          "default": "14d",
+          "validations": [
+            {
+              "required": true,
+              "error": "maxFiles for file log type must be specified",
+              "when": { "path": "logs.type", "value": "file" }
+            }
+          ]
+        },
+        "path": {
+          "type": "string",
+          "validations": [
+            {
+              "required": true,
+              "error": "path for file log type must be specified",
+              "when": { "path": "logs.type", "value": "file" }
+            }
+          ]
+        },
+        "level": {
+          "type": "string",
+          "default": "info",
+          "validations": [
+            {
+              "required": true,
+              "error": "log level must be specified"
+            }
+          ]
+        },
+        "serviceName": {
+          "type": "string",
+          "validations": [
+            {
+              "required": true,
+              "error": "Service-Name for the \"loki\" log type must be specified",
+              "when": { "path": "logs.type", "value": "loki" }
+            }
+          ]
+        },
+        "host": {
+          "type": "string",
+          "validations": [
+            {
+              "required": true,
+              "error": "host for the \"loki\" log type must be specified",
+              "when": { "path": "logs.type", "value": "loki" }
+            }
+          ]
+        },
+        "basicAuth": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    }
+  },
+  "database": {
+    "type": "object",
+    "children": {
+      "type": {
+        "type": "string",
+        "default": "postgres",
+        "validations": [
+          {
+            "required": true,
+            "error": "database type must be specified"
+          },
+          { "choices": ["sqlite", "postgres"] }
+        ]
+      },
+      "host": {
+        "type": "string",
+        "default": "localhost",
+        "validations": [
+          {
+            "required": true,
+            "when": { "path": "database.type", "value": "postgres" },
+            "error": "host for the \"postgres\" database address must be specified"
+          }
+        ]
+      },
+      "port": {
+        "type": "number",
+        "default": 5432,
+        "validations": [
+          {
+            "required": true,
+            "when": { "path": "database.type", "value": "postgres" },
+            "error": "port for the \"postgres\" database must be specified"
+          }
+        ]
+      },
+      "username": {
+        "type": "string",
+        "default": "postgres"
+      },
+      "password": {
+        "type": "string",
+        "default": ""
+      },
+      "name": {
+        "type": "string",
+        "default": "raffle_v2_background_job",
+        "validations": [
+          {
+            "required": true,
+            "when": { "path": "database.type", "value": "postgres" },
+            "error": "postgres database name is required"
+          }
+        ]
+      },
+      "path": {
+        "type": "string",
+        "validations": [
+          {
+            "required": true,
+            "when": { "path": "database.type", "value": "sqlite" },
+            "error": "sqlite database path is required"
+          }
+        ]
+      }
+    }
+  },
+  "scanner": {
+    "type": "object",
+    "children": {
+      "node": {
+        "type": "object",
+        "children": {
+          "url": {
+            "type": "string",
+            "default": "http://127.0.0.1:9052/",
+            "description": "scanner node url",
+            "validations": [
+              {
+                "required": true,
+                "error": "scanner node url must be specified"
+              }
+            ]
+          },
+          "timeout": {
+            "type": "number",
+            "default": 10,
+            "description": "ergo node timeout in seconds",
+            "validations": [
+              {
+                "required": true,
+                "error": "ergo node timeout must be specified"
+              }
+            ]
+          },
+          "initialHeight": {
+            "type": "number",
+            "description": "ergo node scanner initial-height",
+            "validations": [
+              {
+                "required": true,
+                "error": "scanner initial-height must be specified"
+              }
+            ]
+          }
+        }
+      },
+      "scannerInterval": {
+        "type": "number",
+        "default": 30,
+        "description": "scanner update interval in seconds",
+        "validations": [
+          {
+            "required": true,
+            "error": "scanner update interval must be specified"
+          }
+        ]
+      }
+    }
+  },
+  "txpot": {
+    "type": "object",
+    "children": {
+      "updateInterval": {
+        "type": "number",
+        "description": "tx-pot update interval in seconds",
+        "default": 60,
+        "validations": [
+          {
+            "required": true,
+            "error": "tx-pot update interval must be specified"
+          }
+        ]
+      },
+      "txRequiredConfirmations": {
+        "type": "number",
+        "default": 5,
+        "description": "tx-pot required confirmations",
+        "validations": [
+          {
+            "required": true,
+            "error": "tx-pot required confirmations must be specified"
+          }
+        ]
+      }
+    }
+  },
+  "ergo": {
+    "type": "object",
+    "children": {
+      "fee": {
+        "type": "number",
+        "default": 1500000,
+        "description": "ergo node fee in nano erg",
+        "validations": [
+          {
+            "required": true,
+            "error": "ergo node fee must be specified"
+          }
+        ]
+      },
+      "network": {
+        "type": "string",
+        "default": "mainnet",
+        "description": "ergo network",
+        "validations": [
+          {
+            "required": true,
+            "error": "ergo network must be specified"
+          },
+          { "choices": ["mainnet", "testnet"] }
+        ]
+      }
+    }
+  }
+}

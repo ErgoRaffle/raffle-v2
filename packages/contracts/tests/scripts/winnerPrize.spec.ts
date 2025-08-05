@@ -2,16 +2,11 @@ import { it, describe, expect } from 'vitest';
 import { SByte, SColl, SConstant } from '@fleet-sdk/serializer';
 import { TransactionBuilder } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
+import { mockUTxO } from '@fleet-sdk/mock-chain';
 
 import * as testUtils from '../testUtils';
-import {
-  X_TOKEN_ID,
-  CREATOR_DEFAULT_BALANCE,
-  UNKNOWN_WALLET_DEFAULT_BALANCE,
-} from '../testUtils';
 import * as constants from '../../constants';
 import { ScriptNamesType } from '../../lib/types';
-import { mockUTxO } from '@fleet-sdk/mock-chain';
 
 /*
  * create fixtures that contains below steps data:
@@ -35,15 +30,17 @@ const createWinnerPrizeTest = () => {
   );
   boxFactory.chain.setTip(100);
   const { creator, someone, unknown } = boxFactory.createPartners({
-    creator: CREATOR_DEFAULT_BALANCE,
-    someone: UNKNOWN_WALLET_DEFAULT_BALANCE,
-    unknown: UNKNOWN_WALLET_DEFAULT_BALANCE,
+    creator: testUtils.TestConstants.CREATOR_DEFAULT_BALANCE,
+    someone: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    unknown: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
   });
-  creator.addBalance({ tokens: [{ tokenId: X_TOKEN_ID, amount: 100n }] });
+  creator.addBalance({
+    tokens: [{ tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 100n }],
+  });
 
   // create winnerPrize input box
   const winnerPrizeBox = boxFactory.createWinnerPrizeBoxMock(
-    testUtils.FEE * 3n + BigInt(prizeAmount),
+    testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
     1,
     winnerTicketIndex,
     1n,
@@ -55,8 +52,8 @@ const createWinnerPrizeTest = () => {
   const giftBox = boxFactory.createGiftBoxMock(
     1,
     blake2b256(Buffer.from(someone.ergoTree, 'hex')),
-    testUtils.FEE * 10n,
-    testUtils.GIFT_TOKEN_ID,
+    testUtils.TestConstants.FEE * 10n,
+    testUtils.TestConstants.GIFT_TOKEN_ID,
     1n,
   );
 
@@ -64,13 +61,13 @@ const createWinnerPrizeTest = () => {
   const ticketBox = boxFactory.createTicketBoxMock(
     someone.ergoTree,
     5n,
-    testUtils.TICKET_TOKEN_ID,
+    testUtils.TestConstants.TICKET_TOKEN_ID,
     [0n, 5n, 100_000n], // from-ticket-range, to-ticket-range, ticket-price
   );
 
   // create winnerPrize input box for final prize transaction
   const winnerPrizeBoxForFinalPrize = boxFactory.createWinnerPrizeBoxMock(
-    testUtils.FEE * 3n + BigInt(prizeAmount),
+    testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
     1,
     winnerTicketIndex,
     1n,
@@ -83,7 +80,8 @@ const createWinnerPrizeTest = () => {
 
   // create final prize box
   const finalPrizeBox = boxFactory.createSafePayOutputBox(
-    BigInt(winnerPrizeBoxForFinalPrize.value.toString()) - testUtils.FEE,
+    BigInt(winnerPrizeBoxForFinalPrize.value.toString()) -
+      testUtils.TestConstants.FEE,
     [],
     SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array,
   );
@@ -125,7 +123,7 @@ describe('winnerPrize', () => {
         const winnerGiftTokensAmount = 2n;
 
         const winnerPrizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 3n + BigInt(prizeAmount),
+          testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
           1,
           winnerTicketIndex,
           1n,
@@ -134,7 +132,7 @@ describe('winnerPrize', () => {
         );
 
         const redeemedGift = boxFactory.createSafePayOutputBox(
-          BigInt(giftBox.value.toString()) - testUtils.FEE,
+          BigInt(giftBox.value.toString()) - testUtils.TestConstants.FEE,
           giftBox.assets.slice(1),
           SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
         );
@@ -142,7 +140,7 @@ describe('winnerPrize', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([winnerPrizeBox, giftBox])
           .to([winnerPrizeOutputBox, redeemedGift])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .withDataFrom([ticketBox])
           .build();
 
@@ -176,12 +174,12 @@ describe('winnerPrize', () => {
           someoneWallet.ergoTree,
           5n,
           // set invalid ticket token id
-          testUtils.X_TOKEN_ID,
+          testUtils.TestConstants.X_TOKEN_ID,
           [0n, 5n, 100_000n], // from-ticket-range, to-ticket-range, ticket-price
         );
 
         const winnerPrizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 3n + BigInt(prizeAmount),
+          testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
           1,
           winnerTicketIndex,
           1n,
@@ -190,7 +188,7 @@ describe('winnerPrize', () => {
         );
 
         const redeemedGift = boxFactory.createSafePayOutputBox(
-          BigInt(giftBox.value.toString()) - testUtils.FEE,
+          BigInt(giftBox.value.toString()) - testUtils.TestConstants.FEE,
           giftBox.assets.slice(1),
           SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
         );
@@ -198,7 +196,7 @@ describe('winnerPrize', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([winnerPrizeBox, giftBox])
           .to([winnerPrizeOutputBox, redeemedGift])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .withDataFrom([ticketBox])
           .build();
 
@@ -229,13 +227,13 @@ describe('winnerPrize', () => {
         const ticketBox = boxFactory.createTicketBoxMock(
           someoneWallet.ergoTree,
           3n,
-          testUtils.TICKET_TOKEN_ID,
+          testUtils.TestConstants.TICKET_TOKEN_ID,
           // set invalid winner range
           [2n, 5n, 100_000n], // from-ticket-range, to-ticket-range, ticket-price
         );
 
         const winnerPrizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 3n + BigInt(prizeAmount),
+          testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
           1,
           winnerTicketIndex,
           1n,
@@ -244,7 +242,7 @@ describe('winnerPrize', () => {
         );
 
         const redeemedGift = boxFactory.createSafePayOutputBox(
-          BigInt(giftBox.value.toString()) - testUtils.FEE,
+          BigInt(giftBox.value.toString()) - testUtils.TestConstants.FEE,
           giftBox.assets.slice(1),
           SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
         );
@@ -252,7 +250,7 @@ describe('winnerPrize', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([winnerPrizeBox, giftBox])
           .to([winnerPrizeOutputBox, redeemedGift])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .withDataFrom([ticketBox])
           .build();
 
@@ -286,13 +284,13 @@ describe('winnerPrize', () => {
           // set different winnerIndex
           2,
           blake2b256(Buffer.from(someoneWallet.ergoTree, 'hex')),
-          testUtils.FEE * 10n,
-          testUtils.GIFT_TOKEN_ID,
+          testUtils.TestConstants.FEE * 10n,
+          testUtils.TestConstants.GIFT_TOKEN_ID,
           1n,
         );
 
         const winnerPrizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 3n + BigInt(prizeAmount),
+          testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
           1,
           winnerTicketIndex,
           1n,
@@ -301,7 +299,7 @@ describe('winnerPrize', () => {
         );
 
         const redeemedGift = boxFactory.createSafePayOutputBox(
-          BigInt(giftBox.value.toString()) - testUtils.FEE,
+          BigInt(giftBox.value.toString()) - testUtils.TestConstants.FEE,
           giftBox.assets.slice(1),
           SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
         );
@@ -309,7 +307,7 @@ describe('winnerPrize', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([winnerPrizeBox, giftBox])
           .to([winnerPrizeOutputBox, redeemedGift])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .withDataFrom([ticketBox])
           .build();
 
@@ -340,11 +338,11 @@ describe('winnerPrize', () => {
         const winnerGiftTokensAmount = 2n;
 
         const extraGiftTokenInput = mockUTxO({
-          value: testUtils.FEE,
+          value: testUtils.TestConstants.FEE,
           ergoTree: constants.TRUE_SCRIPT_HEX,
           assets: [
             {
-              tokenId: testUtils.GIFT_TOKEN_ID,
+              tokenId: testUtils.TestConstants.GIFT_TOKEN_ID,
               amount: 1n,
             },
           ],
@@ -353,14 +351,14 @@ describe('winnerPrize', () => {
         const giftBox = boxFactory.createGiftBoxMock(
           1,
           blake2b256(Buffer.from(someoneWallet.ergoTree, 'hex')),
-          testUtils.FEE * 10n,
+          testUtils.TestConstants.FEE * 10n,
           // set giftTokenId
-          testUtils.X_TOKEN_ID,
+          testUtils.TestConstants.X_TOKEN_ID,
           1n,
         );
 
         const winnerPrizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 3n + BigInt(prizeAmount),
+          testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
           1,
           winnerTicketIndex,
           1n,
@@ -373,7 +371,7 @@ describe('winnerPrize', () => {
           [
             ...giftBox.assets.slice(1),
             {
-              tokenId: X_TOKEN_ID,
+              tokenId: testUtils.TestConstants.X_TOKEN_ID,
               amount: 1n,
             },
           ],
@@ -383,7 +381,7 @@ describe('winnerPrize', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([winnerPrizeBox, giftBox, extraGiftTokenInput])
           .to([winnerPrizeOutputBox, redeemedGift])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
           })
@@ -414,7 +412,7 @@ describe('winnerPrize', () => {
         const winnerGiftTokensAmount = 2n;
 
         const winnerPrizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 3n + BigInt(prizeAmount),
+          testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
           1,
           winnerTicketIndex,
           1n,
@@ -423,7 +421,7 @@ describe('winnerPrize', () => {
         );
 
         const redeemedGift = boxFactory.createSafePayOutputBox(
-          BigInt(giftBox.value.toString()) - testUtils.FEE,
+          BigInt(giftBox.value.toString()) - testUtils.TestConstants.FEE,
           giftBox.assets.slice(1),
           SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
         );
@@ -431,9 +429,12 @@ describe('winnerPrize', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([winnerPrizeBox, giftBox])
           .to([winnerPrizeOutputBox, redeemedGift])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .withDataFrom([ticketBox])
-          .burnTokens({ tokenId: testUtils.GIFT_TOKEN_ID, amount: 1n })
+          .burnTokens({
+            tokenId: testUtils.TestConstants.GIFT_TOKEN_ID,
+            amount: 1n,
+          })
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -460,7 +461,7 @@ describe('winnerPrize', () => {
         const winnerGiftTokensAmount = 2n;
 
         const winnerPrizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 3n + BigInt(prizeAmount),
+          testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
           1,
           winnerTicketIndex,
           1n,
@@ -470,7 +471,7 @@ describe('winnerPrize', () => {
         );
 
         const redeemedGift = boxFactory.createSafePayOutputBox(
-          BigInt(giftBox.value.toString()) - testUtils.FEE,
+          BigInt(giftBox.value.toString()) - testUtils.TestConstants.FEE,
           giftBox.assets.slice(1),
           SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
         );
@@ -478,9 +479,12 @@ describe('winnerPrize', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([winnerPrizeBox, giftBox])
           .to([winnerPrizeOutputBox, redeemedGift])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .withDataFrom([ticketBox])
-          .burnTokens({ tokenId: testUtils.GIFT_TOKEN_ID, amount: 1n })
+          .burnTokens({
+            tokenId: testUtils.TestConstants.GIFT_TOKEN_ID,
+            amount: 1n,
+          })
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -507,7 +511,7 @@ describe('winnerPrize', () => {
         const winnerGiftTokensAmount = 2n;
 
         const winnerPrizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 3n + BigInt(prizeAmount),
+          testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
           1,
           winnerTicketIndex,
           1n,
@@ -517,7 +521,7 @@ describe('winnerPrize', () => {
         );
 
         const redeemedGift = boxFactory.createSafePayOutputBox(
-          BigInt(giftBox.value.toString()) - testUtils.FEE,
+          BigInt(giftBox.value.toString()) - testUtils.TestConstants.FEE,
           giftBox.assets.slice(1),
           SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
         );
@@ -525,7 +529,7 @@ describe('winnerPrize', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([winnerPrizeBox, giftBox])
           .to([winnerPrizeOutputBox, redeemedGift])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .withDataFrom([ticketBox])
           .build();
 
@@ -553,7 +557,7 @@ describe('winnerPrize', () => {
         const winnerGiftTokensAmount = 2n;
 
         const winnerPrizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 3n + BigInt(prizeAmount),
+          testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
           // put invalid winner index
           2,
           winnerTicketIndex,
@@ -563,7 +567,7 @@ describe('winnerPrize', () => {
         );
 
         const redeemedGift = boxFactory.createSafePayOutputBox(
-          BigInt(giftBox.value.toString()) - testUtils.FEE,
+          BigInt(giftBox.value.toString()) - testUtils.TestConstants.FEE,
           giftBox.assets.slice(1),
           SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
         );
@@ -571,7 +575,7 @@ describe('winnerPrize', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([winnerPrizeBox, giftBox])
           .to([winnerPrizeOutputBox, redeemedGift])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .withDataFrom([ticketBox])
           .build();
 
@@ -599,7 +603,7 @@ describe('winnerPrize', () => {
         const winnerGiftTokensAmount = 2n;
 
         const winnerPrizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.FEE * 3n + BigInt(prizeAmount),
+          testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
           1,
           winnerTicketIndex,
           // set invalid amount of gift count
@@ -609,7 +613,7 @@ describe('winnerPrize', () => {
         );
 
         const redeemedGift = boxFactory.createSafePayOutputBox(
-          BigInt(giftBox.value.toString()) - testUtils.FEE,
+          BigInt(giftBox.value.toString()) - testUtils.TestConstants.FEE,
           giftBox.assets.slice(1),
           SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
         );
@@ -617,7 +621,7 @@ describe('winnerPrize', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([winnerPrizeBox, giftBox])
           .to([winnerPrizeOutputBox, redeemedGift])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .withDataFrom([ticketBox])
           .build();
 
@@ -646,7 +650,7 @@ describe('winnerPrize', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([winnerPrizeBoxForFinalPrize])
           .to([finalPrizeBox])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .withDataFrom([ticketBox])
           .burnTokens(winnerPrizeBoxForFinalPrize.assets.slice(0, 2))
           .build();
@@ -675,14 +679,14 @@ describe('winnerPrize', () => {
         const winnerGiftTokensAmount = 2n;
 
         const winnerPrizeBoxForFinalPrize = boxFactory.createWinnerPrizeBoxMock(
-          testUtils.FEE * 3n + BigInt(prizeAmount),
+          testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
           1,
           winnerTicketIndex,
           1n,
           1n,
           winnerGiftTokensAmount,
           {
-            tokenId: X_TOKEN_ID,
+            tokenId: testUtils.TestConstants.X_TOKEN_ID,
             amount: 100n,
           },
         );
@@ -695,10 +699,11 @@ describe('winnerPrize', () => {
 
         // create final prize box
         const finalPrizeBox = boxFactory.createSafePayOutputBox(
-          BigInt(winnerPrizeBoxForFinalPrize.value.toString()) - testUtils.FEE,
+          BigInt(winnerPrizeBoxForFinalPrize.value.toString()) -
+            testUtils.TestConstants.FEE,
           [
             {
-              tokenId: X_TOKEN_ID,
+              tokenId: testUtils.TestConstants.X_TOKEN_ID,
               // set incorrect amount of collecting token
               amount: 100n,
             },
@@ -709,7 +714,7 @@ describe('winnerPrize', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([winnerPrizeBoxForFinalPrize])
           .to([finalPrizeBox])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .withDataFrom([ticketBox])
           .burnTokens(winnerPrizeBoxForFinalPrize.assets.slice(0, 2))
           .build();
@@ -741,14 +746,14 @@ describe('winnerPrize', () => {
           someoneWallet.ergoTree,
           5n,
           // set different ticket id
-          testUtils.X_TOKEN_ID,
+          testUtils.TestConstants.X_TOKEN_ID,
           [0n, 5n, 100_000n], // from-ticket-range, to-ticket-range, ticket-price
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([winnerPrizeBoxForFinalPrize])
           .to([finalPrizeBox])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .withDataFrom([ticketBox])
           .burnTokens(winnerPrizeBoxForFinalPrize.assets.slice(0, 2))
           .build();
@@ -777,7 +782,7 @@ describe('winnerPrize', () => {
         const ticketBox = boxFactory.createTicketBoxMock(
           someoneWallet.ergoTree,
           5n,
-          testUtils.TICKET_TOKEN_ID,
+          testUtils.TestConstants.TICKET_TOKEN_ID,
           // set different ticket range
           [5n, 10n, 100_000n], // from-ticket-range, to-ticket-range, ticket-price
         );
@@ -785,7 +790,7 @@ describe('winnerPrize', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([winnerPrizeBoxForFinalPrize])
           .to([finalPrizeBox])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .withDataFrom([ticketBox])
           .burnTokens(winnerPrizeBoxForFinalPrize.assets.slice(0, 2))
           .build();
@@ -807,16 +812,17 @@ describe('winnerPrize', () => {
       "should fail if winner prize's ticket token is stolen",
       ({ boxFactory, ticketBox, winnerPrizeBoxForFinalPrize }) => {
         const finalPrizeBox = boxFactory.createSafePayOutputBox(
-          BigInt(winnerPrizeBoxForFinalPrize.value.toString()) - testUtils.FEE,
+          BigInt(winnerPrizeBoxForFinalPrize.value.toString()) -
+            testUtils.TestConstants.FEE,
           // Insert the ticket token into this box to steal
-          [{ tokenId: testUtils.TICKET_TOKEN_ID, amount: 1n }],
+          [{ tokenId: testUtils.TestConstants.TICKET_TOKEN_ID, amount: 1n }],
           SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array,
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([winnerPrizeBoxForFinalPrize])
           .to([finalPrizeBox])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .withDataFrom([ticketBox])
           // prevent the ticket token from burning
           .burnTokens(winnerPrizeBoxForFinalPrize.assets.slice(1, 2))
@@ -839,16 +845,17 @@ describe('winnerPrize', () => {
       'should fail if one gift token is stolen from winner prize',
       ({ boxFactory, ticketBox, winnerPrizeBoxForFinalPrize }) => {
         const finalPrizeBox = boxFactory.createSafePayOutputBox(
-          BigInt(winnerPrizeBoxForFinalPrize.value.toString()) - testUtils.FEE,
+          BigInt(winnerPrizeBoxForFinalPrize.value.toString()) -
+            testUtils.TestConstants.FEE,
           // Insert the gift token into this box to steal
-          [{ tokenId: testUtils.GIFT_TOKEN_ID, amount: 1n }],
+          [{ tokenId: testUtils.TestConstants.GIFT_TOKEN_ID, amount: 1n }],
           SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array,
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([winnerPrizeBoxForFinalPrize])
           .to([finalPrizeBox])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .withDataFrom([ticketBox])
           // prevent the gift token from burning
           .burnTokens(winnerPrizeBoxForFinalPrize.assets.slice(0, 1))
@@ -878,24 +885,25 @@ describe('winnerPrize', () => {
         const winnerGiftTokensAmount = 2n;
 
         const winnerPrizeBoxForFinalPrize = boxFactory.createWinnerPrizeBoxMock(
-          testUtils.FEE * 3n + BigInt(prizeAmount),
+          testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
           1,
           winnerTicketIndex,
           1n,
           1n,
           winnerGiftTokensAmount,
           {
-            tokenId: X_TOKEN_ID,
+            tokenId: testUtils.TestConstants.X_TOKEN_ID,
             amount: 100n,
           },
         );
 
         // create final prize box
         const finalPrizeBox = boxFactory.createSafePayOutputBox(
-          BigInt(winnerPrizeBoxForFinalPrize.value.toString()) - testUtils.FEE,
+          BigInt(winnerPrizeBoxForFinalPrize.value.toString()) -
+            testUtils.TestConstants.FEE,
           [
             {
-              tokenId: X_TOKEN_ID,
+              tokenId: testUtils.TestConstants.X_TOKEN_ID,
               // set incorrect amount of collecting token
               amount: 99n,
             },
@@ -912,12 +920,12 @@ describe('winnerPrize', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([winnerPrizeBoxForFinalPrize])
           .to([finalPrizeBox])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .withDataFrom([ticketBox])
           .burnTokens([
             ...winnerPrizeBoxForFinalPrize.assets.slice(0, 2),
             {
-              tokenId: X_TOKEN_ID,
+              tokenId: testUtils.TestConstants.X_TOKEN_ID,
               amount: 1n,
             },
           ])
@@ -946,7 +954,8 @@ describe('winnerPrize', () => {
       }) => {
         // create final prize box with different destination address
         const finalPrizeBox = boxFactory.createSafePayOutputBox(
-          BigInt(winnerPrizeBoxForFinalPrize.value.toString()) - testUtils.FEE,
+          BigInt(winnerPrizeBoxForFinalPrize.value.toString()) -
+            testUtils.TestConstants.FEE,
           [],
           blake2b256(unknownWallet.ergoTree),
         );
@@ -954,7 +963,7 @@ describe('winnerPrize', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([winnerPrizeBoxForFinalPrize])
           .to([finalPrizeBox])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .withDataFrom([ticketBox])
           .burnTokens(winnerPrizeBoxForFinalPrize.assets.slice(0, 2))
           .build();

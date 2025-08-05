@@ -4,11 +4,6 @@ import { Box, TransactionBuilder, OutputBuilder } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
 
 import * as testUtils from '../testUtils';
-import {
-  X_TOKEN_ID,
-  CREATOR_DEFAULT_BALANCE,
-  UNKNOWN_WALLET_DEFAULT_BALANCE,
-} from '../testUtils';
 import * as constants from '../../constants';
 import { ScriptNamesType } from '../../lib/types';
 
@@ -28,10 +23,12 @@ const createRaffleServiceTest = (winnersCount: bigint = 1n) => {
   );
   boxFactory.chain.setTip(100);
   const { creator, someone } = boxFactory.createPartners({
-    creator: CREATOR_DEFAULT_BALANCE,
-    someone: UNKNOWN_WALLET_DEFAULT_BALANCE,
+    creator: testUtils.TestConstants.CREATOR_DEFAULT_BALANCE,
+    someone: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
   });
-  creator.addBalance({ tokens: [{ tokenId: X_TOKEN_ID, amount: 100n }] });
+  creator.addBalance({
+    tokens: [{ tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 100n }],
+  });
   // Created input service-box
   const serviceBox = boxFactory.createServiceBoxMock(creator.ergoTree);
   const winnersPercent = [];
@@ -92,7 +89,7 @@ describe('Service', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from(inputBoxes)
           .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
@@ -139,7 +136,7 @@ describe('Service', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from(inputBoxes)
           .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
@@ -176,7 +173,7 @@ describe('Service', () => {
             someoneWallet.ergoTree,
             creator.ergoTree,
             1,
-            { tokenId: testUtils.X_TOKEN_ID, amount: 1n },
+            { tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 1n },
             undefined,
             undefined,
             undefined,
@@ -187,7 +184,7 @@ describe('Service', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from(inputBoxes)
           .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
@@ -222,12 +219,14 @@ describe('Service', () => {
             someoneWallet.ergoTree,
             creator.ergoTree,
           );
-        inactiveRaffleOutputBox.assets.remove(testUtils.LICENSE_TOKEN_ID);
+        inactiveRaffleOutputBox.assets.remove(
+          testUtils.TestConstants.LICENSE_TOKEN_ID,
+        );
         // Execute transaction
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from(inputBoxes)
           .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
@@ -262,12 +261,14 @@ describe('Service', () => {
             someoneWallet.ergoTree,
             creator.ergoTree,
           );
-        inactiveRaffleOutputBox.assets.remove(testUtils.LICENSE_TOKEN_ID);
+        inactiveRaffleOutputBox.assets.remove(
+          testUtils.TestConstants.LICENSE_TOKEN_ID,
+        );
         // Execute transaction
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from(inputBoxes)
           .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
@@ -308,7 +309,7 @@ describe('Service', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from(inputBoxes)
           .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
@@ -348,7 +349,7 @@ describe('Service', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from(inputBoxes)
           .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
@@ -392,7 +393,7 @@ describe('Service', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from(inputBoxes)
           .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
@@ -434,7 +435,7 @@ describe('Service', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from(inputBoxes)
           .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
@@ -479,7 +480,7 @@ describe('Service', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from(inputBoxes)
           .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
@@ -517,7 +518,7 @@ describe('Service', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from(inputBoxes)
           .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
@@ -562,7 +563,7 @@ describe('Service', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from(inputBoxes)
           .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
@@ -610,7 +611,7 @@ describe('Service', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from(inputBoxes)
           .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 
@@ -636,7 +637,9 @@ describe('Service', () => {
       ({ boxFactory, creator, inputBoxes }) => {
         const serviceBox = inputBoxes[0];
         creator.addBalance({
-          tokens: [{ tokenId: testUtils.OWNER_NFT_ID, amount: 1n }],
+          tokens: [
+            { tokenId: testUtils.TestConstants.OWNER_NFT_ID, amount: 1n },
+          ],
         });
         const newInputBoxes: Box<bigint>[] = [
           serviceBox,
@@ -648,7 +651,7 @@ describe('Service', () => {
           creator.address.ergoTree,
         ).addTokens([
           {
-            tokenId: testUtils.OWNER_NFT_ID,
+            tokenId: testUtils.TestConstants.OWNER_NFT_ID,
             amount: 1n,
           },
         ]);
@@ -656,7 +659,7 @@ describe('Service', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from(newInputBoxes)
           .to([outputBox])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
         const res = boxFactory.chain.execute(transaction, {
@@ -687,8 +690,9 @@ describe('Service', () => {
           999_999_999n,
         );
         const successRaffleInputBox = boxFactory.createSuccessRaffleBoxMock(
-          testUtils.CREATION_FEE + 4n * testUtils.FEE,
-          testUtils.LICENSE_TOKEN_ID,
+          testUtils.TestConstants.CREATION_FEE +
+            4n * testUtils.TestConstants.FEE,
+          testUtils.TestConstants.LICENSE_TOKEN_ID,
           blake2b256(Buffer.from(creator.ergoTree, 'hex')),
           '0123456789012345',
           [],
@@ -697,7 +701,7 @@ describe('Service', () => {
           0n,
           61n,
           1,
-          testUtils.TICKET_TOKEN_ID,
+          testUtils.TestConstants.TICKET_TOKEN_ID,
           999_999_998n,
           undefined,
         );
@@ -716,7 +720,7 @@ describe('Service', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from(inputBoxes)
           .to([serviceOutputBox])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .sendChangeTo(creator.address)
           .build();
 

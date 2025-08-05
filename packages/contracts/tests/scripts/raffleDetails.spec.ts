@@ -31,18 +31,27 @@ const createRaffleDetailsTest = (winnersCount: number = 5) => {
   );
   boxFactory.chain.setTip(100);
   const { creator, implementer, someone } = boxFactory.createPartners({
-    creator: testUtils.CREATOR_DEFAULT_BALANCE,
-    implementer: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
-    someone: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    creator: testUtils.TestConstants.CREATOR_DEFAULT_BALANCE,
+    implementer: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    someone: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
   });
   creator.addBalance({
-    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 100_000_000_000n }],
+    tokens: [
+      { tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 100_000_000_000n },
+    ],
   });
   creator.addBalance({
-    tokens: [{ tokenId: testUtils.TICKET_TOKEN_ID, amount: 100_000_000_000n }],
+    tokens: [
+      {
+        tokenId: testUtils.TestConstants.TICKET_TOKEN_ID,
+        amount: 100_000_000_000n,
+      },
+    ],
   });
 
-  const oracleBox = boxFactory.createMockedOracleUTxO(testUtils.FEE);
+  const oracleBox = boxFactory.createMockedOracleUTxO(
+    testUtils.TestConstants.FEE,
+  );
 
   // Created activeRaffle & raffleDetails input boxes
   const activeRaffleBoxForSuccessEnd = boxFactory.createActiveRaffleBoxMock(
@@ -61,16 +70,18 @@ const createRaffleDetailsTest = (winnersCount: number = 5) => {
   );
 
   const raffleDetailsBox = boxFactory.createRaffleDetailsBoxMock(
-    testUtils.TICKET_TOKEN_ID,
+    testUtils.TestConstants.TICKET_TOKEN_ID,
   );
 
   const serviceFeeOutputBox = boxFactory.createSafePayOutputBox(
-    BigInt((totalRaised * serviceFeePercent) / 1000n) + 2n * testUtils.FEE,
+    BigInt((totalRaised * serviceFeePercent) / 1000n) +
+      2n * testUtils.TestConstants.FEE,
     [],
     blake2b256(Buffer.from(creator.ergoTree, 'hex')),
   );
   const implementerFeeOutputBox = boxFactory.createSafePayOutputBox(
-    BigInt((totalRaised * implementerFeePercent) / 1000n) + 2n * testUtils.FEE,
+    BigInt((totalRaised * implementerFeePercent) / 1000n) +
+      2n * testUtils.TestConstants.FEE,
     [],
     blake2b256(Buffer.from(implementer.ergoTree, 'hex')),
   );
@@ -124,7 +135,7 @@ describe('raffleDetails', () => {
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
           activeRaffleBoxForSuccessEnd.value -
             (totalRaised * totalFeePercent) / 1000n -
-            testUtils.FEE * 4n,
+            testUtils.TestConstants.FEE * 4n,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           oracleBox.boxId.toString(),
           blake2b256(Buffer.from(creator.ergoTree, 'hex')),
@@ -149,7 +160,7 @@ describe('raffleDetails', () => {
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
           })
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         const result = boxFactory.chain.execute(transaction);
@@ -206,13 +217,13 @@ describe('raffleDetails', () => {
             undefined,
             undefined,
             // put invalid license token id
-            testUtils.X_TOKEN_ID,
+            testUtils.TestConstants.X_TOKEN_ID,
           );
 
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
           activeRaffleBoxForSuccessEnd.value -
             (totalRaised * totalFeePercent) / 1000n -
-            testUtils.FEE * 4n,
+            testUtils.TestConstants.FEE * 4n,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           oracleBox.boxId.toString(),
           blake2b256(Buffer.from(creator.ergoTree, 'hex')),
@@ -237,7 +248,7 @@ describe('raffleDetails', () => {
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
           })
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -289,14 +300,14 @@ describe('raffleDetails', () => {
             totalSuccessSoldTickets,
             goal,
             ticketPrice,
-            testUtils.X_TOKEN_ID,
+            testUtils.TestConstants.X_TOKEN_ID,
             1n,
           );
 
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
           activeRaffleBoxForSuccessEnd.value -
             (totalRaised * totalFeePercent) / 1000n -
-            testUtils.FEE * 4n,
+            testUtils.TestConstants.FEE * 4n,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           oracleBox.boxId.toString(),
           blake2b256(Buffer.from(creator.ergoTree, 'hex')),
@@ -306,7 +317,7 @@ describe('raffleDetails', () => {
           totalPrize,
           undefined,
           1,
-          testUtils.X_TOKEN_ID,
+          testUtils.TestConstants.X_TOKEN_ID,
           // prevent from adding ticket token that located on the raffle-details input box
           // this action not affect on the raffle-details contract execution result
           BigInt(activeRaffleBoxForSuccessEnd.assets[1].amount),
@@ -325,7 +336,7 @@ describe('raffleDetails', () => {
           })
           .sendChangeTo(creator.address)
           .burnTokens(raffleDetailsBox.assets[0])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -364,7 +375,7 @@ describe('raffleDetails', () => {
         const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
           activeRaffleBoxForSuccessEnd.value -
             (totalRaised * totalFeePercent) / 1000n -
-            testUtils.FEE * 4n,
+            testUtils.TestConstants.FEE * 4n,
           activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           oracleBox.boxId.toString(),
           blake2b256(Buffer.from(creator.ergoTree, 'hex')),
@@ -389,7 +400,7 @@ describe('raffleDetails', () => {
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
           })
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();

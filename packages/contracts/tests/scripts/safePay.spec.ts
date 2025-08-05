@@ -24,8 +24,8 @@ const createSafePayTest = () => {
   );
   boxFactory.chain.setTip(100);
   const { person1, person2 } = boxFactory.createPartners({
-    person1: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
-    person2: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    person1: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    person2: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
   });
   person1.addBalance({
     tokens: [
@@ -94,7 +94,7 @@ describe('safePay', () => {
       'should successfully withdraw erg from the safePay box',
       ({ boxFactory, person2Wallet, safePayPureErg }) => {
         const payOutputBox = boxFactory.createCustomOutputBox(
-          1_000_000_000n - testUtils.FEE,
+          1_000_000_000n - testUtils.TestConstants.FEE,
           [],
           person2Wallet.address.toString(),
         );
@@ -102,7 +102,7 @@ describe('safePay', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([safePayPureErg])
           .to([payOutputBox])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         const res = boxFactory.chain.execute(transaction);
@@ -124,7 +124,7 @@ describe('safePay', () => {
       'should successfully withdraw erg and all available tokens from the safePay box',
       ({ boxFactory, person2Wallet, safePayByTwoToken }) => {
         const payOutputBox = boxFactory.createCustomOutputBox(
-          1_000_000_000n - testUtils.FEE,
+          1_000_000_000n - testUtils.TestConstants.FEE,
           [
             {
               tokenId: X_TOKEN_ID,
@@ -141,7 +141,7 @@ describe('safePay', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([safePayByTwoToken])
           .to([payOutputBox])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         const res = boxFactory.chain.execute(transaction);
@@ -164,14 +164,14 @@ describe('safePay', () => {
       ({ boxFactory, person1Wallet, person2Wallet, safePayPureErg }) => {
         const payOutputBox = boxFactory.createCustomOutputBox(
           // decrease extra value and put to another box
-          1_000_000_000n - testUtils.FEE * 2n,
+          1_000_000_000n - testUtils.TestConstants.FEE * 2n,
           [],
           person2Wallet.address.toString(),
         );
 
         const anotherPayOutputBox = boxFactory.createCustomOutputBox(
           // decrease extra value and put to another box
-          testUtils.FEE,
+          testUtils.TestConstants.FEE,
           [],
           person1Wallet.address.toString(),
         );
@@ -179,7 +179,7 @@ describe('safePay', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([safePayPureErg])
           .to([payOutputBox, anotherPayOutputBox])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => boxFactory.chain.execute(transaction)).toThrowError();
@@ -199,7 +199,7 @@ describe('safePay', () => {
       'should fail if the amount of one of tokens decreases in output',
       ({ boxFactory, person2Wallet, safePayByTwoToken }) => {
         const payOutputBox = boxFactory.createCustomOutputBox(
-          1_000_000_000n - testUtils.FEE,
+          1_000_000_000n - testUtils.TestConstants.FEE,
           [
             {
               tokenId: X_TOKEN_ID,
@@ -216,7 +216,7 @@ describe('safePay', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([safePayByTwoToken])
           .to([payOutputBox])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
           })
@@ -243,7 +243,7 @@ describe('safePay', () => {
       'should fail if one of safePay tokens is missing in outputs',
       ({ boxFactory, person2Wallet, safePayByTwoToken }) => {
         const payOutputBox = boxFactory.createCustomOutputBox(
-          1_000_000_000n - testUtils.FEE,
+          1_000_000_000n - testUtils.TestConstants.FEE,
           [
             {
               tokenId: X_TOKEN_ID,
@@ -256,7 +256,7 @@ describe('safePay', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([safePayByTwoToken])
           .to([payOutputBox])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
           })
@@ -283,7 +283,7 @@ describe('safePay', () => {
       'should fail if receiver address is different',
       ({ boxFactory, person1Wallet, safePayPureErg }) => {
         const payOutputBox = boxFactory.createCustomOutputBox(
-          1_000_000_000n - testUtils.FEE,
+          1_000_000_000n - testUtils.TestConstants.FEE,
           [],
           person1Wallet.address.toString(),
         );
@@ -291,7 +291,7 @@ describe('safePay', () => {
         const transaction = new TransactionBuilder(boxFactory.chain.height)
           .from([safePayPureErg])
           .to([payOutputBox])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
           })

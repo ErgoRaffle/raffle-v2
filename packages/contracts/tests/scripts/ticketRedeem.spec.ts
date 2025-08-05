@@ -19,7 +19,7 @@ const createTicketRedeemTest = (collectingToken?: TokenAmount<bigint>) => {
   const totalSoldTickets = 10n;
   const ticketPrice = collectingToken
     ? collectingToken.amount / totalSoldTickets
-    : testUtils.FEE * 2n;
+    : testUtils.TestConstants.FEE * 2n;
   const ticketCount = 1n;
   const isErgGoal = collectingToken == undefined;
   const creationFee = 1_000_000n;
@@ -33,23 +33,23 @@ const createTicketRedeemTest = (collectingToken?: TokenAmount<bigint>) => {
   );
   boxFactory.chain.setTip(10);
   const { creator, someone, another } = boxFactory.createPartners({
-    creator: testUtils.CREATOR_DEFAULT_BALANCE,
-    someone: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
-    another: testUtils.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    creator: testUtils.TestConstants.CREATOR_DEFAULT_BALANCE,
+    someone: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    another: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
   });
   creator.addBalance({
-    tokens: [{ tokenId: testUtils.X_TOKEN_ID, amount: 100n }],
+    tokens: [{ tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 100n }],
   });
 
   const ticketRedeemBox = boxFactory.createTicketRedeemBoxMock(
     creationFee +
-      winnersCount * 3n * testUtils.FEE +
-      6n * testUtils.FEE +
+      winnersCount * 3n * testUtils.TestConstants.FEE +
+      6n * testUtils.TestConstants.FEE +
       (isErgGoal ? ticketCount * ticketPrice : 0n),
     totalSoldTickets,
     ticketPrice,
     0n,
-    testUtils.TICKET_TOKEN_ID,
+    testUtils.TestConstants.TICKET_TOKEN_ID,
     1n,
     collectingToken,
   );
@@ -57,19 +57,20 @@ const createTicketRedeemTest = (collectingToken?: TokenAmount<bigint>) => {
   const ticketBox = boxFactory.createTicketBoxMock(
     someone.ergoTree,
     ticketCount,
-    testUtils.TICKET_TOKEN_ID,
+    testUtils.TestConstants.TICKET_TOKEN_ID,
     [0n, 1n, ticketPrice, 1000n], // from-ticket-range, to-ticket-range, ticket-price, deadline
   );
 
   let redeemedDonationValue =
     BigInt(ticketBox.value.toString()) -
-    testUtils.FEE +
+    testUtils.TestConstants.FEE +
     ticketPrice * ticketCount;
   let ticketRedeemOutputBoxValue =
     BigInt(ticketRedeemBox.value.toString()) - ticketPrice * ticketCount;
   const redeemedDonationTokens = [];
   if (collectingToken !== undefined) {
-    redeemedDonationValue = BigInt(ticketBox.value.toString()) - testUtils.FEE;
+    redeemedDonationValue =
+      BigInt(ticketBox.value.toString()) - testUtils.TestConstants.FEE;
     redeemedDonationTokens.push({
       tokenId: ticketRedeemBox.assets[2].tokenId,
       amount: ticketCount * ticketPrice,
@@ -87,7 +88,7 @@ const createTicketRedeemTest = (collectingToken?: TokenAmount<bigint>) => {
     totalSoldTickets,
     ticketPrice,
     1n,
-    testUtils.TICKET_TOKEN_ID,
+    testUtils.TestConstants.TICKET_TOKEN_ID,
     2n,
     collectingToken,
   );
@@ -99,11 +100,11 @@ const createTicketRedeemTest = (collectingToken?: TokenAmount<bigint>) => {
   );
 
   const ticketRedeemBoxForLicenseRedeem = boxFactory.createTicketRedeemBoxMock(
-    testUtils.FEE * 3n,
+    testUtils.TestConstants.FEE * 3n,
     totalSoldTickets,
     ticketPrice,
     10n,
-    testUtils.TICKET_TOKEN_ID,
+    testUtils.TestConstants.TICKET_TOKEN_ID,
     10n,
     collectingToken,
   );
@@ -119,7 +120,8 @@ const createTicketRedeemTest = (collectingToken?: TokenAmount<bigint>) => {
     1_000_000_000n,
   );
   const serviceFeeBox = boxFactory.createSafePayOutputBox(
-    BigInt(ticketRedeemBoxForLicenseRedeem.value.toString()) - testUtils.FEE,
+    BigInt(ticketRedeemBoxForLicenseRedeem.value.toString()) -
+      testUtils.TestConstants.FEE,
     ticketRedeemBoxForLicenseRedeem.assets[2]
       ? [ticketRedeemBoxForLicenseRedeem.assets[2]]
       : [],
@@ -145,7 +147,7 @@ const createTicketRedeemTest = (collectingToken?: TokenAmount<bigint>) => {
 describe('ticketRedeem', () => {
   const ticketRedeemTest = createTicketRedeemTest();
   const ticketRedeemTokenGoalTest = createTicketRedeemTest({
-    tokenId: testUtils.X_TOKEN_ID,
+    tokenId: testUtils.TestConstants.X_TOKEN_ID,
     amount: 100n,
   });
 
@@ -174,7 +176,7 @@ describe('ticketRedeem', () => {
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
           })
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(boxFactory.chain.execute(transaction)).true;
@@ -205,7 +207,7 @@ describe('ticketRedeem', () => {
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
           })
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(boxFactory.chain.execute(transaction)).true;
@@ -225,12 +227,12 @@ describe('ticketRedeem', () => {
       'should fail if ticket redeem box assets decreases more than the redeemed donation in an erg-goal raffle',
       ({ boxFactory, ticketBox, ticketRedeemBox }) => {
         const totalSoldTickets = 10n;
-        const ticketPrice = testUtils.FEE * 2n;
+        const ticketPrice = testUtils.TestConstants.FEE * 2n;
         const ticketCount = 1n;
         const redeemedDonationOutputBox = boxFactory.createSafePayOutputBox(
           // set increased value
           BigInt(ticketBox.value) -
-            testUtils.FEE +
+            testUtils.TestConstants.FEE +
             ticketPrice * ticketCount +
             5n,
           [],
@@ -245,7 +247,7 @@ describe('ticketRedeem', () => {
           totalSoldTickets,
           ticketPrice,
           1n,
-          testUtils.TICKET_TOKEN_ID,
+          testUtils.TestConstants.TICKET_TOKEN_ID,
           2n,
         );
         const transaction = new TransactionBuilder(boxFactory.chain.height)
@@ -254,7 +256,7 @@ describe('ticketRedeem', () => {
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
           })
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => {
@@ -276,11 +278,11 @@ describe('ticketRedeem', () => {
       'should fail if ticket redeem box assets decreases more than the redeemed donation in a token-goal raffle',
       ({ boxFactory, ticketBox, ticketRedeemBox }) => {
         const totalSoldTickets = 10n;
-        const ticketPrice = testUtils.FEE * 2n;
+        const ticketPrice = testUtils.TestConstants.FEE * 2n;
         const ticketCount = 1n;
 
         const redeemedDonationOutputBox = boxFactory.createSafePayOutputBox(
-          BigInt(ticketBox.value.toString()) - testUtils.FEE,
+          BigInt(ticketBox.value.toString()) - testUtils.TestConstants.FEE,
           [
             {
               tokenId: ticketRedeemBox.assets[2].tokenId,
@@ -296,7 +298,7 @@ describe('ticketRedeem', () => {
           totalSoldTickets,
           ticketPrice,
           1n,
-          testUtils.TICKET_TOKEN_ID,
+          testUtils.TestConstants.TICKET_TOKEN_ID,
           2n,
           {
             // set decreased value
@@ -314,7 +316,7 @@ describe('ticketRedeem', () => {
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
           })
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => {
@@ -341,7 +343,7 @@ describe('ticketRedeem', () => {
         redeemedDonationOutputBox,
       }) => {
         const totalSoldTickets = 10n;
-        const ticketPrice = testUtils.FEE * 2n;
+        const ticketPrice = testUtils.TestConstants.FEE * 2n;
         const ticketCount = 1n;
 
         const ticketRedeemOutputBox = boxFactory.createTicketRedeemOutputBox(
@@ -349,7 +351,7 @@ describe('ticketRedeem', () => {
           totalSoldTickets,
           ticketPrice,
           1n,
-          testUtils.TICKET_TOKEN_ID,
+          testUtils.TestConstants.TICKET_TOKEN_ID,
           // set decreased amount of ticket-token
           1n,
         );
@@ -359,8 +361,11 @@ describe('ticketRedeem', () => {
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
           })
-          .burnTokens({ tokenId: testUtils.TICKET_TOKEN_ID, amount: 1n })
-          .payFee(testUtils.FEE)
+          .burnTokens({
+            tokenId: testUtils.TestConstants.TICKET_TOKEN_ID,
+            amount: 1n,
+          })
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => {
@@ -387,7 +392,7 @@ describe('ticketRedeem', () => {
         redeemedDonationOutputBox,
       }) => {
         const totalSoldTickets = 10n;
-        const ticketPrice = testUtils.FEE * 2n;
+        const ticketPrice = testUtils.TestConstants.FEE * 2n;
         const ticketCount = 1n;
 
         const ticketRedeemOutputBox = boxFactory.createTicketRedeemOutputBox(
@@ -396,7 +401,7 @@ describe('ticketRedeem', () => {
           totalSoldTickets - 1n,
           ticketPrice,
           1n,
-          testUtils.TICKET_TOKEN_ID,
+          testUtils.TestConstants.TICKET_TOKEN_ID,
           2n,
         );
         const transaction = new TransactionBuilder(boxFactory.chain.height)
@@ -405,7 +410,7 @@ describe('ticketRedeem', () => {
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
           })
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => {
@@ -432,7 +437,7 @@ describe('ticketRedeem', () => {
         redeemedDonationOutputBox,
       }) => {
         const totalSoldTickets = 10n;
-        const ticketPrice = testUtils.FEE * 2n;
+        const ticketPrice = testUtils.TestConstants.FEE * 2n;
         const ticketCount = 1n;
 
         const ticketRedeemOutputBox = boxFactory.createTicketRedeemOutputBox(
@@ -441,7 +446,7 @@ describe('ticketRedeem', () => {
           ticketPrice,
           // set invalid redeemedTickets amount
           0n,
-          testUtils.TICKET_TOKEN_ID,
+          testUtils.TestConstants.TICKET_TOKEN_ID,
           2n,
         );
         const transaction = new TransactionBuilder(boxFactory.chain.height)
@@ -450,7 +455,7 @@ describe('ticketRedeem', () => {
           .configureSelector((selector) => {
             selector.defineStrategy((inputs) => inputs);
           })
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => {
@@ -473,31 +478,31 @@ describe('ticketRedeem', () => {
       'should fail if ticket belongs to a different raffle (different ticket token)',
       ({ boxFactory, someoneWallet, ticketBox, redeemedDonationOutputBox }) => {
         const totalSoldTickets = 10n;
-        const ticketPrice = testUtils.FEE * 2n;
+        const ticketPrice = testUtils.TestConstants.FEE * 2n;
         const ticketCount = 1n;
         const creationFee = 1_000_000n;
         const winnersCount = 3n;
 
         const extraTokenBox = mockUTxO({
-          value: testUtils.FEE,
+          value: testUtils.TestConstants.FEE,
           ergoTree: constants.TRUE_SCRIPT_HEX,
           assets: [
             {
-              tokenId: testUtils.X_TOKEN_ID,
+              tokenId: testUtils.TestConstants.X_TOKEN_ID,
               amount: 1n,
             },
           ],
         });
         const ticketRedeemBox = boxFactory.createTicketRedeemBoxMock(
           creationFee +
-            winnersCount * 3n * testUtils.FEE +
-            6n * testUtils.FEE +
+            winnersCount * 3n * testUtils.TestConstants.FEE +
+            6n * testUtils.TestConstants.FEE +
             ticketCount * ticketPrice,
           totalSoldTickets,
           ticketPrice,
           0n,
           // set different ticket token id
-          testUtils.X_TOKEN_ID,
+          testUtils.TestConstants.X_TOKEN_ID,
           1n,
         );
         const ticketRedeemOutputBox = boxFactory.createTicketRedeemOutputBox(
@@ -506,7 +511,7 @@ describe('ticketRedeem', () => {
           ticketPrice,
           1n,
           // set different ticket token id
-          testUtils.X_TOKEN_ID,
+          testUtils.TestConstants.X_TOKEN_ID,
           2n,
         );
         const transaction = new TransactionBuilder(boxFactory.chain.height)
@@ -516,7 +521,7 @@ describe('ticketRedeem', () => {
             selector.defineStrategy((inputs) => inputs);
           })
           .sendChangeTo(someoneWallet.address)
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => {
@@ -552,7 +557,7 @@ describe('ticketRedeem', () => {
             selector.defineStrategy((inputs) => inputs);
           })
           .burnTokens(ticketRedeemBoxForLicenseRedeem.assets[1])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(boxFactory.chain.execute(transaction)).true;
@@ -584,7 +589,7 @@ describe('ticketRedeem', () => {
             selector.defineStrategy((inputs) => inputs);
           })
           .burnTokens(ticketRedeemBoxForLicenseRedeem.assets[1])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(boxFactory.chain.execute(transaction)).true;
@@ -616,7 +621,7 @@ describe('ticketRedeem', () => {
           undefined,
           undefined,
           // set invalid license-NFT id
-          testUtils.X_TOKEN_ID,
+          testUtils.TestConstants.X_TOKEN_ID,
         );
         const serviceOutputBox = boxFactory.createServiceOutputBox(
           creator.ergoTree,
@@ -626,7 +631,7 @@ describe('ticketRedeem', () => {
           undefined,
           undefined,
           // set invalid license-NFT id
-          testUtils.X_TOKEN_ID,
+          testUtils.TestConstants.X_TOKEN_ID,
         );
 
         const transaction = new TransactionBuilder(boxFactory.chain.height)
@@ -636,7 +641,7 @@ describe('ticketRedeem', () => {
             selector.defineStrategy((inputs) => inputs);
           })
           .burnTokens(ticketRedeemBoxForLicenseRedeem.assets[1])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => {
@@ -670,7 +675,7 @@ describe('ticketRedeem', () => {
           undefined,
           undefined,
           undefined,
-          testUtils.X_TOKEN_ID,
+          testUtils.TestConstants.X_TOKEN_ID,
         );
         const serviceOutputBox = boxFactory.createServiceOutputBox(
           creator.ergoTree,
@@ -678,15 +683,15 @@ describe('ticketRedeem', () => {
           undefined,
           undefined,
           undefined,
-          testUtils.X_TOKEN_ID,
+          testUtils.TestConstants.X_TOKEN_ID,
         );
 
         const extraLicenseToken = mockUTxO({
-          value: testUtils.FEE,
+          value: testUtils.TestConstants.FEE,
           ergoTree: constants.TRUE_SCRIPT_HEX,
           assets: [
             {
-              tokenId: testUtils.X_TOKEN_ID,
+              tokenId: testUtils.TestConstants.X_TOKEN_ID,
               amount: 1n,
             },
           ],
@@ -704,7 +709,7 @@ describe('ticketRedeem', () => {
           })
           .burnTokens(ticketRedeemBoxForLicenseRedeem.assets[1])
           .sendChangeTo(someoneWallet.address)
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => {
@@ -735,7 +740,7 @@ describe('ticketRedeem', () => {
         const serviceFeeBox = boxFactory.createSafePayOutputBox(
           // put reduced value
           BigInt(ticketRedeemBoxForLicenseRedeem.value.toString()) -
-            testUtils.FEE * 2n,
+            testUtils.TestConstants.FEE * 2n,
           [],
           blake2b256(Buffer.from(creator.ergoTree, 'hex')),
         );
@@ -748,7 +753,7 @@ describe('ticketRedeem', () => {
           })
           .burnTokens(ticketRedeemBoxForLicenseRedeem.assets[1])
           .sendChangeTo(someoneWallet.address)
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => {
@@ -777,7 +782,7 @@ describe('ticketRedeem', () => {
       }) => {
         const serviceFeeBox = boxFactory.createSafePayOutputBox(
           BigInt(ticketRedeemBoxForLicenseRedeem.value.toString()) -
-            testUtils.FEE,
+            testUtils.TestConstants.FEE,
           [
             {
               tokenId: ticketRedeemBoxForLicenseRedeem.assets[2].tokenId,
@@ -801,7 +806,7 @@ describe('ticketRedeem', () => {
               amount: 1n,
             },
           ])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => {
@@ -830,7 +835,7 @@ describe('ticketRedeem', () => {
       }) => {
         const serviceFeeBox = boxFactory.createSafePayOutputBox(
           BigInt(ticketRedeemBoxForLicenseRedeem.value.toString()) -
-            testUtils.FEE,
+            testUtils.TestConstants.FEE,
           [],
           // set different address
           blake2b256(Buffer.from(someoneWallet.ergoTree, 'hex')),
@@ -843,7 +848,7 @@ describe('ticketRedeem', () => {
             selector.defineStrategy((inputs) => inputs);
           })
           .burnTokens([ticketRedeemBoxForLicenseRedeem.assets[1]])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => {
@@ -872,15 +877,15 @@ describe('ticketRedeem', () => {
         ticketRedeemBoxForLicenseRedeem,
       }) => {
         const totalSoldTickets = 10n;
-        const ticketPrice = testUtils.FEE * 2n;
+        const ticketPrice = testUtils.TestConstants.FEE * 2n;
 
         const ticketRedeemBoxForLicenseRedeem2 =
           boxFactory.createTicketRedeemBoxMock(
-            testUtils.FEE * 3n,
+            testUtils.TestConstants.FEE * 3n,
             totalSoldTickets,
             ticketPrice,
             10n,
-            testUtils.TICKET_TOKEN_ID,
+            testUtils.TestConstants.TICKET_TOKEN_ID,
             10n,
           );
 
@@ -897,7 +902,7 @@ describe('ticketRedeem', () => {
           })
           .sendChangeTo(someoneWallet.address)
           .burnTokens(ticketRedeemBoxForLicenseRedeem.assets[1])
-          .payFee(testUtils.FEE)
+          .payFee(testUtils.TestConstants.FEE)
           .build();
 
         expect(() => {

@@ -27,7 +27,7 @@ import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
 
 import { DbService } from './dbService';
-import { ScannerBaseOption } from '../types';
+import { Scanner as ScannerBaseOption } from '../types';
 
 export class ScannerService extends AbstractService {
   name = 'ScannerService';
@@ -60,7 +60,7 @@ export class ScannerService extends AbstractService {
       {
         url: this.scannerConfig.node.url,
         type: ErgoNetworkType.Node,
-        timeout: this.scannerConfig.node.timeout,
+        timeout: this.scannerConfig.node.timeout * 1000,
         initialHeight: this.scannerConfig.node.initialHeight,
         dataSource: this.dbService.dataSource,
       },
@@ -314,7 +314,7 @@ export class ScannerService extends AbstractService {
 
     const scheduled = setTimeout(
       () => this.fetchData(),
-      this.scannerConfig.rescanDelaySeconds * 1000,
+      this.scannerConfig.scannerInterval * 1000,
     );
 
     if (this.shouldStop) {

@@ -1,5 +1,5 @@
 import { DataSource } from '@rosen-bridge/extended-typeorm';
-import { getConfig } from './config/config';
+import { configs } from './config';
 
 import {
   RaffleServiceEntity,
@@ -28,7 +28,7 @@ import {
   migrations as txpotMigrations,
 } from '@rosen-bridge/tx-pot';
 
-const dbConfigs = getConfig().database;
+const dbConfigs = configs.database;
 
 const commonConfigs = {
   entities: [
@@ -62,7 +62,7 @@ if (dbConfigs.type === 'sqlite') {
       ...scannerMigrations.sqlite,
       ...txpotMigrations.sqlite,
     ],
-    database: dbConfigs.path,
+    database: dbConfigs.path!,
     ...commonConfigs,
   });
 } else {
@@ -75,7 +75,7 @@ if (dbConfigs.type === 'sqlite') {
     ],
     host: dbConfigs.host,
     port: dbConfigs.port,
-    username: dbConfigs.user,
+    username: dbConfigs.username,
     password: dbConfigs.password,
     database: dbConfigs.name,
     ...commonConfigs,

@@ -10,5 +10,10 @@
     "lib/*.ts",
     "cli/*.ts",
     "vitest.config.ts"
+  ],
+  "references": [
+    {
+      "path": "../transactions"
+    }
   ]
 }

@@ -1,5 +1,5 @@
 import { ServiceManager } from '@rosen-bridge/service-manager';
-import { getConfig } from './config/config';
+import { configs } from './config';
 import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
 
 import { DbService } from './services/dbService';
@@ -22,16 +22,16 @@ const main = async () => {
   logger.debug('Database service registered to the service manager');
 
   logger.debug('Initializing scanner service');
-  await ScannerService.init(getConfig().scanner, DbService.getInstance());
+  await ScannerService.init(configs.scanner, DbService.getInstance());
   serviceManager.register(ScannerService.getInstance());
   logger.debug('Scanner service registered to the service manager');
 
   logger.debug('Initializing txpot service');
   await TxPotService.init(
-    getConfig().txpot.updateInterval,
+    configs.txpot.updateInterval,
     dataSource,
-    getConfig().scanner.node.url,
-    getConfig().txpot.txRequiredConfirmations,
+    configs.scanner.node.url,
+    configs.txpot.txRequiredConfirmations,
     CallbackLoggerFactory.getInstance().getLogger('TxPotService'),
   );
   serviceManager.register(TxPotService.getInstance());
