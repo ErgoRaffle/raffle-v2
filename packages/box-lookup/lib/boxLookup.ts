@@ -63,41 +63,53 @@ export class BoxLookup {
    */
   public serveRequests = async () => {
     if (this.requests.size <= 0) return;
-    this.dataProvider.startNewRound();
+    await this.dataProvider.startNewRound();
     this.logger.info('The BoxLookup serving requests started');
     for (const request of this.requests.values()) {
-      this.dataProvider.updateRoundWithTxPotData();
+      await this.dataProvider.updateRoundWithTxPotData();
       let boxSelector = new BoxSelector(this.logger, request, this.networkType);
 
-      const roundState = await this.dataProvider.getCurrentRoundState();
-      const unspentMinedBoxes = (await request.getMinedBoxes()).filter(
-        (box) => !roundState.spentBoxIds.has(box.boxId),
+      const roundState = this.dataProvider.getCurrentRoundState();
+      const unspentBoxIds = new Set(
+        roundState.unspentBoxes.map((box) => box.boxId),
       );
-      for (const box of [...roundState.unspentBoxes, ...unspentMinedBoxes]) {
+      // Filter out spent boxes and availble boxes in the round
+      const unspentMinedBoxes = (await request.getMinedBoxes()).filter(
+        (box) =>
+          !roundState.spentBoxIds.has(box.boxId) &&
+          !unspentBoxIds.has(box.boxId),
+      );
+      // Filter out boxes that are not related to the request
+      const totalBoxes = [
+        ...roundState.unspentBoxes,
+        ...unspentMinedBoxes,
+      ].filter((box) => boxSelector.isRelatedToRequest(box));
+
+      for (const box of totalBoxes) {
         // Break the loop if the request is unregistered from the box lookup
-        if (Array.from(this.requests.values()).indexOf(request) < 0) break;
+        if (!this.requests.has(request.id)) break;
+        boxSelector.addBox(box);
 
-        if (boxSelector.isRelatedToRequest(box)) {
-          boxSelector.addBox(box);
-
-          if (boxSelector.isCovering()) {
+        if (boxSelector.isCovering()) {
+          try {
             await request.onSuffice(
               boxSelector.getBoxes(),
               roundState.unspentBoxes,
               request.id,
             );
-            boxSelector = new BoxSelector(
-              this.logger,
-              request,
-              this.networkType,
-            );
-            this.logger.info(
-              `The BoxLookup triggered for ${request.address} request address`,
-            );
-            this.logger.debug(
-              `The ${request.address} request address sufficed by ${JSON.stringify(boxSelector.getBoxes())} boxes`,
+          } catch (error) {
+            this.logger.error(
+              `Error in onSuffice callback for [${request.address}] request address`,
+              error,
             );
           }
+          boxSelector = new BoxSelector(this.logger, request, this.networkType);
+          this.logger.info(
+            `The BoxLookup triggered for ${request.address} request address`,
+          );
+          this.logger.debug(
+            `The ${request.address} request address sufficed by ${JSON.stringify(boxSelector.getBoxes())} boxes`,
+          );
         }
       }
     }

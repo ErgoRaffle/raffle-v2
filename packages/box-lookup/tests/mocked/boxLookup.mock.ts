@@ -1,569 +1,108 @@
-import { DataSource } from 'typeorm';
-import {
-  TransactionEntity,
-  TransactionStatus,
-  migrations,
-} from '@rosen-bridge/tx-pot';
-import { SAFE_MIN_BOX_VALUE } from '@fleet-sdk/core';
+import { vi } from 'vitest';
+import { Network, ErgoBox } from '@fleet-sdk/core';
+import { TokenAmount } from '@fleet-sdk/core';
+import { Request } from '../../lib/types';
 
-export const unconfirmedTxList = [
-  {
-    id: '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-    inputs: [
-      {
-        boxId: '0'.repeat(64),
-        spendingProof: {
-          proofBytes:
-            '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-          extension: {
-            '1': 'a2aed72ff1b139f35d1ad2938cb44c9848a34d4dcfd6d8ab717ebde40a7304f2541cf628ffc8b5c496e6161eba3f169c6dd440704b1719e0',
-          },
-        },
-      },
-    ],
-    dataInputs: [],
-    outputs: [
-      {
-        boxId:
-          '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-        value: SAFE_MIN_BOX_VALUE * 3n,
-        ergoTree:
-          '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
-        creationHeight: 9149,
-        assets: [
-          {
-            tokenId:
-              '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-            amount: 1000,
-          },
-        ],
-        additionalRegisters: {
-          R4: '100204a00b08cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041ea02d192a39a8cc7a70173007301',
-        },
-        transactionId:
-          '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-        index: 0,
-      },
-    ],
-    size: 0,
-  },
-];
+export const sampleNodeURL = 'http://localhost:9053';
+export const sampleNetworkType: Network = Network.Mainnet;
 
-export const mockDataSource = async () => {
-  const testDataSource = new DataSource({
-    type: 'sqlite',
-    database: ':memory:',
-    entities: [TransactionEntity],
-    migrations: [...migrations.sqlite],
-    synchronize: false,
-    logging: false,
-  });
-
-  await testDataSource.initialize();
-  await testDataSource.runMigrations();
-
-  return testDataSource;
+// Sample token amounts
+const sampleToken1: TokenAmount<bigint> = {
+  tokenId: '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+  amount: 1000n,
 };
 
-export const SampleTransactionEntities: TransactionEntity[] = [
-  {
-    txId: 'tx-id-1',
-    chain: 'chain-1',
-    txType: 'tx-A',
-    status: TransactionStatus.APPROVED,
-    requiredSign: 1,
-    lastCheck: 10010,
-    lastStatusUpdate: '1685894400',
-    failedInSign: false,
-    signFailedCount: 0,
-    serializedTx: JSON.stringify(
-      {
-        id: '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-        inputs: [
-          {
-            boxId: '1'.repeat(64),
-            spendingProof: {
-              proofBytes:
-                '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-              extension: {
-                '1': 'a2aed72ff1b139f35d1ad2938cb44c9848a34d4dcfd6d8ab717ebde40a7304f2541cf628ffc8b5c496e6161eba3f169c6dd440704b1719e0',
-              },
-            },
-          },
-        ],
-        dataInputs: [],
-        outputs: [
-          {
-            boxId:
-              '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd119',
-            value: SAFE_MIN_BOX_VALUE * 3n,
-            ergoTree:
-              '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
-            creationHeight: 9149,
-            assets: [
-              {
-                tokenId:
-                  '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-                amount: 1000,
-              },
-              {
-                tokenId:
-                  '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd000',
-                amount: 100,
-              },
-            ],
-            additionalRegisters: {
-              R4: '100204a00b08cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041ea02d192a39a8cc7a70173007301',
-            },
-            transactionId:
-              '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-            index: 0,
-          },
-          {
-            boxId:
-              '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd120',
-            value: SAFE_MIN_BOX_VALUE,
-            ergoTree:
-              '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
-            creationHeight: 9149,
-            assets: [
-              {
-                tokenId:
-                  '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd118',
-                amount: 1000,
-              },
-            ],
-            additionalRegisters: {
-              R4: '100204a00b08cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041ea02d192a39a8cc7a70173007301',
-            },
-            transactionId:
-              '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-            index: 0,
-          },
-          {
-            boxId:
-              '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd121',
-            value: SAFE_MIN_BOX_VALUE,
-            ergoTree:
-              '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
-            creationHeight: 9149,
-            assets: [
-              {
-                tokenId:
-                  '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd119',
-                amount: 1000,
-              },
-            ],
-            additionalRegisters: {
-              R4: '100204a00b08cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041ea02d192a39a8cc7a70173007301',
-            },
-            transactionId:
-              '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-            index: 0,
-          },
-        ],
-        size: 0,
-      },
-      (k, v) => {
-        return typeof v == 'bigint' ? String(v) : v;
-      },
-    ),
-  },
-  {
-    txId: 'tx-id-2',
-    chain: 'chain-1',
-    txType: 'tx-A',
-    status: TransactionStatus.INVALID,
-    requiredSign: 1,
-    lastCheck: 0,
-    lastStatusUpdate: '1685894220',
-    failedInSign: false,
-    signFailedCount: 0,
-    serializedTx: JSON.stringify(
-      {
-        id: '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-        inputs: [
-          {
-            boxId: '2'.repeat(64),
-            spendingProof: {
-              proofBytes:
-                '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-              extension: {
-                '1': 'a2aed72ff1b139f35d1ad2938cb44c9848a34d4dcfd6d8ab717ebde40a7304f2541cf628ffc8b5c496e6161eba3f169c6dd440704b1719e0',
-              },
-            },
-          },
-        ],
-        dataInputs: [],
-        outputs: [
-          {
-            boxId:
-              '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd120',
-            value: SAFE_MIN_BOX_VALUE * 3n,
-            ergoTree:
-              '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
-            creationHeight: 9149,
-            assets: [
-              {
-                tokenId:
-                  '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-                amount: 20,
-              },
-            ],
-            additionalRegisters: {
-              R4: '100204a00b08cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041ea02d192a39a8cc7a70173007301',
-            },
-            transactionId:
-              '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-            index: 0,
-          },
-        ],
-        size: 0,
-      },
-      (k, v) => {
-        return typeof v == 'bigint' ? String(v) : v;
-      },
-    ),
-  },
-  {
-    txId: 'tx-id-3',
-    chain: 'chain-2',
-    txType: 'tx-A',
-    status: TransactionStatus.IN_SIGN,
-    requiredSign: 2,
-    lastCheck: 0,
-    lastStatusUpdate: '1685894220',
-    failedInSign: true,
-    signFailedCount: 1,
-    serializedTx: JSON.stringify(
-      {
-        id: '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-        inputs: [
-          {
-            boxId: '3'.repeat(64),
-            spendingProof: {
-              proofBytes:
-                '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-              extension: {
-                '1': 'a2aed72ff1b139f35d1ad2938cb44c9848a34d4dcfd6d8ab717ebde40a7304f2541cf628ffc8b5c496e6161eba3f169c6dd440704b1719e0',
-              },
-            },
-          },
-        ],
-        dataInputs: [],
-        outputs: [
-          {
-            boxId:
-              '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd121',
-            value: SAFE_MIN_BOX_VALUE * 3n,
-            ergoTree:
-              '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
-            creationHeight: 9149,
-            assets: [
-              {
-                tokenId:
-                  '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-                amount: 40,
-              },
-            ],
-            additionalRegisters: {
-              R4: '100204a00b08cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041ea02d192a39a8cc7a70173007301',
-            },
-            transactionId:
-              '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-            index: 0,
-          },
-        ],
-        size: 0,
-      },
-      (k, v) => {
-        return typeof v == 'bigint' ? String(v) : v;
-      },
-    ),
-    extra: 'extra-1',
-  },
-  {
-    txId: 'tx-id-4',
-    chain: 'chain-1',
-    txType: 'tx-B',
-    status: TransactionStatus.SIGNED,
-    requiredSign: 0,
-    lastCheck: 0,
-    lastStatusUpdate: '1685894220',
-    failedInSign: true,
-    signFailedCount: 1,
-    serializedTx: JSON.stringify(
-      {
-        id: '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-        inputs: [
-          {
-            boxId: '4'.repeat(64),
-            spendingProof: {
-              proofBytes:
-                '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-              extension: {
-                '1': 'a2aed72ff1b139f35d1ad2938cb44c9848a34d4dcfd6d8ab717ebde40a7304f2541cf628ffc8b5c496e6161eba3f169c6dd440704b1719e0',
-              },
-            },
-          },
-        ],
-        dataInputs: [],
-        outputs: [
-          {
-            boxId:
-              '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd122',
-            value: SAFE_MIN_BOX_VALUE * 3n,
-            ergoTree:
-              '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
-            creationHeight: 9149,
-            assets: [
-              {
-                tokenId:
-                  '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-                amount: 1000,
-              },
-            ],
-            additionalRegisters: {
-              R4: '100204a00b08cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041ea02d192a39a8cc7a70173007301',
-            },
-            transactionId:
-              '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-            index: 0,
-          },
-        ],
-        size: 0,
-      },
-      (k, v) => {
-        return typeof v == 'bigint' ? String(v) : v;
-      },
-    ),
-    extra: 'extra-2',
-  },
-  {
-    txId: 'tx-id-5',
-    chain: 'chain-2',
-    txType: 'tx-B',
-    status: TransactionStatus.IN_SIGN,
-    requiredSign: 0,
-    lastCheck: 0,
-    lastStatusUpdate: '1685894220',
-    failedInSign: false,
-    signFailedCount: 0,
-    serializedTx: JSON.stringify(
-      {
-        id: '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-        inputs: [
-          {
-            boxId: '5'.repeat(64),
-            spendingProof: {
-              proofBytes:
-                '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-              extension: {
-                '1': 'a2aed72ff1b139f35d1ad2938cb44c9848a34d4dcfd6d8ab717ebde40a7304f2541cf628ffc8b5c496e6161eba3f169c6dd440704b1719e0',
-              },
-            },
-          },
-        ],
-        dataInputs: [],
-        outputs: [
-          {
-            boxId:
-              '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd123',
-            value: SAFE_MIN_BOX_VALUE * 3n,
-            ergoTree:
-              '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
-            creationHeight: 9149,
-            assets: [
-              {
-                tokenId:
-                  '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-                amount: 1000,
-              },
-            ],
-            additionalRegisters: {
-              R4: '100204a00b08cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041ea02d192a39a8cc7a70173007301',
-            },
-            transactionId:
-              '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-            index: 0,
-          },
-        ],
-        size: 0,
-      },
-      (k, v) => {
-        return typeof v == 'bigint' ? String(v) : v;
-      },
-    ),
-  },
-  {
-    txId: 'tx-id-6',
-    chain: 'chain-2',
-    txType: 'tx-B',
-    status: TransactionStatus.SENT,
-    requiredSign: 0,
-    lastCheck: 0,
-    lastStatusUpdate: '1685894220',
-    failedInSign: false,
-    signFailedCount: 0,
-    serializedTx: JSON.stringify(
-      {
-        id: '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-        inputs: [
-          {
-            boxId: '6'.repeat(64),
-            spendingProof: {
-              proofBytes:
-                '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-              extension: {
-                '1': 'a2aed72ff1b139f35d1ad2938cb44c9848a34d4dcfd6d8ab717ebde40a7304f2541cf628ffc8b5c496e6161eba3f169c6dd440704b1719e0',
-              },
-            },
-          },
-        ],
-        dataInputs: [],
-        outputs: [
-          {
-            boxId:
-              '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd124',
-            value: SAFE_MIN_BOX_VALUE * 3n,
-            ergoTree:
-              '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
-            creationHeight: 9149,
-            assets: [
-              {
-                tokenId:
-                  '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-                amount: 1000,
-              },
-            ],
-            additionalRegisters: {
-              R4: '100204a00b08cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041ea02d192a39a8cc7a70173007301',
-            },
-            transactionId:
-              '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-            index: 0,
-          },
-        ],
-        size: 0,
-      },
-      (k, v) => {
-        return typeof v == 'bigint' ? String(v) : v;
-      },
-    ),
-  },
-  {
-    txId: 'tx-id-7',
-    chain: 'chain-2',
-    txType: 'tx-B',
-    status: TransactionStatus.COMPLETED,
-    requiredSign: 0,
-    lastCheck: 0,
-    lastStatusUpdate: '1685894220',
-    failedInSign: false,
-    signFailedCount: 0,
-    serializedTx: JSON.stringify(
-      {
-        id: '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-        inputs: [
-          {
-            boxId: '7'.repeat(64),
-            spendingProof: {
-              proofBytes:
-                '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-              extension: {
-                '1': 'a2aed72ff1b139f35d1ad2938cb44c9848a34d4dcfd6d8ab717ebde40a7304f2541cf628ffc8b5c496e6161eba3f169c6dd440704b1719e0',
-              },
-            },
-          },
-        ],
-        dataInputs: [],
-        outputs: [
-          {
-            boxId:
-              '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd125',
-            value: SAFE_MIN_BOX_VALUE * 3n,
-            ergoTree:
-              '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
-            creationHeight: 9149,
-            assets: [
-              {
-                tokenId:
-                  '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-                amount: 1000,
-              },
-            ],
-            additionalRegisters: {
-              R4: '100204a00b08cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041ea02d192a39a8cc7a70173007301',
-            },
-            transactionId:
-              '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-            index: 0,
-          },
-        ],
-        size: 0,
-      },
-      (k, v) => {
-        return typeof v == 'bigint' ? String(v) : v;
-      },
-    ),
-  },
+const sampleToken2: TokenAmount<bigint> = {
+  tokenId: '5ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd118',
+  amount: 500n,
+};
+
+// Sample addresses
+const sampleAddress = '9fSgUi6Z7kOnxq94voRFuJbDrZfStJn6f2q7oEwj4vJtQp6nR8M';
+
+// Sample ergo trees
+const sampleErgoTree =
+  '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041';
+
+// Mock callback functions
+const mockOnSuffice = async () => {};
+const mockGetMinedBoxes = async () => [];
+
+// Sample ErgoBoxes
+export const sampleErgoBoxes = {
+  validBoxWithTokens: new ErgoBox({
+    boxId: '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+    value: 1000000n,
+    ergoTree: sampleErgoTree,
+    creationHeight: 9149,
+    assets: [sampleToken1, sampleToken2],
+    additionalRegisters: {},
+    transactionId:
+      '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
+    index: 0,
+  }),
+
+  validBoxWithErgs: new ErgoBox({
+    boxId: '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd118',
+    value: 5000000n,
+    ergoTree: sampleErgoTree,
+    creationHeight: 9149,
+    assets: [],
+    additionalRegisters: {},
+    transactionId:
+      '3ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd118',
+    index: 0,
+  }),
+};
+
+// Sample mined boxes
+export const sampleMinedBoxes = [
+  new ErgoBox({
+    boxId: 'mined-box-1',
+    value: 2000000n,
+    ergoTree: sampleErgoTree,
+    creationHeight: 9149,
+    assets: [sampleToken1],
+    additionalRegisters: {},
+    transactionId: 'mined-tx-1',
+    index: 0,
+  }),
+  new ErgoBox({
+    boxId: 'mined-box-2',
+    value: 3000000n,
+    ergoTree: sampleErgoTree,
+    creationHeight: 9149,
+    assets: [sampleToken2],
+    additionalRegisters: {},
+    transactionId: 'mined-tx-2',
+    index: 0,
+  }),
 ];
 
-export const SampleTransactionEntitiesContainsSpecialOutput: TransactionEntity[] =
-  [
-    {
-      txId: 'tx-id-contains-outputs-7',
-      chain: 'chain-2',
-      txType: 'tx-B',
-      status: TransactionStatus.COMPLETED,
-      requiredSign: 0,
-      lastCheck: 0,
-      lastStatusUpdate: '1685894220',
-      failedInSign: false,
-      signFailedCount: 0,
-      serializedTx: JSON.stringify(
-        {
-          id: '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-          inputs: [
-            {
-              boxId:
-                '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd125',
-              spendingProof: {
-                proofBytes:
-                  '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd1173ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-                extension: {},
-              },
-            },
-          ],
-          dataInputs: [],
-          outputs: [
-            {
-              boxId:
-                '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd125',
-              value: SAFE_MIN_BOX_VALUE * 3n,
-              ergoTree:
-                '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041',
-              creationHeight: 9149,
-              assets: [
-                {
-                  tokenId:
-                    '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-                  amount: 1000,
-                },
-              ],
-              additionalRegisters: {
-                R4: '100204a00b08cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041ea02d192a39a8cc7a70173007301',
-              },
-              transactionId:
-                '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-              index: 0,
-            },
-          ],
-          size: 0,
-        },
-        (k, v) => {
-          return typeof v == 'bigint' ? String(v) : v;
-        },
-      ),
-    },
-  ];
+// Sample requests
+export const sampleRequests = {
+  validRequest: {
+    address: sampleAddress,
+    value: 1000000n,
+    tokens: [sampleToken1],
+    onSuffice: mockOnSuffice,
+    getMinedBoxes: mockGetMinedBoxes,
+  } as Request,
+
+  ergOnlyRequest: {
+    address: sampleAddress,
+    value: 5000000n,
+    tokens: [],
+    onSuffice: mockOnSuffice,
+    getMinedBoxes: mockGetMinedBoxes,
+  } as Request,
+};
+
+// Mock TxPot instance
+export const sampleTxPot = {
+  getTxsByStatus: vi.fn().mockResolvedValue([]),
+  txRepository: {},
+  chains: [],
+  validators: [],
+  txTypeCallbacks: {},
+};
