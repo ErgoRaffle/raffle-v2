@@ -7,9 +7,9 @@ import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
 import ergoNodeClientFactory from '@rosen-clients/ergo-node';
 import { deserializeTransaction } from '@fleet-sdk/serializer';
 import { ErgoTransactionOutput } from '@rosen-clients/ergo-node';
+import { Box, ErgoBox } from '@fleet-sdk/core';
 
 import { API_LIMIT } from './constants';
-import { Box, ErgoBox } from '@fleet-sdk/core';
 
 export interface RoundState {
   spentBoxIds: Set<string>;
@@ -143,18 +143,18 @@ export class DataProvider {
    * @returns Tuple of [spentBoxIds, unspentBoxes]
    */
   private async getArrangedNodeBoxes(): Promise<[string[], ErgoBox[]]> {
-    const spentBoxes: string[] = [];
+    const spentBoxIds: string[] = [];
     const unspentBoxes: ErgoBox[] = [];
     const txIterator = this.getMempoolTxIterator();
 
     for await (const tx of txIterator) {
-      spentBoxes.push(
+      spentBoxIds.push(
         ...tx.inputs.map((input: { boxId: string }) => input.boxId),
       );
       unspentBoxes.push(...tx.outputs.map(this.convertToErgoBox));
     }
 
-    return [spentBoxes, unspentBoxes];
+    return [spentBoxIds, unspentBoxes];
   }
 
   /**
@@ -179,7 +179,7 @@ export class DataProvider {
    * @returns Tuple of [spentBoxIds, unspentBoxes]
    */
   private async getArrangedTxPotBoxes(): Promise<[string[], ErgoBox[]]> {
-    const spentBoxes: string[] = [];
+    const spentBoxIds: string[] = [];
     const unspentBoxes: ErgoBox[] = [];
 
     const activeTxs = [
@@ -188,7 +188,7 @@ export class DataProvider {
     ].map(this.deserializeTx);
 
     for (const tx of activeTxs) {
-      spentBoxes.push(
+      spentBoxIds.push(
         ...tx.inputs.map((input: { boxId: string }) => input.boxId),
       );
       /**
@@ -199,6 +199,6 @@ export class DataProvider {
       );
     }
 
-    return [spentBoxes, unspentBoxes];
+    return [spentBoxIds, unspentBoxes];
   }
 }
