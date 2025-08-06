@@ -48,7 +48,6 @@ export class BoxSelector {
   /**
    * Add a box to the selected boxes and update the sum value
    * @param box - The box to add
-   * @param boxValue - The value of the box
    */
   addBox = (box: ErgoBox) => {
     this.boxes.push(box);
@@ -71,7 +70,6 @@ export class BoxSelector {
 
   /**
    * Check if the selected boxes are covering the request
-   * @param request - The request to check
    * @returns True if the selected boxes are covering the request, false otherwise
    */
   isCovering = () => {
