@@ -1,2 +1,2 @@
 export { BoxLookup } from './boxLookup';
-export { Request } from './types';
+export { Request, OnSufficeCallback, GetMinedBoxes } from './types';
