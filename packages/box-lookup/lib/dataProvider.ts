@@ -35,7 +35,7 @@ export class DataProvider {
    * Start a new round by fetching data from mempool (node)
    * This should be called at the beginning of each round
    */
-  async startNewRound(): Promise<void> {
+  startNewRound = async (): Promise<void> => {
     this.logger.info('Starting new round - fetching data from mempool');
 
     // Reset state for new round
@@ -54,13 +54,13 @@ export class DataProvider {
     this.logger.info(
       `New round started with ${spentBoxIds.length} spent boxes and ${unspentBoxes.length} unspent boxes from mempool`,
     );
-  }
+  };
 
   /**
    * Update state in the middle of a round using txpot boxes
    * This should be called during the round to update with txpot data
    */
-  async updateRoundWithTxPotData(): Promise<void> {
+  updateRoundWithTxPotData = async (): Promise<void> => {
     this.logger.info('Updating round state with TxPot data');
 
     const [txPotSpentBoxIds, txPotUnspentBoxes] =
@@ -89,18 +89,18 @@ export class DataProvider {
     this.logger.info(
       `Round updated with ${txPotSpentBoxIds.length} additional spent boxes and ${newUnspentBoxes.length} new unspent boxes from TxPot`,
     );
-  }
+  };
 
   /**
    * Get current round state for debugging purposes
    * @returns Current round state
    */
-  getCurrentRoundState(): RoundState {
+  getCurrentRoundState = (): RoundState => {
     return {
       spentBoxIds: new Set(this.currentRoundState.spentBoxIds),
       unspentBoxes: [...this.currentRoundState.unspentBoxes],
     };
-  }
+  };
 
   /**
    * get a mempool tx in each iteration until there are no more txs in it
@@ -142,7 +142,7 @@ export class DataProvider {
    * Get all spent & unspent boxes that currently placed on the mempool
    * @returns Tuple of [spentBoxIds, unspentBoxes]
    */
-  private async getArrangedNodeBoxes(): Promise<[string[], ErgoBox[]]> {
+  private getArrangedNodeBoxes = async (): Promise<[string[], ErgoBox[]]> => {
     const spentBoxIds: string[] = [];
     const unspentBoxes: ErgoBox[] = [];
     const txIterator = this.getMempoolTxIterator();
@@ -155,7 +155,7 @@ export class DataProvider {
     }
 
     return [spentBoxIds, unspentBoxes];
-  }
+  };
 
   /**
    * Deserializes a base64-encoded serialized transaction.
@@ -178,7 +178,7 @@ export class DataProvider {
    * Get all spent & unspent boxes that currently managed by TxPot instance
    * @returns Tuple of [spentBoxIds, unspentBoxes]
    */
-  private async getArrangedTxPotBoxes(): Promise<[string[], ErgoBox[]]> {
+  private getArrangedTxPotBoxes = async (): Promise<[string[], ErgoBox[]]> => {
     const spentBoxIds: string[] = [];
     const unspentBoxes: ErgoBox[] = [];
 
@@ -200,5 +200,5 @@ export class DataProvider {
     }
 
     return [spentBoxIds, unspentBoxes];
-  }
+  };
 }
