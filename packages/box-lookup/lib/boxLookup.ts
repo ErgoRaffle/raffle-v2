@@ -73,7 +73,7 @@ export class BoxLookup {
       const unspentBoxIds = new Set(
         roundState.unspentBoxes.map((box) => box.boxId),
       );
-      // Filter out spent boxes and availble boxes in the round
+      // Filter out spent boxes and available boxes in the round
       const unspentMinedBoxes = (await request.getMinedBoxes()).filter(
         (box) =>
           !roundState.spentBoxIds.has(box.boxId) &&
