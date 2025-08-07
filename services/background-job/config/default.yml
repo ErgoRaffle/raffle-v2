@@ -16,3 +16,6 @@ txpot:
 ergo:
   fee: 1500000
   network: mainnet
+healthCheck:
+  warnBlockGap: 2
+  criticalBlockGap: 10
