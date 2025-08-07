@@ -19,6 +19,7 @@ import {
   GiftRedeemEntity,
   TicketEntity,
   TicketRedeemEntity,
+  SafePayEntity,
 } from '@ergo-raffle/extractors';
 import { IsNull, LessThan, MoreThanOrEqual } from 'typeorm';
 
@@ -282,6 +283,18 @@ export class DbService extends AbstractService {
               rangeEnd: LessThan(index),
             }
           : {}),
+        spendBlock: IsNull(),
+      },
+    });
+  };
+
+  /**
+   * Get the unspent safe pay boxes
+   * @returns The safe pay boxes
+   */
+  getSafePayBoxes = (): Promise<SafePayEntity[]> => {
+    return this.dataSource.getRepository(SafePayEntity).find({
+      where: {
         spendBlock: IsNull(),
       },
     });

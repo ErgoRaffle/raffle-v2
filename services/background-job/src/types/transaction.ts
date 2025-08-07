@@ -14,5 +14,5 @@ export enum TxType {
   ForwardToTicketRedeem = 'forward_to_ticket_redeem',
   TicketRedeem = 'ticket_redeem',
   ReturnRaffleLicense = 'return_raffle_license',
-  // TODO: to be continued
+  SafeWithdrawal = 'safe_withdrawal',
 }
