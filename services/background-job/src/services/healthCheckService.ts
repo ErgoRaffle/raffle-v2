@@ -179,7 +179,6 @@ export class HealthCheckService extends AbstractService {
       this.isJobRunning = true;
       await this.healthCheck.update();
       this.logger.debug('Health check parameters updated');
-      console.log(this.healthCheck.getHealthStatus());
     } catch (e) {
       if (e instanceof AggregateError) {
         this.logger.warn(
