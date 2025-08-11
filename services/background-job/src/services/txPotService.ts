@@ -14,7 +14,7 @@ import { ErgoNetworkInterface } from '../txPot/ergoNetworkInterface';
 import { DbService } from './dbService';
 import * as constants from '../constants';
 import { SignedTransaction } from '@fleet-sdk/common';
-import { TxType } from '../transactions/types';
+import { TxType } from '../types/transaction';
 import { serializeTransaction } from '@fleet-sdk/serializer';
 
 export class TxPotService extends AbstractService {

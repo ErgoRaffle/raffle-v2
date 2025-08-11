@@ -43,51 +43,37 @@ export class SafeWithdrawalService extends AbstractTxService {
     boxes: ErgoBox[],
   ): Promise<void> => {
     // Get all safe pay boxes from the database
-    const safePayEntities = await DbService.getInstance().getSafePayBoxes();
+    const safePay = boxes[0];
+    const safePayEntities = await DbService.getInstance().getSafePayBoxes(
+      safePay.boxId,
+    );
 
     if (safePayEntities.length === 0) {
       this.logger.info(
-        'No safe pay boxes found in database, skipping safe withdrawal',
+        `No safe pay boxes found in database, skipping safe withdrawal for box [${safePay.boxId}]`,
       );
       return;
     }
+    const safePayEntity = safePayEntities[0];
 
+    // Create SafePayBuilder from the box to extract data
+    const safePayBuilder = SafePayBuilder.fromBox(safePay);
+
+    // Get the receiver address from the safe pay box
+    const txFee = safePayBuilder.getTxFee();
+
+    // Build the safe withdrawal transaction
+    const safeWithdrawalTx = new SafeWithdrawTxBuilder()
+      .setSafePay(safePay)
+      .setReceiverAddress(safePayEntity.recipient)
+      .setChainHeight(await this.network.getHeight())
+      .setTxFee(txFee)
+      .build();
+
+    await signAndAddTx(this.network, safeWithdrawalTx, TxType.SafeWithdrawal);
     this.logger.info(
-      `Found ${safePayEntities.length} safe pay boxes to process for withdrawal`,
+      `Safe withdrawal transaction for box [${safePay.boxId}] has been added (txId: [${safeWithdrawalTx.id}])`,
     );
-
-    // Process each safe pay box
-    for (const safePayEntity of safePayEntities) {
-      try {
-        // Create SafePayBuilder from the box to extract data
-        const safePayBox = convertDbBoxesToErgoBoxes([safePayEntity])[0];
-        const safePayBuilder = SafePayBuilder.fromBox(safePayBox);
-
-        // Get the receiver address from the safe pay box
-        const txFee = safePayBuilder.getTxFee();
-
-        // Build the safe withdrawal transaction
-        const safeWithdrawalTx = new SafeWithdrawTxBuilder()
-          .setSafePay(safePayBox)
-          .setReceiverAddress(safePayEntity.recipient)
-          .setChainHeight(await this.network.getHeight())
-          .setTxFee(txFee)
-          .build();
-
-        await signAndAddTx(
-          this.network,
-          safeWithdrawalTx,
-          TxType.SafeWithdrawal,
-        );
-        this.logger.info(
-          `Safe withdrawal transaction for box [${safePayBox.boxId}] has been added (txId: [${safeWithdrawalTx.id}])`,
-        );
-      } catch (error) {
-        this.logger.error(
-          `Failed to process safe pay box [${safePayEntity.boxId}]: ${error}`,
-        );
-      }
-    }
   };
 
   /**

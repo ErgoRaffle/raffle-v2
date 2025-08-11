@@ -290,11 +290,13 @@ export class DbService extends AbstractService {
 
   /**
    * Get the unspent safe pay boxes
+   * @param boxId - The box id
    * @returns The safe pay boxes
    */
-  getSafePayBoxes = (): Promise<SafePayEntity[]> => {
+  getSafePayBoxes = (boxId?: string): Promise<SafePayEntity[]> => {
     return this.dataSource.getRepository(SafePayEntity).find({
       where: {
+        ...(boxId ? { boxId: boxId } : {}),
         spendBlock: IsNull(),
       },
     });
