@@ -263,6 +263,17 @@
   "healthCheck": {
     "type": "object",
     "children": {
+      "updateInterval": {
+        "type": "number",
+        "default": 60,
+        "description": "health check update interval in seconds",
+        "validations": [
+          {
+            "required": true,
+            "error": "health check update interval must be specified"
+          }
+        ]
+      },
       "warnBlockGap": {
         "type": "number",
         "default": 2,

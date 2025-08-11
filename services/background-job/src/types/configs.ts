@@ -51,6 +51,7 @@ export interface Ergo {
 }
 
 export interface HealthCheck {
+  updateInterval: number;
   warnBlockGap: number;
   criticalBlockGap: number;
 }

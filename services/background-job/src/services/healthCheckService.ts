@@ -18,7 +18,7 @@ export class HealthCheckService extends AbstractService {
   protected dependencies: Dependency[] = [
     {
       serviceName: ScannerService.name,
-      allowedStatuses: [ServiceStatus.running],
+      allowedStatuses: [ServiceStatus.started],
     },
     {
       serviceName: DbService.name,
@@ -29,7 +29,6 @@ export class HealthCheckService extends AbstractService {
   private healthCheck: HealthCheck;
   private scannerSyncHealth: ScannerSyncHealthCheckParam;
   private scheduledJob?: NodeJS.Timeout;
-  private updateInterval: number;
   private isJobRunning = false;
   private continueStop = () => {
     return;
@@ -37,13 +36,13 @@ export class HealthCheckService extends AbstractService {
   private shouldStopJob = false;
 
   private constructor(
-    private port: number,
+    private interval: number,
     logger?: AbstractLogger,
   ) {
     super(logger);
     let notify;
     let notificationConfig;
-    if (configs.notification.discordWebHookUrl) {
+    if (configs.notification && configs.notification.discordWebHookUrl) {
       const discordNotification = new DiscordNotification(
         configs.notification.discordWebHookUrl,
       );
@@ -84,15 +83,15 @@ export class HealthCheckService extends AbstractService {
    * initializes the singleton instance of HealthCheckService
    *
    * @static
-   * @param {number} port
+   * @param {number} interval
    * @param {AbstractLogger} [logger]
    * @memberof HealthCheckService
    */
-  static init = (port: number, logger?: AbstractLogger) => {
+  static init = (interval: number, logger?: AbstractLogger) => {
     if (this.instance != undefined) {
       return;
     }
-    this.instance = new HealthCheckService(port, logger);
+    this.instance = new HealthCheckService(interval, logger);
   };
 
   /**
@@ -127,7 +126,7 @@ export class HealthCheckService extends AbstractService {
 
       this.job();
       this.setStatus(ServiceStatus.running);
-      this.logger.info(`Health check service started on port ${this.port}`);
+      this.logger.info(`Health check service started`);
     } catch (e) {
       this.logger.error(
         `Something went wrong while starting the ${this.name}: ${e}`,
@@ -180,6 +179,7 @@ export class HealthCheckService extends AbstractService {
       this.isJobRunning = true;
       await this.healthCheck.update();
       this.logger.debug('Health check parameters updated');
+      console.log(this.healthCheck.getHealthStatus());
     } catch (e) {
       if (e instanceof AggregateError) {
         this.logger.warn(
@@ -194,7 +194,7 @@ export class HealthCheckService extends AbstractService {
     } finally {
       this.isJobRunning = false;
     }
-    this.scheduledJob = setTimeout(this.job, this.updateInterval * 1000);
+    this.scheduledJob = setTimeout(this.job, this.interval * 1000);
     if (this.shouldStopJob) {
       this.shouldStopJob = false;
       this.continueStop();
