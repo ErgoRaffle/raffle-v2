@@ -7,8 +7,12 @@ import './bootstrap';
 import dataSource from './dataSource';
 import { ScannerService } from './services/scannerService';
 import { TxPotService } from './services/txPotService';
+import { HealthCheckService } from './services/healthCheckService';
 
 const logger = CallbackLoggerFactory.getInstance().getLogger(import.meta.url);
+const healthCheckLogger = CallbackLoggerFactory.getInstance().getLogger(
+  'health-check-service',
+);
 
 const main = async () => {
   const serviceManager = ServiceManager.setup();
@@ -37,9 +41,21 @@ const main = async () => {
   serviceManager.register(TxPotService.getInstance());
   logger.debug('Txpot service registered to the service manager');
 
+  logger.debug('Initializing health check service');
+  await HealthCheckService.init(
+    configs.healthCheck.updateInterval,
+    healthCheckLogger,
+  );
+  serviceManager.register(HealthCheckService.getInstance());
+  logger.debug('Health check service registered to the service manager');
+
   logger.debug('Starting service manager...');
-  await serviceManager.start(ScannerService.getInstance().getName());
-  await serviceManager.start(TxPotService.getInstance().getName());
+  serviceManager.start(ScannerService.getInstance().getName());
+  serviceManager.start(TxPotService.getInstance().getName());
+  serviceManager.start(HealthCheckService.getInstance().getName());
+
+  // Keep the process running indefinitely
+  await new Promise(() => {});
 };
 
 main();

@@ -12,6 +12,8 @@ import {
 } from '@ergo-raffle/extractors';
 import { RaffleBoxType } from '@ergo-raffle/extractors/lib/entities/raffleBoxEntity';
 import { IsNull } from 'typeorm';
+import { BlockEntity } from '@rosen-bridge/scanner';
+import { pick } from 'lodash-es';
 
 export class DbService extends AbstractService {
   name = 'DbService';
@@ -133,5 +135,25 @@ export class DbService extends AbstractService {
         spendBlock: IsNull(),
       },
     });
+  };
+
+  /**
+   * Get the last block for a given scanner
+   * @param scanner - The scanner name
+   * @returns The last block
+   */
+  getLastBlock = async (
+    scanner: string,
+  ): Promise<Pick<BlockEntity, 'height' | 'timestamp'>> => {
+    const block = await this.dataSource.getRepository(BlockEntity).findOne({
+      where: { scanner },
+      order: {
+        height: 'DESC',
+      },
+    });
+    if (!block) {
+      throw new Error(`No block found for scanner ${scanner}`);
+    }
+    return pick(block, ['height', 'timestamp']);
   };
 }
