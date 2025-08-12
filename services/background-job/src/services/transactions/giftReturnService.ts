@@ -91,7 +91,7 @@ export class GiftReturnService extends AbstractTxService {
       // Build the gift return transaction
       const giftReturnTxBuilder = new GiftReturnTxBuilder()
         .setGiftRedeem(giftRedeemBox)
-        .setWinner(winnerBox)
+        .setWinner(currentWinnerBox)
         .setGift(convertDbBoxesToErgoBoxes([giftEntity])[0])
         .setGiftGiverErgoTree(donatorAddress)
         .setChainHeight(currentHeight)
