@@ -8,7 +8,6 @@ import {
   ErgoUnsignedInput,
   OutputBuilder,
   TokenAmount,
-  AdditionalRegistersInput,
   ErgoTree,
 } from '@fleet-sdk/core';
 import {
@@ -24,16 +23,14 @@ import {
   mockBlockchainStateContext,
   BLOCKCHAIN_PARAMETERS,
 } from '@fleet-sdk/mock-chain';
-import { first, ensureDefaults, Network } from '@fleet-sdk/common';
 import {
-  SColl,
-  SByte,
-  SLong,
-  SInt,
-  SConstant,
-  decode,
-} from '@fleet-sdk/serializer';
-import { blake2b256, bigintBE, hex, utf8 } from '@fleet-sdk/crypto';
+  first,
+  ensureDefaults,
+  Network,
+  NonMandatoryRegisters,
+} from '@fleet-sdk/common';
+import { SColl, SByte, SLong, SInt, SConstant } from '@fleet-sdk/serializer';
+import { blake2b256, bigintBE, hex } from '@fleet-sdk/crypto';
 import type { ErgoUnsignedTransaction } from '@fleet-sdk/core';
 import type { ErgoHDKey } from '@fleet-sdk/wallet';
 import { ProverBuilder$ } from 'sigmastate-js/main';
@@ -138,9 +135,6 @@ export class TestConstants {
       configSampleContent.ticketExpirationHeight;
   };
 }
-
-const safeUtf8Encode = (v: unknown) =>
-  v instanceof Uint8Array ? utf8.encode(v) : undefined;
 
 type RaffleTransactionExecutionResult = {
   success: boolean;
@@ -1839,7 +1833,7 @@ export class RaffleBoxFactory {
     value: bigint,
     tokens: TokenAmount<Amount>[],
     address: string | ErgoTree,
-    additionalRegisters?: AdditionalRegistersInput,
+    additionalRegisters?: NonMandatoryRegisters<string>,
   ) {
     const outputBox = new OutputBuilder(value, address);
     outputBox.setAdditionalRegisters(additionalRegisters!);
@@ -2157,15 +2151,6 @@ export class RaffleMockChain extends MockChain {
       output.assets.some((asset) => asset.tokenId === firstInputId),
     );
     if (!box) return;
-
-    const name = decode(box.additionalRegisters.R4, safeUtf8Encode);
-    const decimals = decode(box.additionalRegisters.R6, safeUtf8Encode);
-    if (name) {
-      this.#metadataMap.set(firstInputId, {
-        name,
-        decimals: decimals ? Number.parseInt(decimals) : undefined,
-      });
-    }
   }
 }
 

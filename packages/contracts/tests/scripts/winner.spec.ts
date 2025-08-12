@@ -1057,11 +1057,7 @@ describe('winner', () => {
           successRaffleBox.assets[1],
         ];
 
-        const winnerR4 = SConstant.from(winnerBox.additionalRegisters.R4!)
-          .data as bigint[];
-
-        const prizeAmount =
-          (BigInt(totalPrize) * BigInt(winnerR4[1])) / 1000n + 1n;
+        const prizeAmount = 59n; // instead of 60n
 
         successRaffleOutputBoxTokens.push({
           tokenId: successRaffleBox.assets[2]!.tokenId,
