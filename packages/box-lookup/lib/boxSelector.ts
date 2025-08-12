@@ -24,7 +24,7 @@ export class BoxSelector {
    * @param box - The box to check
    * @returns True if the box is related to the request, false otherwise
    */
-  isRelatedToRequest(box: ErgoBox) {
+  isRelatedToRequest = (box: ErgoBox) => {
     const sameAddress =
       ErgoAddress.fromErgoTree(box.ergoTree, this.networkType).toString() ===
       this.request.address;
@@ -43,14 +43,13 @@ export class BoxSelector {
       );
     }
     return sameAddress && (hasRequiredTokens || requiresErgs);
-  }
+  };
 
   /**
    * Add a box to the selected boxes and update the sum value
    * @param box - The box to add
-   * @param boxValue - The value of the box
    */
-  addBox(box: ErgoBox) {
+  addBox = (box: ErgoBox) => {
     this.boxes.push(box);
     this.sumValue.value += box.value;
     for (const token of box.assets) {
@@ -67,14 +66,13 @@ export class BoxSelector {
       `Box ${box.boxId} added to the selected boxes` +
         ` and updated the sum value to ${this.sumValue.value}`,
     );
-  }
+  };
 
   /**
    * Check if the selected boxes are covering the request
-   * @param request - The request to check
    * @returns True if the selected boxes are covering the request, false otherwise
    */
-  isCovering() {
+  isCovering = () => {
     const coveringValue = this.request.value
       ? this.sumValue.value >= this.request.value
       : true;
@@ -87,13 +85,13 @@ export class BoxSelector {
       `Selected boxes covering statue for request value: ${coveringValue} && tokens: ${coveringTokens}`,
     );
     return coveringValue && coveringTokens;
-  }
+  };
 
   /**
    * Get the selected boxes
    * @returns The selected boxes
    */
-  getBoxes() {
+  getBoxes = () => {
     return this.boxes;
-  }
+  };
 }

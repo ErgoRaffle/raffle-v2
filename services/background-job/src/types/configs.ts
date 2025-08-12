@@ -1,4 +1,6 @@
 export interface BackgroundJobConfig {
+  notification: Notification;
+  healthCheck: HealthCheck;
   ergo: Ergo;
   txpot: Txpot;
   scanner: Scanner;
@@ -46,4 +48,17 @@ export interface Txpot {
 export interface Ergo {
   fee: bigint;
   network: 'mainnet' | 'testnet';
+}
+
+export interface HealthCheck {
+  updateInterval: number;
+  warnBlockGap: number;
+  criticalBlockGap: number;
+}
+
+export interface Notification {
+  discordWebHookUrl?: string;
+  historyCleanupTimeout?: number;
+  hasBeenUnstableForAWhileWindowDuration?: number;
+  hasBeenUnknownForAWhileWindowDuration?: number;
 }

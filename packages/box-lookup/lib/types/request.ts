@@ -16,10 +16,10 @@ export interface RequestWithId extends Request {
   id: number;
 }
 
-export interface OnSufficeCallback {
-  (boxes: ErgoBox[], unspentBoxes: ErgoBox[], requestId: number): Promise<void>;
-}
+export type OnSufficeCallback = (
+  boxes: ErgoBox[],
+  unspentBoxes: ErgoBox[],
+  requestId: number,
+) => Promise<void>;
 
-export interface GetMinedBoxes {
-  (): Promise<ErgoBox[]>;
-}
+export type GetMinedBoxes = () => Promise<ErgoBox[]>;

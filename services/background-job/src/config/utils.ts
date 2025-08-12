@@ -1,5 +1,4 @@
 import { ConfigValidator } from '@rosen-bridge/config';
-import JsonBigInt from '@rosen-bridge/json-bigint';
 import { TransportOptions } from '@rosen-bridge/winston-logger';
 import config from 'config';
 import * as fs from 'fs';
@@ -59,7 +58,7 @@ export const validateConfigs = (): BackgroundJobConfig => {
     path.join(__dirname, '../../config/schema.json'),
     'utf-8',
   );
-  const schema = JsonBigInt.parse(rawSchemaData);
+  const schema = JSON.parse(rawSchemaData);
   const confValidator = new ConfigValidator(schema);
   const configs = config.util.toObject();
   confValidator.validateConfig(configs);

@@ -259,5 +259,64 @@
         ]
       }
     }
+  },
+  "healthCheck": {
+    "type": "object",
+    "children": {
+      "updateInterval": {
+        "type": "number",
+        "default": 60,
+        "description": "health check update interval in seconds",
+        "validations": [
+          {
+            "required": true,
+            "error": "health check update interval must be specified"
+          }
+        ]
+      },
+      "warnBlockGap": {
+        "type": "number",
+        "default": 2,
+        "description": "warning threshold for block gap",
+        "validations": [
+          {
+            "required": true,
+            "error": "warn block gap must be specified"
+          }
+        ]
+      },
+      "criticalBlockGap": {
+        "type": "number",
+        "default": 10,
+        "description": "critical threshold for block gap",
+        "validations": [
+          {
+            "required": true,
+            "error": "critical block gap must be specified"
+          }
+        ]
+      }
+    }
+  },
+  "notification": {
+    "type": "object",
+    "children": {
+      "discordWebHookUrl": {
+        "type": "string",
+        "description": "discord webhook URL for notifications"
+      },
+      "historyCleanupTimeout": {
+        "type": "number",
+        "description": "history cleanup timeout in seconds"
+      },
+      "hasBeenUnstableForAWhileWindowDuration": {
+        "type": "number",
+        "description": "window duration for unstable state check in seconds"
+      },
+      "hasBeenUnknownForAWhileWindowDuration": {
+        "type": "number",
+        "description": "window duration for unknown state check in seconds"
+      }
+    }
   }
 }
