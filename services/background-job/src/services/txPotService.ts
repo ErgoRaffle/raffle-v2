@@ -41,6 +41,7 @@ export class TxPotService extends AbstractService {
     logger?: AbstractLogger,
   ) {
     super(logger);
+    TxPot.setup(this.dataSource, this.logger);
   }
 
   /**
@@ -93,7 +94,7 @@ export class TxPotService extends AbstractService {
    */
   protected start = async (): Promise<boolean> => {
     try {
-      TxPot.setup(this.dataSource, this.logger).registerChain(
+      TxPot.getInstance().registerChain(
         constants.ERGO_CHAIN_NAME,
         new ErgoNetworkInterface(
           this.nodeUrl,

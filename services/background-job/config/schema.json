@@ -318,5 +318,21 @@
         "description": "window duration for unknown state check in seconds"
       }
     }
+  },
+  "boxLookup": {
+    "type": "object",
+    "children": {
+      "updateInterval": {
+        "type": "number",
+        "default": 60,
+        "description": "box lookup update interval in seconds",
+        "validations": [
+          {
+            "required": true,
+            "error": "box lookup update interval must be specified"
+          }
+        ]
+      }
+    }
   }
 }
