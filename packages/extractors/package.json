@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Raffle v2 related extractors",
   "repository": "",
-  "license": "GPL-3.0",
+  "license": "MIT",
   "author": "Ergo Raffle Team",
   "type": "module",
   "main": "dist/index.js",

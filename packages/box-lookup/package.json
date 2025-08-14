@@ -2,7 +2,7 @@
   "name": "@ergo-raffle/box-lookup",
   "version": "0.1.0",
   "description": "Raffle v2 box lookup",
-  "license": "GPL-3.0",
+  "license": "MIT",
   "author": "Ergo Raffle Team",
   "type": "module",
   "main": "dist/index.js",

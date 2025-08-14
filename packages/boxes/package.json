@@ -2,7 +2,7 @@
   "name": "@ergo-raffle/boxes",
   "version": "0.1.0",
   "description": "A package to manage raffle boxes creation and utilization",
-  "license": "GPL-3.0",
+  "license": "MIT",
   "author": "Ergo Raffle Team",
   "type": "module",
   "main": "dist/index.js",

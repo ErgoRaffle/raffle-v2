@@ -2,7 +2,7 @@
   "name": "@ergo-raffle/transactions",
   "version": "0.0.1",
   "description": "A package to manage transactions",
-  "license": "GPL-3.0",
+  "license": "MIT",
   "author": "Ergo Raffle Team",
   "type": "module",
   "main": "dist/index.js",
