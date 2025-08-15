@@ -2,7 +2,7 @@ import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { configs } from './config';
 
 import {
-  RaffleServiceEntity,
+  ServiceEntity,
   InactiveRaffleEntity,
   RaffleBoxEntity,
   WinnerEntity,
@@ -34,7 +34,7 @@ const commonConfigs = {
   entities: [
     BlockEntity,
     ExtractorStatusEntity,
-    RaffleServiceEntity,
+    ServiceEntity,
     InactiveRaffleEntity,
     RaffleBoxEntity,
     WinnerEntity,

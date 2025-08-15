@@ -6,7 +6,7 @@ import { ErgoAddress, Box } from '@fleet-sdk/core';
 import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 
 import { RaffleDetailsEntity } from '../entities';
-import { RaffleDetailsAction } from '../actions/raffleDetails';
+import { RaffleDetailsAction } from '../actions/raffleDetailsAction';
 import { RaffleDetailsBoxInterface } from '../interfaces/types';
 
 export class RaffleDetailsExtractor extends AbstractInitializableErgoExtractor<

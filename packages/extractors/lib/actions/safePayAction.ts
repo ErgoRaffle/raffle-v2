@@ -1,5 +1,5 @@
-import { DataSource, Repository } from 'typeorm';
-import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
+import { DataSource } from 'typeorm';
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { AbstractInitializableErgoExtractorAction } from '@rosen-bridge/abstract-extractor';
 import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
 
@@ -10,15 +10,8 @@ export class SafePayAction extends AbstractInitializableErgoExtractorAction<
   SafePayBoxInterface,
   SafePayEntity
 > {
-  private readonly dataSource: DataSource;
-  readonly logger: AbstractLogger;
-  public repository: Repository<SafePayEntity>;
-
   constructor(dataSource: DataSource, logger?: AbstractLogger) {
     super(dataSource, SafePayEntity, logger);
-    this.dataSource = dataSource;
-    this.logger = logger ? logger : new DummyLogger();
-    this.repository = dataSource.getRepository(SafePayEntity);
   }
 
   /**

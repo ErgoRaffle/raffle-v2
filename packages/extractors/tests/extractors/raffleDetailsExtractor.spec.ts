@@ -3,7 +3,7 @@ import { Network, SByte, SColl } from '@fleet-sdk/core';
 import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 import { compile } from '@fleet-sdk/compiler';
 
-import { RaffleDetailsExtractor } from '../../lib/extractors/raffleDetails';
+import { RaffleDetailsExtractor } from '../../lib/extractors/raffleDetailsExtractor';
 import { createDatabase } from '../utils.mock';
 import {
   sampleRaffleDetailsBoxes,

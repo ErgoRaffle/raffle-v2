@@ -4,17 +4,15 @@ import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { AbstractInitializableErgoExtractorAction } from '@rosen-bridge/abstract-extractor';
 import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
 
-import { RaffleServiceBoxInterface } from '../interfaces/types';
-import { RaffleServiceEntity } from '../entities';
+import { ServiceBoxInterface } from '../interfaces/types';
+import { ServiceEntity } from '../entities';
 
-export class RaffleServiceAction extends AbstractInitializableErgoExtractorAction<
-  RaffleServiceBoxInterface,
-  RaffleServiceEntity
+export class ServiceAction extends AbstractInitializableErgoExtractorAction<
+  ServiceBoxInterface,
+  ServiceEntity
 > {
-  private readonly prefix = 'RaffleService';
-
   constructor(dataSource: DataSource, logger?: AbstractLogger) {
-    super(dataSource, RaffleServiceEntity, logger);
+    super(dataSource, ServiceEntity, logger);
   }
 
   /**
@@ -24,10 +22,10 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
    * @param extractor
    */
   createEntity = (
-    boxes: RaffleServiceBoxInterface[],
+    boxes: ServiceBoxInterface[],
     block: BlockInfo,
     extractor: string,
-  ): Omit<RaffleServiceEntity, 'id'>[] => {
+  ): Omit<ServiceEntity, 'id'>[] => {
     return boxes.map((box) => {
       return {
         boxId: box.boxId,
@@ -47,9 +45,7 @@ export class RaffleServiceAction extends AbstractInitializableErgoExtractorActio
    * convert the database entity back to raw data
    * @param entities
    */
-  convertEntityToData = (
-    entities: RaffleServiceEntity[],
-  ): RaffleServiceBoxInterface[] => {
+  convertEntityToData = (entities: ServiceEntity[]): ServiceBoxInterface[] => {
     return entities.map((data) =>
       pick(data, [
         'boxId',

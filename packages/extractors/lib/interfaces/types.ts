@@ -8,7 +8,7 @@ export interface ExtractedBox {
   serialized: string;
 }
 
-export interface RaffleServiceBoxInterface extends ExtractedBox {
+export interface ServiceBoxInterface extends ExtractedBox {
   serviceFeePercent: number;
   implementerFeePercent: number;
   creationFee: bigint;

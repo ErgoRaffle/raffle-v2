@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 
-import { RaffleDetailsAction } from '../../lib/actions/raffleDetails';
+import { RaffleDetailsAction } from '../../lib/actions/raffleDetailsAction';
 import { createDatabase } from '../utils.mock';
 import {
   sampleBoxesData,

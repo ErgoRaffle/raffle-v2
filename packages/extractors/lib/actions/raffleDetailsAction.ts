@@ -10,11 +10,8 @@ export class RaffleDetailsAction extends AbstractInitializableErgoExtractorActio
   RaffleDetailsBoxInterface,
   RaffleDetailsEntity
 > {
-  private readonly dataSource: DataSource;
-
   constructor(dataSource: DataSource, logger?: AbstractLogger) {
     super(dataSource, RaffleDetailsEntity, logger);
-    this.dataSource = dataSource;
   }
 
   /**
