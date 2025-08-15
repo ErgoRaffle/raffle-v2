@@ -4,7 +4,7 @@ import {
   ServiceStatus,
 } from '@rosen-bridge/service-manager';
 import {
-  RaffleServiceExtractor,
+  ServiceExtractor,
   InactiveRaffleExtractor,
   TicketRepoExtractor,
   ActiveRaffleExtractor,
@@ -74,7 +74,7 @@ export class ScannerService extends AbstractService {
    * @returns
    */
   protected readonly registerExtractors = async () => {
-    const raffleServiceExtractor = new RaffleServiceExtractor(
+    const raffleServiceExtractor = new ServiceExtractor(
       this.dbService.dataSource,
       'RaffleService',
       this.scannerConfig.node.url,

@@ -3,7 +3,7 @@ import { Network, SByte, SColl } from '@fleet-sdk/core';
 import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 import { compile } from '@fleet-sdk/compiler';
 
-import { RaffleServiceExtractor } from '../../lib/extractors/raffleService';
+import { ServiceExtractor } from '../../lib/extractors/serviceExtractor';
 import { createDatabase } from '../utils.mock';
 import { sampleRaffleServiceBoxes } from './mocked/raffleService.mock';
 
@@ -19,7 +19,7 @@ const createRaffleServiceExtractorTest = async () => {
   const boxFalseErgoTree = compile('{sigmaProp(false);}');
 
   return it.extend({
-    extractor: new RaffleServiceExtractor(
+    extractor: new ServiceExtractor(
       dataSource,
       'RaffleService',
       'http://127.0.0.1/',

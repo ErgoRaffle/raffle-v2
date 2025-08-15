@@ -5,18 +5,18 @@ import {
   boxHasToken,
 } from '@rosen-bridge/abstract-extractor';
 import { OutputBox, ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
-
-import { RaffleServiceAction } from '../actions/raffleService';
-import { RaffleServiceBoxInterface } from '../interfaces/types';
-import { RaffleServiceEntity } from '../entities';
 import { ErgoAddress, Box } from '@fleet-sdk/core';
 import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 
-export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<
-  RaffleServiceBoxInterface,
-  RaffleServiceEntity
+import { ServiceAction } from '../actions/serviceAction';
+import { ServiceBoxInterface } from '../interfaces/types';
+import { ServiceEntity } from '../entities';
+
+export class ServiceExtractor extends AbstractInitializableErgoExtractor<
+  ServiceBoxInterface,
+  ServiceEntity
 > {
-  readonly actions: RaffleServiceAction;
+  readonly actions: ServiceAction;
   private readonly id: string;
   private readonly ergoTree: string;
   private readonly serviceNFTId: string;
@@ -35,7 +35,7 @@ export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<
     this.id = id;
     this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
     this.serviceNFTId = serviceNFTId;
-    this.actions = new RaffleServiceAction(dataSource, this.logger);
+    this.actions = new ServiceAction(dataSource, this.logger);
   }
 
   /**
@@ -69,7 +69,7 @@ export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<
    * @param box
    * @return extracted data in proper format
    */
-  extractBoxData = (box: OutputBox): RaffleServiceBoxInterface | undefined => {
+  extractBoxData = (box: OutputBox): ServiceBoxInterface | undefined => {
     const R4Serialized = SConstant.from(box.additionalRegisters!.R4!)
       .data as bigint[];
     const data = {

@@ -7,7 +7,7 @@ import {
 } from '@rosen-bridge/scanner-interfaces';
 import { TxExtra } from '@rosen-bridge/abstract-extractor';
 
-import { SafePayExtractor } from '../../lib/extractors/safePay';
+import { SafePayExtractor } from '../../lib/extractors/safePayExtractor';
 import { createDatabase } from '../utils.mock';
 import * as safePayMocks from './mocked/safePay.mock';
 

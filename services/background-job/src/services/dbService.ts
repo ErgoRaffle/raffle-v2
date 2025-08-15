@@ -8,7 +8,7 @@ import { DataSource } from '@rosen-bridge/extended-typeorm';
 import {
   RaffleBoxEntity,
   InactiveRaffleEntity,
-  RaffleServiceEntity,
+  ServiceEntity,
 } from '@ergo-raffle/extractors';
 import { RaffleBoxType } from '@ergo-raffle/extractors/lib/entities/raffleBoxEntity';
 import { IsNull } from 'typeorm';
@@ -130,7 +130,7 @@ export class DbService extends AbstractService {
    * @returns The service box
    */
   getServiceBox = () => {
-    return this.dataSource.getRepository(RaffleServiceEntity).findOne({
+    return this.dataSource.getRepository(ServiceEntity).findOne({
       where: {
         spendBlock: IsNull(),
       },

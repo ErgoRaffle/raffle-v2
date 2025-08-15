@@ -11,8 +11,6 @@ export class InactiveRaffleAction extends AbstractInitializableErgoExtractorActi
   InactiveRaffleBoxInterface,
   InactiveRaffleEntity
 > {
-  private readonly prefix = 'InactiveRaffle';
-
   constructor(dataSource: DataSource, logger?: AbstractLogger) {
     super(dataSource, InactiveRaffleEntity, logger);
   }
