@@ -216,7 +216,7 @@ describe('DataProvider', () => {
     it('should deserialize valid transaction correctly', async () => {
       const serializedTx = Buffer.from(
         serializeTransaction(sampleDeserializedTx).toBytes(),
-      ).toString('base64');
+      ).toString('hex');
       const deserializedTx = await dataProvider['deserializeTx']({
         serializedTx,
       } as unknown as TransactionEntity);

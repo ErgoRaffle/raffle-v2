@@ -53,10 +53,7 @@ describe('BoxLookup', () => {
 
       expect(requestId).toBe(1);
       expect(boxLookup['requests'].has(requestId)).toBe(true);
-      expect(boxLookup['requests'].get(requestId)).toEqual({
-        ...request,
-        id: requestId,
-      });
+      expect(boxLookup['requests'].get(requestId)).toEqual(request);
     });
 
     /**
@@ -97,14 +94,11 @@ describe('BoxLookup', () => {
 
       const unregisteredRequest = boxLookup.unregisterRequest(requestId);
 
-      expect(unregisteredRequest).toEqual({
-        ...request,
-        id: requestId,
-      });
+      expect(unregisteredRequest).toEqual(request);
       expect(boxLookup['requests'].has(requestId)).toBe(false);
     });
 
-    /**
+    /*
      * @target should return undefined for non-existent request ID
      * @dependencies
      * @scenario
@@ -128,7 +122,7 @@ describe('BoxLookup', () => {
       vi.mocked(BoxSelector).mockImplementation(
         () =>
           ({
-            isRelatedToRequest: vi.fn().mockReturnValue(true),
+            isEligibleForSelection: vi.fn().mockReturnValue(true),
             addBox: vi.fn(),
             isCovering: vi.fn().mockReturnValue(true),
             getBoxes: vi
@@ -191,7 +185,7 @@ describe('BoxLookup', () => {
       const request = {
         ...sampleRequests.validRequest,
         onSuffice: mockOnSuffice,
-        getMinedBoxes: vi.fn().mockResolvedValue(sampleMinedBoxes),
+        getConfirmedBoxes: vi.fn().mockResolvedValue(sampleMinedBoxes),
       };
 
       const requestId = boxLookup.registerRequest(request);
@@ -222,12 +216,12 @@ describe('BoxLookup', () => {
       const request1 = {
         ...sampleRequests.validRequest,
         onSuffice: mockOnSuffice1,
-        getMinedBoxes: vi.fn().mockResolvedValue(sampleMinedBoxes),
+        getConfirmedBoxes: vi.fn().mockResolvedValue(sampleMinedBoxes),
       };
       const request2 = {
         ...sampleRequests.ergOnlyRequest,
         onSuffice: mockOnSuffice2,
-        getMinedBoxes: vi.fn().mockResolvedValue(sampleMinedBoxes),
+        getConfirmedBoxes: vi.fn().mockResolvedValue(sampleMinedBoxes),
       };
 
       boxLookup.registerRequest(request1);
@@ -255,7 +249,7 @@ describe('BoxLookup', () => {
       const request = {
         ...sampleRequests.validRequest,
         onSuffice: mockOnSuffice,
-        getMinedBoxes: vi.fn().mockResolvedValue(sampleMinedBoxes),
+        getConfirmedBoxes: vi.fn().mockResolvedValue(sampleMinedBoxes),
       };
 
       boxLookup.registerRequest(request);
