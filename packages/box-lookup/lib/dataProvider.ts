@@ -165,7 +165,7 @@ export class DataProvider {
    */
   private deserializeTx = (tx: TransactionEntity) => {
     try {
-      return deserializeTransaction(Buffer.from(tx.serializedTx, 'hex'));
+      return deserializeTransaction(Buffer.from(tx.serializedTx, 'base64'));
     } catch (err) {
       this.logger.error(
         `Invalid ${tx.txId} tx serialized value: ${tx.serializedTx}`,
