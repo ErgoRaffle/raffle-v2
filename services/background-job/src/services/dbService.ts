@@ -11,7 +11,7 @@ import {
   ServiceEntity,
 } from '@ergo-raffle/extractors';
 import { RaffleBoxType } from '@ergo-raffle/extractors/lib/entities/raffleBoxEntity';
-import { IsNull } from 'typeorm';
+import { IsNull } from '@rosen-bridge/extended-typeorm';
 import { BlockEntity } from '@rosen-bridge/scanner';
 import { pick } from 'lodash-es';
 

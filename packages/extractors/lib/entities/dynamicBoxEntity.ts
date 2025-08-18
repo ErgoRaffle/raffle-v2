@@ -1,5 +1,5 @@
 import { AbstractErgoExtractorEntity } from '@rosen-bridge/abstract-extractor';
-import { Entity, Column } from 'typeorm';
+import { Entity, Column } from '@rosen-bridge/extended-typeorm';
 
 @Entity('dynamic_box')
 export class DynamicBoxEntity extends AbstractErgoExtractorEntity {

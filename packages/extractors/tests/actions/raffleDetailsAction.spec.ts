@@ -10,7 +10,11 @@ import {
 } from './mocked/raffleDetails.mock';
 import { PictureEntity, RaffleDetailsEntity } from '../../lib/entities';
 import { RaffleDetailsBoxInterface } from '../../lib/interfaces/types';
-import { DataSource, QueryRunner, Repository } from 'typeorm';
+import {
+  DataSource,
+  QueryRunner,
+  Repository,
+} from '@rosen-bridge/extended-typeorm';
 
 interface RaffleDetailsTestContext {
   dataSource: DataSource;

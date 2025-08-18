@@ -9,7 +9,7 @@ import {
   sampleDynamicAddress,
   sampleInvalidAddress,
 } from './mocked/dynamic.mock';
-import { DataSource } from 'typeorm';
+import { DataSource } from '@rosen-bridge/extended-typeorm';
 
 describe('DynamicExtractor', () => {
   let dataSource: DataSource;
