@@ -1,6 +1,9 @@
 import { AbstractErgoExtractorEntity } from '@rosen-bridge/abstract-extractor';
-import { BigIntValueTransformer } from '@rosen-bridge/extended-typeorm';
-import { Entity, Column } from '@rosen-bridge/extended-typeorm';
+import {
+  Entity,
+  Column,
+  BigIntValueTransformer,
+} from '@rosen-bridge/extended-typeorm';
 
 @Entity('ticket_redeem')
 export class TicketRedeemEntity extends AbstractErgoExtractorEntity {

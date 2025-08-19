@@ -4,14 +4,13 @@ import {
   Dependency,
   ServiceStatus,
 } from '@rosen-bridge/service-manager';
-import { DataSource } from '@rosen-bridge/extended-typeorm';
 import {
   RaffleBoxEntity,
   InactiveRaffleEntity,
   ServiceEntity,
 } from '@ergo-raffle/extractors';
 import { RaffleBoxType } from '@ergo-raffle/extractors/lib/entities/raffleBoxEntity';
-import { IsNull } from '@rosen-bridge/extended-typeorm';
+import { IsNull, DataSource } from '@rosen-bridge/extended-typeorm';
 import { BlockEntity } from '@rosen-bridge/scanner';
 import { pick } from 'lodash-es';
 

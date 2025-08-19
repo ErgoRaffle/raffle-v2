@@ -33,8 +33,7 @@
     "lodash-es": "^4.17.21",
     "pg": "^8.4.0",
     "reflect-metadata": "^0.1.14",
-    "sqlite3": "^5.1.7",
-    "typeorm": "0.3.20"
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "@fleet-sdk/compiler": "^0.4.2",

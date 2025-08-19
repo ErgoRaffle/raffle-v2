@@ -1,5 +1,8 @@
-import { Entity, Column } from '@rosen-bridge/extended-typeorm';
-import { BigIntValueTransformer } from '@rosen-bridge/extended-typeorm';
+import {
+  Entity,
+  Column,
+  BigIntValueTransformer,
+} from '@rosen-bridge/extended-typeorm';
 import { AbstractErgoExtractorEntity } from '@rosen-bridge/abstract-extractor';
 
 @Entity('inactive_raffle')

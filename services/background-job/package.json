@@ -44,8 +44,7 @@
     "lodash-es": "^4.17.21",
     "reflect-metadata": "^0.1.14",
     "sigmastate-js": "^0.4.6",
-    "sqlite3": "^5.1.7",
-    "typeorm": "0.3.20"
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "@rosen-bridge/abstract-extractor": "^2.0.2",

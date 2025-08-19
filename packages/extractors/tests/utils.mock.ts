@@ -1,6 +1,5 @@
 import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { MockChain } from '@fleet-sdk/mock-chain';
-
 import {
   BlockEntity,
   ExtractorStatusEntity,
