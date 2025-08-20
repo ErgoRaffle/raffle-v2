@@ -1,14 +1,15 @@
 import { TxPot } from '@rosen-bridge/tx-pot';
 import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
-
-import { Request, RequestWithId } from './types';
 import { Network } from '@fleet-sdk/core';
+import JsonBigInt from '@rosen-bridge/json-bigint';
+
+import { Request } from './types';
 import { DataProvider } from './dataProvider';
 import { BoxSelector } from './boxSelector';
 
 export class BoxLookup {
   protected requestsIdCounter: number = 0;
-  protected requests = new Map<number, RequestWithId>();
+  protected requests: Map<number, Request> = new Map();
   protected dataProvider: DataProvider;
 
   constructor(
@@ -26,12 +27,12 @@ export class BoxLookup {
    * @returns {number}
    */
   readonly registerRequest = (request: Request) => {
-    this.requests.set(++this.requestsIdCounter, {
-      ...request,
-      id: this.requestsIdCounter,
-    });
+    this.requests.set(++this.requestsIdCounter, request);
     this.logger.info(
-      `New BoxLookupRequest registered by ${this.requestsIdCounter} id`,
+      `Registered new box lookup request with id ${this.requestsIdCounter}`,
+    );
+    this.logger.debug(
+      `Request ${this.requestsIdCounter}: ${JsonBigInt.stringify(request)}`,
     );
     return this.requestsIdCounter;
   };
@@ -42,14 +43,16 @@ export class BoxLookup {
    * @returns {Request | undefined}
    */
   readonly unregisterRequest = (requestId: number) => {
-    if (this.requests.has(requestId)) {
-      const request = this.requests.get(requestId);
-      this.logger.info(`A BoxLookupRequest unregistered by ${requestId} id`);
+    const request = this.requests.get(requestId);
+    if (request) {
+      this.logger.info(
+        `Successfully unregistered box lookup request with id ${requestId}`,
+      );
       this.requests.delete(requestId);
       return request;
     }
-    this.logger.info(
-      `Tried to unregistered a BoxLookupRequest by ${requestId} id that not exists`,
+    this.logger.warn(
+      `Attempted to unregister box lookup request with id ${requestId}, but no such request was found`,
     );
     return undefined;
   };
@@ -64,8 +67,10 @@ export class BoxLookup {
   public serveRequests = async () => {
     if (this.requests.size <= 0) return;
     await this.dataProvider.startNewRound();
-    this.logger.info('The BoxLookup serving requests started');
-    for (const request of this.requests.values()) {
+    this.logger.info(
+      `Starting to serve ${this.requests.size} box lookup request(s)`,
+    );
+    for (const [requestId, request] of this.requests.entries()) {
       await this.dataProvider.updateRoundWithTxPotData();
       let boxSelector = new BoxSelector(this.logger, request, this.networkType);
 
@@ -74,45 +79,53 @@ export class BoxLookup {
         roundState.unspentBoxes.map((box) => box.boxId),
       );
       // Filter out spent boxes and available boxes in the round
-      const unspentMinedBoxes = (await request.getMinedBoxes()).filter(
+      const unspentMinedBoxes = (await request.getConfirmedBoxes()).filter(
         (box) =>
           !roundState.spentBoxIds.has(box.boxId) &&
           !unspentBoxIds.has(box.boxId),
+      );
+      this.logger.debug(
+        `Request ${requestId}: Found ${unspentMinedBoxes.length} new confirmed unspent box(es): [${unspentMinedBoxes.map((box) => box.boxId).join(', ')}]`,
       );
       // Filter out boxes that are not related to the request
       const totalBoxes = [
         ...roundState.unspentBoxes,
         ...unspentMinedBoxes,
-      ].filter((box) => boxSelector.isRelatedToRequest(box));
+      ].filter((box) => boxSelector.isEligibleForSelection(box));
 
+      this.logger.debug(
+        `Request ${requestId}: Total of ${totalBoxes.length} related box(es) found`,
+      );
       for (const box of totalBoxes) {
         // Break the loop if the request is unregistered from the box lookup
-        if (!this.requests.has(request.id)) break;
+        if (!this.requests.has(requestId)) break;
         boxSelector.addBox(box);
 
         if (boxSelector.isCovering()) {
+          this.logger.info(
+            `Request ${requestId}: Request satisfied with boxes: ${boxSelector
+              .getBoxes()
+              .map((box) => box.boxId)
+              .join(', ')} calling onSuffice`,
+          );
           try {
             await request.onSuffice(
               boxSelector.getBoxes(),
               roundState.unspentBoxes,
-              request.id,
+              requestId,
             );
           } catch (error) {
             this.logger.error(
-              `Error in onSuffice callback for [${request.address}] request address`,
-              error,
+              `Request ${requestId}: Error occurred while processing 'onSuffice' callback: ${error}`,
             );
           }
-          boxSelector = new BoxSelector(this.logger, request, this.networkType);
-          this.logger.info(
-            `The BoxLookup triggered for ${request.address} request address`,
-          );
           this.logger.debug(
-            `The ${request.address} request address sufficed by ${JSON.stringify(boxSelector.getBoxes())} boxes`,
+            `Request ${requestId}: Resetting box selector after onSuffice callback`,
           );
+          boxSelector = new BoxSelector(this.logger, request, this.networkType);
         }
       }
     }
-    this.logger.info('The BoxLookup serving requests done');
+    this.logger.info('Completed serving all box lookup requests');
   };
 }

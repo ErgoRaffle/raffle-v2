@@ -9,11 +9,7 @@ export interface Request {
    * @param boxes
    */
   onSuffice: OnSufficeCallback;
-  getMinedBoxes: GetMinedBoxes;
-}
-
-export interface RequestWithId extends Request {
-  id: number;
+  getConfirmedBoxes: GetConfirmedBoxes;
 }
 
 export type OnSufficeCallback = (
@@ -22,4 +18,4 @@ export type OnSufficeCallback = (
   requestId: number,
 ) => Promise<void>;
 
-export type GetMinedBoxes = () => Promise<ErgoBox[]>;
+export type GetConfirmedBoxes = () => Promise<ErgoBox[]>;

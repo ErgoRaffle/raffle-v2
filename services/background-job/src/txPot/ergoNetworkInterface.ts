@@ -73,7 +73,9 @@ export class ErgoNetworkInterface extends AbstractPotChainManager {
    * @memberof ErgoNetworkInterface
    */
   submitTransaction = (serializedTx: string): Promise<void> =>
-    this.network.submitTransaction(serializedTx);
+    this.network.submitTransaction(
+      Buffer.from(serializedTx, 'base64').toString('hex'),
+    );
 
   /**
    * checks if a tx is in mempool returns false if the chain has no mempool
