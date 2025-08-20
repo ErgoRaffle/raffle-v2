@@ -22,20 +22,20 @@ describe('BoxSelector', () => {
     boxSelector = new BoxSelector(mockLogger, mockRequest, sampleNetworkType);
   });
 
-  describe('isRelatedToRequest', () => {
+  describe('isEligibleForSelection', () => {
     /**
      * @target should return true for a box with matching address and required tokens
      * @dependencies
      * @scenario
      * - create a box with the same address as the request
      * - add required tokens to the box
-     * - call isRelatedToRequest function
+     * - call isEligibleForSelection function
      * @expected
      * - should return true for matching address and tokens
      */
     it('should return true for a box with matching address and required tokens', () => {
       const relatedBox = sampleErgoBoxes.validBoxWithTokens;
-      const result = boxSelector.isRelatedToRequest(relatedBox);
+      const result = boxSelector.isEligibleForSelection(relatedBox);
 
       expect(result).toBe(true);
     });
@@ -46,7 +46,7 @@ describe('BoxSelector', () => {
      * @scenario
      * - create a request with erg value requirement
      * - create a box with the same address and sufficient ergs
-     * - call isRelatedToRequest function
+     * - call isEligibleForSelection function
      * @expected
      * - should return true for matching address and ergs
      */
@@ -59,7 +59,7 @@ describe('BoxSelector', () => {
       );
       const relatedBox = sampleErgoBoxes.validBoxWithErgs;
 
-      const result = ergBoxSelector.isRelatedToRequest(relatedBox);
+      const result = ergBoxSelector.isEligibleForSelection(relatedBox);
 
       expect(result).toBe(true);
     });
@@ -69,13 +69,13 @@ describe('BoxSelector', () => {
      * @dependencies
      * @scenario
      * - create a box with different address than the request
-     * - call isRelatedToRequest function
+     * - call isEligibleForSelection function
      * @expected
      * - should return false for different address
      */
     it('should return false for a box with different address', () => {
       const unrelatedBox = sampleErgoBoxes.boxWithDifferentAddress;
-      const result = boxSelector.isRelatedToRequest(unrelatedBox);
+      const result = boxSelector.isEligibleForSelection(unrelatedBox);
 
       expect(result).toBe(false);
     });
@@ -86,7 +86,7 @@ describe('BoxSelector', () => {
      * @scenario
      * - create a box with same address but no required tokens
      * - create a request with no value requirement
-     * - call isRelatedToRequest function
+     * - call isEligibleForSelection function
      * @expected
      * - should return false for missing tokens and ergs
      */
@@ -98,9 +98,35 @@ describe('BoxSelector', () => {
         sampleNetworkType,
       );
       const boxWithoutTokens = sampleErgoBoxes.boxWithoutTokens;
-      const result = noValueBoxSelector.isRelatedToRequest(boxWithoutTokens);
+      const result =
+        noValueBoxSelector.isEligibleForSelection(boxWithoutTokens);
 
       expect(result).toBe(false);
+    });
+
+    /**
+     * @target should return true when request has no requirements
+     * @dependencies
+     * @scenario
+     * - create a request with no value and no tokens
+     * - create a box with matching address
+     * - call isEligibleForSelection function
+     * @expected
+     * - should return true when request has no requirements
+     */
+    it('should return true when request has no requirements', () => {
+      const noRequirementsRequest = sampleRequests.noRequrirementRequest;
+      const noRequirementsBoxSelector = new BoxSelector(
+        mockLogger,
+        noRequirementsRequest,
+        sampleNetworkType,
+      );
+      const boxWithMatchingAddress = sampleErgoBoxes.validBoxWithTokens;
+      const result = noRequirementsBoxSelector.isEligibleForSelection(
+        boxWithMatchingAddress,
+      );
+
+      expect(result).toBe(true);
     });
   });
 
