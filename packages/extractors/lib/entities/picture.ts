@@ -4,7 +4,7 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-} from 'typeorm';
+} from '@rosen-bridge/extended-typeorm';
 import { RaffleDetailsEntity } from './raffleDetails';
 
 @Entity('picture')

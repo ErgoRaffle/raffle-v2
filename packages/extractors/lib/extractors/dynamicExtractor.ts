@@ -1,4 +1,4 @@
-import { DataSource } from 'typeorm';
+import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { AbstractErgoExtractor } from '@rosen-bridge/abstract-extractor';
 import { OutputBox } from '@rosen-bridge/scanner-interfaces';

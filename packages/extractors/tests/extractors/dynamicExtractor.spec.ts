@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ErgoAddress } from '@fleet-sdk/core';
+import { DataSource } from '@rosen-bridge/extended-typeorm';
 
 import { DynamicExtractor } from '../../lib/extractors/dynamicExtractor';
 import { createDatabase } from '../utils.mock';
@@ -9,7 +10,6 @@ import {
   sampleDynamicAddress,
   sampleInvalidAddress,
 } from './mocked/dynamic.mock';
-import { DataSource } from 'typeorm';
 
 describe('DynamicExtractor', () => {
   let dataSource: DataSource;
