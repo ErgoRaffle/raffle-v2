@@ -77,15 +77,9 @@ export class BoxLookupService extends AbstractService {
    * Starts the service: schedules the periodic box lookup job
    */
   protected start = async (): Promise<boolean> => {
-    try {
-      this.job();
-      this.setStatus(ServiceStatus.running);
-    } catch (e) {
-      this.logger.error(
-        `Something went wrong while starting the ${this.name}: ${e}`,
-      );
-      return false;
-    }
+    this.job();
+    this.setStatus(ServiceStatus.running);
+    this.logger.info('Box lookup service started');
     return true;
   };
 

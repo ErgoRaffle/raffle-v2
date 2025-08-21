@@ -26,12 +26,12 @@ const main = async () => {
   logger.debug('Database service registered to the service manager');
 
   logger.debug('Initializing scanner service');
-  await ScannerService.init(configs.scanner, DbService.getInstance());
+  ScannerService.init(configs.scanner, DbService.getInstance());
   serviceManager.register(ScannerService.getInstance());
   logger.debug('Scanner service registered to the service manager');
 
   logger.debug('Initializing txpot service');
-  await TxPotService.init(
+  TxPotService.init(
     configs.txpot.updateInterval,
     dataSource,
     configs.scanner.node.url,
@@ -42,7 +42,7 @@ const main = async () => {
   logger.debug('Txpot service registered to the service manager');
 
   logger.debug('Initializing health check service');
-  await HealthCheckService.init(
+  HealthCheckService.init(
     configs.healthCheck.updateInterval,
     healthCheckLogger,
   );

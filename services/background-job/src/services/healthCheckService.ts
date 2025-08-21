@@ -27,7 +27,6 @@ export class HealthCheckService extends AbstractService {
   ];
   private static instance?: HealthCheckService;
   private healthCheck: HealthCheck;
-  private scannerSyncHealth: ScannerSyncHealthCheckParam;
   private scheduledJob?: NodeJS.Timeout;
   private isJobRunning = false;
   private continueStop = () => {
@@ -67,7 +66,7 @@ export class HealthCheckService extends AbstractService {
     this.healthCheck = new HealthCheck(notify, notificationConfig);
 
     // Instantiate scanner sync health parameter
-    this.scannerSyncHealth = new ScannerSyncHealthCheckParam(
+    const scannerSyncHealth = new ScannerSyncHealthCheckParam(
       ERGO_CHAIN_NAME,
       () =>
         DbService.getInstance().getLastBlock(
@@ -77,6 +76,7 @@ export class HealthCheckService extends AbstractService {
       configs.healthCheck.criticalBlockGap,
       ERGO_BLOCK_TIME,
     );
+    this.healthCheck.register(scannerSyncHealth);
   }
 
   /**
@@ -120,19 +120,9 @@ export class HealthCheckService extends AbstractService {
    * @memberof HealthCheckService
    */
   protected start = async (): Promise<boolean> => {
-    try {
-      // Register scanner sync health parameter
-      this.healthCheck.register(this.scannerSyncHealth);
-
-      this.job();
-      this.setStatus(ServiceStatus.running);
-      this.logger.info(`Health check service started`);
-    } catch (e) {
-      this.logger.error(
-        `Something went wrong while starting the ${this.name}: ${e}`,
-      );
-      return false;
-    }
+    this.job();
+    this.setStatus(ServiceStatus.running);
+    this.logger.info(`Health check service started`);
     return true;
   };
 
@@ -154,7 +144,6 @@ export class HealthCheckService extends AbstractService {
           this.continueStop = resolve;
         });
       }
-      this.healthCheck.unregister(this.scannerSyncHealth.getId());
       clearTimeout(this.scheduledJob);
       this.setStatus(ServiceStatus.dormant);
       this.logger.info('Health check service stopped');
