@@ -28,6 +28,7 @@ import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
 
 import { DbService } from './dbService';
 import { Scanner as ScannerBaseOption } from '../types';
+import { configs } from '../config';
 
 export class ScannerService extends AbstractService {
   name = 'ScannerService';
@@ -86,7 +87,7 @@ export class ScannerService extends AbstractService {
       'InactiveRaffle',
       this.scannerConfig.node.url,
       raffleInfo.addresses.inactiveRaffle,
-      raffleInfo.addresses.service,
+      configs.addresses.serviceFeeAddress,
       raffleInfo.tokens.raffleLicense,
       CallbackLoggerFactory.getInstance().getLogger(
         'raffle-inactiveRaffle-extractor',
