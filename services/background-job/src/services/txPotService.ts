@@ -9,7 +9,8 @@ import {
   TransactionStatus,
   TxPot,
 } from '@rosen-bridge/tx-pot';
-import { DataSource } from 'typeorm';
+import { DataSource } from '@rosen-bridge/extended-typeorm';
+
 import { ErgoNetworkInterface } from '../txPot/ergoNetworkInterface';
 import { DbService } from './dbService';
 import * as constants from '../constants';

@@ -1,6 +1,5 @@
-import { DataSource } from 'typeorm';
+import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { MockChain } from '@fleet-sdk/mock-chain';
-
 import {
   BlockEntity,
   ExtractorStatusEntity,
@@ -9,7 +8,7 @@ import {
 
 import { migrations } from '../lib/migrations';
 import {
-  RaffleServiceEntity,
+  ServiceEntity,
   InactiveRaffleEntity,
   RaffleBoxEntity,
   WinnerEntity,
@@ -51,7 +50,7 @@ export const createDatabase = async (): Promise<DataSource> => {
     entities: [
       BlockEntity,
       ExtractorStatusEntity,
-      RaffleServiceEntity,
+      ServiceEntity,
       InactiveRaffleEntity,
       RaffleBoxEntity,
       WinnerEntity,

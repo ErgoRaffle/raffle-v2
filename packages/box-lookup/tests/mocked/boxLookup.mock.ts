@@ -26,7 +26,7 @@ const sampleErgoTree =
 
 // Mock callback functions
 const mockOnSuffice = async () => {};
-const mockGetMinedBoxes = async () => [];
+const mockGetConfirmedBoxes = async () => [];
 
 // Sample ErgoBoxes
 export const sampleErgoBoxes = {
@@ -86,7 +86,7 @@ export const sampleRequests = {
     value: 1000000n,
     tokens: [sampleToken1],
     onSuffice: mockOnSuffice,
-    getMinedBoxes: mockGetMinedBoxes,
+    getConfirmedBoxes: mockGetConfirmedBoxes,
   } as Request,
 
   ergOnlyRequest: {
@@ -94,7 +94,7 @@ export const sampleRequests = {
     value: 5000000n,
     tokens: [],
     onSuffice: mockOnSuffice,
-    getMinedBoxes: mockGetMinedBoxes,
+    getConfirmedBoxes: mockGetConfirmedBoxes,
   } as Request,
 };
 

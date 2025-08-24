@@ -1,4 +1,4 @@
-import { DataSource } from 'typeorm';
+import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import {
   AbstractInitializableErgoExtractor,
@@ -10,7 +10,7 @@ import {
   InputExtension,
 } from '@rosen-bridge/scanner-interfaces';
 
-import { InactiveRaffleAction } from '../actions/inactiveRaffle';
+import { InactiveRaffleAction } from '../actions/inactiveRaffleAction';
 import { InactiveRaffleBoxInterface } from '../interfaces/types';
 import { InactiveRaffleEntity } from '../entities';
 import { Box, ErgoAddress } from '@fleet-sdk/core';
@@ -109,7 +109,7 @@ export class InactiveRaffleExtractor extends AbstractInitializableErgoExtractor<
     const data = {
       boxId: box.boxId.toString(),
       txId: box.transactionId,
-      raffleId: Buffer.from(R7Serialized[1]).toString('hex'),
+      raffleId: Buffer.from(R7Serialized[0]).toString('hex'),
       serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(
         'base64',
       ),

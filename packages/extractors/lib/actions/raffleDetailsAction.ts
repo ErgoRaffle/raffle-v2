@@ -1,4 +1,4 @@
-import { DataSource, In, QueryRunner } from 'typeorm';
+import { DataSource, In, QueryRunner } from '@rosen-bridge/extended-typeorm';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { AbstractInitializableErgoExtractorAction } from '@rosen-bridge/abstract-extractor';
 import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
@@ -10,11 +10,8 @@ export class RaffleDetailsAction extends AbstractInitializableErgoExtractorActio
   RaffleDetailsBoxInterface,
   RaffleDetailsEntity
 > {
-  private readonly dataSource: DataSource;
-
   constructor(dataSource: DataSource, logger?: AbstractLogger) {
     super(dataSource, RaffleDetailsEntity, logger);
-    this.dataSource = dataSource;
   }
 
   /**

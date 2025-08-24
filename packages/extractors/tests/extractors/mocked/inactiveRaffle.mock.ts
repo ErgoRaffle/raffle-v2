@@ -73,7 +73,7 @@ export const sampleInactiveRaffleExtractedData = {
     '064mYgVHFiAwCpIaAgRUZXN0FFNvbWUgZGVzY3JpcHRpb25zLi4uGgIgMzMzMzMzMzMzMzMzMz' +
     'MzMzMzMzMzMzMzMzMzMzMzMzMge8trSPEi5LKmV26w9zy4pvrbGAREDHFDs8o74DhqB5gECgEB' +
     'AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ==',
-  raffleId: '7bcb6b48f122e4b2a6576eb0f73cb8a6fadb1804440c7143b3ca3be0386a0798',
+  raffleId: '3333333333333333333333333333333333333333333333333333333333333333',
   creatorErgoTree: creatorWallet.ergoTree.toString(),
   implementorErgoTree: implementerWallet.ergoTree.toString(),
   serviceErgoTree: serviceWallet.ergoTree.toString(),

@@ -33,10 +33,10 @@
     "@fleet-sdk/serializer": "^0.11.0",
     "@rosen-bridge/callback-logger": "^0.1.0",
     "@rosen-bridge/config": "^0.2.1",
-    "@rosen-bridge/extended-typeorm": "^0.0.3",
+    "@rosen-bridge/extended-typeorm": "^0.2.1",
     "@rosen-bridge/health-check": "^7.0.0",
-    "@rosen-bridge/scanner": "^6.0.0-8792333e",
-    "@rosen-bridge/scanner-interfaces": "^0.1.0-8792333e",
+    "@rosen-bridge/scanner": "^8.0.1",
+    "@rosen-bridge/scanner-interfaces": "^0.1.1",
     "@rosen-bridge/scanner-sync-check": "^7.0.0",
     "@rosen-bridge/service-manager": "^0.1.2",
     "@rosen-bridge/winston-logger": "^1.0.3",
@@ -45,8 +45,7 @@
     "lodash-es": "^4.17.21",
     "reflect-metadata": "^0.1.14",
     "sigmastate-js": "^0.4.6",
-    "sqlite3": "^5.1.7",
-    "typeorm": "0.3.20"
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "@rosen-bridge/abstract-extractor": "^2.0.2",

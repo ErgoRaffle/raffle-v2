@@ -4,7 +4,7 @@ import {
   ServiceStatus,
 } from '@rosen-bridge/service-manager';
 import {
-  RaffleServiceExtractor,
+  ServiceExtractor,
   InactiveRaffleExtractor,
   TicketRepoExtractor,
   ActiveRaffleExtractor,
@@ -21,7 +21,7 @@ import {
   DynamicExtractor,
 } from '@ergo-raffle/extractors';
 import { raffleInfo } from '@ergo-raffle/contracts';
-import * as scanner from '@rosen-bridge/scanner';
+import { ErgoScanner, ErgoNodeNetwork } from '@rosen-bridge/scanner';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
@@ -46,7 +46,7 @@ export class ScannerService extends AbstractService {
       allowedStatuses: [ServiceStatus.running],
     },
   ];
-  readonly ergoScanner: scanner.ErgoScanner;
+  readonly ergoScanner: ErgoScanner;
 
   private constructor(
     scannerConfig: ScannerBaseOption,
@@ -56,16 +56,12 @@ export class ScannerService extends AbstractService {
     super(logger);
     this.scannerConfig = scannerConfig;
     this.dbService = dbService;
-    this.ergoScanner = new scanner.ErgoScanner(
-      {
-        url: this.scannerConfig.node.url,
-        type: ErgoNetworkType.Node,
-        timeout: this.scannerConfig.node.timeout * 1000,
-        initialHeight: this.scannerConfig.node.initialHeight,
-        dataSource: this.dbService.dataSource,
-      },
-      CallbackLoggerFactory.getInstance().getLogger('raffle-scanner'),
-    );
+    this.ergoScanner = new ErgoScanner({
+      network: new ErgoNodeNetwork(this.scannerConfig.node.url),
+      initialHeight: this.scannerConfig.node.initialHeight,
+      dataSource: this.dbService.dataSource,
+      logger: CallbackLoggerFactory.getInstance().getLogger('raffle-scanner'),
+    });
   }
 
   /**
@@ -74,7 +70,7 @@ export class ScannerService extends AbstractService {
    * @returns
    */
   protected readonly registerExtractors = async () => {
-    const raffleServiceExtractor = new RaffleServiceExtractor(
+    const raffleServiceExtractor = new ServiceExtractor(
       this.dbService.dataSource,
       'RaffleService',
       this.scannerConfig.node.url,

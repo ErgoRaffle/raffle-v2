@@ -1,11 +1,14 @@
-import { MigrationInterface, QueryRunner } from 'typeorm';
+import {
+  MigrationInterface,
+  QueryRunner,
+} from '@rosen-bridge/extended-typeorm';
 
 export class Postgres1739623115850 implements MigrationInterface {
   name = 'Postgres1739623115850';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-            CREATE TABLE "raffle_service" (
+            CREATE TABLE "service" (
                 "id" SERIAL NOT NULL,
                 "boxId" character varying NOT NULL,
                 "block" character varying NOT NULL,
@@ -26,7 +29,7 @@ export class Postgres1739623115850 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-            DROP TABLE "raffle_service"
+            DROP TABLE "service"
         `);
   }
 }

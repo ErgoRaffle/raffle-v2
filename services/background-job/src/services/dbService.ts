@@ -4,11 +4,9 @@ import {
   Dependency,
   ServiceStatus,
 } from '@rosen-bridge/service-manager';
-import { DataSource } from '@rosen-bridge/extended-typeorm';
 import {
   RaffleBoxEntity,
   InactiveRaffleEntity,
-  RaffleServiceEntity,
   DynamicBoxEntity,
   WinnerEntity,
   RaffleBoxType,
@@ -20,8 +18,14 @@ import {
   TicketEntity,
   TicketRedeemEntity,
   SafePayEntity,
+  ServiceEntity,
 } from '@ergo-raffle/extractors';
-import { IsNull, LessThan, MoreThanOrEqual } from 'typeorm';
+import {
+  IsNull,
+  DataSource,
+  LessThanOrEqual,
+  MoreThan,
+} from '@rosen-bridge/extended-typeorm';
 import { BlockEntity } from '@rosen-bridge/scanner';
 import { pick } from 'lodash-es';
 
@@ -140,7 +144,7 @@ export class DbService extends AbstractService {
    * @returns The service box
    */
   getServiceBox = () => {
-    return this.dataSource.getRepository(RaffleServiceEntity).findOne({
+    return this.dataSource.getRepository(ServiceEntity).findOne({
       where: {
         spendBlock: IsNull(),
       },
@@ -281,8 +285,8 @@ export class DbService extends AbstractService {
         raffleId,
         ...(index
           ? {
-              rangeStart: MoreThanOrEqual(index),
-              rangeEnd: LessThan(index),
+              rangeStart: LessThanOrEqual(index),
+              rangeEnd: MoreThan(index),
             }
           : {}),
         spendBlock: IsNull(),

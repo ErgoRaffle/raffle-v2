@@ -25,7 +25,7 @@ const differentErgoTree =
 
 // Mock callback functions
 const mockOnSuffice = async () => {};
-const mockGetMinedBoxes = async () => [];
+const mockGetConfirmedBoxes = async () => [];
 const emptyTokens: TokenAmount<bigint>[] = [];
 
 export const sampleErgoBoxes = {
@@ -84,7 +84,7 @@ export const sampleRequests = {
     value: 1000000n,
     tokens: [sampleToken1],
     onSuffice: mockOnSuffice,
-    getMinedBoxes: mockGetMinedBoxes,
+    getConfirmedBoxes: mockGetConfirmedBoxes,
   } as Request,
 
   ergOnlyRequest: {
@@ -92,7 +92,7 @@ export const sampleRequests = {
     value: 5000000n,
     tokens: [],
     onSuffice: mockOnSuffice,
-    getMinedBoxes: mockGetMinedBoxes,
+    getConfirmedBoxes: mockGetConfirmedBoxes,
   } as Request,
 
   highErgRequest: {
@@ -100,7 +100,7 @@ export const sampleRequests = {
     value: 10000000n, // Higher than available ergs
     tokens: [sampleToken1],
     onSuffice: mockOnSuffice,
-    getMinedBoxes: mockGetMinedBoxes,
+    getConfirmedBoxes: mockGetConfirmedBoxes,
   } as Request,
 
   highTokenRequest: {
@@ -113,7 +113,7 @@ export const sampleRequests = {
       },
     ],
     onSuffice: mockOnSuffice,
-    getMinedBoxes: mockGetMinedBoxes,
+    getConfirmedBoxes: mockGetConfirmedBoxes,
   } as Request,
 
   noValueRequest: {
@@ -121,6 +121,14 @@ export const sampleRequests = {
     value: undefined,
     tokens: [sampleToken1],
     onSuffice: mockOnSuffice,
-    getMinedBoxes: mockGetMinedBoxes,
+    getConfirmedBoxes: mockGetConfirmedBoxes,
+  } as Request,
+
+  noRequrirementRequest: {
+    address: sampleAddress,
+    value: undefined,
+    tokens: [],
+    onSuffice: mockOnSuffice,
+    getConfirmedBoxes: mockGetConfirmedBoxes,
   } as Request,
 };

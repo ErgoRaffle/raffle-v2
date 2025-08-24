@@ -1,25 +1,22 @@
-import { DataSource } from 'typeorm';
+import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
-import {
-  AbstractInitializableErgoExtractor,
-  boxHasToken,
-} from '@rosen-bridge/abstract-extractor';
+import { AbstractInitializableErgoExtractor } from '@rosen-bridge/abstract-extractor';
 import { OutputBox, ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
-
-import { RaffleServiceAction } from '../actions/raffleService';
-import { RaffleServiceBoxInterface } from '../interfaces/types';
-import { RaffleServiceEntity } from '../entities';
 import { ErgoAddress, Box } from '@fleet-sdk/core';
 import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 
-export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<
-  RaffleServiceBoxInterface,
-  RaffleServiceEntity
+import { RaffleDetailsEntity } from '../entities';
+import { RaffleDetailsAction } from '../actions/raffleDetailsAction';
+import { RaffleDetailsBoxInterface } from '../interfaces/types';
+
+export class RaffleDetailsExtractor extends AbstractInitializableErgoExtractor<
+  RaffleDetailsBoxInterface,
+  RaffleDetailsEntity
 > {
-  readonly actions: RaffleServiceAction;
+  readonly actions: RaffleDetailsAction;
   private readonly id: string;
   private readonly ergoTree: string;
-  private readonly serviceNFTId: string;
+  private readonly dataSource: DataSource;
 
   constructor(
     dataSource: DataSource,
@@ -27,15 +24,14 @@ export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<
     url: string,
     type: ErgoNetworkType,
     address: string,
-    serviceNFTId: string,
     logger?: AbstractLogger,
     initialize = true,
   ) {
     super(type, url, address, logger, initialize);
     this.id = id;
     this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
-    this.serviceNFTId = serviceNFTId;
-    this.actions = new RaffleServiceAction(dataSource, this.logger);
+    this.dataSource = dataSource;
+    this.actions = new RaffleDetailsAction(dataSource, this.logger);
   }
 
   /**
@@ -52,14 +48,13 @@ export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<
     try {
       return (
         box.ergoTree == this.ergoTree &&
-        boxHasToken(box, [this.serviceNFTId]) &&
-        box.additionalRegisters != undefined &&
         box.additionalRegisters.R4 != undefined &&
-        (SConstant.from(box.additionalRegisters!.R4!).data as bigint[])
-          .length == 4
+        (SConstant.from(box.additionalRegisters.R4).data as Uint8Array[])
+          .length >= 2 &&
+        box.assets.length == 1
       );
     } catch (err) {
-      this.logger.error(`RaffleServiceExtractor Error: ${err}`);
+      this.logger.error(`RaffleDetailsExtractor Error: ${err}`);
       return false;
     }
   };
@@ -69,18 +64,27 @@ export class RaffleServiceExtractor extends AbstractInitializableErgoExtractor<
    * @param box
    * @return extracted data in proper format
    */
-  extractBoxData = (box: OutputBox): RaffleServiceBoxInterface | undefined => {
+  extractBoxData = (box: OutputBox): RaffleDetailsBoxInterface | undefined => {
     const R4Serialized = SConstant.from(box.additionalRegisters!.R4!)
-      .data as bigint[];
+      .data as Uint8Array[];
+    const pictures = R4Serialized.slice(2).map((picInfo, i) => {
+      return {
+        orderIndex: i,
+        raffleId: box.assets![0].tokenId,
+        content: Buffer.from(picInfo).toString(),
+      };
+    });
+
     const data = {
       boxId: box.boxId.toString(),
       txId: box.transactionId,
+      raffleId: box.assets![0].tokenId,
+      name: Buffer.from(R4Serialized[0]).toString(),
+      description: Buffer.from(R4Serialized[1]).toString(),
+      pictures: pictures,
       serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(
         'base64',
       ),
-      serviceFeePercent: Number(R4Serialized[0]),
-      implementerFeePercent: Number(R4Serialized[1]),
-      creationFee: R4Serialized[2],
     };
 
     return data;

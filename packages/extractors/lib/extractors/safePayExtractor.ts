@@ -1,4 +1,4 @@
-import { DataSource } from 'typeorm';
+import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import {
   AbstractInitializableErgoExtractor,
@@ -8,7 +8,7 @@ import { ErgoAddress, Box } from '@fleet-sdk/core';
 import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 
 import { SafePayEntity } from '../entities';
-import { SafePayAction } from '../actions/safePay';
+import { SafePayAction } from '../actions/safePayAction';
 import { SafePayBoxInterface } from '../interfaces/types';
 import {
   Transaction,
@@ -83,14 +83,15 @@ export class SafePayExtractor extends AbstractInitializableErgoExtractor<
     let recipient = '';
     try {
       if (txExtra!.firstOutputErgoTree == this.successRaffleErgoTree) {
-        const recipients = /**
-         * In fee-payment transaction, recipient addresses (service and
-         * implementer addresses) are available at active raffle extension.
-         * Active raffle is the first input of this transaction,
-         */
-        (SConstant.from(inputExtensions[0]['0']).data as Uint8Array[]).map(
-          (ergoTree) => Buffer.from(ergoTree).toString('hex'),
-        );
+        const recipients =
+          /**
+           * In fee-payment transaction, recipient addresses (service and
+           * implementer addresses) are available at active raffle extension.
+           * Active raffle is the first input of this transaction,
+           */
+          (SConstant.from(inputExtensions[0]['0']).data as Uint8Array[]).map(
+            (ergoTree) => Buffer.from(ergoTree).toString('hex'),
+          );
         recipient = box.index == 1 ? recipients[0] : recipients[1];
       } else if (box.index == 0) {
         recipient = Buffer.from(

@@ -18,8 +18,8 @@
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {
-    "@types/node": "^20.11.9",
     "@types/lodash-es": "^4.17.12",
+    "@types/node": "^20.11.9",
     "@typescript-eslint/eslint-plugin": "^6.19.1",
     "@typescript-eslint/parser": "^6.19.1",
     "eslint": "^8.56.0",
@@ -34,11 +34,11 @@
     "@fleet-sdk/core": "^0.12.0",
     "@fleet-sdk/serializer": "^0.11.0",
     "@rosen-bridge/abstract-logger": "^2.0.1",
+    "@rosen-bridge/json-bigint": "^0.2.0",
     "@rosen-bridge/tx-pot": "^1.0.3",
     "@rosen-bridge/winston-logger": "^1.0.3",
     "@rosen-clients/ergo-node": "^1.2.0",
     "axios": "^1.8.4",
-    "lodash-es": "^4.17.21",
-    "typeorm": "^0.3.20"
+    "lodash-es": "^4.17.21"
   }
 }

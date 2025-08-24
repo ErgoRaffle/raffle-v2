@@ -1,8 +1,10 @@
 import { ErgoAddress, ErgoBox, Network } from '@fleet-sdk/core';
-import { BoxValue } from './types/box';
-import { Request } from './types';
 import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
 import { cloneDeep } from 'lodash-es';
+import JsonBigInt from '@rosen-bridge/json-bigint';
+
+import { BoxValue } from './types/box';
+import { Request } from './types';
 
 export class BoxSelector {
   private boxes: ErgoBox[] = [];
@@ -18,13 +20,19 @@ export class BoxSelector {
   ) {}
 
   /**
-   * Check if the box is related to the request
-   * - Should have the same address as the request
-   * - Should have the required tokens or the required ergs
+   * Determines if a box meets all criteria for selection.
+   *
+   * A box is eligible for selection when:
+   * - It belongs to the same address as the request, AND
+   * - It either:
+   *   - Contains the required tokens, OR
+   *   - Has sufficient ERG value, OR
+   *   - The request doesn't require any specific assets
+   *
    * @param box - The box to check
-   * @returns True if the box is related to the request, false otherwise
+   * @returns True if the box is eligible for selection, false otherwise
    */
-  isRelatedToRequest = (box: ErgoBox) => {
+  isEligibleForSelection = (box: ErgoBox) => {
     const sameAddress =
       ErgoAddress.fromErgoTree(box.ergoTree, this.networkType).toString() ===
       this.request.address;
@@ -34,6 +42,7 @@ export class BoxSelector {
     );
     const requiresErgs =
       this.request.value !== undefined && this.request.value > 0n;
+    const requestNoAsset = !requiresErgs && this.request.tokens.length === 0;
 
     if (sameAddress) {
       this.logger.debug(
@@ -42,7 +51,10 @@ export class BoxSelector {
           (requiresErgs ? ` and required ergs` : ''),
       );
     }
-    return sameAddress && (hasRequiredTokens || requiresErgs);
+
+    const meetsAssetRequirements =
+      hasRequiredTokens || requiresErgs || requestNoAsset;
+    return sameAddress && meetsAssetRequirements;
   };
 
   /**
@@ -64,7 +76,7 @@ export class BoxSelector {
     }
     this.logger.debug(
       `Box ${box.boxId} added to the selected boxes` +
-        ` and updated the sum value to ${this.sumValue.value}`,
+        ` and updated the sum value and tokens to ${JsonBigInt.stringify(this.sumValue)}`,
     );
   };
 

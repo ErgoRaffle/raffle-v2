@@ -1,22 +1,25 @@
-import { DataSource } from 'typeorm';
+import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
-import { AbstractInitializableErgoExtractor } from '@rosen-bridge/abstract-extractor';
+import {
+  AbstractInitializableErgoExtractor,
+  boxHasToken,
+} from '@rosen-bridge/abstract-extractor';
 import { OutputBox, ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 import { ErgoAddress, Box } from '@fleet-sdk/core';
 import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 
-import { RaffleDetailsEntity } from '../entities';
-import { RaffleDetailsAction } from '../actions/raffleDetails';
-import { RaffleDetailsBoxInterface } from '../interfaces/types';
+import { ServiceAction } from '../actions/serviceAction';
+import { ServiceBoxInterface } from '../interfaces/types';
+import { ServiceEntity } from '../entities';
 
-export class RaffleDetailsExtractor extends AbstractInitializableErgoExtractor<
-  RaffleDetailsBoxInterface,
-  RaffleDetailsEntity
+export class ServiceExtractor extends AbstractInitializableErgoExtractor<
+  ServiceBoxInterface,
+  ServiceEntity
 > {
-  readonly actions: RaffleDetailsAction;
+  readonly actions: ServiceAction;
   private readonly id: string;
   private readonly ergoTree: string;
-  private readonly dataSource: DataSource;
+  private readonly serviceNFTId: string;
 
   constructor(
     dataSource: DataSource,
@@ -24,14 +27,15 @@ export class RaffleDetailsExtractor extends AbstractInitializableErgoExtractor<
     url: string,
     type: ErgoNetworkType,
     address: string,
+    serviceNFTId: string,
     logger?: AbstractLogger,
     initialize = true,
   ) {
     super(type, url, address, logger, initialize);
     this.id = id;
     this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
-    this.dataSource = dataSource;
-    this.actions = new RaffleDetailsAction(dataSource, this.logger);
+    this.serviceNFTId = serviceNFTId;
+    this.actions = new ServiceAction(dataSource, this.logger);
   }
 
   /**
@@ -48,13 +52,14 @@ export class RaffleDetailsExtractor extends AbstractInitializableErgoExtractor<
     try {
       return (
         box.ergoTree == this.ergoTree &&
+        boxHasToken(box, [this.serviceNFTId]) &&
+        box.additionalRegisters != undefined &&
         box.additionalRegisters.R4 != undefined &&
-        (SConstant.from(box.additionalRegisters.R4).data as Uint8Array[])
-          .length >= 2 &&
-        box.assets.length == 1
+        (SConstant.from(box.additionalRegisters!.R4!).data as bigint[])
+          .length == 4
       );
     } catch (err) {
-      this.logger.error(`RaffleDetailsExtractor Error: ${err}`);
+      this.logger.error(`RaffleServiceExtractor Error: ${err}`);
       return false;
     }
   };
@@ -64,27 +69,18 @@ export class RaffleDetailsExtractor extends AbstractInitializableErgoExtractor<
    * @param box
    * @return extracted data in proper format
    */
-  extractBoxData = (box: OutputBox): RaffleDetailsBoxInterface | undefined => {
+  extractBoxData = (box: OutputBox): ServiceBoxInterface | undefined => {
     const R4Serialized = SConstant.from(box.additionalRegisters!.R4!)
-      .data as Uint8Array[];
-    const pictures = R4Serialized.slice(2).map((picInfo, i) => {
-      return {
-        orderIndex: i,
-        raffleId: box.assets![0].tokenId,
-        content: Buffer.from(picInfo).toString(),
-      };
-    });
-
+      .data as bigint[];
     const data = {
       boxId: box.boxId.toString(),
       txId: box.transactionId,
-      raffleId: box.assets![0].tokenId,
-      name: Buffer.from(R4Serialized[0]).toString(),
-      description: Buffer.from(R4Serialized[1]).toString(),
-      pictures: pictures,
       serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(
         'base64',
       ),
+      serviceFeePercent: Number(R4Serialized[0]),
+      implementerFeePercent: Number(R4Serialized[1]),
+      creationFee: R4Serialized[2],
     };
 
     return data;
