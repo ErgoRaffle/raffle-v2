@@ -104,7 +104,13 @@ export class BoxLookupService extends AbstractService {
    */
   protected job = async (): Promise<void> => {
     this.isJobRunning = true;
-    await this.boxLookup.serveRequests();
+    try {
+      await this.boxLookup.serveRequests();
+    } catch (error) {
+      this.logger.error(
+        `Unexpected error in box lookup serving requests: ${error instanceof Error ? error.message : error}`,
+      );
+    }
     this.scheduledJob = setTimeout(this.job, this.updateInterval * 1000);
     this.isJobRunning = false;
     if (this.shouldStopJob) {
