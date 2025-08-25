@@ -73,6 +73,7 @@ export class DbService extends AbstractService {
       );
       return false;
     }
+    this.logger.info('DbService started');
     return true;
   };
 

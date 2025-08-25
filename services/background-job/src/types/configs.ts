@@ -1,4 +1,5 @@
 export interface BackgroundJobConfig {
+  addresses: Addresses;
   notification: Notification;
   healthCheck: HealthCheck;
   ergo: Ergo;
@@ -61,4 +62,8 @@ export interface Notification {
   historyCleanupTimeout?: number;
   hasBeenUnstableForAWhileWindowDuration?: number;
   hasBeenUnknownForAWhileWindowDuration?: number;
+}
+
+export interface Addresses {
+  serviceFeeAddress: string;
 }

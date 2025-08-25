@@ -318,5 +318,20 @@
         "description": "window duration for unknown state check in seconds"
       }
     }
+  },
+  "addresses": {
+    "type": "object",
+    "children": {
+      "serviceFeeAddress": {
+        "type": "string",
+        "description": "service fee address",
+        "validations": [
+          {
+            "required": true,
+            "error": "service fee address must be specified"
+          }
+        ]
+      }
+    }
   }
 }
