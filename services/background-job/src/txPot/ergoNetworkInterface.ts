@@ -50,7 +50,7 @@ export class ErgoNetworkInterface extends AbstractPotChainManager {
    * @memberof ErgoNetworkInterface
    */
   isTxValid = async (serializedTx: string): Promise<boolean> => {
-    const tx = deserializeTransaction(serializedTx);
+    const tx = deserializeTransaction(Buffer.from(serializedTx, 'base64'));
 
     const inputs = tx.inputs;
     for (let i = 0; i < inputs.length; i++) {
