@@ -61,7 +61,7 @@ export class DataProvider {
    * This should be called during the round to update with txpot data
    */
   updateRoundWithTxPotData = async (): Promise<void> => {
-    this.logger.info('Updating round state with TxPot data');
+    this.logger.debug('Updating round state with TxPot data');
 
     const [txPotSpentBoxIds, txPotUnspentBoxes] =
       await this.getArrangedTxPotBoxes();
@@ -86,7 +86,7 @@ export class DataProvider {
       );
     this.currentRoundState.unspentBoxes.push(...newUnspentBoxes);
 
-    this.logger.info(
+    this.logger.debug(
       `Round updated with ${txPotSpentBoxIds.length} additional spent boxes and ${newUnspentBoxes.length} new unspent boxes from TxPot`,
     );
   };
@@ -96,6 +96,16 @@ export class DataProvider {
    * @returns Current round state
    */
   getCurrentRoundState = (): RoundState => {
+    this.logger.debug(
+      `Current round state unspent box ids: [${this.currentRoundState.unspentBoxes.map(
+        (box) => box.boxId,
+      )}]`,
+    );
+    this.logger.debug(
+      `Current round state spent box ids: [${Array.from(
+        this.currentRoundState.spentBoxIds,
+      )}]`,
+    );
     return {
       spentBoxIds: new Set(this.currentRoundState.spentBoxIds),
       unspentBoxes: [...this.currentRoundState.unspentBoxes],
@@ -186,6 +196,10 @@ export class DataProvider {
       ...(await this.txPot.getTxsByStatus(TransactionStatus.SIGNED, false)),
       ...(await this.txPot.getTxsByStatus(TransactionStatus.SENT, false)),
     ].map(this.deserializeTx);
+
+    this.logger.debug(
+      `Processing active txs in txpot: [${activeTxs.map((tx) => tx.id)}]`,
+    );
 
     for (const tx of activeTxs) {
       spentBoxIds.push(

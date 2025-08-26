@@ -111,9 +111,10 @@ export class BoxLookup {
           try {
             await request.onSuffice(
               boxSelector.getBoxes(),
-              roundState.unspentBoxes,
+              this.dataProvider.getCurrentRoundState().unspentBoxes,
               requestId,
             );
+            await this.dataProvider.updateRoundWithTxPotData();
           } catch (error) {
             this.logger.error(
               `Request ${requestId}: Error occurred while processing 'onSuffice' callback: ${error}`,
