@@ -1,5 +1,6 @@
 export interface BackgroundJobConfig {
   boxLookup: BoxLookup;
+  addresses: Addresses;
   notification: Notification;
   healthCheck: HealthCheck;
   ergo: Ergo;
@@ -66,4 +67,8 @@ export interface Notification {
 
 export interface BoxLookup {
   updateInterval: number;
+}
+
+export interface Addresses {
+  serviceFeeAddress: string;
 }

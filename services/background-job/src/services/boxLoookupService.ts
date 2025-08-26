@@ -77,15 +77,9 @@ export class BoxLookupService extends AbstractService {
    * Starts the service: schedules the periodic box lookup job
    */
   protected start = async (): Promise<boolean> => {
-    try {
-      this.job();
-      this.setStatus(ServiceStatus.running);
-    } catch (e) {
-      this.logger.error(
-        `Something went wrong while starting the ${this.name}: ${e}`,
-      );
-      return false;
-    }
+    this.job();
+    this.setStatus(ServiceStatus.running);
+    this.logger.info('Box lookup service started');
     return true;
   };
 
@@ -110,7 +104,13 @@ export class BoxLookupService extends AbstractService {
    */
   protected job = async (): Promise<void> => {
     this.isJobRunning = true;
-    await this.boxLookup.serveRequests();
+    try {
+      await this.boxLookup.serveRequests();
+    } catch (error) {
+      this.logger.error(
+        `Unexpected error in box lookup serving requests: ${error instanceof Error ? error.message : error}`,
+      );
+    }
     this.scheduledJob = setTimeout(this.job, this.updateInterval * 1000);
     this.isJobRunning = false;
     if (this.shouldStopJob) {

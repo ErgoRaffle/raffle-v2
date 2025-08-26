@@ -111,6 +111,7 @@ export class TxPotService extends AbstractService {
       );
       return false;
     }
+    this.logger.info('TxPotService started');
     return true;
   };
 
