@@ -32,11 +32,11 @@ export interface Database {
 }
 
 export interface Scanner {
-  node: Node;
+  node: ScannerNode;
   scannerInterval: number;
 }
 
-export interface Node {
+export interface ScannerNode {
   url: string;
   timeout: number;
   initialHeight: number;

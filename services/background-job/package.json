@@ -32,7 +32,7 @@
     "@fleet-sdk/core": "^0.12.0",
     "@fleet-sdk/serializer": "^0.11.0",
     "@rosen-bridge/callback-logger": "^0.1.0",
-    "@rosen-bridge/config": "^0.2.1",
+    "@rosen-bridge/config": "^0.4.0",
     "@rosen-bridge/extended-typeorm": "^0.2.1",
     "@rosen-bridge/health-check": "^7.0.0",
     "@rosen-bridge/scanner": "^8.0.1",

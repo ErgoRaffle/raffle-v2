@@ -1,6 +1,18 @@
 {
   "logs": {
     "type": "array",
+    "default": [
+      {
+        "type": "console"
+      },
+      {
+        "type": "file",
+        "level": "debug",
+        "path": "./logs/",
+        "maxSize": "20m",
+        "maxFiles": "14d"
+      }
+    ],
     "items": {
       "type": "object",
       "children": {
@@ -18,7 +30,6 @@
         },
         "maxSize": {
           "type": "string",
-          "default": "20m",
           "validations": [
             {
               "required": true,
@@ -29,7 +40,6 @@
         },
         "maxFiles": {
           "type": "string",
-          "default": "14d",
           "validations": [
             {
               "required": true,
@@ -79,8 +89,7 @@
           ]
         },
         "basicAuth": {
-          "type": "string",
-          "default": ""
+          "type": "string"
         }
       }
     }

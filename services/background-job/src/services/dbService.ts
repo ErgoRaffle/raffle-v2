@@ -19,7 +19,6 @@ import {
   TicketRedeemEntity,
   SafePayEntity,
   ServiceEntity,
-  DynamicBoxEntity,
 } from '@ergo-raffle/extractors';
 import {
   IsNull,
@@ -328,16 +327,5 @@ export class DbService extends AbstractService {
       throw new Error(`No block found for scanner ${scanner}`);
     }
     return pick(block, ['height', 'timestamp']);
-  };
-
-  /**
-   * Get the dynamic boxes by address
-   * @param address - The address
-   * @returns The dynamic boxes
-   */
-  getDynamicBoxes = (address: string): Promise<DynamicBoxEntity[]> => {
-    return this.dataSource
-      .getRepository(DynamicBoxEntity)
-      .find({ where: { address: address, spendBlock: IsNull() } });
   };
 }
