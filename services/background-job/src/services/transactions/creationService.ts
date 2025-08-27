@@ -15,7 +15,6 @@ import { configs } from '../../config';
 import {
   signAndAddTx,
   convertDbBoxesToErgoBoxes,
-  txpotCallBackGenerator,
 } from '../../transactions/utils';
 import { TxType } from '../../types/transaction';
 import { DbService } from '../dbService';
@@ -25,6 +24,7 @@ import {
   GIFT_TOKEN_NAME_PREFIX,
   TICKET_TOKEN_DESCRIPTION_PREFIX,
   TICKET_TOKEN_NAME_PREFIX,
+  TICKET_TOKEN_COUNT,
 } from '../../constants';
 import { findServiceBox } from '../../transactions/boxFinder';
 
@@ -43,6 +43,17 @@ export class CreationService extends AbstractTxService {
   static init = (nodeUrl: string, logger: AbstractLogger) => {
     if (this.instance != undefined) return;
     this.instance = new CreationService(nodeUrl, logger);
+  };
+
+  /**
+   * Get the instance of the service
+   * @returns The instance of the service
+   */
+  static getInstance = (): CreationService => {
+    if (!this.instance) {
+      throw new Error(`${this.name} is not initialized`);
+    }
+    return this.instance as CreationService;
   };
 
   /**
@@ -91,12 +102,21 @@ export class CreationService extends AbstractTxService {
         )
         .setTicketPrice(raffleParams.ticketPrice)
         .setGoal(raffleParams.goal)
-        .setWinnersSharePercent(raffleParams.winnersPercent)
+        .setWinnersSharePercent(BigInt(raffleParams.winnersPercent))
+        .setWinnersCount(raffleParams.winnerCount)
+        .setDeadline(BigInt(raffleParams.deadline))
+        .setWinnersPercent(
+          raffleParams.winnersPercentList.split(',').map(BigInt),
+        )
         .setImplementerAddress(raffleParams.implementorAddress)
         .setCreatorAddress(raffleParams.creatorAddress)
+        .setInactiveRaffleValue(
+          raffleParams.requiredValue - configs.ergo.fee * 4n,
+        )
         .setChainHeight(await this.network.getHeight())
         .setTxFee(configs.ergo.fee)
         .setTicketTokenName(TICKET_TOKEN_NAME_PREFIX + raffleParams.name)
+        .setTicketTokenCount(TICKET_TOKEN_COUNT)
         .setTicketTokenDescription(
           TICKET_TOKEN_DESCRIPTION_PREFIX + raffleParams.name,
         );
@@ -112,17 +132,35 @@ export class CreationService extends AbstractTxService {
       const signedCreationTx = await signAndAddTx(
         this.network,
         creationTx,
-        TxType.Activation,
+        TxType.Creation,
       );
       this.logger.info(
         `Creation transaction for request with id [${requestId}] has been added (txId: [${creationTx.id}])`,
       );
 
+      // Add the txpot callback
+      const callbackId = `${TxType.Creation}-${raffleParams.id}`;
+      this.activeTxpotCallbackIds.push([TxType.Creation, callbackId]);
+      TxPotService.getInstance().registerCompletionCallback(
+        TxType.Creation,
+        callbackId,
+        this.txpotCallBackGenerator(
+          creationTx.id,
+          requestId,
+          callbackId,
+          TxType.Creation,
+          raffleParams.proxyAddress,
+        ),
+      );
+      this.logger.debug(
+        `Completion callback added to txpot with callback id [${callbackId}] for transaction [${creationTx.id}]`,
+      );
+
       // Build the activation transaction and chain it to the creation transaction
       const raffleId = serviceBox.boxId;
       const activationTxBuilder = new ActivationTxBuilder()
-        .setInactiveRaffle(signedCreationTx.outputs[1])
-        .setTicketRepo(signedCreationTx.outputs[0])
+        .setInactiveRaffle(signedCreationTx.outputs[2])
+        .setTicketRepo(signedCreationTx.outputs[1])
         .setTxFee(configs.ergo.fee)
         .setChainHeight(await this.network.getHeight())
         .setGiftTokenName(GIFT_TOKEN_NAME_PREFIX + raffleId.slice(0, 6))
@@ -143,7 +181,10 @@ export class CreationService extends AbstractTxService {
       // Build the gift receipt transactions by chaining it to the activation transaction
       let giftTokenRepo = activationTx.outputs[2];
       let step = 1;
-      for (const winnerBox of activationTx.outputs.slice(3)) {
+      for (const winnerBox of activationTx.outputs.slice(
+        3,
+        3 + raffleParams.winnerCount,
+      )) {
         const giftReceiptTxBuilder = new GiftTokenReceiptTxBuilder()
           .setGiftTokenRepo(giftTokenRepo)
           .setWinner(winnerBox)
@@ -181,7 +222,7 @@ export class CreationService extends AbstractTxService {
         ? [{ tokenId: raffleParams.requiredTokenId, amount: 1n }]
         : [],
       onSuffice: this.creationCallbackGenerator(raffleParams),
-      getMinedBoxes: async () => {
+      getConfirmedBoxes: async () => {
         return convertDbBoxesToErgoBoxes(
           await DbService.getInstance().getDynamicBoxes(
             raffleParams.proxyAddress,
@@ -192,20 +233,5 @@ export class CreationService extends AbstractTxService {
     // Register the request with the box lookup service
     const requestId =
       BoxLookupService.getInstance().addRequest(boxLookupRequest);
-
-    // Add the txpot callback
-    const callbackId = `${TxType.Creation}-${raffleParams.id}`;
-    this.activeTxpotCallbackIds.push([TxType.Creation, callbackId]);
-    TxPotService.getInstance().registerCompletionCallback(
-      TxType.Creation,
-      callbackId,
-      txpotCallBackGenerator(
-        this,
-        raffleParams.proxyAddress,
-        requestId,
-        callbackId,
-        TxType.Creation,
-      ),
-    );
   }
 }

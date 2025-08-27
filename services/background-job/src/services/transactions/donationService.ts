@@ -11,7 +11,6 @@ import { configs } from '../../config';
 import {
   signAndAddTx,
   convertDbBoxesToErgoBoxes,
-  txpotCallBackGenerator,
 } from '../../transactions/utils';
 import { TxType } from '../../types/transaction';
 import { DbService } from '../dbService';
@@ -33,6 +32,17 @@ export class DonationService extends AbstractTxService {
   static init = (nodeUrl: string, logger: AbstractLogger) => {
     if (this.instance != undefined) return;
     this.instance = new DonationService(nodeUrl, logger);
+  };
+
+  /**
+   * Get the instance of the service
+   * @returns The instance of the service
+   */
+  static getInstance = (): DonationService => {
+    if (!this.instance) {
+      throw new Error(`${this.name} is not initialized`);
+    }
+    return this.instance as DonationService;
   };
 
   /**
@@ -92,6 +102,21 @@ export class DonationService extends AbstractTxService {
       this.logger.info(
         `Donation transaction for request with id [${requestId}] has been added (txId: [${donateTx.id}])`,
       );
+
+      // Add the txpot callback
+      const callbackId = `${TxType.Donation}-${donationParams.id}`;
+      this.activeTxpotCallbackIds.push([TxType.Donation, callbackId]);
+      TxPotService.getInstance().registerCompletionCallback(
+        TxType.Donation,
+        callbackId,
+        this.txpotCallBackGenerator(
+          donateTx.id,
+          requestId,
+          callbackId,
+          TxType.Donation,
+          donationParams.proxyAddress,
+        ),
+      );
     };
     return donationCallback;
   };
@@ -117,7 +142,7 @@ export class DonationService extends AbstractTxService {
           ]
         : [],
       onSuffice: this.donationCallbackGenerator(donationParams),
-      getMinedBoxes: async () => {
+      getConfirmedBoxes: async () => {
         return convertDbBoxesToErgoBoxes(
           await DbService.getInstance().getDynamicBoxes(
             donationParams.proxyAddress,
@@ -130,20 +155,5 @@ export class DonationService extends AbstractTxService {
     const requestId =
       BoxLookupService.getInstance().addRequest(boxLookupRequest);
     this.activeBoxLookupRequestIds.push(requestId);
-
-    // Add the txpot callback
-    const callbackId = `${TxType.Donation}-${donationParams.id}`;
-    this.activeTxpotCallbackIds.push([TxType.Donation, callbackId]);
-    TxPotService.getInstance().registerCompletionCallback(
-      TxType.Donation,
-      callbackId,
-      txpotCallBackGenerator(
-        this,
-        donationParams.proxyAddress,
-        requestId,
-        callbackId,
-        TxType.Donation,
-      ),
-    );
   }
 }

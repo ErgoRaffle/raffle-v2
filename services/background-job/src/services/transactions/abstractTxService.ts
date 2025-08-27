@@ -5,7 +5,6 @@ import {
   ServiceStatus,
 } from '@rosen-bridge/service-manager';
 import { CallbackFunction, TransactionEntity } from '@rosen-bridge/tx-pot';
-import { ErgoAddress } from '@fleet-sdk/core';
 
 import { BoxLookupService } from '../boxLoookupService';
 import { ScannerService } from '../scannerService';
@@ -40,13 +39,6 @@ export abstract class AbstractTxService extends AbstractService {
     this.network = new ErgoNodeNetwork(nodeUrl);
   }
 
-  static getInstance = (): AbstractTxService => {
-    if (!AbstractTxService.instance) {
-      throw new Error(`${this.name} is not initialized`);
-    }
-    return AbstractTxService.instance;
-  };
-
   /**
    * Add the base box-lookup requests to the service
    */
@@ -58,6 +50,7 @@ export abstract class AbstractTxService extends AbstractService {
   protected start = async (): Promise<boolean> => {
     this.addBaseRequests();
     this.setStatus(ServiceStatus.running);
+    this.logger.debug(`service ${this.name} started`);
     return true;
   };
 
@@ -135,21 +128,17 @@ export abstract class AbstractTxService extends AbstractService {
    * @returns A callback function to complete a transaction
    */
   txpotCallBackGenerator = (
-    proxyAddress: string,
+    txId: string,
     requestId: number,
     callbackId: string,
     txType: TxType,
+    proxyAddress: string,
   ): CallbackFunction => {
     return async (txEntity: TransactionEntity) => {
       const tx = deserializeTransaction(
-        Buffer.from(txEntity.serializedTx, 'hex'),
+        Buffer.from(txEntity.serializedTx, 'base64'),
       );
-      if (
-        tx.outputs.find(
-          (output) =>
-            output.ergoTree === ErgoAddress.fromBase58(proxyAddress).ergoTree,
-        )
-      ) {
+      if (tx.id == txId) {
         this.logger.info(
           `Transaction ${txEntity.txId} is completed for request ${requestId}`,
         );

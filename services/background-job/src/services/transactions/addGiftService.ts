@@ -11,7 +11,6 @@ import { configs } from '../../config';
 import {
   signAndAddTx,
   convertDbBoxesToErgoBoxes,
-  txpotCallBackGenerator,
   calculateBoxesAssetSum,
 } from '../../transactions/utils';
 import { TxType } from '../../types/transaction';
@@ -34,6 +33,17 @@ export class AddGiftService extends AbstractTxService {
   static init = (nodeUrl: string, logger: AbstractLogger) => {
     if (this.instance != undefined) return;
     this.instance = new AddGiftService(nodeUrl, logger);
+  };
+
+  /**
+   * Get the instance of the service
+   * @returns The instance of the service
+   */
+  static getInstance = (): AddGiftService => {
+    if (!this.instance) {
+      throw new Error(`${this.name} is not initialized`);
+    }
+    return this.instance as AddGiftService;
   };
 
   /**
@@ -93,6 +103,21 @@ export class AddGiftService extends AbstractTxService {
 
       await signAndAddTx(this.network, addGiftTx, TxType.AddGift);
 
+      // Add the txpot callback
+      const callbackId = `${TxType.AddGift}-${addGiftParams.id}`;
+      this.activeTxpotCallbackIds.push([TxType.AddGift, callbackId]);
+      TxPotService.getInstance().registerCompletionCallback(
+        TxType.AddGift,
+        callbackId,
+        this.txpotCallBackGenerator(
+          addGiftTx.id,
+          requestId,
+          callbackId,
+          TxType.AddGift,
+          addGiftParams.proxyAddress,
+        ),
+      );
+
       this.logger.info(
         `Add gift transaction for request with id [${requestId}] has been added (txId: [${addGiftTx.id}])`,
       );
@@ -114,7 +139,7 @@ export class AddGiftService extends AbstractTxService {
       value: 3n * configs.ergo.fee, // minimum value for add gift transaction
       tokens: [], // We'll collect all tokens from the boxes
       onSuffice: this.addGiftCallbackGenerator(addGiftParams),
-      getMinedBoxes: async () => {
+      getConfirmedBoxes: async () => {
         return convertDbBoxesToErgoBoxes(
           await DbService.getInstance().getDynamicBoxes(
             addGiftParams.proxyAddress,
@@ -127,20 +152,5 @@ export class AddGiftService extends AbstractTxService {
     const requestId =
       BoxLookupService.getInstance().addRequest(boxLookupRequest);
     this.activeBoxLookupRequestIds.push(requestId);
-
-    // Add the txpot callback
-    const callbackId = `${TxType.AddGift}-${addGiftParams.id}`;
-    this.activeTxpotCallbackIds.push([TxType.AddGift, callbackId]);
-    TxPotService.getInstance().registerCompletionCallback(
-      TxType.AddGift,
-      callbackId,
-      txpotCallBackGenerator(
-        this,
-        addGiftParams.proxyAddress,
-        requestId,
-        callbackId,
-        TxType.AddGift,
-      ),
-    );
   }
 }

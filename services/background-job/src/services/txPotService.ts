@@ -16,7 +16,7 @@ import { serializeTransaction } from '@fleet-sdk/serializer';
 import { ErgoNetworkInterface } from '../txPot/ergoNetworkInterface';
 import { DbService } from './dbService';
 import * as constants from '../constants';
-import { TxType } from '../transactions/types';
+import { TxType } from '../types/transaction';
 
 export class TxPotService extends AbstractService {
   name = 'TxPotService';
