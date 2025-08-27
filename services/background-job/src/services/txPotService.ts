@@ -5,18 +5,18 @@ import {
   ServiceStatus,
 } from '@rosen-bridge/service-manager';
 import {
-  CallbackFunction,
   TransactionStatus,
   TxPot,
+  CallbackFunction,
 } from '@rosen-bridge/tx-pot';
 import { DataSource } from '@rosen-bridge/extended-typeorm';
+import { SignedTransaction } from '@fleet-sdk/common';
+import { serializeTransaction } from '@fleet-sdk/serializer';
 
 import { ErgoNetworkInterface } from '../txPot/ergoNetworkInterface';
 import { DbService } from './dbService';
 import * as constants from '../constants';
-import { SignedTransaction } from '@fleet-sdk/common';
-import { TxType } from '../types/transaction';
-import { serializeTransaction } from '@fleet-sdk/serializer';
+import { TxType } from '../transactions/types';
 
 export class TxPotService extends AbstractService {
   name = 'TxPotService';
@@ -175,8 +175,8 @@ export class TxPotService extends AbstractService {
       constants.ERGO_CHAIN_NAME,
       type,
       0,
-      Buffer.from(serializeTransaction(tx).toBytes()).toString('hex'),
-      TransactionStatus.APPROVED,
+      Buffer.from(serializeTransaction(tx).toBytes()).toString('base64'),
+      TransactionStatus.SIGNED,
     );
   };
 

@@ -1,7 +1,6 @@
 import { SignedTransaction } from '@fleet-sdk/common';
 import {
   Box,
-  ErgoAddress,
   ErgoBox,
   ErgoUnsignedTransaction,
   Network,
@@ -11,18 +10,13 @@ import { ErgoHDKey } from '@fleet-sdk/wallet';
 import { ProverBuilder$ } from 'sigmastate-js/main';
 import { deserializeBox } from '@fleet-sdk/serializer';
 import { AbstractErgoExtractorEntity } from '@rosen-bridge/abstract-extractor';
-import { deserializeTransaction } from '@fleet-sdk/serializer';
-import { TransactionEntity, CallbackFunction } from '@rosen-bridge/tx-pot';
-import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
 
 import ErgoNodeNetwork from '../network/ergoNodeNetwork';
-import { TxType } from '../types/transaction';
+import { TxType } from './types';
 import { TxPotService } from '../services/txPotService';
-import { AbstractTxService } from '../services/transactions/abstractTxService';
-import { BoxValue } from '../types/box';
 import { configs } from '../config';
+import { BoxValue } from '../types/box';
 
-const logger = CallbackLoggerFactory.getInstance().getLogger(import.meta.url);
 /**
  * Signs an unsigned Ergo transaction with the provided keys.
  *
@@ -52,7 +46,7 @@ export const signTransaction = async (
     context: await network.getStateContext(),
     parameters: await network.getBlockchainParameters(),
     network:
-      configs.ergo.network === 'mainnet' ? Network.Mainnet : Network.Testnet,
+      configs.ergo.network == 'mainnet' ? Network.Mainnet : Network.Testnet,
     baseCost: 0,
   };
 
@@ -91,14 +85,13 @@ export const signAndAddTx = async (
   tx: ErgoUnsignedTransaction,
   txType: TxType,
 ) => {
-  let signedTx: SignedTransaction;
   try {
-    signedTx = await signTransaction(network, tx, []);
+    const signedTx = await signTransaction(network, tx, []);
+    TxPotService.getInstance().addTx(signedTx, txType);
+    return signedTx;
   } catch (e) {
     throw new Error(`Failed to sign transaction: ${e}`);
   }
-  TxPotService.getInstance().addTx(signedTx, txType);
-  return signedTx;
 };
 
 /**
@@ -106,7 +99,7 @@ export const signAndAddTx = async (
  * @param dbBoxes - The list of BoxEntity objects to convert
  * @returns The list of ErgoBox objects
  */
-export const convertDbBoxesToErgoBoxes = (
+export const covertDbBoxesToErgoBoxes = (
   dbBoxes: AbstractErgoExtractorEntity[],
 ): ErgoBox[] => {
   return dbBoxes.map((dbBox) => {
@@ -117,41 +110,6 @@ export const convertDbBoxesToErgoBoxes = (
     const box = deserializeBox(dbBox.serialized) as Box<bigint>;
     return new ErgoBox(box);
   });
-};
-
-/**
- * Generates a callback function to complete a transaction
- * @param service - The service to finish the request
- * @param proxyAddress - The proxy address
- * @param requestId - The box-lookup request id
- * @param callbackId - The txpot callback id
- * @param txType - The transaction type
- */
-export const txpotCallBackGenerator = (
-  service: AbstractTxService,
-  proxyAddress: string,
-  requestId: number,
-  callbackId: string,
-  txType: TxType,
-): CallbackFunction => {
-  return async (txEntity: TransactionEntity) => {
-    const tx = deserializeTransaction(
-      Buffer.from(txEntity.serializedTx, 'hex'),
-    );
-    if (
-      tx.outputs.find(
-        (output) =>
-          output.ergoTree === ErgoAddress.fromBase58(proxyAddress).ergoTree,
-      )
-    ) {
-      logger.info(
-        `Transaction ${txEntity.txId} is completed for request ${requestId}`,
-      );
-      // Remove the request from the box lookup
-      service.finishRequest(requestId, callbackId, txType, proxyAddress);
-      return;
-    }
-  };
 };
 
 /**
