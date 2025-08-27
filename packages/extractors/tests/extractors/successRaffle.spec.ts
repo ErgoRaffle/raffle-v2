@@ -38,7 +38,7 @@ const extractorTest = await createSuccessRaffleExtractorTest();
 describe('SuccessRaffleExtractor', () => {
   describe('extractBoxData', () => {
     /**
-     * @target should successfully extract data from a valid SuccessRaffle box
+     * @target should successfully extract data from a valid new SuccessRaffle box in step 1
      * @dependencies
      * @scenario
      * - call the extractBoxData functions
@@ -47,19 +47,19 @@ describe('SuccessRaffleExtractor', () => {
      * - SuccessRaffles should extract successfully
      */
     extractorTest(
-      `should successfully extract data from a valid SuccessRaffle box`,
+      `should successfully extract data from a valid new SuccessRaffle box in step 1`,
       async ({ extractor }) => {
         const extractedData = await extractor.extractBoxData(
           sampleSuccessRaffleBoxes[0],
           sampleSuccessRaffleExtensions,
         );
 
-        expect(extractedData).toEqual(sampleSuccessRaffleExtractedData);
+        expect(extractedData).toEqual(sampleSuccessRaffleExtractedData[0]);
       },
     );
 
     /**
-     * @target should return undefined when selectedWinnersList value is invalid
+     * @target should successfully extract data from a valid SuccessRaffle box in step 2
      * @dependencies
      * @scenario
      * - call the extractBoxData functions
@@ -68,14 +68,38 @@ describe('SuccessRaffleExtractor', () => {
      * - SuccessRaffles should extract successfully
      */
     extractorTest(
-      `should return undefined when selectedWinnersList value is invalid`,
+      `should successfully extract data from a valid SuccessRaffle box in step 2`,
+      async ({ extractor }) => {
+        const extractedData = await extractor.extractBoxData(
+          sampleSuccessRaffleBoxes[1],
+          sampleSuccessRaffleExtensions,
+        );
+
+        expect(extractedData).toEqual(sampleSuccessRaffleExtractedData[1]);
+      },
+    );
+
+    /**
+     * @target should pass selectedWinnersList extraction when input extension is invalid
+     * @dependencies
+     * @scenario
+     * - call the extractBoxData functions
+     * - check if SuccessRaffle box data extracted correctly
+     * @expected
+     * - SuccessRaffles should extract successfully without selectedWinnersList
+     */
+    extractorTest(
+      `should pass selectedWinnersList extraction when input extension is invalid`,
       async ({ extractor }) => {
         const extractedData = extractor.extractBoxData(
-          sampleSuccessRaffleBoxes[0],
+          sampleSuccessRaffleBoxes[1],
           [],
         );
 
-        expect(extractedData).toEqual(undefined);
+        expect(extractedData).toEqual({
+          ...sampleSuccessRaffleExtractedData[1],
+          selectedWinnersList: '',
+        });
       },
     );
   });

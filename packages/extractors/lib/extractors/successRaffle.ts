@@ -6,12 +6,12 @@ import {
   ErgoNetworkType,
   InputExtension,
 } from '@rosen-bridge/scanner-interfaces';
+import { ErgoAddress, Box } from '@fleet-sdk/core';
+import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 
 import { SuccessRaffleAction } from '../actions/successRaffle';
 import { SuccessRaffleBoxInterface } from '../interfaces/types';
 import { SuccessRaffleEntity } from '../entities';
-import { ErgoAddress, Box } from '@fleet-sdk/core';
-import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 
 export class SuccessRaffleExtractor extends AbstractInitializableErgoExtractor<
   SuccessRaffleBoxInterface,
@@ -73,27 +73,36 @@ export class SuccessRaffleExtractor extends AbstractInitializableErgoExtractor<
     box: OutputBox,
     inputExtensions: InputExtension[],
   ): SuccessRaffleBoxInterface | undefined => {
-    let selectedWinnersList = '';
-    try {
-      selectedWinnersList = (
-        SConstant.from(inputExtensions[0]['0']).data as bigint[]
-      ).toString();
-    } catch (err) {
-      this.logger.warn(
-        `SuccessRaffleExtractor failed on extracting data due to invalid or missing inputExtension: ${err}`,
-      );
-      return undefined;
+    let selectedWinnersList: bigint[] = [];
+    let newWinnerIndex = undefined;
+    const step = SConstant.from(box.additionalRegisters.R8!).data as number;
+
+    if (step != 1) {
+      try {
+        selectedWinnersList = SConstant.from(inputExtensions[0]['0'])
+          .data as bigint[];
+        newWinnerIndex = SConstant.from(inputExtensions[0]['1']).data as bigint;
+        this.logger.debug(
+          `SuccessRaffleExtractor extension extracted data, selectedWinnersList: ${selectedWinnersList}, newWinnerIndex: ${newWinnerIndex}`,
+        );
+      } catch (err) {
+        this.logger.warn(
+          `SuccessRaffleExtractor failed on extracting data due to invalid or missing inputExtension: ${err}`,
+        );
+      }
     }
 
-    const step = SConstant.from(box.additionalRegisters.R8!).data as number;
     const data = {
       boxId: box.boxId.toString(),
       txId: box.transactionId,
-      raffleId: box.assets[0].tokenId,
+      raffleId: box.assets[1].tokenId,
       serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(
         'base64',
       ),
-      selectedWinnersList: selectedWinnersList,
+      selectedWinnersList:
+        step == 1 || newWinnerIndex == undefined
+          ? ''
+          : [...selectedWinnersList, newWinnerIndex].toString(),
       step: step,
     };
 
