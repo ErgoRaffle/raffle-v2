@@ -263,7 +263,8 @@ export class SuccessRaffleBuilder {
     if (!this.value) throw new Error('Value not set');
     if (!this.creationHeight) throw new Error('Creation height not set');
     if (this.totalPrize == undefined) throw new Error('Total prize not set');
-    if (!this.totalSoldTickets) throw new Error('Total sold tickets not set');
+    if (this.totalSoldTickets === undefined)
+      throw new Error('Total sold tickets not set');
     if (!this.txFee) throw new Error('Transaction fee not set');
     if (!this.winnerCount) throw new Error('Winner count not set');
     if (!this.projectErgoTreeHash)
@@ -375,7 +376,7 @@ export class SuccessRaffleBuilder {
       .setTxFee(r4Data[2])
       .setWinnerCount(winnerCount)
       .setProjectErgoTreeHash(projectErgoTreeHash)
-      .setSeed(blake2b256(Buffer.from(r7Data[0])))
+      .setSeed(Buffer.from(r7Data[0]))
       .setStep(step)
       .setTicketTokenId(box.assets[1].tokenId)
       .setTicketTokenAmount(BigInt(box.assets[1].amount));

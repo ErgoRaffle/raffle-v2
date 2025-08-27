@@ -102,7 +102,6 @@ export class GiftRedeemBuilder {
    * @returns Winners count
    */
   getWinnersCount = (): number => {
-    if (!this.winnersCount) throw new Error('Winners count not set');
     return this.winnersCount!;
   };
 
@@ -211,7 +210,8 @@ export class GiftRedeemBuilder {
   private validate = (): void => {
     if (!this.value) throw new Error('Value not set');
     if (!this.creationHeight) throw new Error('Creation height not set');
-    if (!this.totalSoldTickets) throw new Error('Total sold tickets not set');
+    if (this.totalSoldTickets === undefined)
+      throw new Error('Total sold tickets not set');
     if (!this.ticketPrice) throw new Error('Ticket price not set');
     if (!this.txFee) throw new Error('Transaction fee not set');
     if (!this.winnersCount) throw new Error('Winners count not set');

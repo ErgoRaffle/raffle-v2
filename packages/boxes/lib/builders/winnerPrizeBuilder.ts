@@ -77,8 +77,7 @@ export class WinnerPrizeBuilder {
    * @returns The winner ticket index
    */
   getWinnerTicketIndex = (): bigint => {
-    if (!this.winnerTicketIndex) throw new Error('Winner ticket index not set');
-    return this.winnerTicketIndex;
+    return this.winnerTicketIndex!;
   };
 
   /**
@@ -116,8 +115,7 @@ export class WinnerPrizeBuilder {
    * @returns The winner index
    */
   getWinnerIndex = (): number => {
-    if (!this.winnerIndex) throw new Error('Winner index not set');
-    return this.winnerIndex;
+    return this.winnerIndex!;
   };
 
   /**
@@ -145,8 +143,7 @@ export class WinnerPrizeBuilder {
    * @returns The ticket token ID
    */
   getTicketTokenId = (): string => {
-    if (!this.ticketTokenId) throw new Error('Ticket token ID not set');
-    return this.ticketTokenId;
+    return this.ticketTokenId!;
   };
 
   /**

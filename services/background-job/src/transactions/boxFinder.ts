@@ -1,6 +1,6 @@
 import { WinnerBuilder } from '@ergo-raffle/boxes';
 import { raffleInfo } from '@ergo-raffle/contracts';
-import { ErgoBox } from '@fleet-sdk/core';
+import { ErgoBox, ErgoAddress } from '@fleet-sdk/core';
 import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
 import { RaffleBoxType } from '@ergo-raffle/extractors';
 
@@ -22,7 +22,8 @@ export const findAllWinners = async (
   logger.debug(`Searching winner boxes for raffle [${raffleId}]`);
   const winnerBoxes = unspentBoxes.filter(
     (box) =>
-      box.ergoTree === raffleInfo.addresses.winner &&
+      box.ergoTree ===
+        ErgoAddress.fromBase58(raffleInfo.addresses.winner).ergoTree &&
       box.assets[0].tokenId === raffleId,
   );
   logger.debug(
@@ -60,11 +61,15 @@ export const findWinner = async (
   );
   const winnerBoxes = unspentBoxes.filter(
     (box) =>
-      box.ergoTree === raffleInfo.addresses.winner &&
+      box.ergoTree ===
+        ErgoAddress.fromBase58(raffleInfo.addresses.winner).ergoTree &&
       box.assets[0].tokenId === raffleId,
   );
   const winnerBox = winnerBoxes.find((box) => {
     const winnerBoxBuilder = WinnerBuilder.fromBox(box);
+    logger.debug(
+      `winner index of ${box.boxId}: ${JSON.stringify(winnerBoxBuilder.getWinnerIndex())}`,
+    );
     return winnerBoxBuilder.getWinnerIndex() === winnerIndex;
   });
   if (winnerBox) {
@@ -159,7 +164,8 @@ export const findGiftRedeemBox = async (
   // Find the gift redeem box in unspent boxes
   let box = unspentBoxes.find(
     (box) =>
-      box.ergoTree === raffleInfo.addresses.giftRedeem &&
+      box.ergoTree ===
+        ErgoAddress.fromBase58(raffleInfo.addresses.giftRedeem).ergoTree &&
       box.assets[1]?.tokenId === raffleId,
   );
   if (box) {

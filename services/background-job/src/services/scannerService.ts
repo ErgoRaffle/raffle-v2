@@ -25,6 +25,7 @@ import { ErgoScanner, ErgoNodeNetwork } from '@rosen-bridge/scanner';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
+import { Network } from '@fleet-sdk/core';
 
 import { DbService } from './dbService';
 import { Scanner as ScannerBaseOption } from '../types';
@@ -237,6 +238,7 @@ export class ScannerService extends AbstractService {
       this.dbService.dataSource,
       'Dynamic',
       CallbackLoggerFactory.getInstance().getLogger('dynamic-extractor'),
+      configs.ergo.network === 'mainnet' ? Network.Mainnet : Network.Testnet,
     );
     await this.ergoScanner.registerExtractor(this.dynamicExtractor);
   };
@@ -290,7 +292,7 @@ export class ScannerService extends AbstractService {
    */
   protected start = async (): Promise<boolean> => {
     this.shouldStop = false;
-    this.setStatus(ServiceStatus.started);
+    this.setStatus(ServiceStatus.running);
     return await this.fetchData();
   };
 

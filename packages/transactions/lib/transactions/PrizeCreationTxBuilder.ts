@@ -7,6 +7,7 @@ import {
   SColl,
   SLong,
 } from '@fleet-sdk/core';
+import { blake2b256 } from '@fleet-sdk/crypto';
 
 import { SuccessRaffleBuilder } from '@ergo-raffle/boxes';
 import { WinnerPrizeBuilder } from '@ergo-raffle/boxes';
@@ -131,6 +132,8 @@ export class PrizeCreationTxBuilder {
       .subtractPrize(winnerPrizeBuilder.getPrizeAmount())
       .setSelectedWinners([...this.winnerIndexList!, this.winnerTicketIndex!])
       .setCreationHeight(this.chainHeight!);
+    // Update seed for the next winner (next seed is created by blake2b256 of the current seed)
+    successRaffleBuilder.setSeed(blake2b256(successRaffleBuilder.getSeed()));
     const updatedSuccessRaffleBox = successRaffleBuilder.build();
 
     // Build the transaction

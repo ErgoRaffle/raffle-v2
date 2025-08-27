@@ -143,6 +143,14 @@ export class ActiveRaffleBuilder {
   };
 
   /**
+   * Get the raffle goal in nanoERG/CollectingToken
+   * @returns Goal amount in nanoERG/CollectingToken
+   */
+  getGoal = (): bigint => {
+    return this.goal!;
+  };
+
+  /**
    * Set the raffle deadline in blocks
    * @param deadline - Deadline in blocks
    * @returns this builder instance
@@ -347,6 +355,29 @@ export class ActiveRaffleBuilder {
   setCollectingTokenCount = (count: bigint): this => {
     this.collectingTokenCount = count;
     return this;
+  };
+
+  /**
+   * Check the raffle status based on current height and goal
+   * @param currentHeight - Current block height
+   * @returns undefined if deadline hasn't passed, 1 if goal reached, 0 otherwise
+   */
+  getRaffleStatus = (currentHeight: number): number | undefined => {
+    if (currentHeight < this.deadline!) {
+      // Deadline hasn't passed yet
+      return undefined;
+    }
+
+    // Deadline has passed, check if goal was reached
+    const totalRaised = this.totalSoldTickets! * this.ticketPrice!;
+
+    if (totalRaised >= this.goal!) {
+      // Successfully reached the goal
+      return 1;
+    } else {
+      // Deadline passed but goal not reached
+      return 0;
+    }
   };
 
   /**

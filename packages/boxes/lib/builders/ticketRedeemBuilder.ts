@@ -183,7 +183,8 @@ export class TicketRedeemBuilder {
   private validate = (): void => {
     if (!this.value) throw new Error('Value not set');
     if (!this.creationHeight) throw new Error('Creation height not set');
-    if (!this.totalSoldTickets) throw new Error('Total sold tickets not set');
+    if (this.totalSoldTickets === undefined)
+      throw new Error('Total sold tickets not set');
     if (!this.ticketPrice) throw new Error('Ticket price not set');
     if (!this.txFee) throw new Error('Transaction fee not set');
     if (this.redeemedTickets === undefined)
