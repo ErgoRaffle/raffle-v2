@@ -18,7 +18,7 @@ export class HealthCheckService extends AbstractService {
   protected dependencies: Dependency[] = [
     {
       serviceName: ScannerService.name,
-      allowedStatuses: [ServiceStatus.started],
+      allowedStatuses: [ServiceStatus.running],
     },
     {
       serviceName: DbService.name,

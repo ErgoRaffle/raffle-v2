@@ -34,7 +34,6 @@ import { configs } from '../config';
 export class ScannerService extends AbstractService {
   name = 'ScannerService';
   private static instance: ScannerService;
-  readonly dbService: DbService;
   readonly scannerConfig: ScannerBaseOption;
   private dynamicExtractor: DynamicExtractor;
   private shouldStop = false;
@@ -52,16 +51,14 @@ export class ScannerService extends AbstractService {
 
   private constructor(
     scannerConfig: ScannerBaseOption,
-    dbService: DbService,
     logger?: AbstractLogger,
   ) {
     super(logger);
     this.scannerConfig = scannerConfig;
-    this.dbService = dbService;
     this.ergoScanner = new ErgoScanner({
       network: new ErgoNodeNetwork(this.scannerConfig.node.url),
       initialHeight: this.scannerConfig.node.initialHeight,
-      dataSource: this.dbService.dataSource,
+      dataSource: DbService.getInstance().dataSource,
       logger: CallbackLoggerFactory.getInstance().getLogger('raffle-scanner'),
     });
   }
@@ -73,18 +70,19 @@ export class ScannerService extends AbstractService {
    */
   protected readonly registerExtractors = async () => {
     const raffleServiceExtractor = new ServiceExtractor(
-      this.dbService.dataSource,
+      DbService.getInstance().dataSource,
       'RaffleService',
       this.scannerConfig.node.url,
       ErgoNetworkType.Node,
       raffleInfo.addresses.service,
       raffleInfo.tokens.serviceNft,
       CallbackLoggerFactory.getInstance().getLogger('raffle-service-extractor'),
+      false,
     );
     await this.ergoScanner.registerExtractor(raffleServiceExtractor);
 
     const inactiveRaffleExtractor = new InactiveRaffleExtractor(
-      this.dbService.dataSource,
+      DbService.getInstance().dataSource,
       'InactiveRaffle',
       this.scannerConfig.node.url,
       raffleInfo.addresses.inactiveRaffle,
@@ -93,11 +91,12 @@ export class ScannerService extends AbstractService {
       CallbackLoggerFactory.getInstance().getLogger(
         'raffle-inactiveRaffle-extractor',
       ),
+      false,
     );
     await this.ergoScanner.registerExtractor(inactiveRaffleExtractor);
 
     const ticketRepoExtractor = new TicketRepoExtractor(
-      this.dbService.dataSource,
+      DbService.getInstance().dataSource,
       'TicketRepo',
       this.scannerConfig.node.url,
       ErgoNetworkType.Node,
@@ -105,11 +104,12 @@ export class ScannerService extends AbstractService {
       CallbackLoggerFactory.getInstance().getLogger(
         'raffle-ticketRepo-extractor',
       ),
+      false,
     );
     await this.ergoScanner.registerExtractor(ticketRepoExtractor);
 
     const activeRaffleExtractor = new ActiveRaffleExtractor(
-      this.dbService.dataSource,
+      DbService.getInstance().dataSource,
       'ActiveRaffle',
       this.scannerConfig.node.url,
       ErgoNetworkType.Node,
@@ -118,11 +118,12 @@ export class ScannerService extends AbstractService {
       CallbackLoggerFactory.getInstance().getLogger(
         'raffle-activeRaffle-extractor',
       ),
+      false,
     );
     await this.ergoScanner.registerExtractor(activeRaffleExtractor);
 
     const giftTokenRepoExtractor = new GiftTokenRepoExtractor(
-      this.dbService.dataSource,
+      DbService.getInstance().dataSource,
       'GiftTokenRepo',
       this.scannerConfig.node.url,
       ErgoNetworkType.Node,
@@ -130,51 +131,56 @@ export class ScannerService extends AbstractService {
       CallbackLoggerFactory.getInstance().getLogger(
         'raffle-giftTokenRepo-extractor',
       ),
+      false,
     );
     await this.ergoScanner.registerExtractor(giftTokenRepoExtractor);
 
     const winnerExtractor = new WinnerExtractor(
-      this.dbService.dataSource,
+      DbService.getInstance().dataSource,
       'Winner',
       this.scannerConfig.node.url,
       ErgoNetworkType.Node,
       raffleInfo.addresses.winner,
       CallbackLoggerFactory.getInstance().getLogger('raffle-winner-extractor'),
+      false,
     );
     await this.ergoScanner.registerExtractor(winnerExtractor);
 
     const raffleDetailsExtractor = new RaffleDetailsExtractor(
-      this.dbService.dataSource,
+      DbService.getInstance().dataSource,
       'RaffleDetails',
       this.scannerConfig.node.url,
       ErgoNetworkType.Node,
       raffleInfo.addresses.raffleDetails,
       CallbackLoggerFactory.getInstance().getLogger('raffle-details-extractor'),
+      false,
     );
     await this.ergoScanner.registerExtractor(raffleDetailsExtractor);
 
     const giftExtractor = new GiftExtractor(
-      this.dbService.dataSource,
+      DbService.getInstance().dataSource,
       'Gift',
       this.scannerConfig.node.url,
       ErgoNetworkType.Node,
       raffleInfo.addresses.gift,
       CallbackLoggerFactory.getInstance().getLogger('raffle-gift-extractor'),
+      false,
     );
     await this.ergoScanner.registerExtractor(giftExtractor);
 
     const ticketExtractor = new TicketExtractor(
-      this.dbService.dataSource,
+      DbService.getInstance().dataSource,
       'Ticket',
       this.scannerConfig.node.url,
       ErgoNetworkType.Node,
       raffleInfo.addresses.ticket,
       CallbackLoggerFactory.getInstance().getLogger('raffle-ticket-extractor'),
+      false,
     );
     await this.ergoScanner.registerExtractor(ticketExtractor);
 
     const winnerPrize = new WinnerPrizeExtractor(
-      this.dbService.dataSource,
+      DbService.getInstance().dataSource,
       'WinnerPrize',
       this.scannerConfig.node.url,
       ErgoNetworkType.Node,
@@ -182,11 +188,12 @@ export class ScannerService extends AbstractService {
       CallbackLoggerFactory.getInstance().getLogger(
         'raffle-winnerPrize-extractor',
       ),
+      false,
     );
     await this.ergoScanner.registerExtractor(winnerPrize);
 
     const giftRedeem = new GiftRedeemExtractor(
-      this.dbService.dataSource,
+      DbService.getInstance().dataSource,
       'GiftRedeem',
       this.scannerConfig.node.url,
       ErgoNetworkType.Node,
@@ -195,11 +202,12 @@ export class ScannerService extends AbstractService {
       CallbackLoggerFactory.getInstance().getLogger(
         'raffle-giftRedeem-extractor',
       ),
+      false,
     );
     await this.ergoScanner.registerExtractor(giftRedeem);
 
     const successRaffle = new SuccessRaffleExtractor(
-      this.dbService.dataSource,
+      DbService.getInstance().dataSource,
       'SuccessRaffle',
       this.scannerConfig.node.url,
       raffleInfo.addresses.successRaffle,
@@ -207,11 +215,12 @@ export class ScannerService extends AbstractService {
       CallbackLoggerFactory.getInstance().getLogger(
         'raffle-successRaffle-extractor',
       ),
+      false,
     );
     await this.ergoScanner.registerExtractor(successRaffle);
 
     const ticketRedeem = new TicketRedeemExtractor(
-      this.dbService.dataSource,
+      DbService.getInstance().dataSource,
       'TicketRedeem',
       this.scannerConfig.node.url,
       ErgoNetworkType.Node,
@@ -220,22 +229,24 @@ export class ScannerService extends AbstractService {
       CallbackLoggerFactory.getInstance().getLogger(
         'raffle-ticketRedeem-extractor',
       ),
+      false,
     );
     await this.ergoScanner.registerExtractor(ticketRedeem);
 
     const safePayExtractor = new SafePayExtractor(
-      this.dbService.dataSource,
+      DbService.getInstance().dataSource,
       'SafePay',
       this.scannerConfig.node.url,
       ErgoNetworkType.Node,
       raffleInfo.addresses.safePay,
       raffleInfo.addresses.successRaffle,
       CallbackLoggerFactory.getInstance().getLogger('raffle-safePay-extractor'),
+      false,
     );
     await this.ergoScanner.registerExtractor(safePayExtractor);
 
     this.dynamicExtractor = new DynamicExtractor(
-      this.dbService.dataSource,
+      DbService.getInstance().dataSource,
       'Dynamic',
       CallbackLoggerFactory.getInstance().getLogger('dynamic-extractor'),
       configs.ergo.network === 'mainnet' ? Network.Mainnet : Network.Testnet,
@@ -253,15 +264,12 @@ export class ScannerService extends AbstractService {
    */
   static readonly init = async (
     scannerConfig: ScannerBaseOption,
-    dbService: DbService,
+    logger?: AbstractLogger,
   ) => {
     if (this.instance != undefined) {
       return;
     }
-    const logger = CallbackLoggerFactory.getInstance().getLogger(
-      import.meta.url,
-    );
-    this.instance = new ScannerService(scannerConfig, dbService, logger);
+    this.instance = new ScannerService(scannerConfig, logger);
 
     await this.instance.registerExtractors();
   };
