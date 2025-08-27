@@ -84,14 +84,13 @@ export const signAndAddTx = async (
   tx: ErgoUnsignedTransaction,
   txType: TxType,
 ) => {
-  let signedTx: SignedTransaction;
   try {
-    signedTx = await signTransaction(network, tx, []);
+    const signedTx = await signTransaction(network, tx, []);
+    TxPotService.getInstance().addTx(signedTx, txType);
+    return signedTx;
   } catch (e) {
     throw new Error(`Failed to sign transaction: ${e}`);
   }
-  TxPotService.getInstance().addTx(signedTx, txType);
-  return signedTx;
 };
 
 /**
