@@ -1,5 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
-import { BigIntValueTransformer } from '@rosen-bridge/extended-typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  BigIntValueTransformer,
+} from '@rosen-bridge/extended-typeorm';
 import { CreationPictureEntity } from './creationPictureEntity';
 
 @Entity('creation_params')
@@ -31,8 +36,8 @@ export class CreationParamsEntity {
   @Column('integer')
   implementerFeePercent: number;
 
-  @Column({ type: 'bigint', transformer: new BigIntValueTransformer() })
-  winnersPercent: bigint;
+  @Column('integer')
+  winnersPercent: number;
 
   @Column({ type: 'bigint', transformer: new BigIntValueTransformer() })
   ticketPrice: bigint;
@@ -45,6 +50,9 @@ export class CreationParamsEntity {
 
   @Column('integer')
   deadline: number;
+
+  @Column('integer')
+  winnerCount: number;
 
   /**
    * This field stores the percentage of winners as a string

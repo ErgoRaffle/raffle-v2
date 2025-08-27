@@ -231,7 +231,6 @@ export class CreationService extends AbstractTxService {
       },
     };
     // Register the request with the box lookup service
-    const requestId =
-      BoxLookupService.getInstance().addRequest(boxLookupRequest);
+    BoxLookupService.getInstance().addRequest(boxLookupRequest);
   }
 }

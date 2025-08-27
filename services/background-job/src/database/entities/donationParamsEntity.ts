@@ -1,5 +1,9 @@
-import { BigIntValueTransformer } from '@rosen-bridge/extended-typeorm';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  BigIntValueTransformer,
+} from '@rosen-bridge/extended-typeorm';
 
 @Entity('donation_params')
 export class DonationParamsEntity {

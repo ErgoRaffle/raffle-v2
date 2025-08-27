@@ -99,7 +99,7 @@ export const findServiceBox = async (
   unspentBoxes: ErgoBox[],
 ): Promise<ErgoBox | undefined> => {
   // Find the service box in unspent boxes
-  let serviceBox = unspentBoxes.find(
+  const serviceBox = unspentBoxes.find(
     (box) => box.assets[0]?.tokenId === raffleInfo.tokens.serviceNft,
   );
   if (serviceBox) {
@@ -126,7 +126,7 @@ export const findActiveRaffle = async (
   raffleId: string,
 ): Promise<ErgoBox | undefined> => {
   // Find the active raffle box in unspent boxes
-  let box = unspentBoxes.find(
+  const box = unspentBoxes.find(
     (box) =>
       box.assets[0]?.tokenId === raffleInfo.tokens.raffleLicense &&
       box.assets[1]?.tokenId === raffleId,
@@ -162,7 +162,7 @@ export const findGiftRedeemBox = async (
   raffleId: string,
 ): Promise<ErgoBox | undefined> => {
   // Find the gift redeem box in unspent boxes
-  let box = unspentBoxes.find(
+  const box = unspentBoxes.find(
     (box) =>
       box.ergoTree ===
         ErgoAddress.fromBase58(raffleInfo.addresses.giftRedeem).ergoTree &&
