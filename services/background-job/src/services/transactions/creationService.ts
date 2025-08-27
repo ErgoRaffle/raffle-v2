@@ -65,11 +65,11 @@ export class CreationService extends AbstractTxService {
 
   /**
    * Generator function for a raffle creation callback
-   * - Build the creation transaction
-   * - Build the activation transaction by chaining it to the creation transaction
-   * - Build the gift receipt transactions by chaining it to the activation transaction
+   * - Builds the creation transaction
+   * - Builds the activation transaction by chaining it to the creation transaction
+   * - Builds the gift receipt transactions by chaining it to the activation transaction
    * @param raffleParams - The raffle creation parameters
-   * @returns A callback for the creation of a raffle
+   * @returns A callback function for the creation of a raffle
    */
   private creationCallbackGenerator = (
     raffleParams: CreationParamsEntity,

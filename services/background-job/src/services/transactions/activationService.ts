@@ -4,6 +4,7 @@ import { raffleInfo } from '@ergo-raffle/contracts';
 import { ActivationTxBuilder } from '@ergo-raffle/transactions';
 import { InactiveRaffleBuilder } from '@ergo-raffle/boxes';
 import { ErgoBox } from '@fleet-sdk/core';
+import { RaffleBoxType } from '@ergo-raffle/extractors';
 
 import { BoxLookupService } from '../boxLoookupService';
 import { DbService } from '../dbService';
@@ -12,7 +13,6 @@ import {
   convertDbBoxesToErgoBoxes,
 } from '../../transactions/utils';
 import { TxType } from '../../types/transaction';
-import { RaffleBoxType } from '@ergo-raffle/extractors/lib/entities/raffleBoxEntity';
 import { AbstractTxService } from './abstractTxService';
 import {
   GIFT_TOKEN_DESCRIPTION_PREFIX,
@@ -37,6 +37,17 @@ export class ActivationService extends AbstractTxService {
   };
 
   /**
+   * Get the instance of the service
+   * @returns The instance of the service
+   */
+  static getInstance = (): ActivationService => {
+    if (!this.instance) {
+      throw new Error(`${this.name} is not initialized`);
+    }
+    return this.instance as ActivationService;
+  };
+
+  /**
    * Generator function for an activation callback
    * - Build the activation transaction
    * Note: This callback assumes that the creation transaction has been already
@@ -48,6 +59,9 @@ export class ActivationService extends AbstractTxService {
     boxes: ErgoBox[],
   ): Promise<void> => {
     const inactiveRaffle = InactiveRaffleBuilder.fromBox(boxes[0]);
+    this.logger.info(
+      `Processing activation for inactive raffle box [${boxes[0].boxId}] with raffle id [${inactiveRaffle.getTicketId()}]`,
+    );
 
     // Get raffle entity from the database
     const raffleEntity = await DbService.getInstance().getRaffleData(
@@ -112,7 +126,7 @@ export class ActivationService extends AbstractTxService {
         },
       ],
       onSuffice: this.activationCallback,
-      getMinedBoxes: async () => {
+      getConfirmedBoxes: async () => {
         return convertDbBoxesToErgoBoxes(
           await DbService.getInstance().getInactiveRaffleBoxes(),
         );
@@ -121,5 +135,8 @@ export class ActivationService extends AbstractTxService {
 
     const requestId = BoxLookupService.getInstance().addRequest(request);
     this.activeBoxLookupRequestIds.push(requestId);
+    this.logger.debug(
+      `Activation box-lookup request added to the service (requestId: [${requestId}])`,
+    );
   }
 }

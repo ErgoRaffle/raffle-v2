@@ -37,6 +37,17 @@ export class WinnerRemovalService extends AbstractTxService {
   };
 
   /**
+   * Get the instance of the service
+   * @returns The instance of the service
+   */
+  static getInstance = (): WinnerRemovalService => {
+    if (!this.instance) {
+      throw new Error(`${this.name} is not initialized`);
+    }
+    return this.instance as WinnerRemovalService;
+  };
+
+  /**
    * Callback for winner removal transaction
    * - Check the winners that have no gifts left
    * - Builds the winner removal transaction for each winner and chain them to each other
@@ -133,7 +144,7 @@ export class WinnerRemovalService extends AbstractTxService {
         },
       ],
       onSuffice: this.winnerRemovalCallback,
-      getMinedBoxes: async () => {
+      getConfirmedBoxes: async () => {
         return convertDbBoxesToErgoBoxes(
           await DbService.getInstance().getGiftRedeemBoxes(),
         );
@@ -142,5 +153,8 @@ export class WinnerRemovalService extends AbstractTxService {
 
     const requestId = BoxLookupService.getInstance().addRequest(request);
     this.activeBoxLookupRequestIds.push(requestId);
+    this.logger.debug(
+      `Winner removal box-lookup request added to the service (requestId: [${requestId}])`,
+    );
   }
 }

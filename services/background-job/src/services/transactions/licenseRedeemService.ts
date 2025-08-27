@@ -4,6 +4,7 @@ import { raffleInfo } from '@ergo-raffle/contracts';
 import { ReturnRaffleLicenseTxBuilder } from '@ergo-raffle/transactions';
 import { ErgoBox } from '@fleet-sdk/core';
 import { SuccessRaffleBuilder, TicketRedeemBuilder } from '@ergo-raffle/boxes';
+import JsonBigInt from '@rosen-bridge/json-bigint';
 
 import { BoxLookupService } from '../boxLoookupService';
 import { DbService } from '../dbService';
@@ -39,6 +40,17 @@ export class LicenseRedeemService extends AbstractTxService {
   static init = (nodeUrl: string, logger: AbstractLogger) => {
     if (this.instance != undefined) return;
     this.instance = new LicenseRedeemService(nodeUrl, logger);
+  };
+
+  /**
+   * Get the instance of the service
+   * @returns The instance of the service
+   */
+  static getInstance = (): LicenseRedeemService => {
+    if (!this.instance) {
+      throw new Error(`${this.name} is not initialized`);
+    }
+    return this.instance as LicenseRedeemService;
   };
 
   /**
@@ -167,17 +179,19 @@ export class LicenseRedeemService extends AbstractTxService {
       );
 
       // Build the license return transaction
-      const returnLicenseTxBuilder = new ReturnRaffleLicenseTxBuilder()
+      const returnLicenseTx = new ReturnRaffleLicenseTxBuilder()
         .setEndedRaffle(box)
         .setService(serviceBox)
         .setChangeErgoTree(
           await this.getChangeErgoTree(validation.raffleId, validation.boxType),
         )
         .setChainHeight(currentHeight)
-        .setTxFee(configs.ergo.fee);
+        .setTxFee(configs.ergo.fee)
+        .build();
 
-      const returnLicenseTx = returnLicenseTxBuilder.build();
-
+      this.logger.debug(
+        `Return license transaction: ${JsonBigInt.stringify(returnLicenseTx.toEIP12Object())}`,
+      );
       await signAndAddTx(
         this.network,
         returnLicenseTx,
@@ -207,7 +221,7 @@ export class LicenseRedeemService extends AbstractTxService {
       onSuffice: this.createLicenseRedeemCallback(
         this.validateSuccessRaffleCompletion,
       ),
-      getMinedBoxes: async () => {
+      getConfirmedBoxes: async () => {
         return convertDbBoxesToErgoBoxes(
           await DbService.getInstance().getSuccessRaffleBoxes(),
         );
@@ -227,7 +241,7 @@ export class LicenseRedeemService extends AbstractTxService {
       onSuffice: this.createLicenseRedeemCallback(
         this.validateTicketRedeemCompletion,
       ),
-      getMinedBoxes: async () => {
+      getConfirmedBoxes: async () => {
         return convertDbBoxesToErgoBoxes(
           await DbService.getInstance().getTicketRedeemBoxes(),
         );
@@ -241,5 +255,9 @@ export class LicenseRedeemService extends AbstractTxService {
 
     this.activeBoxLookupRequestIds.push(successRaffleRequestId);
     this.activeBoxLookupRequestIds.push(ticketRedeemRequestId);
+
+    this.logger.debug(
+      `License redeem box-lookup requests added to the service (successRaffle requestId: [${successRaffleRequestId}], ticketRedeem requestId: [${ticketRedeemRequestId}])`,
+    );
   }
 }

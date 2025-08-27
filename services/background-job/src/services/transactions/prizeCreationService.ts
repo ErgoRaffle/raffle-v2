@@ -35,10 +35,22 @@ export class PrizeCreationService extends AbstractTxService {
   };
 
   /**
+   * Get the instance of the service
+   * @returns The instance of the service
+   */
+  static getInstance = (): PrizeCreationService => {
+    if (!this.instance) {
+      throw new Error(`${this.name} is not initialized`);
+    }
+    return this.instance as PrizeCreationService;
+  };
+
+  /**
    * Callback for prize creation transaction
    * - Calculates the next winner ticket index for each winner from random seed
    * using the raffle winner selection algorithm
    * - Builds the prize creation transaction for each winner and chains them to each other
+   * - Note: This service assumes that the success raffle box is available in the database
    * @param boxes - The boxes to process
    * @returns void
    */
@@ -57,6 +69,9 @@ export class PrizeCreationService extends AbstractTxService {
 
     // Get all winner boxes for this raffle
     const winnerBoxes = await findAllWinners(boxes, raffleId);
+    this.logger.debug(
+      `Found winner boxes: ${winnerBoxes.map((box) => box.boxId)}`,
+    );
 
     // Initialize winner tickets list
     const selectedWinnerTickets =
@@ -105,7 +120,7 @@ export class PrizeCreationService extends AbstractTxService {
         .setSuccessRaffle(currentSuccessRaffleBox)
         .setWinner(winnerBox)
         .setWinnerTicketIndex(nextWinnerTicketIndex)
-        .setWinnerIndexList([...selectedWinnerTickets, nextWinnerTicketIndex])
+        .setWinnerIndexList([...selectedWinnerTickets])
         .setChainHeight(await this.network.getHeight())
         .setTxFee(configs.ergo.fee)
         .build();
@@ -142,7 +157,7 @@ export class PrizeCreationService extends AbstractTxService {
       const successRaffleBoxes =
         await DbService.getInstance().getSuccessRaffleBoxes(raffleId);
       this.logger.debug(
-        `Found success raffle boxes: ${JSON.stringify(successRaffleBoxes)}`,
+        `Found success raffle box, step: ${successRaffleBoxes[0].step}, selected winners list: ${successRaffleBoxes[0].selectedWinnersList}`,
       );
       if (
         successRaffleBoxes.length == 0 ||
@@ -201,7 +216,7 @@ export class PrizeCreationService extends AbstractTxService {
         },
       ],
       onSuffice: this.prizeCreationCallback,
-      getMinedBoxes: async () => {
+      getConfirmedBoxes: async () => {
         return convertDbBoxesToErgoBoxes(
           await DbService.getInstance().getSuccessRaffleBoxes(),
         );
@@ -210,5 +225,8 @@ export class PrizeCreationService extends AbstractTxService {
 
     const requestId = BoxLookupService.getInstance().addRequest(request);
     this.activeBoxLookupRequestIds.push(requestId);
+    this.logger.debug(
+      `Prize creation box-lookup request added to the service (requestId: [${requestId}])`,
+    );
   }
 }

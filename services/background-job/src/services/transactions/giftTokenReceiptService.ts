@@ -35,6 +35,17 @@ export class GiftTokenReceiptService extends AbstractTxService {
   };
 
   /**
+   * Get the instance of the service
+   * @returns The instance of the service
+   */
+  static getInstance = (): GiftTokenReceiptService => {
+    if (!this.instance) {
+      throw new Error(`${this.name} is not initialized`);
+    }
+    return this.instance as GiftTokenReceiptService;
+  };
+
+  /**
    * Callback for gift token receipt transaction
    * - Builds the gift token receipt transaction for each winner and chains them to each other
    * @param boxes - The boxes to process
@@ -50,6 +61,10 @@ export class GiftTokenReceiptService extends AbstractTxService {
     const giftTokenRepoBuilder = GiftTokenRepoBuilder.fromBox(giftTokenRepo);
     const ticketId = giftTokenRepoBuilder.getTicketId();
     const step = giftTokenRepoBuilder.getStep();
+
+    this.logger.info(
+      `Processing gift token receipt for gift token repo with id [${giftTokenRepo.boxId}] and raffle id [${ticketId}]`,
+    );
 
     // find all winner boxes for the raffle
     const winnerBoxes = await findAllWinners(unspentBoxes, ticketId);
@@ -96,7 +111,7 @@ export class GiftTokenReceiptService extends AbstractTxService {
       value: undefined, // We'll get all gift token repo boxes one by one
       tokens: [],
       onSuffice: this.giftTokenReceiptCallback,
-      getMinedBoxes: async () => {
+      getConfirmedBoxes: async () => {
         return convertDbBoxesToErgoBoxes(
           await DbService.getInstance().getRaffleBoxes(
             undefined, // We'll get all gift token repo boxes
@@ -108,5 +123,8 @@ export class GiftTokenReceiptService extends AbstractTxService {
 
     const requestId = BoxLookupService.getInstance().addRequest(request);
     this.activeBoxLookupRequestIds.push(requestId);
+    this.logger.debug(
+      `Gift token receipt box-lookup request added to the service (requestId: [${requestId}])`,
+    );
   }
 }

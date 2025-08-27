@@ -33,6 +33,17 @@ export class TicketRedeemService extends AbstractTxService {
   };
 
   /**
+   * Get the instance of the service
+   * @returns The instance of the service
+   */
+  static getInstance = (): TicketRedeemService => {
+    if (!this.instance) {
+      throw new Error(`${this.name} is not initialized`);
+    }
+    return this.instance as TicketRedeemService;
+  };
+
+  /**
    * Callback for ticket redeem transaction
    * - Builds the ticket redeem transaction for each ticket and chains them to each other
    * Note: This callback assumes that the ticket boxes are available in the database
@@ -53,6 +64,12 @@ export class TicketRedeemService extends AbstractTxService {
 
     // Get all tickets for this raffle from database
     const ticketEntities = await DbService.getInstance().getTickets(raffleId);
+    if (ticketEntities.length === 0) {
+      this.logger.info(
+        `No unspent ticket boxes found for raffle [${raffleId}], skipping ticket redeem`,
+      );
+      return;
+    }
     this.logger.info(
       `Found [${ticketEntities.length}] unspent ticket boxes for raffle [${raffleId}]`,
     );
@@ -107,7 +124,7 @@ export class TicketRedeemService extends AbstractTxService {
         },
       ],
       onSuffice: this.ticketRedeemCallback,
-      getMinedBoxes: async () => {
+      getConfirmedBoxes: async () => {
         return convertDbBoxesToErgoBoxes(
           await DbService.getInstance().getTicketRedeemBoxes(),
         );
@@ -116,5 +133,8 @@ export class TicketRedeemService extends AbstractTxService {
 
     const requestId = BoxLookupService.getInstance().addRequest(request);
     this.activeBoxLookupRequestIds.push(requestId);
+    this.logger.debug(
+      `Ticket redeem box-lookup request added to the service (requestId: [${requestId}])`,
+    );
   }
 }

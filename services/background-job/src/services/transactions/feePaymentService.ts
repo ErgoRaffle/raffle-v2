@@ -33,7 +33,50 @@ export class FeePaymentService extends AbstractTxService {
   };
 
   /**
+   * Get the instance of the service
+   * @returns The instance of the service
+   */
+  static getInstance = (): FeePaymentService => {
+    if (!this.instance) {
+      throw new Error(`${this.name} is not initialized`);
+    }
+    return this.instance as FeePaymentService;
+  };
+
+  /**
+   * Add the active raffle box-lookup request to the service
+   */
+  addBaseRequests(): void {
+    const request: Request = {
+      address: raffleInfo.addresses.activeRaffle,
+      value: undefined,
+      tokens: [
+        {
+          tokenId: raffleInfo.tokens.raffleLicense,
+          amount: 1n,
+        },
+      ],
+      onSuffice: this.feePaymentCallback,
+      getConfirmedBoxes: async () => {
+        return convertDbBoxesToErgoBoxes(
+          await DbService.getInstance().getRaffleBoxes(
+            undefined,
+            RaffleBoxType.ActiveRaffle,
+          ),
+        );
+      },
+    };
+
+    const requestId = BoxLookupService.getInstance().addRequest(request);
+    this.activeBoxLookupRequestIds.push(requestId);
+    this.logger.debug(
+      `Fee payment box-lookup request added to the service (requestId: [${requestId}])`,
+    );
+  }
+
+  /**
    * Callback for fee payment transaction
+   * Note: This callback assumes that the raffle details box is available in the database
    * @param boxes - The boxes to process
    * @returns void
    */
@@ -44,19 +87,25 @@ export class FeePaymentService extends AbstractTxService {
     const activeRaffleBuilder = ActiveRaffleBuilder.fromBox(activeRaffleBox);
     const raffleId = activeRaffleBuilder.getTicketId(); // The ticket ID is the raffle ID
 
-    // Check if the raffle is ended
+    // Check if the raffle is ended and get its status
     const currentHeight = await this.network.getHeight();
     const endHeight = activeRaffleBuilder.getDeadline();
+    const raffleStatus = activeRaffleBuilder.getRaffleStatus(currentHeight);
 
-    if (currentHeight < endHeight) {
+    if (raffleStatus === undefined) {
       this.logger.debug(
         `Raffle [${raffleId}] is not ended yet. Current height: [${currentHeight}], End height: [${endHeight}]`,
+      );
+      return;
+    } else if (raffleStatus === 0) {
+      this.logger.debug(
+        `Raffle [${raffleId}] has ended without reaching the goal, skipping fee payment.`,
       );
       return;
     }
 
     this.logger.info(
-      `Raffle [${raffleId}] is ended. Creating fee payment transaction for the active raffle box [${activeRaffleBox.boxId}]`,
+      `Raffle [${raffleId}] has ended successfully. Creating fee payment transaction for the active raffle box [${activeRaffleBox.boxId}]`,
     );
 
     // Find the oracle box (there is only one oracle box)
@@ -118,32 +167,4 @@ export class FeePaymentService extends AbstractTxService {
       `Fee payment transaction for raffle [${raffleId}] has been added (txId: [${feePaymentTx.id}])`,
     );
   };
-
-  /**
-   * Add the active raffle box-lookup request to the service
-   */
-  addBaseRequests(): void {
-    const request: Request = {
-      address: raffleInfo.addresses.activeRaffle,
-      value: undefined,
-      tokens: [
-        {
-          tokenId: raffleInfo.tokens.raffleLicense,
-          amount: 1n,
-        },
-      ],
-      onSuffice: this.feePaymentCallback,
-      getMinedBoxes: async () => {
-        return convertDbBoxesToErgoBoxes(
-          await DbService.getInstance().getRaffleBoxes(
-            undefined,
-            RaffleBoxType.ActiveRaffle,
-          ),
-        );
-      },
-    };
-
-    const requestId = BoxLookupService.getInstance().addRequest(request);
-    this.activeBoxLookupRequestIds.push(requestId);
-  }
 }

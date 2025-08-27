@@ -54,11 +54,11 @@ export class DonationService extends AbstractTxService {
 
   /**
    * Generator function for a donation callback
-   * - Find the active raffle box for the raffle
-   * - Calculate the donation value based on ticket count and ticket price
-   * - Build the donation transaction
+   * - Finds the active raffle box for the raffle
+   * - Calculates the donation value based on ticket count and ticket price
+   * - Builds the donation transaction
    * @param donationParams - The donation parameters
-   * @returns A callback for donation
+   * @returns A callback function for donation
    */
   private donationCallbackGenerator = (
     donationParams: DonationParamsEntity,

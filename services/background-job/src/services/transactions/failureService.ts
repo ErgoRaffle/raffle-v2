@@ -34,7 +34,19 @@ export class FailureService extends AbstractTxService {
   };
 
   /**
+   * Get the instance of the service
+   * @returns The instance of the service
+   */
+  static getInstance = (): FailureService => {
+    if (!this.instance) {
+      throw new Error(`${this.name} is not initialized`);
+    }
+    return this.instance as FailureService;
+  };
+
+  /**
    * Callback for failure transaction
+   * Note: This callback assumes that the raffle details box is available in the database
    * @param boxes - The boxes to process
    * @returns void
    */
@@ -45,19 +57,25 @@ export class FailureService extends AbstractTxService {
     const activeRaffleBuilder = ActiveRaffleBuilder.fromBox(activeRaffleBox);
     const raffleId = activeRaffleBuilder.getTicketId(); // The ticket ID is the raffle ID
 
-    // Check if the raffle is ended
+    // Check if the raffle is ended and get its status
     const currentHeight = await this.network.getHeight();
     const endHeight = activeRaffleBuilder.getDeadline();
+    const raffleStatus = activeRaffleBuilder.getRaffleStatus(currentHeight);
 
-    if (currentHeight < endHeight) {
+    if (raffleStatus === undefined) {
       this.logger.debug(
         `Raffle [${raffleId}] is not ended yet. Current height: [${currentHeight}], End height: [${endHeight}]`,
+      );
+      return;
+    } else if (raffleStatus === 1) {
+      this.logger.debug(
+        `Raffle [${raffleId}] has successfully reached its goal, skipping failure transaction`,
       );
       return;
     }
 
     this.logger.info(
-      `Raffle [${raffleId}] is ended. Creating failure transaction for the active raffle box [${activeRaffleBox.boxId}]`,
+      `Raffle [${raffleId}] has ended without reaching the goal. Creating failure transaction for the active raffle box [${activeRaffleBox.boxId}]`,
     );
 
     // Find the raffle details box
@@ -103,7 +121,7 @@ export class FailureService extends AbstractTxService {
         },
       ],
       onSuffice: this.failureCallback,
-      getMinedBoxes: async () => {
+      getConfirmedBoxes: async () => {
         return convertDbBoxesToErgoBoxes(
           await DbService.getInstance().getRaffleBoxes(
             undefined,
@@ -115,5 +133,8 @@ export class FailureService extends AbstractTxService {
 
     const requestId = BoxLookupService.getInstance().addRequest(request);
     this.activeBoxLookupRequestIds.push(requestId);
+    this.logger.debug(
+      `Failure box-lookup request added to the service (requestId: [${requestId}])`,
+    );
   }
 }

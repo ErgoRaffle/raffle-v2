@@ -28,11 +28,22 @@ export class GiftAndPrizeService extends AbstractTxService {
   /**
    * Initialize the service
    * @param nodeUrl - The node url
-   * @param logger - The logger
+   * @param logger - AbstractLogger
    */
   static init = (nodeUrl: string, logger: AbstractLogger) => {
     if (this.instance != undefined) return;
     this.instance = new GiftAndPrizeService(nodeUrl, logger);
+  };
+
+  /**
+   * Get the instance of the service
+   * @returns The instance of the service
+   */
+  static getInstance = (): GiftAndPrizeService => {
+    if (!this.instance) {
+      throw new Error(`${this.name} is not initialized`);
+    }
+    return this.instance as GiftAndPrizeService;
   };
 
   /**
@@ -54,7 +65,7 @@ export class GiftAndPrizeService extends AbstractTxService {
     const winnerTicketIndex = winnerPrizeBuilder.getWinnerTicketIndex();
 
     this.logger.info(
-      `Processing gift unwrap for winner prize box [${winnerPrizeBox.boxId}] with raffle id [${raffleId}] and winner index [${winnerIndex}]`,
+      `Processing gift unwrap for winner prize box [${winnerPrizeBox.boxId}] with raffle id [${raffleId}] and winner index [${winnerIndex}] with ticket index [${winnerTicketIndex}]`,
     );
 
     // Find the required gift boxes for this winner from database
@@ -138,7 +149,7 @@ export class GiftAndPrizeService extends AbstractTxService {
       value: undefined,
       tokens: [],
       onSuffice: this.giftUnwrapCallback,
-      getMinedBoxes: async () => {
+      getConfirmedBoxes: async () => {
         return convertDbBoxesToErgoBoxes(
           await DbService.getInstance().getWinnerPrizeBoxes(),
         );
@@ -147,5 +158,8 @@ export class GiftAndPrizeService extends AbstractTxService {
 
     const requestId = BoxLookupService.getInstance().addRequest(request);
     this.activeBoxLookupRequestIds.push(requestId);
+    this.logger.debug(
+      `Gift and prize box-lookup request added to the service (requestId: [${requestId}])`,
+    );
   }
 }

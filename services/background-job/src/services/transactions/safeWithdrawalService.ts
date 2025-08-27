@@ -33,6 +33,17 @@ export class SafeWithdrawalService extends AbstractTxService {
   };
 
   /**
+   * Get the instance of the service
+   * @returns The instance of the service
+   */
+  static getInstance = (): SafeWithdrawalService => {
+    if (!this.instance) {
+      throw new Error(`${this.name} is not initialized`);
+    }
+    return this.instance as SafeWithdrawalService;
+  };
+
+  /**
    * Generator function for a safe withdrawal callback
    * - Build the safe withdrawal transaction for each safe pay box
    * Note: This callback processes all safe pay boxes from the database
@@ -85,7 +96,7 @@ export class SafeWithdrawalService extends AbstractTxService {
       value: configs.ergo.fee * 2n, // minimum value for safe pay box is 2x txFee
       tokens: [],
       onSuffice: this.safeWithdrawalCallback,
-      getMinedBoxes: async () => {
+      getConfirmedBoxes: async () => {
         return convertDbBoxesToErgoBoxes(
           await DbService.getInstance().getSafePayBoxes(),
         );
@@ -94,5 +105,8 @@ export class SafeWithdrawalService extends AbstractTxService {
 
     const requestId = BoxLookupService.getInstance().addRequest(request);
     this.activeBoxLookupRequestIds.push(requestId);
+    this.logger.debug(
+      `Safe withdrawal box-lookup request added to the service (requestId: [${requestId}])`,
+    );
   }
 }

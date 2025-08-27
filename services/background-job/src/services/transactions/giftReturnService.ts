@@ -34,14 +34,27 @@ export class GiftReturnService extends AbstractTxService {
   };
 
   /**
+   * Get the instance of the service
+   * @returns The instance of the service
+   */
+  static getInstance = (): GiftReturnService => {
+    if (!this.instance) {
+      throw new Error(`${this.name} is not initialized`);
+    }
+    return this.instance as GiftReturnService;
+  };
+
+  /**
    * Callback for gift return transaction
    * - Builds the gift return transaction for each gift and chains them to each other
    * Note: This callback assumes that the gift boxes are available in the database
    * @param boxes - The boxes to process
-   * @returns void
+   * @param unspentBoxes - The unspent boxes available for the transaction
+   * @returns Promise<void>
    */
   private giftReturnCallback: OnSufficeCallback = async (
     boxes: ErgoBox[],
+    unspentBoxes: ErgoBox[],
   ): Promise<void> => {
     const winnerBox = boxes[0];
     const winnerBuilder = WinnerBuilder.fromBox(winnerBox);
@@ -58,12 +71,8 @@ export class GiftReturnService extends AbstractTxService {
       return;
     }
 
-    this.logger.info(
-      `Deadline for winner [${winnerIndex}] has passed (current height: [${currentHeight}], deadline: [${deadline}]), proceeding with gift redeem`,
-    );
-
-    // Find the gift redeem box
-    const giftRedeemBox = await findGiftRedeemBox(undefined, raffleId);
+    // Find the gift redeem box to check if the raffle failed
+    const giftRedeemBox = await findGiftRedeemBox(unspentBoxes, raffleId);
     if (!giftRedeemBox) {
       this.logger.debug(
         `Gift redeem box not found for raffle [${raffleId}], skipping gift redeem`,
@@ -71,18 +80,29 @@ export class GiftReturnService extends AbstractTxService {
       return;
     }
 
+    this.logger.info(
+      `Deadline for winner [${winnerIndex}] has passed (current height: [${currentHeight}], deadline: [${deadline}]), proceeding with gift redeem`,
+    );
+
     // Get all gifts for this winner from database
-    const giftEntites = await DbService.getInstance().getGifts(
+    const giftEntities = await DbService.getInstance().getGifts(
       raffleId,
       winnerIndex,
     );
+    if (giftEntities.length === 0) {
+      this.logger.info(
+        `No unspent gift boxes found for raffle [${raffleId}] and winner index [${winnerIndex}], skipping gift redeem`,
+      );
+      return;
+    }
     this.logger.info(
-      `Found [${giftEntites.length}] unspent gift boxes for raffle [${raffleId}] and winner index [${winnerIndex}], creating gift return transactions`,
+      `Found [${giftEntities.length}] unspent gift boxes for raffle [${raffleId}] and winner index [${winnerIndex}], creating gift return transactions`,
     );
+
     let currentWinnerBox = winnerBox;
 
     // Process each gift box
-    for (const giftEntity of giftEntites) {
+    for (const giftEntity of giftEntities) {
       this.logger.debug(
         `Creating gift return transaction for winner [${winnerBox.boxId}] and gift box [${giftEntity.boxId}]`,
       );
@@ -125,7 +145,7 @@ export class GiftReturnService extends AbstractTxService {
       value: undefined,
       tokens: [],
       onSuffice: this.giftReturnCallback,
-      getMinedBoxes: async () => {
+      getConfirmedBoxes: async () => {
         return convertDbBoxesToErgoBoxes(
           await DbService.getInstance().getWinnerBoxes(),
         );
@@ -134,5 +154,8 @@ export class GiftReturnService extends AbstractTxService {
 
     const requestId = BoxLookupService.getInstance().addRequest(request);
     this.activeBoxLookupRequestIds.push(requestId);
+    this.logger.debug(
+      `Gift return box-lookup request added to the service (requestId: [${requestId}])`,
+    );
   }
 }
