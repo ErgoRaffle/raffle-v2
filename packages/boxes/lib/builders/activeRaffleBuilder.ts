@@ -12,6 +12,7 @@ import { SConstant } from '@fleet-sdk/serializer';
 import { raffleInfo } from '@ergo-raffle/contracts';
 import { blake2b256 } from '@fleet-sdk/crypto';
 import { InactiveRaffleBuilder } from './inactiveRaffleBuilder';
+import { RaffleStatus } from '../types';
 
 /**
  * Builder class for creating Active Raffle boxes in the ErgoRaffle protocol
@@ -360,12 +361,12 @@ export class ActiveRaffleBuilder {
   /**
    * Check the raffle status based on current height and goal
    * @param currentHeight - Current block height
-   * @returns undefined if deadline hasn't passed, 1 if goal reached, 0 otherwise
+   * @returns RaffleStatus enum value
    */
-  getRaffleStatus = (currentHeight: number): number | undefined => {
+  getRaffleStatus = (currentHeight: number): RaffleStatus => {
     if (currentHeight < this.deadline!) {
       // Deadline hasn't passed yet
-      return undefined;
+      return RaffleStatus.PENDING;
     }
 
     // Deadline has passed, check if goal was reached
@@ -373,10 +374,10 @@ export class ActiveRaffleBuilder {
 
     if (totalRaised >= this.goal!) {
       // Successfully reached the goal
-      return 1;
+      return RaffleStatus.SUCCESS;
     } else {
       // Deadline passed but goal not reached
-      return 0;
+      return RaffleStatus.FAILED;
     }
   };
 

@@ -4,7 +4,7 @@ import { raffleInfo } from '@ergo-raffle/contracts';
 import { FeePaymentTxBuilder } from '@ergo-raffle/transactions';
 import { ErgoBox } from '@fleet-sdk/core';
 import { RaffleBoxType } from '@ergo-raffle/extractors';
-import { ActiveRaffleBuilder } from '@ergo-raffle/boxes';
+import { ActiveRaffleBuilder, RaffleStatus } from '@ergo-raffle/boxes';
 
 import { BoxLookupService } from '../boxLoookupService';
 import { DbService } from '../dbService';
@@ -92,12 +92,12 @@ export class FeePaymentService extends AbstractTxService {
     const endHeight = activeRaffleBuilder.getDeadline();
     const raffleStatus = activeRaffleBuilder.getRaffleStatus(currentHeight);
 
-    if (raffleStatus === undefined) {
+    if (raffleStatus === RaffleStatus.PENDING) {
       this.logger.debug(
         `Raffle [${raffleId}] is not ended yet. Current height: [${currentHeight}], End height: [${endHeight}]`,
       );
       return;
-    } else if (raffleStatus === 0) {
+    } else if (raffleStatus === RaffleStatus.FAILED) {
       this.logger.debug(
         `Raffle [${raffleId}] has ended without reaching the goal, skipping fee payment.`,
       );
