@@ -12,7 +12,7 @@
     "build": "npm run build --workspaces",
     "coverage": "npm run coverage --workspaces",
     "lint": "npm run lint --workspaces",
-    "prepare": "husky install && npm run build --workspace packages/contracts",
+    "prepare": "husky install && npm run build-testnet --workspace packages/contracts",
     "release": "npm run release --workspaces",
     "test": "npm run test --workspaces",
     "test:related": "npm run test:related --workspaces",
