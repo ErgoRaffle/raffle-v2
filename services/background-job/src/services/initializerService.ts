@@ -15,6 +15,7 @@ import { ScannerService } from './scannerService';
 import { TxPotService } from './txPotService';
 import { HealthCheckService } from './healthCheckService';
 import { BoxLookupService } from './boxLoookupService';
+import { ApiService } from './apiService';
 import { CreationService } from './transactions/creationService';
 import { ActivationService } from './transactions/activationService';
 import { GiftTokenReceiptService } from './transactions/giftTokenReceiptService';
@@ -88,6 +89,10 @@ export class InitializerService extends AbstractService {
     },
     {
       serviceName: BoxLookupService.name,
+      allowedStatuses: [ServiceStatus.running],
+    },
+    {
+      serviceName: ApiService.name,
       allowedStatuses: [ServiceStatus.running],
     },
     {
@@ -188,6 +193,8 @@ export class InitializerService extends AbstractService {
       CallbackLoggerFactory.getInstance().getLogger('HealthCheckService');
     const boxLookupLogger =
       CallbackLoggerFactory.getInstance().getLogger('BoxLookupService');
+    const apiLogger =
+      CallbackLoggerFactory.getInstance().getLogger('ApiService');
     const creationLogger =
       CallbackLoggerFactory.getInstance().getLogger('CreationService');
     const activationLogger =
@@ -262,6 +269,11 @@ export class InitializerService extends AbstractService {
     );
     this.logger.debug('Box lookup service initialized');
 
+    // Initialize API service
+    this.logger.debug('Initializing API service');
+    ApiService.init(configs.api, apiLogger);
+    this.logger.debug('API service initialized');
+
     // Initialize all transaction services
     this.logger.debug('Initializing transaction services');
 
@@ -303,6 +315,7 @@ export class InitializerService extends AbstractService {
     this.serviceManager.register(TxPotService.getInstance());
     this.serviceManager.register(HealthCheckService.getInstance());
     this.serviceManager.register(BoxLookupService.getInstance());
+    this.serviceManager.register(ApiService.getInstance());
     this.serviceManager.register(CreationService.getInstance());
     this.serviceManager.register(ActivationService.getInstance());
     this.serviceManager.register(GiftTokenReceiptService.getInstance());
