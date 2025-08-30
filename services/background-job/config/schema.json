@@ -7,7 +7,6 @@
       },
       {
         "type": "file",
-        "level": "debug",
         "path": "./logs/",
         "maxSize": "20m",
         "maxFiles": "14d"
