@@ -21,9 +21,6 @@ export class AddGiftParamsEntity {
   @Column({ type: 'varchar' })
   giftGiverAddress: string;
 
-  @Column({ type: 'varchar' })
-  status: string;
-
   @Column({ type: 'integer' })
   timestamp: number;
 }

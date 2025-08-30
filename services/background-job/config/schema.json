@@ -358,5 +358,54 @@
         ]
       }
     }
+  },
+  "api": {
+    "type": "object",
+    "children": {
+      "port": {
+        "type": "number",
+        "default": 3000,
+        "description": "API server port",
+        "validations": [
+          {
+            "required": true,
+            "error": "API port must be specified"
+          }
+        ]
+      },
+      "swaggerPath": {
+        "type": "string",
+        "default": "/swagger",
+        "description": "Swagger documentation path",
+        "validations": [
+          {
+            "required": true,
+            "error": "Swagger documentation path must be specified"
+          }
+        ]
+      },
+      "title": {
+        "type": "string",
+        "default": "Ergo Raffle API",
+        "description": "API title for Swagger",
+        "validations": [
+          {
+            "required": true,
+            "error": "API title must be specified"
+          }
+        ]
+      },
+      "description": {
+        "type": "string",
+        "default": "API for Ergo Raffle operations",
+        "description": "API description for Swagger",
+        "validations": [
+          {
+            "required": true,
+            "error": "API description must be specified"
+          }
+        ]
+      }
+    }
   }
 }

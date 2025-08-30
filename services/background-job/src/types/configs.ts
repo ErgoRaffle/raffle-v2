@@ -1,6 +1,7 @@
 export interface BackgroundJobConfig {
-  boxLookup: BoxLookup;
+  api: Api;
   addresses: Addresses;
+  boxLookup: BoxLookup;
   notification: Notification;
   healthCheck: HealthCheck;
   ergo: Ergo;
@@ -71,4 +72,11 @@ export interface BoxLookup {
 
 export interface Addresses {
   serviceFeeAddress: string;
+}
+
+export interface Api {
+  port: number;
+  swaggerPath: string;
+  title: string;
+  description: string;
 }
