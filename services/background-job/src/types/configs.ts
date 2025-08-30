@@ -31,11 +31,11 @@ export interface Database {
 }
 
 export interface Scanner {
-  node: Node;
+  node: ScannerNode;
   scannerInterval: number;
 }
 
-export interface Node {
+export interface ScannerNode {
   url: string;
   timeout: number;
   initialHeight: number;
@@ -47,7 +47,7 @@ export interface Txpot {
 }
 
 export interface Ergo {
-  fee: number;
+  fee: bigint;
   network: 'mainnet' | 'testnet';
 }
 

@@ -1,6 +1,17 @@
 {
   "logs": {
     "type": "array",
+    "default": [
+      {
+        "type": "console"
+      },
+      {
+        "type": "file",
+        "path": "./logs/",
+        "maxSize": "20m",
+        "maxFiles": "14d"
+      }
+    ],
     "items": {
       "type": "object",
       "children": {
@@ -18,7 +29,6 @@
         },
         "maxSize": {
           "type": "string",
-          "default": "20m",
           "validations": [
             {
               "required": true,
@@ -29,7 +39,6 @@
         },
         "maxFiles": {
           "type": "string",
-          "default": "14d",
           "validations": [
             {
               "required": true,
@@ -79,8 +88,7 @@
           ]
         },
         "basicAuth": {
-          "type": "string",
-          "default": ""
+          "type": "string"
         }
       }
     }
@@ -236,7 +244,7 @@
     "type": "object",
     "children": {
       "fee": {
-        "type": "number",
+        "type": "bigint",
         "default": 1500000,
         "description": "ergo node fee in nano erg",
         "validations": [
