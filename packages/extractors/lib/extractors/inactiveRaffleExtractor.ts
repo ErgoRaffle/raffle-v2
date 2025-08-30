@@ -124,6 +124,8 @@ export class InactiveRaffleExtractor extends AbstractInitializableErgoExtractor<
       deadline: Number(R4Serialized[5]),
       winnersPercentList: winnersPercentList,
       txFee: R4Serialized[6],
+      collectingTokenId:
+        box.assets.length > 1 ? box.assets[1].tokenId : undefined,
     };
 
     return data;
