@@ -35,9 +35,6 @@ export class DonationParamsEntity {
   @Column({ type: 'varchar' })
   proxyAddress: string;
 
-  @Column({ type: 'varchar' })
-  status: string;
-
   @Column({ type: 'integer' })
   timestamp: number;
 }

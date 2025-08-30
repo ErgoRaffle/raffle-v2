@@ -17,17 +17,24 @@ import {
   TicketRedeemEntity,
   SafePayEntity,
   DynamicBoxEntity,
+  migrations as extractorsMigrations,
 } from '@ergo-raffle/extractors';
 import {
   BlockEntity,
   ExtractorStatusEntity,
   migrations as scannerMigrations,
 } from '@rosen-bridge/scanner';
-import { migrations } from '@ergo-raffle/extractors';
 import {
   TransactionEntity,
   migrations as txpotMigrations,
 } from '@rosen-bridge/tx-pot';
+import {
+  CreationParamsEntity,
+  CreationPictureEntity,
+  AddGiftParamsEntity,
+  DonationParamsEntity,
+} from './database/entities';
+import { migrations } from './database/migrations';
 
 const dbConfigs = configs.database;
 
@@ -50,6 +57,10 @@ const commonConfigs = {
     SafePayEntity,
     TransactionEntity,
     DynamicBoxEntity,
+    CreationParamsEntity,
+    CreationPictureEntity,
+    AddGiftParamsEntity,
+    DonationParamsEntity,
   ],
   synchronize: false,
   logging: false,
@@ -59,9 +70,10 @@ if (dbConfigs.type === 'sqlite') {
   dataSource = new DataSource({
     type: 'sqlite',
     migrations: [
-      ...migrations.sqlite,
       ...scannerMigrations.sqlite,
       ...txpotMigrations.sqlite,
+      ...extractorsMigrations.sqlite,
+      ...migrations.sqlite,
     ],
     database: dbConfigs.path!,
     ...commonConfigs,
@@ -70,9 +82,10 @@ if (dbConfigs.type === 'sqlite') {
   dataSource = new DataSource({
     type: 'postgres',
     migrations: [
-      ...migrations.postgres,
       ...scannerMigrations.postgres,
       ...txpotMigrations.postgres,
+      ...extractorsMigrations.postgres,
+      ...migrations.postgres,
     ],
     host: dbConfigs.host,
     port: dbConfigs.port,

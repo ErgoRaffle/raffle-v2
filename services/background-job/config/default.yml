@@ -30,3 +30,8 @@ healthCheck:
   criticalBlockGap: 10
 boxLookup:
   updateInterval: 60
+api:
+  port: 3000
+  swaggerPath: /swagger
+  title: Ergo Raffle API
+  description: API for Ergo Raffle operations
