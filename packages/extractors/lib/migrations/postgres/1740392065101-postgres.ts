@@ -27,6 +27,7 @@ export class Postgres1740392065101 implements MigrationInterface {
                 "deadline" integer NOT NULL,
                 "winnersPercentList" character varying NOT NULL,
                 "txFee" bigint NOT NULL,
+                "collectingTokenId" character varying,
                 CONSTRAINT "UQ_0ad382cb5a260aca20c82a3d0d0" UNIQUE ("boxId", "extractor"),
                 CONSTRAINT "PK_f9dee47f552e25482a1f65c282e" PRIMARY KEY ("id")
             )

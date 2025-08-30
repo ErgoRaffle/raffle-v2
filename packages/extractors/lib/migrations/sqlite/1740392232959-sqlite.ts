@@ -27,6 +27,7 @@ export class Sqlite1740392232959 implements MigrationInterface {
                 "deadline" integer NOT NULL,
                 "winnersPercentList" varchar NOT NULL,
                 "txFee" bigint NOT NULL,
+                "collectingTokenId" varchar,
                 CONSTRAINT "UQ_0ad382cb5a260aca20c82a3d0d0" UNIQUE ("boxId", "extractor")
             )
         `);

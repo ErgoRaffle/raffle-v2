@@ -48,6 +48,7 @@ export class InactiveRaffleAction extends AbstractInitializableErgoExtractorActi
         deadline: box.deadline,
         winnersPercentList: box.winnersPercentList,
         txFee: box.txFee,
+        collectingTokenId: box.collectingTokenId,
       };
     });
   };
@@ -79,6 +80,7 @@ export class InactiveRaffleAction extends AbstractInitializableErgoExtractorActi
         'deadline',
         'winnersPercentList',
         'txFee',
+        'collectingTokenId',
       ]),
     );
   };
