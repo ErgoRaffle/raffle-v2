@@ -9,6 +9,7 @@ import { compile } from '@fleet-sdk/compiler';
 import { ErgoAddress, Network } from '@fleet-sdk/core';
 
 import { DbService } from './dbService';
+import { RaffleBoxType } from '@ergo-raffle/extractors';
 import * as ConfigTypes from '../types/configs';
 import packageJson from '../../package.json' assert { type: 'json' };
 import {
@@ -18,11 +19,24 @@ import {
   creationResponseSchema,
   addGiftRequestSchema,
   addGiftResponseSchema,
+  activeRafflesResponseSchema,
+  raffleTicketsRequestSchema,
+  raffleTicketsResponseSchema,
+  raffleGiftsRequestSchema,
+  raffleGiftsResponseSchema,
+  successRafflesResponseSchema,
+  failedRafflesResponseSchema,
 } from '../types/api';
 import { CreationService } from './transactions/creationService';
 import { DonationService } from './transactions/donationService';
 import { AddGiftService } from './transactions/addGiftService';
 import { configs } from '../config';
+import {
+  ActiveRaffleBuilder,
+  SuccessRaffleBuilder,
+  GiftRedeemBuilder,
+} from '@ergo-raffle/boxes';
+import { convertDbBoxesToErgoBoxes } from '../transactions/utils';
 
 export class ApiService extends AbstractService {
   name = 'ApiService';
@@ -310,6 +324,336 @@ export class ApiService extends AbstractService {
           };
         } catch (error) {
           this.logger.error(`Add gift error: ${error}`);
+          throw new Error('Internal server error');
+        }
+      },
+    );
+
+    // Get Active Raffles route
+    this.fastify.get(
+      '/api/active-raffles',
+      {
+        schema: {
+          description: 'Get all active raffle data with details',
+          tags: ['Active Raffles'],
+          response: {
+            200: activeRafflesResponseSchema,
+          },
+        },
+      },
+      async () => {
+        try {
+          this.logger.info('Active raffles data requested');
+
+          // Get all active raffle boxes
+          const activeRaffleBoxes =
+            await DbService.getInstance().getRaffleBoxes(
+              undefined,
+              RaffleBoxType.ActiveRaffle,
+              true,
+            );
+
+          const activeRafflesData = [];
+
+          for (const raffleBox of activeRaffleBoxes) {
+            try {
+              // Get raffle details for name, description, and pictures
+              const raffleDetails =
+                await DbService.getInstance().getRaffleDetailsBox(
+                  raffleBox.raffleId,
+                );
+
+              // Get raffle data for additional information
+              const inactiveRaffleData =
+                await DbService.getInstance().getRaffleData(raffleBox.raffleId);
+
+              const activeRaffleBuilder = ActiveRaffleBuilder.fromBox(
+                convertDbBoxesToErgoBoxes([raffleBox])[0],
+              );
+              const raffleData = {
+                raffleId: raffleBox.raffleId,
+                name: raffleDetails?.name || 'Unknown',
+                description: raffleDetails?.description || 'No description',
+                ticketPrice: activeRaffleBuilder.getTicketPrice().toString(),
+                goal: activeRaffleBuilder.getGoal().toString(),
+                deadline: Number(activeRaffleBuilder.getDeadline()),
+                winnersCount: activeRaffleBuilder.getWinnersCount(),
+                totalSoldTickets: activeRaffleBuilder
+                  .getTotalSoldTickets()
+                  .toString(),
+                winnersPercent: activeRaffleBuilder
+                  .getWinnersPercent()
+                  .toString(),
+                winnersPercentList:
+                  inactiveRaffleData?.winnersPercentList || '',
+                serviceFeePercent: activeRaffleBuilder
+                  .getServiceFeePercent()
+                  .toString(),
+                implementerFeePercent: activeRaffleBuilder
+                  .getImplementerFeePercent()
+                  .toString(),
+                collectingTokenId: activeRaffleBuilder.getCollectingTokenId(),
+                collectingTokenCount: activeRaffleBuilder
+                  .getCollectingTokenCount()
+                  ?.toString(),
+                totalRaised: (
+                  activeRaffleBuilder.getTicketPrice() *
+                  activeRaffleBuilder.getTotalSoldTickets()
+                ).toString(),
+                txId: raffleBox.txId,
+              };
+
+              activeRafflesData.push(raffleData);
+            } catch (error) {
+              this.logger.error(
+                `Error processing raffle ${raffleBox.raffleId}: ${error}`,
+              );
+              // Continue with other raffles even if one fails
+            }
+          }
+
+          return {
+            success: true,
+            message: 'Active raffles data retrieved successfully',
+            data: activeRafflesData,
+          };
+        } catch (error) {
+          this.logger.error(`Get active raffles error: ${error}`);
+          throw new Error('Internal server error');
+        }
+      },
+    );
+
+    // Get Raffle Tickets route
+    this.fastify.get(
+      '/api/tickets/:raffleId',
+      {
+        schema: {
+          description: 'Get all tickets for a specific raffle',
+          tags: ['Raffle Tickets'],
+          params: raffleTicketsRequestSchema,
+          response: {
+            200: raffleTicketsResponseSchema,
+          },
+        },
+      },
+      async (request) => {
+        try {
+          const { raffleId } = request.params as { raffleId: string };
+
+          this.logger.info(`Raffle tickets requested for raffle: ${raffleId}`);
+
+          // Get all tickets for the specified raffle
+          const tickets = await DbService.getInstance().getTickets(raffleId);
+
+          // Transform the data to match the schema
+          const ticketsData = tickets.map((ticket) => ({
+            txId: ticket.txId,
+            raffleId: ticket.raffleId,
+            donatorErgoTree: ticket.donatorErgoTree,
+            rangeStart: ticket.rangeStart.toString(),
+            rangeEnd: ticket.rangeEnd.toString(),
+            ticketCount: Number(ticket.rangeEnd - ticket.rangeStart),
+          }));
+
+          return {
+            success: true,
+            message: 'Raffle tickets retrieved successfully',
+            data: ticketsData,
+          };
+        } catch (error) {
+          this.logger.error(`Get raffle tickets error: ${error}`);
+          throw new Error('Internal server error');
+        }
+      },
+    );
+
+    // Get Raffle Gifts route
+    this.fastify.get(
+      '/api/gifts/:raffleId',
+      {
+        schema: {
+          description: 'Get all gifts for a specific raffle',
+          tags: ['Raffle Gifts'],
+          params: raffleGiftsRequestSchema,
+          response: {
+            200: raffleGiftsResponseSchema,
+          },
+        },
+      },
+      async (request) => {
+        try {
+          const { raffleId } = request.params as { raffleId: string };
+
+          this.logger.info(`Raffle gifts requested for raffle: ${raffleId}`);
+
+          // Get all gifts for the specified raffle
+          const gifts = await DbService.getInstance().getGifts(raffleId);
+
+          // Transform the data to match the schema
+          const giftsData = gifts.map((gift) => ({
+            txId: gift.txId,
+            raffleId: gift.raffleId,
+            donatorErgoTree: gift.donatorErgoTree,
+            winnerIndex: gift.winnerIndex,
+          }));
+
+          return {
+            success: true,
+            message: 'Raffle gifts retrieved successfully',
+            data: giftsData,
+          };
+        } catch (error) {
+          this.logger.error(`Get raffle gifts error: ${error}`);
+          throw new Error('Internal server error');
+        }
+      },
+    );
+
+    // Get Success Raffles route
+    this.fastify.get(
+      '/api/success-raffles',
+      {
+        schema: {
+          description: 'Get all success raffles sorted by newer to older',
+          tags: ['Success Raffles'],
+          response: {
+            200: successRafflesResponseSchema,
+          },
+        },
+      },
+      async () => {
+        try {
+          this.logger.info('Success raffles data requested');
+
+          // Get all success raffle boxes (including spent ones) and deduplicate by raffleId
+          const successRaffleBoxes =
+            await DbService.getInstance().getAllSuccessRaffleBoxes();
+
+          const successRafflesData = [];
+
+          for (const successRaffleBox of successRaffleBoxes) {
+            try {
+              // Get raffle data for additional information
+              const inactiveRaffleData =
+                await DbService.getInstance().getRaffleData(
+                  successRaffleBox.raffleId,
+                );
+
+              // Create SuccessRaffleBuilder from the box data to extract parameters
+              const successRaffleBuilder = SuccessRaffleBuilder.fromBox(
+                convertDbBoxesToErgoBoxes([successRaffleBox])[0],
+              );
+
+              const raffleData = {
+                raffleId: successRaffleBox.raffleId,
+                txId: successRaffleBox.txId,
+                selectedWinnersList: successRaffleBox.selectedWinnersList,
+                step: successRaffleBox.step,
+                totalSoldTickets: successRaffleBuilder
+                  .getTotalSoldTickets()
+                  .toString(),
+                winnerCount: successRaffleBuilder.getWinnerCount(),
+                goal: inactiveRaffleData?.goal?.toString() || '0',
+                winnersPercentList:
+                  inactiveRaffleData?.winnersPercentList || '',
+                height: successRaffleBox.height || 0,
+              };
+
+              successRafflesData.push(raffleData);
+            } catch (error) {
+              this.logger.error(
+                `Error processing success raffle ${successRaffleBox.raffleId}: ${error}`,
+              );
+              // Continue with other raffles even if one fails
+            }
+          }
+
+          return {
+            success: true,
+            message: 'Success raffles data retrieved successfully',
+            data: successRafflesData,
+          };
+        } catch (error) {
+          this.logger.error(`Get success raffles error: ${error}`);
+          throw new Error('Internal server error');
+        }
+      },
+    );
+
+    // Get Failed Raffles route
+    this.fastify.get(
+      '/api/failed-raffles',
+      {
+        schema: {
+          description: 'Get all failed raffles sorted by newer to older',
+          tags: ['Failed Raffles'],
+          response: {
+            200: failedRafflesResponseSchema,
+          },
+        },
+      },
+      async () => {
+        try {
+          this.logger.info('Failed raffles data requested');
+
+          // Get all gift redeem boxes (including spent ones) and deduplicate by raffleId
+          const giftRedeemBoxes =
+            await DbService.getInstance().getAllGiftRedeemBoxes();
+
+          const failedRafflesData = [];
+
+          for (const giftRedeemBox of giftRedeemBoxes) {
+            try {
+              // Get raffle data for additional information
+              const raffleData = await DbService.getInstance().getRaffleData(
+                giftRedeemBox.raffleId,
+              );
+
+              // Get raffle details for name and description
+              const raffleDetails =
+                await DbService.getInstance().getRaffleDetailsBox(
+                  giftRedeemBox.raffleId,
+                  false,
+                );
+
+              // Create GiftRedeemBuilder from the box data to extract parameters
+              const giftRedeemBuilder = GiftRedeemBuilder.fromBox(
+                convertDbBoxesToErgoBoxes([giftRedeemBox])[0],
+              );
+
+              const failedRaffleData = {
+                raffleId: giftRedeemBox.raffleId,
+                txId: giftRedeemBox.txId,
+                name: raffleDetails?.name || 'Unknown',
+                description: raffleDetails?.description || 'No description',
+                ticketPrice: raffleData?.ticketPrice?.toString() || '0',
+                goal: raffleData?.goal?.toString() || '0',
+                deadline: Number(raffleData?.deadline || 0),
+                winnersPercent: Number(raffleData?.winnersPercent || 0),
+                winnersPercentList: raffleData?.winnersPercentList || '',
+                totalSoldTickets:
+                  giftRedeemBuilder.getTotalSoldTickets()?.toString() || '0',
+                winnersCount: Number(giftRedeemBuilder.getWinnersCount() || 0),
+                collectingTokenId: raffleData?.collectingTokenId || undefined,
+              };
+
+              failedRafflesData.push(failedRaffleData);
+            } catch (error) {
+              this.logger.error(
+                `Error processing failed raffle ${giftRedeemBox.raffleId}: ${error}`,
+              );
+              // Continue with other raffles even if one fails
+            }
+          }
+
+          return {
+            success: true,
+            message: 'Failed raffles data retrieved successfully',
+            data: failedRafflesData,
+          };
+        } catch (error) {
+          this.logger.error(`Get failed raffles error: ${error}`);
           throw new Error('Internal server error');
         }
       },

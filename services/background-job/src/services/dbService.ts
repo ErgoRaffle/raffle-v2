@@ -195,11 +195,12 @@ export class DbService extends AbstractService {
    */
   getRaffleDetailsBox = (
     raffleId: string,
+    isUnspent = true,
   ): Promise<RaffleDetailsEntity | null> => {
     return this.dataSource.getRepository(RaffleDetailsEntity).findOne({
       where: {
         raffleId,
-        spendBlock: IsNull(),
+        ...(isUnspent ? { spendBlock: IsNull() } : {}),
       },
     });
   };
@@ -218,6 +219,34 @@ export class DbService extends AbstractService {
         spendBlock: IsNull(),
       },
     });
+  };
+
+  /**
+   * Get all success raffle boxes (including spent ones) and deduplicate by raffleId
+   * Returns the most recent success raffle box for each unique raffleId
+   * @returns The success raffle boxes sorted by newer to older
+   */
+  getAllSuccessRaffleBoxes = async (): Promise<SuccessRaffleEntity[]> => {
+    // First, get all success raffle boxes
+    const allBoxes = await this.dataSource
+      .getRepository(SuccessRaffleEntity)
+      .createQueryBuilder('successRaffle')
+      .orderBy('successRaffle.height', 'DESC')
+      .getMany();
+
+    // Deduplicate by raffleId, keeping the most recent (highest height) for each raffleId
+    const deduplicatedMap = new Map<string, SuccessRaffleEntity>();
+
+    for (const box of allBoxes) {
+      if (!deduplicatedMap.has(box.raffleId)) {
+        deduplicatedMap.set(box.raffleId, box);
+      }
+    }
+
+    // Convert map values back to array and sort by height descending
+    return Array.from(deduplicatedMap.values()).sort(
+      (a, b) => b.height - a.height,
+    );
   };
 
   /**
@@ -264,6 +293,34 @@ export class DbService extends AbstractService {
         spendBlock: IsNull(),
       },
     });
+  };
+
+  /**
+   * Get all gift redeem boxes (including spent ones) and order by height DESC
+   * Returns all gift redeem boxes sorted from newer to older, deduplicated by raffleId
+   * @returns The gift redeem boxes sorted by newer to older, unique by raffleId
+   */
+  getAllGiftRedeemBoxes = async (): Promise<GiftRedeemEntity[]> => {
+    // First, get all gift redeem boxes
+    const allBoxes = await this.dataSource
+      .getRepository(GiftRedeemEntity)
+      .createQueryBuilder('giftRedeem')
+      .orderBy('giftRedeem.height', 'DESC')
+      .getMany();
+
+    // Deduplicate by raffleId, keeping the most recent (highest height) for each raffleId
+    const deduplicatedMap = new Map<string, GiftRedeemEntity>();
+
+    for (const box of allBoxes) {
+      if (!deduplicatedMap.has(box.raffleId)) {
+        deduplicatedMap.set(box.raffleId, box);
+      }
+    }
+
+    // Convert map values back to array and sort by height descending
+    return Array.from(deduplicatedMap.values()).sort(
+      (a, b) => b.height - a.height,
+    );
   };
 
   /**
@@ -362,7 +419,7 @@ export class DbService extends AbstractService {
       .getRepository(CreationParamsEntity)
       .insert({
         ...creationParams,
-        timestamp: Date.now(),
+        timestamp: Math.floor(Date.now() / 1000),
         isDeleted: false,
         serviceAddress: configs.addresses.serviceFeeAddress,
         serviceFeePercent: serviceSettings.serviceFeePercent,
@@ -432,7 +489,7 @@ export class DbService extends AbstractService {
         requiredValue,
         collectingTokenId: raffleData.collectingTokenId,
         collectingTokenAmount,
-        timestamp: Date.now(),
+        timestamp: Math.floor(Date.now() / 1000),
       });
 
     // Get the generated ID
@@ -464,7 +521,7 @@ export class DbService extends AbstractService {
       .getRepository(AddGiftParamsEntity)
       .insert({
         ...addGiftParams,
-        timestamp: Date.now(),
+        timestamp: Math.floor(Date.now() / 1000),
       });
 
     // Get the generated ID

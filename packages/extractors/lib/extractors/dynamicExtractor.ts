@@ -82,6 +82,9 @@ export class DynamicExtractor extends AbstractErgoExtractor<
       }
       this.ergoTreeWatchList.push(ergoTree);
       this.logger.info(`Added address ${address} to the watch list`);
+      this.logger.debug(
+        `Dynamic extractor watch list after addition: ${this.ergoTreeWatchList}`,
+      );
     } catch (error) {
       throw new Error(
         `Error adding address ${address} to the watch list: ${error}`,
@@ -108,6 +111,9 @@ export class DynamicExtractor extends AbstractErgoExtractor<
         (ergoTree) => ergoTree !== ergoTree,
       );
       this.logger.info(`Removed address ${address} from the watch list`);
+      this.logger.debug(
+        `Dynamic extractor watch list after removal: ${this.ergoTreeWatchList}`,
+      );
     } catch (error) {
       throw new Error(
         `Error removing address ${address} from the watch list: ${error}`,
