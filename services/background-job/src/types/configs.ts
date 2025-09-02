@@ -1,4 +1,5 @@
 export interface BackgroundJobConfig {
+  boxLookup: BoxLookup;
   addresses: Addresses;
   notification: Notification;
   healthCheck: HealthCheck;
@@ -62,6 +63,10 @@ export interface Notification {
   historyCleanupTimeout?: number;
   hasBeenUnstableForAWhileWindowDuration?: number;
   hasBeenUnknownForAWhileWindowDuration?: number;
+}
+
+export interface BoxLookup {
+  updateInterval: number;
 }
 
 export interface Addresses {

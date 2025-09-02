@@ -71,6 +71,9 @@ export class BoxLookup {
       `Starting to serve ${this.requests.size} box lookup request(s)`,
     );
     for (const [requestId, request] of this.requests.entries()) {
+      this.logger.debug(
+        `Serving request ${requestId} on address ${request.address}`,
+      );
       await this.dataProvider.updateRoundWithTxPotData();
       let boxSelector = new BoxSelector(this.logger, request, this.networkType);
 

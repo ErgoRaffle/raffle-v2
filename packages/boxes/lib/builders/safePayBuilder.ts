@@ -6,7 +6,9 @@ import {
   ErgoAddress,
   TokenAmount,
   Amount,
+  Box,
 } from '@fleet-sdk/core';
+import { SConstant } from '@fleet-sdk/serializer';
 import { raffleInfo } from '@ergo-raffle/contracts';
 import { blake2b256 } from '@fleet-sdk/crypto';
 
@@ -69,6 +71,10 @@ export class SafePayBuilder {
   setTxFee = (fee: bigint): this => {
     this.txFee = fee;
     return this;
+  };
+
+  getTxFee = (): bigint => {
+    return this.txFee!;
   };
 
   /**
@@ -139,6 +145,29 @@ export class SafePayBuilder {
     });
     if (this.tokens) {
       builder.addTokens(this.tokens);
+    }
+    return builder;
+  };
+
+  /**
+   * Create a SafePayBuilder instance from an existing box
+   * @param box - Existing safe pay box to copy configuration from
+   * @returns New SafePayBuilder instance with copied configuration
+   * @throws Error if box structure doesn't match safe pay box requirements
+   */
+  static fromBox = (box: Box<Amount>): SafePayBuilder => {
+    if (!box.additionalRegisters.R4 || !box.additionalRegisters.R5) {
+      throw new Error('Invalid safe pay box: missing required registers');
+    }
+
+    const builder = new SafePayBuilder();
+    builder.setReceiverErgoTreeHash(
+      SConstant.from(box.additionalRegisters.R4).data as Uint8Array,
+    );
+    builder.setTxFee(SConstant.from(box.additionalRegisters.R5).data as bigint);
+    builder.setValue(BigInt(box.value));
+    if (box.assets.length > 0) {
+      builder.setTokens(box.assets);
     }
     return builder;
   };

@@ -10,11 +10,16 @@ import { ErgoHDKey } from '@fleet-sdk/wallet';
 import { ProverBuilder$ } from 'sigmastate-js/main';
 import { deserializeBox } from '@fleet-sdk/serializer';
 import { AbstractErgoExtractorEntity } from '@rosen-bridge/abstract-extractor';
+import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
+import JsonBigInt from '@rosen-bridge/json-bigint';
 
 import ErgoNodeNetwork from '../network/ergoNodeNetwork';
 import { TxType } from './types';
 import { TxPotService } from '../services/txPotService';
 import { configs } from '../config';
+import { BoxValue } from '../types/box';
+
+const logger = CallbackLoggerFactory.getInstance().getLogger(import.meta.url);
 
 /**
  * Signs an unsigned Ergo transaction with the provided keys.
@@ -85,6 +90,9 @@ export const signAndAddTx = async (
   txType: TxType,
 ) => {
   try {
+    logger.debug(
+      `Trying to sign ${txType} transaction: ${JsonBigInt.stringify(tx.toEIP12Object())}`,
+    );
     const signedTx = await signTransaction(network, tx, []);
     TxPotService.getInstance().addTx(signedTx, txType);
     return signedTx;
@@ -98,7 +106,7 @@ export const signAndAddTx = async (
  * @param dbBoxes - The list of BoxEntity objects to convert
  * @returns The list of ErgoBox objects
  */
-export const covertDbBoxesToErgoBoxes = (
+export const convertDbBoxesToErgoBoxes = (
   dbBoxes: AbstractErgoExtractorEntity[],
 ): ErgoBox[] => {
   return dbBoxes.map((dbBox) => {
@@ -106,7 +114,53 @@ export const covertDbBoxesToErgoBoxes = (
      * We know that the box is mined because it is stored in the database
      * and we can use Box type instead of BoxCandidate
      */
-    const box = deserializeBox(dbBox.serialized) as Box<bigint>;
+    const box = deserializeBox(
+      Buffer.from(dbBox.serialized, 'base64'),
+    ) as Box<bigint>;
     return new ErgoBox(box);
   });
+};
+
+/**
+ * Calculates the sum of the assets of a list of boxes
+ * @param boxes - The list of boxes to calculate the sum of
+ * @returns The sum of the assets of the boxes
+ */
+export const calculateBoxesAssetSum = (boxes: ErgoBox[]): BoxValue => {
+  const tokenMap = new Map<string, bigint>();
+
+  // Collect all tokens and sum their amounts
+  for (const box of boxes) {
+    for (const asset of box.assets) {
+      const currentAmount = tokenMap.get(asset.tokenId) || 0n;
+      tokenMap.set(asset.tokenId, currentAmount + BigInt(asset.amount));
+    }
+  }
+
+  return {
+    value: boxes.reduce((sum, box) => sum + box.value, 0n),
+    tokens: Array.from(tokenMap.entries()).map(([tokenId, amount]) => ({
+      tokenId,
+      amount,
+    })),
+  };
+};
+
+/**
+ * Convert uint8Array to signed bigint
+ * @param buffer
+ * @returns signed bigint
+ */
+export const uint8ArrayToSignedBigInt = (buffer: Uint8Array): bigint => {
+  const hexStr = Buffer.from(buffer).toString('hex');
+  const bigIntValue = BigInt('0x' + hexStr);
+  const bitLength = BigInt(hexStr.length * 4); // Each hex digit represents 4 bits
+  const maxValue = BigInt(1) << bitLength; // 2^bitLength
+
+  // Check if the number should be negative (if MSB is set)
+  if (bigIntValue >= maxValue >> BigInt(1)) {
+    return bigIntValue - maxValue;
+  }
+
+  return bigIntValue;
 };

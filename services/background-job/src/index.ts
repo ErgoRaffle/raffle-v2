@@ -1,61 +1,29 @@
+import './bootstrap';
+
 import { ServiceManager } from '@rosen-bridge/service-manager';
-import { configs } from './config';
 import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
 
-import { DbService } from './services/dbService';
-import './bootstrap';
-import dataSource from './dataSource';
-import { ScannerService } from './services/scannerService';
-import { TxPotService } from './services/txPotService';
-import { HealthCheckService } from './services/healthCheckService';
+import { InitializerService } from './services/initializerService';
+import { configs } from './config';
 
 const logger = CallbackLoggerFactory.getInstance().getLogger(import.meta.url);
-const healthCheckLogger = CallbackLoggerFactory.getInstance().getLogger(
-  'health-check-service',
-);
 
 const main = async () => {
   const serviceManager = ServiceManager.setup();
+  // TODO: remove this once we have a proper reader for the configs
+  configs.ergo.fee = BigInt(configs.ergo.fee);
 
-  logger.debug('Initializing database service');
-  DbService.init(
-    dataSource,
-    CallbackLoggerFactory.getInstance().getLogger('DbService'),
+  logger.debug('Initializing services');
+  await InitializerService.init(
+    serviceManager,
+    CallbackLoggerFactory.getInstance().getLogger('Initializer'),
   );
-  serviceManager.register(DbService.getInstance());
-  logger.debug('Database service registered to the service manager');
-
-  logger.debug('Initializing scanner service');
-  await ScannerService.init(configs.scanner, DbService.getInstance());
-  serviceManager.register(ScannerService.getInstance());
-  logger.debug('Scanner service registered to the service manager');
-
-  logger.debug('Initializing txpot service');
-  TxPotService.init(
-    configs.txpot.updateInterval,
-    dataSource,
-    configs.scanner.node.url,
-    configs.txpot.txRequiredConfirmations,
-    CallbackLoggerFactory.getInstance().getLogger('TxPotService'),
-  );
-  serviceManager.register(TxPotService.getInstance());
-  logger.debug('Txpot service registered to the service manager');
-
-  logger.debug('Initializing health check service');
-  HealthCheckService.init(
-    configs.healthCheck.updateInterval,
-    healthCheckLogger,
-  );
-  serviceManager.register(HealthCheckService.getInstance());
-  logger.debug('Health check service registered to the service manager');
+  serviceManager.register(InitializerService.getInstance());
+  logger.debug('Initializer service registered to the service manager');
 
   logger.debug('Starting service manager...');
-  serviceManager.start(ScannerService.getInstance().getName());
-  serviceManager.start(TxPotService.getInstance().getName());
-  serviceManager.start(HealthCheckService.getInstance().getName());
-
-  // Keep the process running indefinitely
-  await new Promise(() => {});
+  await serviceManager.start(InitializerService.getInstance().getName());
+  logger.info('All services started successfully');
 };
 
 main();

@@ -98,6 +98,14 @@ export class GiftRedeemBuilder {
   };
 
   /**
+   * Get the number of winners
+   * @returns Winners count
+   */
+  getWinnersCount = (): number => {
+    return this.winnersCount!;
+  };
+
+  /**
    * Set the current step
    * @param step - Current step number
    * @returns this builder instance
@@ -188,13 +196,22 @@ export class GiftRedeemBuilder {
   };
 
   /**
+   * Get the current step
+   * @returns Current step number
+   */
+  getStep = (): number => {
+    return this.step!;
+  };
+
+  /**
    * Validate that all required parameters are set
    * @throws Error if any required parameter is missing
    */
   private validate = (): void => {
     if (!this.value) throw new Error('Value not set');
     if (!this.creationHeight) throw new Error('Creation height not set');
-    if (!this.totalSoldTickets) throw new Error('Total sold tickets not set');
+    if (this.totalSoldTickets === undefined)
+      throw new Error('Total sold tickets not set');
     if (!this.ticketPrice) throw new Error('Ticket price not set');
     if (!this.txFee) throw new Error('Transaction fee not set');
     if (!this.winnersCount) throw new Error('Winners count not set');

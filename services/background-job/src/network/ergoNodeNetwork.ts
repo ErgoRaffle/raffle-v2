@@ -1,11 +1,8 @@
 import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
 import ergoNodeClientFactory from '@rosen-clients/ergo-node';
 import JsonBigInt from '@rosen-bridge/json-bigint';
-import { AxiosError } from 'axios';
-
-import handleApiError from './utils';
-import { FailedError } from './error';
-import { TX_FETCHING_PAGE_SIZE } from '../constants';
+import { AxiosError } from '@rosen-bridge/rate-limited-axios';
+import { ErgoBox } from '@fleet-sdk/core';
 import {
   BlockchainStateContext,
   Header,
@@ -13,6 +10,11 @@ import {
   GroupElement$,
   BlockchainParameters,
 } from 'sigmastate-js/main';
+import { deserializeTransaction } from '@fleet-sdk/serializer';
+
+import handleApiError from './utils';
+import { FailedError } from './error';
+import { TX_FETCHING_PAGE_SIZE } from '../constants';
 
 class ErgoNodeNetwork {
   private client: ReturnType<typeof ergoNodeClientFactory>;
@@ -137,6 +139,8 @@ class ErgoNodeNetwork {
   public submitTransaction = async (tx: string) => {
     try {
       await this.client.sendTransactionAsBytes(tx);
+      const txId = deserializeTransaction(tx).id;
+      this.logger.info(`submitted transaction [${txId}] to Ergo Node`);
     } catch (error) {
       return handleApiError(
         error,
@@ -179,6 +183,7 @@ class ErgoNodeNetwork {
   public getStateContext = async (): Promise<BlockchainStateContext> => {
     try {
       const lastBlocks = await this.client.getLastHeaders(10);
+      lastBlocks.reverse();
       this.logger.debug(
         `requested 'getLastHeaders' for last 10 blocks. res: ${JsonBigInt.stringify(
           lastBlocks,
@@ -211,6 +216,31 @@ class ErgoNodeNetwork {
         'Failed to get state context from Ergo Node:',
       );
     }
+  };
+
+  /**
+   * get boxes by token id
+   * @param tokenId
+   */
+  public getUnspentBoxesByTokenId = async (
+    tokenId: string,
+  ): Promise<ErgoBox[]> => {
+    const boxes = await this.client.getBoxesByTokenIdUnspent(tokenId);
+    this.logger.debug(
+      `requested 'getBoxesByTokenId' for tokenId [${tokenId}]. res: ${JsonBigInt.stringify(
+        boxes,
+      )}`,
+    );
+    return boxes.map(
+      (box) =>
+        new ErgoBox({
+          ...box,
+          assets: box.assets ?? [],
+          boxId: box.boxId ?? '',
+          index: box.index ?? 0,
+          transactionId: box.transactionId ?? '',
+        }),
+    );
   };
 }
 

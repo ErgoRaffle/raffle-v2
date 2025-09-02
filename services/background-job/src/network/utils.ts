@@ -6,7 +6,7 @@ import {
   UnexpectedApiError,
   ErrorHandler,
 } from './error';
-import { AxiosError } from 'axios';
+import { AxiosError } from '@rosen-bridge/rate-limited-axios';
 
 /**
  * handle an axios api error, considering different kinds of events which may

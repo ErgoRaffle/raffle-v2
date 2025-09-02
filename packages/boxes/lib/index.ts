@@ -13,3 +13,6 @@ export { GiftTokenRepoBuilder } from './builders/giftTokenRepoBuilder';
 export { GiftRedeemBuilder } from './builders/giftRedeemBuilder';
 export { SafePayBuilder } from './builders/safePayBuilder';
 export { RaffleDetailsBuilder } from './builders/raffleDetailsBuilder';
+
+// Export types
+export { RaffleStatus } from './types';

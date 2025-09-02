@@ -73,6 +73,14 @@ export class WinnerPrizeBuilder {
   };
 
   /**
+   * Get the winner ticket index
+   * @returns The winner ticket index
+   */
+  getWinnerTicketIndex = (): bigint => {
+    return this.winnerTicketIndex!;
+  };
+
+  /**
    * Set the gift count
    * @param count - Number of gifts
    * @returns this builder instance
@@ -103,6 +111,14 @@ export class WinnerPrizeBuilder {
   };
 
   /**
+   * Get the winner index
+   * @returns The winner index
+   */
+  getWinnerIndex = (): number => {
+    return this.winnerIndex!;
+  };
+
+  /**
    * Set the unwrapped gift count
    * @param count - Number of unwrapped gifts
    * @returns this builder instance
@@ -120,6 +136,14 @@ export class WinnerPrizeBuilder {
   setTicketTokenId = (tokenId: string): this => {
     this.ticketTokenId = tokenId;
     return this;
+  };
+
+  /**
+   * Get the ticket token ID
+   * @returns The ticket token ID
+   */
+  getTicketTokenId = (): string => {
+    return this.ticketTokenId!;
   };
 
   /**

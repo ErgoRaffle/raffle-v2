@@ -12,6 +12,7 @@ import { SConstant } from '@fleet-sdk/serializer';
 import { raffleInfo } from '@ergo-raffle/contracts';
 import { blake2b256 } from '@fleet-sdk/crypto';
 import { InactiveRaffleBuilder } from './inactiveRaffleBuilder';
+import { RaffleStatus } from '../types';
 
 /**
  * Builder class for creating Active Raffle boxes in the ErgoRaffle protocol
@@ -140,6 +141,14 @@ export class ActiveRaffleBuilder {
   setGoal = (goal: bigint): this => {
     this.goal = goal;
     return this;
+  };
+
+  /**
+   * Get the raffle goal in nanoERG/CollectingToken
+   * @returns Goal amount in nanoERG/CollectingToken
+   */
+  getGoal = (): bigint => {
+    return this.goal!;
   };
 
   /**
@@ -347,6 +356,29 @@ export class ActiveRaffleBuilder {
   setCollectingTokenCount = (count: bigint): this => {
     this.collectingTokenCount = count;
     return this;
+  };
+
+  /**
+   * Check the raffle status based on current height and goal
+   * @param currentHeight - Current block height
+   * @returns RaffleStatus enum value
+   */
+  getRaffleStatus = (currentHeight: number): RaffleStatus => {
+    if (currentHeight < this.deadline!) {
+      // Deadline hasn't passed yet
+      return RaffleStatus.PENDING;
+    }
+
+    // Deadline has passed, check if goal was reached
+    const totalRaised = this.totalSoldTickets! * this.ticketPrice!;
+
+    if (totalRaised >= this.goal!) {
+      // Successfully reached the goal
+      return RaffleStatus.SUCCESS;
+    } else {
+      // Deadline passed but goal not reached
+      return RaffleStatus.FAILED;
+    }
   };
 
   /**

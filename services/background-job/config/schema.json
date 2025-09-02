@@ -327,6 +327,22 @@
       }
     }
   },
+  "boxLookup": {
+    "type": "object",
+    "children": {
+      "updateInterval": {
+        "type": "number",
+        "default": 60,
+        "description": "box lookup update interval in seconds",
+        "validations": [
+          {
+            "required": true,
+            "error": "box lookup update interval must be specified"
+          }
+        ]
+      }
+    }
+  },
   "addresses": {
     "type": "object",
     "children": {

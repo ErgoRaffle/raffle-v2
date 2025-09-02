@@ -278,7 +278,7 @@ describe('ticketRedeem', () => {
       'should fail if ticket redeem box assets decreases more than the redeemed donation in a token-goal raffle',
       ({ boxFactory, ticketBox, ticketRedeemBox }) => {
         const totalSoldTickets = 10n;
-        const ticketPrice = testUtils.TestConstants.FEE * 2n;
+        const ticketPrice = 10n;
         const ticketCount = 1n;
 
         const redeemedDonationOutputBox = boxFactory.createSafePayOutputBox(

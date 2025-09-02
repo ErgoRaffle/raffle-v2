@@ -67,6 +67,14 @@ export class TicketRedeemBuilder {
   };
 
   /**
+   * Get the total number of sold tickets
+   * @returns Total ticket count
+   */
+  getTotalSoldTickets = (): bigint => {
+    return this.totalSoldTickets!;
+  };
+
+  /**
    * Set the ticket price
    * @param price - Price in nanoERG/CollectingToken
    * @returns this builder instance
@@ -105,6 +113,14 @@ export class TicketRedeemBuilder {
   };
 
   /**
+   * Get the number of redeemed tickets
+   * @returns redeemed ticket count
+   */
+  getRedeemedTickets = (): bigint => {
+    return this.redeemedTickets!;
+  };
+
+  /**
    * Set the collecting token ID
    * @param tokenId - The collecting token ID
    * @returns this builder instance
@@ -135,6 +151,14 @@ export class TicketRedeemBuilder {
   };
 
   /**
+   * Get the ticket token ID
+   * @returns the ticket token ID
+   */
+  getTicketTokenId = (): string => {
+    return this.ticketTokenId!;
+  };
+
+  /**
    * Set the ticket token count
    * @param count - Number of ticket tokens
    * @returns this builder instance
@@ -159,7 +183,8 @@ export class TicketRedeemBuilder {
   private validate = (): void => {
     if (!this.value) throw new Error('Value not set');
     if (!this.creationHeight) throw new Error('Creation height not set');
-    if (!this.totalSoldTickets) throw new Error('Total sold tickets not set');
+    if (this.totalSoldTickets === undefined)
+      throw new Error('Total sold tickets not set');
     if (!this.ticketPrice) throw new Error('Ticket price not set');
     if (!this.txFee) throw new Error('Transaction fee not set');
     if (this.redeemedTickets === undefined)

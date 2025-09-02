@@ -28,3 +28,5 @@ healthCheck:
   updateInterval: 60
   warnBlockGap: 2
   criticalBlockGap: 10
+boxLookup:
+  updateInterval: 60
