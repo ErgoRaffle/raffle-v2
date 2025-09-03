@@ -1,4 +1,4 @@
-import { types } from '@rosen-bridge/fastify-enhanced';
+import { z as types } from 'zod';
 
 // Response schema for all API endpoints
 export const responseSchema = types.object({

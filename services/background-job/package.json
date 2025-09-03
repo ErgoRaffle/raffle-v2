@@ -40,7 +40,7 @@
     "@rosen-bridge/config": "^0.4.0",
     "@rosen-bridge/discord-notification": "^0.2.0",
     "@rosen-bridge/extended-typeorm": "^0.2.1",
-    "@rosen-bridge/fastify-enhanced": "^0.1.1",
+    "@rosen-bridge/fastify-enhanced": "^1.0.0",
     "@rosen-bridge/health-check": "^7.0.0",
     "@rosen-bridge/json-bigint": "^0.2.0",
     "@rosen-bridge/rate-limited-axios": "^0.2.1",
