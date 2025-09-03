@@ -17,7 +17,8 @@
     "test": "npm run test --workspaces",
     "test:related": "npm run test:related --workspaces",
     "type-check": "npm run type-check --workspaces",
-    "version": "npx changeset version && npm i"
+    "version": "npx changeset version && npm i",
+    "postinstall": "patch-package"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.1",
@@ -35,6 +36,7 @@
     "vitest": "^3.1.2"
   },
   "dependencies": {
-    "@rosen-bridge/discord-notification": "^0.1.3"
+    "@rosen-bridge/discord-notification": "^0.1.3",
+    "patch-package": "^8.0.0"
   }
 }
