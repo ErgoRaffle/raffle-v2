@@ -4,7 +4,7 @@ import {
   Dependency,
   ServiceStatus,
 } from '@rosen-bridge/service-manager';
-import { createFastify, FastifyWithZod } from '@rosen-bridge/fastify-enhanced';
+import { makeFastify, FastifyWithZod } from '@rosen-bridge/fastify-enhanced';
 import { compile } from '@fleet-sdk/compiler';
 import { ErgoAddress, Network } from '@fleet-sdk/core';
 
@@ -69,14 +69,14 @@ export class ApiService extends AbstractService {
    */
   protected start = async (): Promise<boolean> => {
     try {
-      this.fastify = await createFastify(
+      this.fastify = await makeFastify(
         {
           path: this.apiConfig.swaggerPath,
           title: this.apiConfig.title,
           description: this.apiConfig.description,
           version: packageJson.version,
         },
-        { logger: false },
+        { logger: true },
       );
 
       // Register routes
