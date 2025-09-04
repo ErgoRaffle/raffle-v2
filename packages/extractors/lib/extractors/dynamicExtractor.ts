@@ -98,17 +98,20 @@ export class DynamicExtractor extends AbstractErgoExtractor<
    */
   removeAddress = (address: string) => {
     try {
-      const ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
+      const ergoTreeToRemove =
+        ErgoAddress.fromBase58(address).ergoTree.toString();
       if (
-        ErgoAddress.fromErgoTree(ergoTree, this.networkType).toString() !==
-        address
+        ErgoAddress.fromErgoTree(
+          ergoTreeToRemove,
+          this.networkType,
+        ).toString() !== address
       ) {
         throw new Error(
           `Invalid address ${address} for network ${this.networkType}, address will be ignored`,
         );
       }
       this.ergoTreeWatchList = this.ergoTreeWatchList.filter(
-        (ergoTree) => ergoTree !== ergoTree,
+        (ergoTree) => ergoTree !== ergoTreeToRemove,
       );
       this.logger.info(`Removed address ${address} from the watch list`);
       this.logger.debug(
