@@ -30,6 +30,7 @@ import { FeePaymentService } from './transactions/feePaymentService';
 import { PrizeCreationService } from './transactions/prizeCreationService';
 import { GiftAndPrizeService } from './transactions/giftAndPrizeService';
 import { SafeWithdrawalService } from './transactions/safeWithdrawalService';
+import { OracleBoxService } from './oracleBoxService';
 
 export class InitializerService extends AbstractService {
   name = 'InitializerService';
@@ -151,6 +152,10 @@ export class InitializerService extends AbstractService {
       serviceName: SafeWithdrawalService.name,
       allowedStatuses: [ServiceStatus.running],
     },
+    {
+      serviceName: OracleBoxService.name,
+      allowedStatuses: [ServiceStatus.running],
+    },
   ];
 
   /**
@@ -229,6 +234,8 @@ export class InitializerService extends AbstractService {
     const safeWithdrawalLogger = CallbackLoggerFactory.getInstance().getLogger(
       'SafeWithdrawalService',
     );
+    const oracleBoxLogger =
+      CallbackLoggerFactory.getInstance().getLogger('OracleBoxService');
 
     // Initialize database service
     this.logger.debug('Initializing database service');
@@ -302,6 +309,11 @@ export class InitializerService extends AbstractService {
 
     this.logger.debug('All transaction services initialized');
     this.logger.info('All services initialized successfully');
+
+    // Initialize oracle box service
+    this.logger.debug('Initializing oracle box service');
+    OracleBoxService.init(600, oracleBoxLogger); // 10 minutes interval
+    this.logger.debug('Oracle box service initialized');
   };
 
   /**
@@ -330,6 +342,7 @@ export class InitializerService extends AbstractService {
     this.serviceManager.register(TicketRedeemService.getInstance());
     this.serviceManager.register(LicenseRedeemService.getInstance());
     this.serviceManager.register(SafeWithdrawalService.getInstance());
+    this.serviceManager.register(OracleBoxService.getInstance());
     this.logger.debug('All services registered with ServiceManager');
   };
 
