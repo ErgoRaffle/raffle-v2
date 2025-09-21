@@ -51,4 +51,7 @@ export class InactiveRaffleEntity extends AbstractErgoExtractorEntity {
 
   @Column({ type: 'bigint', transformer: new BigIntValueTransformer() })
   txFee: bigint;
+
+  @Column({ type: 'varchar', nullable: true })
+  collectingTokenId?: string;
 }
