@@ -31,6 +31,7 @@ healthCheck:
 boxLookup:
   updateInterval: 60
 api:
+  host: localhost
   port: 3000
   swaggerPath: /swagger
   title: Ergo Raffle API

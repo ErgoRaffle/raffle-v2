@@ -83,8 +83,8 @@ export class ApiService extends AbstractService {
       await this.registerRoutes();
 
       await this.fastify.listen({
+        host: this.apiConfig.host,
         port: this.apiConfig.port,
-        host: 'localhost',
       });
 
       this.logger.info(`API service started on port ${this.apiConfig.port}`);
