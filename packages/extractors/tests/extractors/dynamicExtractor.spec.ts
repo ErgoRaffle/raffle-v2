@@ -104,9 +104,13 @@ describe('DynamicExtractor', () => {
     it(`should remove address from the watch list`, () => {
       const addressToRemove =
         ErgoAddress.fromBase58(sampleDynamicAddress).ergoTree.toString();
-      extractor['ergoTreeWatchList'] = [addressToRemove];
+      extractor['ergoTreeWatchList'] = new Set([
+        addressToRemove,
+        'anotherAddress',
+      ]);
       extractor.removeAddress(sampleDynamicAddress);
       expect(extractor['ergoTreeWatchList']).not.toContain(addressToRemove);
+      expect(extractor['ergoTreeWatchList']).toContain('anotherAddress');
     });
   });
 });
