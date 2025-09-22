@@ -169,8 +169,8 @@ export class TxPotService extends AbstractService {
    * @param tx - The transaction to add
    * @param type - The type of transaction
    */
-  addTx = (tx: SignedTransaction, type: TxType): void => {
-    TxPot.getInstance().addTx(
+  addTx = async (tx: SignedTransaction, type: TxType): Promise<void> => {
+    await TxPot.getInstance().addTx(
       tx.id,
       constants.ERGO_CHAIN_NAME,
       type,
