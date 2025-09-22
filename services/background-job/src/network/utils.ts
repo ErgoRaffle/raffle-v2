@@ -66,7 +66,7 @@ const handleApiError = <
   } else if (error instanceof AxiosError && error.request) {
     return handleNotRespondedState(error);
   } else {
-    return handleUnknownState(error);
+    return handleUnknownState(error.message ? error.message : error);
   }
 };
 
