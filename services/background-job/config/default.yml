@@ -33,6 +33,3 @@ boxLookup:
 api:
   host: localhost
   port: 3000
-  swaggerPath: /swagger
-  title: Ergo Raffle API
-  description: API for Ergo Raffle operations

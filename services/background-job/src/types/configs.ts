@@ -77,7 +77,4 @@ export interface Addresses {
 export interface Api {
   host: string;
   port: number;
-  swaggerPath: string;
-  title: string;
-  description: string;
 }
