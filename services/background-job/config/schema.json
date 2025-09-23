@@ -7,7 +7,6 @@
       },
       {
         "type": "file",
-        "level": "debug",
         "path": "./logs/",
         "maxSize": "20m",
         "maxFiles": "14d"
@@ -362,6 +361,17 @@
   "api": {
     "type": "object",
     "children": {
+      "host": {
+        "type": "string",
+        "default": "localhost",
+        "description": "API server host",
+        "validations": [
+          {
+            "required": true,
+            "error": "API host must be specified"
+          }
+        ]
+      },
       "port": {
         "type": "number",
         "default": 3000,
@@ -370,39 +380,6 @@
           {
             "required": true,
             "error": "API port must be specified"
-          }
-        ]
-      },
-      "swaggerPath": {
-        "type": "string",
-        "default": "/swagger",
-        "description": "Swagger documentation path",
-        "validations": [
-          {
-            "required": true,
-            "error": "Swagger documentation path must be specified"
-          }
-        ]
-      },
-      "title": {
-        "type": "string",
-        "default": "Ergo Raffle API",
-        "description": "API title for Swagger",
-        "validations": [
-          {
-            "required": true,
-            "error": "API title must be specified"
-          }
-        ]
-      },
-      "description": {
-        "type": "string",
-        "default": "API for Ergo Raffle operations",
-        "description": "API description for Swagger",
-        "validations": [
-          {
-            "required": true,
-            "error": "API description must be specified"
           }
         ]
       }

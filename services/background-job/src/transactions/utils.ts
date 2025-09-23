@@ -94,7 +94,7 @@ export const signAndAddTx = async (
       `Trying to sign ${txType} transaction: ${JsonBigInt.stringify(tx.toEIP12Object())}`,
     );
     const signedTx = await signTransaction(network, tx, []);
-    TxPotService.getInstance().addTx(signedTx, txType);
+    await TxPotService.getInstance().addTx(signedTx, txType);
     return signedTx;
   } catch (e) {
     throw new Error(`Failed to sign transaction: ${e}`);

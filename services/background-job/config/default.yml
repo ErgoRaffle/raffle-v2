@@ -2,7 +2,7 @@ logs:
   - type: console
     level: info
   - type: file
-    level: debug
+    level: info
     path: ./logs/
     maxSize: 20m
     maxFiles: 14d
@@ -31,7 +31,5 @@ healthCheck:
 boxLookup:
   updateInterval: 60
 api:
+  host: localhost
   port: 3000
-  swaggerPath: /swagger
-  title: Ergo Raffle API
-  description: API for Ergo Raffle operations

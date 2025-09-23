@@ -14,7 +14,7 @@ export class DynamicExtractor extends AbstractErgoExtractor<
   DynamicBoxEntity
 > {
   readonly actions: DynamicBoxAction;
-  private ergoTreeWatchList: string[] = [];
+  private ergoTreeWatchList: Set<string> = new Set();
 
   constructor(
     dataSource: DataSource,
@@ -37,7 +37,7 @@ export class DynamicExtractor extends AbstractErgoExtractor<
    * @return true if the box ergoTree in the watch list
    */
   hasData = (box: OutputBox): boolean => {
-    return this.ergoTreeWatchList.includes(box.ergoTree);
+    return this.ergoTreeWatchList.has(box.ergoTree);
   };
 
   /**
@@ -76,11 +76,11 @@ export class DynamicExtractor extends AbstractErgoExtractor<
           `Invalid address ${address} for network ${this.networkType}, address will be ignored`,
         );
       }
-      if (this.ergoTreeWatchList.includes(ergoTree)) {
+      if (this.ergoTreeWatchList.has(ergoTree)) {
         this.logger.warn(`Address ${address} already in the watch list`);
         return;
       }
-      this.ergoTreeWatchList.push(ergoTree);
+      this.ergoTreeWatchList.add(ergoTree);
       this.logger.info(`Added address ${address} to the watch list`);
       this.logger.debug(
         `Dynamic extractor watch list after addition: ${this.ergoTreeWatchList}`,
@@ -110,9 +110,7 @@ export class DynamicExtractor extends AbstractErgoExtractor<
           `Invalid address ${address} for network ${this.networkType}, address will be ignored`,
         );
       }
-      this.ergoTreeWatchList = this.ergoTreeWatchList.filter(
-        (ergoTree) => ergoTree !== ergoTreeToRemove,
-      );
+      this.ergoTreeWatchList.delete(ergoTreeToRemove);
       this.logger.info(`Removed address ${address} from the watch list`);
       this.logger.debug(
         `Dynamic extractor watch list after removal: ${this.ergoTreeWatchList}`,
