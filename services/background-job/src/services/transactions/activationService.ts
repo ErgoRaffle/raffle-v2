@@ -1,5 +1,5 @@
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
-import { Request, OnSufficeCallback } from '@ergo-raffle/box-lookup';
+import { Request, OnSufficeCallback } from '../boxLookupCompat';
 import { raffleInfo } from '@ergo-raffle/contracts';
 import { ActivationTxBuilder } from '@ergo-raffle/transactions';
 import { InactiveRaffleBuilder } from '@ergo-raffle/boxes';

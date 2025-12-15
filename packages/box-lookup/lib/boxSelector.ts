@@ -1,13 +1,15 @@
-import { ErgoAddress, ErgoBox, Network } from '@fleet-sdk/core';
 import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
 import { cloneDeep } from 'lodash-es';
 import JsonBigInt from '@rosen-bridge/json-bigint';
+import * as ergoLib from 'ergo-lib-wasm-nodejs';
 
 import { BoxValue } from './types/box';
 import { Request } from './types';
+import { OutputBox } from './types';
+import { ErgoNetwork } from './types/network';
 
 export class BoxSelector {
-  private boxes: ErgoBox[] = [];
+  private boxes: OutputBox[] = [];
   private sumValue: BoxValue = {
     value: 0n,
     tokens: [],
@@ -16,7 +18,7 @@ export class BoxSelector {
   constructor(
     private logger: AbstractLogger = new DummyLogger(),
     private request: Request,
-    private networkType: Network,
+    private networkType: ErgoNetwork,
   ) {}
 
   /**
@@ -32,10 +34,24 @@ export class BoxSelector {
    * @param box - The box to check
    * @returns True if the box is eligible for selection, false otherwise
    */
-  isEligibleForSelection = (box: ErgoBox) => {
-    const sameAddress =
-      ErgoAddress.fromErgoTree(box.ergoTree, this.networkType).toString() ===
-      this.request.address;
+  isEligibleForSelection = (box: OutputBox) => {
+    let sameAddress = false;
+    try {
+      const ergoTree = ergoLib.ErgoTree.from_base16_bytes(box.ergoTree);
+      const prefix =
+        this.networkType === ErgoNetwork.Mainnet
+          ? ergoLib.NetworkPrefix.Mainnet
+          : ergoLib.NetworkPrefix.Testnet;
+      const address = ergoLib.Address.recreate_from_ergo_tree(ergoTree)
+        .to_base58(prefix)
+        .toString();
+      sameAddress = address === this.request.address;
+    } catch (e) {
+      this.logger.debug(
+        `Failed to recreate address from ergoTree for box [${box.boxId}]`,
+      );
+      sameAddress = false;
+    }
 
     const hasRequiredTokens = this.request.tokens.some((token) =>
       box.assets.some((asset) => asset.tokenId === token.tokenId),
@@ -61,7 +77,7 @@ export class BoxSelector {
    * Add a box to the selected boxes and update the sum value
    * @param box - The box to add
    */
-  addBox = (box: ErgoBox) => {
+  addBox = (box: OutputBox) => {
     this.boxes.push(box);
     this.sumValue.value += box.value;
     for (const token of box.assets) {

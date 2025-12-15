@@ -13,6 +13,8 @@ import {
 } from './mocked/boxLookup.mock';
 import { TxPot } from '@rosen-bridge/tx-pot';
 
+import { noopDeserializeTx } from './mocked/deserializeTx.mock';
+
 // Mock the BoxSelector module
 vi.mock('../lib/boxSelector', () => ({
   BoxSelector: vi.fn(),
@@ -28,6 +30,7 @@ describe('BoxLookup', () => {
       sampleTxPot as unknown as TxPot,
       sampleNodeURL,
       sampleNetworkType,
+      noopDeserializeTx,
       mockLogger,
     );
     vi.clearAllMocks();

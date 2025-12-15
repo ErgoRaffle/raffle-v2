@@ -4,10 +4,16 @@ import {
   Dependency,
   ServiceStatus,
 } from '@rosen-bridge/service-manager';
-import { BoxLookup, Request } from '@ergo-raffle/box-lookup';
+import { BoxLookup } from '@ergo-raffle/box-lookup';
 import { Network } from '@fleet-sdk/core';
 
 import { TxPotService } from './txPotService';
+import {
+  deserializeTxForBoxLookup,
+  mapFleetNetwork,
+  Request,
+  toBoxLookupRequest,
+} from './boxLookupCompat';
 
 export class BoxLookupService extends AbstractService {
   name = 'BoxLookupService';
@@ -37,7 +43,8 @@ export class BoxLookupService extends AbstractService {
     this.boxLookup = new BoxLookup(
       TxPotService.getInstance().getTxPot(),
       nodeUrl,
-      networkType,
+      mapFleetNetwork(networkType),
+      deserializeTxForBoxLookup,
       logger,
     );
     this.updateInterval = updateInterval;
@@ -124,7 +131,7 @@ export class BoxLookupService extends AbstractService {
    * @param request - The request to add
    */
   addRequest = (request: Request): number => {
-    return this.boxLookup.registerRequest(request);
+    return this.boxLookup.registerRequest(toBoxLookupRequest(request));
   };
 
   /**

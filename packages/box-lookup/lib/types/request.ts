@@ -1,9 +1,9 @@
-import { TokenAmount, ErgoBox } from '@fleet-sdk/core';
+import { Asset, OutputBox } from './box';
 
 export interface Request {
   address: string;
   value: bigint | undefined;
-  tokens: TokenAmount<bigint>[];
+  tokens: Asset[];
   /**
    * This method is called by BoxLookup when the preferred condition occurs
    * @param boxes
@@ -13,9 +13,9 @@ export interface Request {
 }
 
 export type OnSufficeCallback = (
-  boxes: ErgoBox[],
-  unspentBoxes: ErgoBox[],
+  boxes: OutputBox[],
+  unspentBoxes: OutputBox[],
   requestId: number,
 ) => Promise<void>;
 
-export type GetConfirmedBoxes = () => Promise<ErgoBox[]>;
+export type GetConfirmedBoxes = () => Promise<OutputBox[]>;

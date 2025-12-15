@@ -1,11 +1,11 @@
 import { TxPot } from '@rosen-bridge/tx-pot';
 import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
-import { Network } from '@fleet-sdk/core';
 import JsonBigInt from '@rosen-bridge/json-bigint';
 
 import { Request } from './types';
-import { DataProvider } from './dataProvider';
+import { DataProvider, DeserializeTx } from './dataProvider';
 import { BoxSelector } from './boxSelector';
+import { ErgoNetwork } from './types';
 
 export class BoxLookup {
   protected requestsIdCounter: number = 0;
@@ -15,10 +15,11 @@ export class BoxLookup {
   constructor(
     protected txPot: TxPot,
     nodeURL: string,
-    protected networkType: Network,
+    protected networkType: ErgoNetwork,
+    deserializeTx: DeserializeTx,
     protected logger: AbstractLogger = new DummyLogger(),
   ) {
-    this.dataProvider = new DataProvider(txPot, nodeURL, logger);
+    this.dataProvider = new DataProvider(txPot, nodeURL, deserializeTx, logger);
   }
 
   /**

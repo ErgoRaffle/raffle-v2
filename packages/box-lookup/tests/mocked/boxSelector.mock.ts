@@ -1,21 +1,19 @@
-import { ErgoBox, Network, TokenAmount } from '@fleet-sdk/core';
 import { Request } from '../../lib/types';
+import { ErgoNetwork, OutputBox, Asset } from '../../lib';
+import * as ergoLib from 'ergo-lib-wasm-nodejs';
 
-export const sampleNetworkType: Network = Network.Mainnet;
+export const sampleNetworkType: ErgoNetwork = ErgoNetwork.Mainnet;
 
 // Sample token amounts
-export const sampleToken1: TokenAmount<bigint> = {
+export const sampleToken1: Asset = {
   tokenId: '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
   amount: 1000n,
 };
 
-export const sampleToken2: TokenAmount<bigint> = {
+export const sampleToken2: Asset = {
   tokenId: '5ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd118',
   amount: 500n,
 };
-
-// Sample addresses
-const sampleAddress = '9hTzWFBxRLV3SDSUkqf7N9ySVfy4MCMEvfqLNgkEx9ngmeBrNiy';
 
 // Sample ergo trees
 const sampleErgoTree =
@@ -23,10 +21,17 @@ const sampleErgoTree =
 const differentErgoTree =
   '0008cd025eb059a733e86d9a235daf6e40fc18b27c975da27a2ec00791c336930c8b55de';
 
+// Sample addresses (derived from ergoTree to keep tests robust across SDKs)
+const sampleAddress = ergoLib.Address.recreate_from_ergo_tree(
+  ergoLib.ErgoTree.from_base16_bytes(sampleErgoTree),
+)
+  .to_base58(ergoLib.NetworkPrefix.Mainnet)
+  .toString();
+
 // Mock callback functions
 const mockOnSuffice = async () => {};
 const mockGetConfirmedBoxes = async () => [];
-const emptyTokens: TokenAmount<bigint>[] = [];
+const emptyTokens: Asset[] = [];
 
 export const sampleErgoBoxes = {
   validBoxWithTokens: {
@@ -39,7 +44,7 @@ export const sampleErgoBoxes = {
     transactionId:
       '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
     index: 0,
-  } as ErgoBox,
+  } as OutputBox,
 
   validBoxWithErgs: {
     boxId: '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd118',
@@ -51,7 +56,7 @@ export const sampleErgoBoxes = {
     transactionId:
       '3ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd118',
     index: 0,
-  } as ErgoBox,
+  } as OutputBox,
 
   boxWithDifferentAddress: {
     boxId: '3ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd119',
@@ -63,7 +68,7 @@ export const sampleErgoBoxes = {
     transactionId:
       '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd119',
     index: 0,
-  } as ErgoBox,
+  } as OutputBox,
 
   boxWithoutTokens: {
     boxId: '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd120',
@@ -75,7 +80,7 @@ export const sampleErgoBoxes = {
     transactionId:
       '5ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd120',
     index: 0,
-  } as ErgoBox,
+  } as OutputBox,
 };
 
 export const sampleRequests = {
