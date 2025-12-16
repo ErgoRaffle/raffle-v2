@@ -10,7 +10,6 @@ import { Network } from '@fleet-sdk/core';
 import { TxPotService } from './txPotService';
 import {
   deserializeTxForBoxLookup,
-  mapFleetNetwork,
   Request,
   toBoxLookupRequest,
 } from './boxLookupCompat';
@@ -36,14 +35,13 @@ export class BoxLookupService extends AbstractService {
   private constructor(
     updateInterval: number,
     nodeUrl: string,
-    networkType: Network,
+    _networkType: Network,
     logger?: AbstractLogger,
   ) {
     super(logger);
     this.boxLookup = new BoxLookup(
       TxPotService.getInstance().getTxPot(),
       nodeUrl,
-      mapFleetNetwork(networkType),
       deserializeTxForBoxLookup,
       logger,
     );

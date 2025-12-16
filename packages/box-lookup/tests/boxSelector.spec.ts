@@ -6,7 +6,6 @@ import { Request } from '../lib/types';
 import {
   sampleErgoBoxes,
   sampleRequests,
-  sampleNetworkType,
   sampleToken1,
   sampleToken2,
 } from './mocked/boxSelector.mock';
@@ -19,21 +18,21 @@ describe('BoxSelector', () => {
   beforeEach(() => {
     mockLogger = new DummyLogger();
     mockRequest = sampleRequests.validRequest;
-    boxSelector = new BoxSelector(mockLogger, mockRequest, sampleNetworkType);
+    boxSelector = new BoxSelector(mockLogger, mockRequest);
   });
 
   describe('isEligibleForSelection', () => {
     /**
-     * @target should return true for a box with matching address and required tokens
+     * @target should return true for a box with matching ergoTree and required tokens
      * @dependencies
      * @scenario
-     * - create a box with the same address as the request
+     * - create a box with the same ergoTree as the request
      * - add required tokens to the box
      * - call isEligibleForSelection function
      * @expected
-     * - should return true for matching address and tokens
+     * - should return true for matching ergoTree and tokens
      */
-    it('should return true for a box with matching address and required tokens', () => {
+    it('should return true for a box with matching ergoTree and required tokens', () => {
       const relatedBox = sampleErgoBoxes.validBoxWithTokens;
       const result = boxSelector.isEligibleForSelection(relatedBox);
 
@@ -41,22 +40,18 @@ describe('BoxSelector', () => {
     });
 
     /**
-     * @target should return true for a box with matching address and required ergs
+     * @target should return true for a box with matching ergoTree and required ergs
      * @dependencies
      * @scenario
      * - create a request with erg value requirement
-     * - create a box with the same address and sufficient ergs
+     * - create a box with the same ergoTree and sufficient ergs
      * - call isEligibleForSelection function
      * @expected
-     * - should return true for matching address and ergs
+     * - should return true for matching ergoTree and ergs
      */
-    it('should return true for a box with matching address and required ergs', () => {
+    it('should return true for a box with matching ergoTree and required ergs', () => {
       const ergRequest = sampleRequests.ergOnlyRequest;
-      const ergBoxSelector = new BoxSelector(
-        mockLogger,
-        ergRequest,
-        sampleNetworkType,
-      );
+      const ergBoxSelector = new BoxSelector(mockLogger, ergRequest);
       const relatedBox = sampleErgoBoxes.validBoxWithErgs;
 
       const result = ergBoxSelector.isEligibleForSelection(relatedBox);
@@ -65,15 +60,15 @@ describe('BoxSelector', () => {
     });
 
     /**
-     * @target should return false for a box with different address
+     * @target should return false for a box with different ergoTree
      * @dependencies
      * @scenario
-     * - create a box with different address than the request
+     * - create a box with different ergoTree than the request
      * - call isEligibleForSelection function
      * @expected
-     * - should return false for different address
+     * - should return false for different ergoTree
      */
-    it('should return false for a box with different address', () => {
+    it('should return false for a box with different ergoTree', () => {
       const unrelatedBox = sampleErgoBoxes.boxWithDifferentAddress;
       const result = boxSelector.isEligibleForSelection(unrelatedBox);
 
@@ -81,22 +76,18 @@ describe('BoxSelector', () => {
     });
 
     /**
-     * @target should return false for a box with same address but no required tokens
+     * @target should return false for a box with same ergoTree but no required tokens
      * @dependencies
      * @scenario
-     * - create a box with same address but no required tokens
+     * - create a box with same ergoTree but no required tokens
      * - create a request with no value requirement
      * - call isEligibleForSelection function
      * @expected
      * - should return false for missing tokens and ergs
      */
-    it('should return false for a box with same address but no required tokens or ergs', () => {
+    it('should return false for a box with same ergoTree but no required tokens or ergs', () => {
       const noValueRequest = sampleRequests.noValueRequest;
-      const noValueBoxSelector = new BoxSelector(
-        mockLogger,
-        noValueRequest,
-        sampleNetworkType,
-      );
+      const noValueBoxSelector = new BoxSelector(mockLogger, noValueRequest);
       const boxWithoutTokens = sampleErgoBoxes.boxWithoutTokens;
       const result =
         noValueBoxSelector.isEligibleForSelection(boxWithoutTokens);
@@ -109,7 +100,7 @@ describe('BoxSelector', () => {
      * @dependencies
      * @scenario
      * - create a request with no value and no tokens
-     * - create a box with matching address
+     * - create a box with matching ergoTree
      * - call isEligibleForSelection function
      * @expected
      * - should return true when request has no requirements
@@ -119,7 +110,6 @@ describe('BoxSelector', () => {
       const noRequirementsBoxSelector = new BoxSelector(
         mockLogger,
         noRequirementsRequest,
-        sampleNetworkType,
       );
       const boxWithMatchingAddress = sampleErgoBoxes.validBoxWithTokens;
       const result = noRequirementsBoxSelector.isEligibleForSelection(
@@ -211,11 +201,7 @@ describe('BoxSelector', () => {
      */
     it('should return false when selected boxes do not cover erg requirements', () => {
       const highErgRequest = sampleRequests.highErgRequest;
-      const highErgBoxSelector = new BoxSelector(
-        mockLogger,
-        highErgRequest,
-        sampleNetworkType,
-      );
+      const highErgBoxSelector = new BoxSelector(mockLogger, highErgRequest);
       const box = sampleErgoBoxes.validBoxWithTokens;
 
       highErgBoxSelector.addBox(box);
@@ -239,7 +225,6 @@ describe('BoxSelector', () => {
       const highTokenBoxSelector = new BoxSelector(
         mockLogger,
         highTokenRequest,
-        sampleNetworkType,
       );
       const box = sampleErgoBoxes.validBoxWithTokens;
 
@@ -261,11 +246,7 @@ describe('BoxSelector', () => {
      */
     it('should return true when request has no value requirements', () => {
       const noValueRequest = sampleRequests.noValueRequest;
-      const noValueBoxSelector = new BoxSelector(
-        mockLogger,
-        noValueRequest,
-        sampleNetworkType,
-      );
+      const noValueBoxSelector = new BoxSelector(mockLogger, noValueRequest);
       const box = sampleErgoBoxes.validBoxWithTokens;
 
       noValueBoxSelector.addBox(box);

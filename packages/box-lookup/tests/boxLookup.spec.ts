@@ -6,7 +6,6 @@ import { BoxLookup } from '../lib/boxLookup';
 import {
   sampleTxPot,
   sampleNodeURL,
-  sampleNetworkType,
   sampleRequests,
   sampleErgoBoxes,
   sampleMinedBoxes,
@@ -29,7 +28,6 @@ describe('BoxLookup', () => {
     boxLookup = new BoxLookup(
       sampleTxPot as unknown as TxPot,
       sampleNodeURL,
-      sampleNetworkType,
       noopDeserializeTx,
       mockLogger,
     );

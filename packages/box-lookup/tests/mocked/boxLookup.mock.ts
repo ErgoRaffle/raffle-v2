@@ -1,10 +1,8 @@
 import { vi } from 'vitest';
 import { Request } from '../../lib/types';
-import { ErgoNetwork, OutputBox, Asset } from '../../lib';
-import * as ergoLib from 'ergo-lib-wasm-nodejs';
+import { OutputBox, Asset } from '../../lib';
 
 export const sampleNodeURL = 'http://localhost:9053';
-export const sampleNetworkType: ErgoNetwork = ErgoNetwork.Mainnet;
 
 // Sample token amounts
 const sampleToken1: Asset = {
@@ -20,13 +18,6 @@ const sampleToken2: Asset = {
 // Sample ergo trees
 const sampleErgoTree =
   '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041';
-
-// Sample addresses (derived from ergoTree)
-const sampleAddress = ergoLib.Address.recreate_from_ergo_tree(
-  ergoLib.ErgoTree.from_base16_bytes(sampleErgoTree),
-)
-  .to_base58(ergoLib.NetworkPrefix.Mainnet)
-  .toString();
 
 // Mock callback functions
 const mockOnSuffice = async () => {};
@@ -86,7 +77,7 @@ export const sampleMinedBoxes = [
 // Sample requests
 export const sampleRequests = {
   validRequest: {
-    address: sampleAddress,
+    ergoTree: sampleErgoTree,
     value: 1000000n,
     tokens: [sampleToken1],
     onSuffice: mockOnSuffice,
@@ -94,7 +85,7 @@ export const sampleRequests = {
   } as Request,
 
   ergOnlyRequest: {
-    address: sampleAddress,
+    ergoTree: sampleErgoTree,
     value: 5000000n,
     tokens: [],
     onSuffice: mockOnSuffice,

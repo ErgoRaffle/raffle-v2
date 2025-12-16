@@ -1,8 +1,5 @@
 import { Request } from '../../lib/types';
-import { ErgoNetwork, OutputBox, Asset } from '../../lib';
-import * as ergoLib from 'ergo-lib-wasm-nodejs';
-
-export const sampleNetworkType: ErgoNetwork = ErgoNetwork.Mainnet;
+import { OutputBox, Asset } from '../../lib';
 
 // Sample token amounts
 export const sampleToken1: Asset = {
@@ -20,13 +17,6 @@ const sampleErgoTree =
   '0008cd03841e932c6447d2d576eb39e024940599ead12f5a2563b275cabe0b93baf9e47a';
 const differentErgoTree =
   '0008cd025eb059a733e86d9a235daf6e40fc18b27c975da27a2ec00791c336930c8b55de';
-
-// Sample addresses (derived from ergoTree to keep tests robust across SDKs)
-const sampleAddress = ergoLib.Address.recreate_from_ergo_tree(
-  ergoLib.ErgoTree.from_base16_bytes(sampleErgoTree),
-)
-  .to_base58(ergoLib.NetworkPrefix.Mainnet)
-  .toString();
 
 // Mock callback functions
 const mockOnSuffice = async () => {};
@@ -85,7 +75,7 @@ export const sampleErgoBoxes = {
 
 export const sampleRequests = {
   validRequest: {
-    address: sampleAddress,
+    ergoTree: sampleErgoTree,
     value: 1000000n,
     tokens: [sampleToken1],
     onSuffice: mockOnSuffice,
@@ -93,7 +83,7 @@ export const sampleRequests = {
   } as Request,
 
   ergOnlyRequest: {
-    address: sampleAddress,
+    ergoTree: sampleErgoTree,
     value: 5000000n,
     tokens: [],
     onSuffice: mockOnSuffice,
@@ -101,7 +91,7 @@ export const sampleRequests = {
   } as Request,
 
   highErgRequest: {
-    address: sampleAddress,
+    ergoTree: sampleErgoTree,
     value: 10000000n, // Higher than available ergs
     tokens: [sampleToken1],
     onSuffice: mockOnSuffice,
@@ -109,7 +99,7 @@ export const sampleRequests = {
   } as Request,
 
   highTokenRequest: {
-    address: sampleAddress,
+    ergoTree: sampleErgoTree,
     value: 1000000n,
     tokens: [
       {
@@ -122,7 +112,7 @@ export const sampleRequests = {
   } as Request,
 
   noValueRequest: {
-    address: sampleAddress,
+    ergoTree: sampleErgoTree,
     value: undefined,
     tokens: [sampleToken1],
     onSuffice: mockOnSuffice,
@@ -130,7 +120,7 @@ export const sampleRequests = {
   } as Request,
 
   noRequrirementRequest: {
-    address: sampleAddress,
+    ergoTree: sampleErgoTree,
     value: undefined,
     tokens: [],
     onSuffice: mockOnSuffice,

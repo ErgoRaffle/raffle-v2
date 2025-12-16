@@ -9,32 +9,14 @@ import { deserializeTransaction } from '@fleet-sdk/serializer';
 import {
   deserializeTxForBoxLookup,
   ergoBoxToOutputBox,
-  mapFleetNetwork,
   outputBoxToErgoBox,
   toBoxLookupRequest,
 } from '../src/services/boxLookupCompat';
 import { Network } from '@fleet-sdk/core';
-import { ErgoNetwork } from '@ergo-raffle/box-lookup';
+import { ErgoAddress } from '@fleet-sdk/core';
 import { sampleErgoBox, sampleTxEntity } from './mocked/boxLookupCompat.mock';
 
 describe('boxLookupCompat', () => {
-  describe('mapFleetNetwork', () => {
-    /**
-     * @target should map fleet network to box-lookup network
-     * @dependencies
-     * @scenario
-     * - call mapFleetNetwork with fleet mainnet
-     * - call mapFleetNetwork with fleet testnet
-     * @expected
-     * - should return ErgoNetwork.Mainnet for Network.Mainnet
-     * - should return ErgoNetwork.Testnet for Network.Testnet
-     */
-    it('should map mainnet/testnet correctly', () => {
-      expect(mapFleetNetwork(Network.Mainnet)).toBe(ErgoNetwork.Mainnet);
-      expect(mapFleetNetwork(Network.Testnet)).toBe(ErgoNetwork.Testnet);
-    });
-  });
-
   describe('box conversions', () => {
     /**
      * @target should convert ErgoBox to OutputBox and back to ErgoBox
@@ -77,8 +59,11 @@ describe('boxLookupCompat', () => {
      */
     it('should adapt getConfirmedBoxes and onSuffice through conversions', async () => {
       const onSuffice = vi.fn().mockResolvedValue(undefined);
+      const address = ErgoAddress.fromErgoTree(sampleErgoBox.ergoTree).toString(
+        Network.Mainnet,
+      );
       const request = {
-        address: '9fSgUi6Z7kOnxq94voRFuJbDrZfStJn6f2q7oEwj4vJtQp6nR8M',
+        address,
         value: 1n,
         tokens: sampleErgoBox.assets,
         onSuffice,
@@ -90,6 +75,7 @@ describe('boxLookupCompat', () => {
       const confirmed = await adapted.getConfirmedBoxes();
       expect(confirmed).toHaveLength(1);
       expect(confirmed[0].boxId).toBe(sampleErgoBox.boxId);
+      expect(adapted.ergoTree).toBe(sampleErgoBox.ergoTree);
 
       await adapted.onSuffice(confirmed, confirmed, 7);
       expect(onSuffice).toHaveBeenCalledTimes(1);

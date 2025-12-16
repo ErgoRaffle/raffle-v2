@@ -1,8 +1,7 @@
-import { ErgoBox, Network, TokenAmount } from '@fleet-sdk/core';
+import { ErgoAddress, ErgoBox, TokenAmount } from '@fleet-sdk/core';
 import { TransactionEntity } from '@rosen-bridge/tx-pot';
 import { deserializeTransaction } from '@fleet-sdk/serializer';
 import {
-  ErgoNetwork,
   OutputBox,
   Request as BoxLookupRequest,
 } from '@ergo-raffle/box-lookup';
@@ -42,18 +41,6 @@ export interface Request {
   onSuffice: OnSufficeCallback;
   getConfirmedBoxes: GetConfirmedBoxes;
 }
-
-/**
- * Maps fleet-sdk network enum to box-lookup network enum.
- *
- * @param networkType - Fleet network type
- * @returns Box-lookup network type
- */
-export const mapFleetNetwork = (networkType: Network): ErgoNetwork => {
-  return networkType === Network.Mainnet
-    ? ErgoNetwork.Mainnet
-    : ErgoNetwork.Testnet;
-};
 
 /**
  * Converts a fleet `ErgoBox` into a plain `OutputBox` DTO used by box-lookup.
@@ -102,8 +89,9 @@ export const outputBoxToErgoBox = (box: OutputBox): ErgoBox => {
  * @returns Box-lookup request (DTO based)
  */
 export const toBoxLookupRequest = (request: Request): BoxLookupRequest => {
+  const ergoTree = ErgoAddress.fromBase58(request.address).ergoTree;
   return {
-    address: request.address,
+    ergoTree,
     value: request.value,
     tokens: request.tokens.map((t) => ({
       tokenId: t.tokenId,

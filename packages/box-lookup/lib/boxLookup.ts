@@ -5,7 +5,6 @@ import JsonBigInt from '@rosen-bridge/json-bigint';
 import { Request } from './types';
 import { DataProvider, DeserializeTx } from './dataProvider';
 import { BoxSelector } from './boxSelector';
-import { ErgoNetwork } from './types';
 
 export class BoxLookup {
   protected requestsIdCounter: number = 0;
@@ -15,7 +14,6 @@ export class BoxLookup {
   constructor(
     protected txPot: TxPot,
     nodeURL: string,
-    protected networkType: ErgoNetwork,
     deserializeTx: DeserializeTx,
     protected logger: AbstractLogger = new DummyLogger(),
   ) {
@@ -73,10 +71,10 @@ export class BoxLookup {
     );
     for (const [requestId, request] of this.requests.entries()) {
       this.logger.debug(
-        `Serving request ${requestId} on address ${request.address}`,
+        `Serving request ${requestId} on ergoTree ${request.ergoTree}`,
       );
       await this.dataProvider.updateRoundWithTxPotData();
-      let boxSelector = new BoxSelector(this.logger, request, this.networkType);
+      let boxSelector = new BoxSelector(this.logger, request);
 
       const roundState = this.dataProvider.getCurrentRoundState();
       const unspentBoxIds = new Set(
@@ -127,7 +125,7 @@ export class BoxLookup {
           this.logger.debug(
             `Request ${requestId}: Resetting box selector after onSuffice callback`,
           );
-          boxSelector = new BoxSelector(this.logger, request, this.networkType);
+          boxSelector = new BoxSelector(this.logger, request);
         }
       }
     }

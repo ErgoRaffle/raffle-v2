@@ -1,7 +1,7 @@
 import { Asset, OutputBox } from './box';
 
 export interface Request {
-  address: string;
+  ergoTree: string;
   value: bigint | undefined;
   tokens: Asset[];
   /**

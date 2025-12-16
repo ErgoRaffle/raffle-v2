@@ -1,12 +1,10 @@
 import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
 import { cloneDeep } from 'lodash-es';
 import JsonBigInt from '@rosen-bridge/json-bigint';
-import * as ergoLib from 'ergo-lib-wasm-nodejs';
 
 import { BoxValue } from './types/box';
 import { Request } from './types';
 import { OutputBox } from './types';
-import { ErgoNetwork } from './types/network';
 
 export class BoxSelector {
   private boxes: OutputBox[] = [];
@@ -18,14 +16,13 @@ export class BoxSelector {
   constructor(
     private logger: AbstractLogger = new DummyLogger(),
     private request: Request,
-    private networkType: ErgoNetwork,
   ) {}
 
   /**
    * Determines if a box meets all criteria for selection.
    *
    * A box is eligible for selection when:
-   * - It belongs to the same address as the request, AND
+   * - It belongs to the same ergoTree as the request, AND
    * - It either:
    *   - Contains the required tokens, OR
    *   - Has sufficient ERG value, OR
@@ -35,23 +32,7 @@ export class BoxSelector {
    * @returns True if the box is eligible for selection, false otherwise
    */
   isEligibleForSelection = (box: OutputBox) => {
-    let sameAddress = false;
-    try {
-      const ergoTree = ergoLib.ErgoTree.from_base16_bytes(box.ergoTree);
-      const prefix =
-        this.networkType === ErgoNetwork.Mainnet
-          ? ergoLib.NetworkPrefix.Mainnet
-          : ergoLib.NetworkPrefix.Testnet;
-      const address = ergoLib.Address.recreate_from_ergo_tree(ergoTree)
-        .to_base58(prefix)
-        .toString();
-      sameAddress = address === this.request.address;
-    } catch (e) {
-      this.logger.debug(
-        `Failed to recreate address from ergoTree for box [${box.boxId}]`,
-      );
-      sameAddress = false;
-    }
+    const sameErgoTree = box.ergoTree === this.request.ergoTree;
 
     const hasRequiredTokens = this.request.tokens.some((token) =>
       box.assets.some((asset) => asset.tokenId === token.tokenId),
@@ -60,9 +41,9 @@ export class BoxSelector {
       this.request.value !== undefined && this.request.value > 0n;
     const requestNoAsset = !requiresErgs && this.request.tokens.length === 0;
 
-    if (sameAddress) {
+    if (sameErgoTree) {
       this.logger.debug(
-        `Box ${box.boxId} has the requested address [${this.request.address}]` +
+        `Box ${box.boxId} has the requested ergoTree [${this.request.ergoTree}]` +
           (hasRequiredTokens ? ` and required tokens` : '') +
           (requiresErgs ? ` and required ergs` : ''),
       );
@@ -70,7 +51,7 @@ export class BoxSelector {
 
     const meetsAssetRequirements =
       hasRequiredTokens || requiresErgs || requestNoAsset;
-    return sameAddress && meetsAssetRequirements;
+    return sameErgoTree && meetsAssetRequirements;
   };
 
   /**
