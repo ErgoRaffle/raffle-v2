@@ -5,14 +5,10 @@ import {
   ServiceStatus,
 } from '@rosen-bridge/service-manager';
 import { BoxLookup } from '@ergo-raffle/box-lookup';
-import { Network } from '@fleet-sdk/core';
 
 import { TxPotService } from './txPotService';
-import {
-  deserializeTxForBoxLookup,
-  Request,
-  toBoxLookupRequest,
-} from './boxLookupCompat';
+import { deserializeTxForBoxLookup, toBoxLookupRequest } from './boxLookup';
+import type { Request } from '../types/boxLookup';
 
 export class BoxLookupService extends AbstractService {
   name = 'BoxLookupService';
@@ -35,7 +31,6 @@ export class BoxLookupService extends AbstractService {
   private constructor(
     updateInterval: number,
     nodeUrl: string,
-    _networkType: Network,
     logger?: AbstractLogger,
   ) {
     super(logger);
@@ -54,18 +49,12 @@ export class BoxLookupService extends AbstractService {
   static init = (
     updateInterval: number,
     nodeUrl: string,
-    networkType: Network = Network.Mainnet,
     logger?: AbstractLogger,
   ) => {
     if (this.instance != undefined) {
       return;
     }
-    this.instance = new BoxLookupService(
-      updateInterval,
-      nodeUrl,
-      networkType,
-      logger,
-    );
+    this.instance = new BoxLookupService(updateInterval, nodeUrl, logger);
   };
 
   /**

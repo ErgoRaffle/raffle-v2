@@ -1,5 +1,6 @@
 import { vi } from 'vitest';
 import { TransactionEntity, TransactionStatus } from '@rosen-bridge/tx-pot';
+import { DeserializeTx, DeserializedTx } from '../../lib/dataProvider';
 
 export const sampleNodeURL = 'http://localhost:9053';
 
@@ -160,4 +161,13 @@ export const sampleNodeAPI = {
       return Promise.resolve([]); // No more pages
     }
   }),
+};
+
+/**
+ * Creates a mock TxPot transaction deserializer for tests.
+ */
+export const createMockDeserializeTx = () => {
+  return vi
+    .fn<DeserializeTx>()
+    .mockReturnValue(sampleDeserializedTx as unknown as DeserializedTx);
 };

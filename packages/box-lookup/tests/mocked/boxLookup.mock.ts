@@ -1,6 +1,7 @@
 import { vi } from 'vitest';
 import { Request } from '../../lib/types';
 import { OutputBox, Asset } from '../../lib';
+import { DeserializeTx } from '../../lib/dataProvider';
 
 export const sampleNodeURL = 'http://localhost:9053';
 
@@ -101,3 +102,12 @@ export const sampleTxPot = {
   validators: [],
   txTypeCallbacks: {},
 };
+
+/**
+ * A simple no-op deserializer used for tests that don't care about txpot content.
+ */
+export const noopDeserializeTx: DeserializeTx = () => ({
+  id: 'tx',
+  inputs: [],
+  outputs: [],
+});

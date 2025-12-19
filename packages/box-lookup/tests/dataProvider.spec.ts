@@ -10,9 +10,9 @@ import {
   sampleNodeURL,
   sampleDeserializedTx,
   sampleUnconfirmedTransactions,
+  createMockDeserializeTx,
 } from './mocked/dataProvider.mock';
 import { OutputBox } from '../lib';
-import { createMockDeserializeTx } from './mocked/deserializeTx.mock';
 
 // Mock the ergo node client factory
 vi.mock('@rosen-clients/ergo-node');
@@ -199,12 +199,30 @@ describe('DataProvider', () => {
     });
   });
 
-  describe('deserializeTx injection', () => {
+  describe('safeDeserializeTx', () => {
+    /**
+     * @target should use injected deserializeTx for txpot entities
+     * @dependencies
+     * @scenario
+     * - call updateRoundWithTxPotData (internally uses safeDeserializeTx)
+     * - verify injected deserializeTx was called
+     * @expected
+     * - injected deserializeTx should be called
+     */
     it('should use injected deserializeTx for txpot entities', async () => {
       await dataProvider.updateRoundWithTxPotData();
       expect(mockDeserializeTx).toHaveBeenCalled();
     });
 
+    /**
+     * @target should rethrow when injected deserializeTx throws
+     * @dependencies
+     * @scenario
+     * - create a DataProvider with a deserializeTx that throws
+     * - call updateRoundWithTxPotData (internally uses safeDeserializeTx)
+     * @expected
+     * - should reject with the thrown error
+     */
     it('should log and rethrow when injected deserializeTx throws', async () => {
       const err = new Error('boom');
       const badDeserialize = () => {

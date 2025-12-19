@@ -9,10 +9,9 @@ import {
   sampleRequests,
   sampleErgoBoxes,
   sampleMinedBoxes,
+  noopDeserializeTx,
 } from './mocked/boxLookup.mock';
 import { TxPot } from '@rosen-bridge/tx-pot';
-
-import { noopDeserializeTx } from './mocked/deserializeTx.mock';
 
 // Mock the BoxSelector module
 vi.mock('../lib/boxSelector', () => ({
@@ -99,13 +98,13 @@ describe('BoxLookup', () => {
       expect(boxLookup['requests'].has(requestId)).toBe(false);
     });
 
-    /*
+    /**
      * @target should return undefined for non-existent request ID
      * @dependencies
      * @scenario
      * - try to unregister a request with non-existent ID
      * @expected
-     * - should return undefined and log the attempt
+     * - should return undefined
      */
     it('should return undefined for non-existent request ID', () => {
       const result = boxLookup.unregisterRequest(999);

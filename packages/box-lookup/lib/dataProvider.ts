@@ -147,18 +147,16 @@ export class DataProvider {
    * @returns The OutputBox
    */
   private convertToOutputBox = (output: ErgoTransactionOutput): OutputBox => {
+    const { assets, boxId, transactionId, index, ...rest } = output;
     return {
-      boxId: output.boxId ?? '',
-      value: output.value,
-      ergoTree: output.ergoTree,
-      creationHeight: output.creationHeight,
-      assets: (output.assets ?? []).map((asset) => ({
-        tokenId: asset.tokenId,
-        amount: asset.amount,
+      ...rest,
+      boxId: boxId ?? '',
+      assets: (assets ?? []).map(({ tokenId, amount }) => ({
+        tokenId,
+        amount,
       })),
-      additionalRegisters: output.additionalRegisters,
-      transactionId: output.transactionId ?? '',
-      index: output.index ?? 0,
+      transactionId: transactionId ?? '',
+      index: index ?? 0,
     };
   };
 
