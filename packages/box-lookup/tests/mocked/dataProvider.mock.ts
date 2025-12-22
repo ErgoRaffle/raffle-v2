@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 import { TransactionEntity, TransactionStatus } from '@rosen-bridge/tx-pot';
-import { DeserializeTx, DeserializedTx } from '../../lib/dataProvider';
+import { DeserializeTx, DeserializedTx } from '../../lib';
 
 export const sampleNodeURL = 'http://localhost:9053';
 

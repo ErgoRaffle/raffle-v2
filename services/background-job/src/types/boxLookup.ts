@@ -1,4 +1,4 @@
-import type { ErgoBox, TokenAmount } from '@fleet-sdk/core';
+import { ErgoBox, TokenAmount } from '@fleet-sdk/core';
 
 /**
  * The background-job onSuffice callback signature (fleet `ErgoBox` based).

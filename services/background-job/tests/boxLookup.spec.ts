@@ -12,7 +12,7 @@ import {
 } from '../src/services/boxLookup';
 import { ErgoAddress, ErgoBox, Network } from '@fleet-sdk/core';
 import { sampleErgoBox, sampleTxEntity } from './mocked/boxLookup.mock';
-import type { OutputBox } from '@ergo-raffle/box-lookup';
+import { OutputBox } from '@ergo-raffle/box-lookup';
 
 describe('toBoxLookupRequest', () => {
   /**
@@ -136,52 +136,18 @@ describe('toBoxLookupRequest', () => {
 
 describe('deserializeTxForBoxLookup', () => {
   /**
-   * @target should project a fleet deserialized transaction into box-lookup minimal tx shape
+   * @target should convert a fleet deserialized tx into the minimal shape expected by box-lookup
    * @dependencies
    * - deserializeTransaction (mocked)
    * @scenario
-   * - mock deserializeTransaction return value
+   * - mock deserializeTransaction to return outputs with string|bigint amounts and missing tx metadata
    * - call deserializeTxForBoxLookup with a txpot entity
    * @expected
-   * - returned object should contain id, inputs[].boxId, outputs[] with OutputBox fields
+   * - id and inputs[].boxId should be preserved
+   * - outputs[].value and assets[].amount should be bigint
+   * - outputs[].transactionId and outputs[].index should be set (defaulted if missing)
    */
-  it('should project fleet-deserialized tx into minimal shape', () => {
-    vi.mocked(deserializeTransaction).mockReturnValue({
-      id: 'tx-id-123',
-      inputs: [{ boxId: 'in-1', spendingProof: null }],
-      dataInputs: [],
-      outputs: [
-        {
-          boxId: 'out-1',
-          value: '2',
-          ergoTree: '00',
-          creationHeight: 10,
-          assets: [],
-          additionalRegisters: {},
-          transactionId: 'tx-id-123',
-          index: 0,
-        },
-      ],
-    } as unknown as ReturnType<typeof deserializeTransaction>);
-
-    const projected = deserializeTxForBoxLookup(sampleTxEntity);
-    expect(projected.id).toBe('tx-id-123');
-    expect(projected.inputs[0].boxId).toBe('in-1');
-    expect(projected.outputs[0].boxId).toBe('out-1');
-    expect(projected.outputs[0].value).toBe(2n);
-  });
-
-  /**
-   * @target should normalize Amount fields (string|bigint) into bigint
-   * @dependencies
-   * - deserializeTransaction (mocked)
-   * @scenario
-   * - mock deserializeTransaction to return value/amount as string (Amount)
-   * - call deserializeTxForBoxLookup with a txpot entity
-   * @expected
-   * - value and token amounts should be converted to bigint
-   */
-  it('should normalize amount fields', () => {
+  it('should convert deserialized tx to minimal box-lookup shape', () => {
     vi.mocked(deserializeTransaction).mockReturnValue({
       id: 'tx-id-obj',
       inputs: [{ boxId: 'in-obj', spendingProof: null }],
@@ -194,52 +160,13 @@ describe('deserializeTxForBoxLookup', () => {
           creationHeight: 10,
           assets: [{ tokenId: 't1', amount: '5' }],
           additionalRegisters: {},
-          transactionId: 'tx-id-obj',
-          index: 0,
-        },
-      ],
-    } as unknown as ReturnType<typeof deserializeTransaction>);
-
-    const projected = deserializeTxForBoxLookup(sampleTxEntity);
-    expect(projected.id).toBe('tx-id-obj');
-    expect(projected.inputs[0].boxId).toBe('in-obj');
-    expect(projected.outputs[0].boxId).toBe('out-obj');
-    expect(projected.outputs[0].value).toBe(3n);
-    expect(projected.outputs[0].assets[0].amount).toBe(5n);
-    expect(projected.outputs[0].transactionId).toBe('tx-id-obj');
-  });
-
-  /**
-   * @target should default missing transactionId/index on outputs
-   * @dependencies
-   * - deserializeTransaction (mocked)
-   * @scenario
-   * - mock deserializeTransaction to return outputs missing transactionId/index
-   * - call deserializeTxForBoxLookup with a txpot entity
-   * @expected
-   * - output transactionId should default to tx id
-   * - output index should default to output array index
-   */
-  it('should default missing transactionId/index', () => {
-    vi.mocked(deserializeTransaction).mockReturnValue({
-      id: 'tx-no-meta',
-      inputs: [{ boxId: 'in-1', spendingProof: null }],
-      dataInputs: [],
-      outputs: [
-        {
-          boxId: 'out-0',
-          value: '1',
-          ergoTree: '00',
-          creationHeight: 10,
-          assets: [],
-          additionalRegisters: {},
         },
         {
-          boxId: 'out-1',
-          value: 2n,
+          boxId: 'out-obj-2',
+          value: 4n,
           ergoTree: '00',
           creationHeight: 11,
-          assets: [],
+          assets: [{ tokenId: 't2', amount: 6n }],
           additionalRegisters: {},
           transactionId: undefined,
           index: undefined,
@@ -248,10 +175,23 @@ describe('deserializeTxForBoxLookup', () => {
     } as unknown as ReturnType<typeof deserializeTransaction>);
 
     const projected = deserializeTxForBoxLookup(sampleTxEntity);
-    expect(projected.id).toBe('tx-no-meta');
-    expect(projected.outputs[0].transactionId).toBe('tx-no-meta');
+    expect(projected.id).toBe('tx-id-obj');
+    expect(projected.inputs[0].boxId).toBe('in-obj');
+
+    expect(projected.outputs).toHaveLength(2);
+
+    expect(projected.outputs[0].boxId).toBe('out-obj');
+    expect(projected.outputs[0].value).toBe(3n);
+    expect(typeof projected.outputs[0].value).toBe('bigint');
+    expect(projected.outputs[0].assets[0].amount).toBe(5n);
+    expect(typeof projected.outputs[0].assets[0].amount).toBe('bigint');
+    expect(projected.outputs[0].transactionId).toBe('tx-id-obj');
     expect(projected.outputs[0].index).toBe(0);
-    expect(projected.outputs[1].transactionId).toBe('tx-no-meta');
+
+    expect(projected.outputs[1].boxId).toBe('out-obj-2');
+    expect(projected.outputs[1].value).toBe(4n);
+    expect(projected.outputs[1].assets[0].amount).toBe(6n);
+    expect(projected.outputs[1].transactionId).toBe('tx-id-obj');
     expect(projected.outputs[1].index).toBe(1);
   });
 });

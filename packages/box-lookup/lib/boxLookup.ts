@@ -3,7 +3,8 @@ import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
 import JsonBigInt from '@rosen-bridge/json-bigint';
 
 import { Request } from './types';
-import { DataProvider, DeserializeTx } from './dataProvider';
+import { DataProvider } from './dataProvider';
+import { DeserializeTx } from './types';
 import { BoxSelector } from './boxSelector';
 
 export class BoxLookup {

@@ -8,20 +8,7 @@ import ergoNodeClientFactory from '@rosen-clients/ergo-node';
 import { ErgoTransactionOutput } from '@rosen-clients/ergo-node';
 
 import { API_LIMIT } from './constants';
-import { OutputBox } from './types';
-
-export interface RoundState {
-  spentBoxIds: Set<string>;
-  unspentBoxes: OutputBox[];
-}
-
-export type DeserializedTx = {
-  id: string;
-  inputs: Array<{ boxId: string }>;
-  outputs: Array<OutputBox>;
-};
-
-export type DeserializeTx = (tx: TransactionEntity) => DeserializedTx;
+import { OutputBox, RoundState, DeserializeTx } from './types';
 
 export class DataProvider {
   private nodeAPI;
@@ -151,12 +138,9 @@ export class DataProvider {
     return {
       ...rest,
       boxId: boxId ?? '',
-      assets: (assets ?? []).map(({ tokenId, amount }) => ({
-        tokenId,
-        amount,
-      })),
       transactionId: transactionId ?? '',
       index: index ?? 0,
+      assets: assets ?? [],
     };
   };
 

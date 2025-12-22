@@ -5,9 +5,9 @@ import {
   OutputBox,
   Request as BoxLookupRequest,
 } from '@ergo-raffle/box-lookup';
-import type { DeserializedTx } from '@ergo-raffle/box-lookup';
-import type { Request } from '../../types/boxLookup';
-import type { Amount, Box, SignedTransaction } from '@fleet-sdk/common';
+import { DeserializedTx } from '@ergo-raffle/box-lookup';
+import { Request } from '../../types/boxLookup';
+import { Amount, Box, SignedTransaction } from '@fleet-sdk/common';
 
 /**
  * Adapts a background-job request (fleet `ErgoBox`) into a `box-lookup` request (DTO `OutputBox`).

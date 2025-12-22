@@ -6,9 +6,9 @@ import {
 } from '@rosen-bridge/service-manager';
 import { BoxLookup } from '@ergo-raffle/box-lookup';
 
-import { TxPotService } from './txPotService';
-import { deserializeTxForBoxLookup, toBoxLookupRequest } from './boxLookup';
-import { Request } from '../types/boxLookup';
+import { TxPotService } from '../txPotService';
+import { deserializeTxForBoxLookup, toBoxLookupRequest } from '.';
+import { Request } from '../../types/boxLookup';
 
 export class BoxLookupService extends AbstractService {
   name = 'BoxLookupService';

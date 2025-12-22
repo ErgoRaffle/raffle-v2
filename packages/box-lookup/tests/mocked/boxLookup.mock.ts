@@ -1,7 +1,7 @@
 import { vi } from 'vitest';
 import { Request } from '../../lib/types';
 import { OutputBox, Asset } from '../../lib';
-import { DeserializeTx } from '../../lib/dataProvider';
+import { DeserializeTx } from '../../lib';
 
 export const sampleNodeURL = 'http://localhost:9053';
 

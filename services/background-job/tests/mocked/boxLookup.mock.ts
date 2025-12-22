@@ -1,10 +1,6 @@
 import { ErgoBox, TokenAmount } from '@fleet-sdk/core';
 import { TransactionEntity, TransactionStatus } from '@rosen-bridge/tx-pot';
-import type {
-  Amount,
-  BoxCandidate,
-  NonMandatoryRegisters,
-} from '@fleet-sdk/common';
+import { Amount, BoxCandidate, NonMandatoryRegisters } from '@fleet-sdk/common';
 
 export const sampleToken: TokenAmount<bigint> = {
   tokenId: '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
