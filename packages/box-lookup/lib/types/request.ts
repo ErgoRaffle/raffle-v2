@@ -2,7 +2,7 @@ import { Asset, OutputBox } from './box';
 
 export interface Request {
   ergoTree: string;
-  value: bigint | undefined;
+  value: bigint | string | undefined;
   tokens: Asset[];
   /**
    * This method is called by BoxLookup when the preferred condition occurs

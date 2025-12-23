@@ -162,7 +162,7 @@ describe('addBox', () => {
     expect(boxSelector['sumValue'].tokens).toEqual(
       [sampleToken1, sampleToken2].map((token) => ({
         ...token,
-        amount: token.amount * 2n,
+        amount: BigInt(token.amount) * 2n,
       })),
     );
   });

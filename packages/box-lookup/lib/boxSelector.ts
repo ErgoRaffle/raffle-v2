@@ -1,5 +1,4 @@
 import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
-import { cloneDeep } from 'lodash-es';
 import JsonBigInt from '@rosen-bridge/json-bigint';
 
 import { BoxValue } from './types/box';
@@ -38,7 +37,7 @@ export class BoxSelector {
       box.assets.some((asset) => asset.tokenId === token.tokenId),
     );
     const requiresErgs =
-      this.request.value !== undefined && this.request.value > 0n;
+      this.request.value !== undefined && BigInt(this.request.value) > 0n;
     const requestNoAsset = !requiresErgs && this.request.tokens.length === 0;
 
     if (sameErgoTree) {
@@ -60,15 +59,19 @@ export class BoxSelector {
    */
   addBox = (box: OutputBox) => {
     this.boxes.push(box);
-    this.sumValue.value += box.value;
+    this.sumValue.value = BigInt(this.sumValue.value) + BigInt(box.value);
     for (const token of box.assets) {
       const existingToken = this.sumValue.tokens.find(
         (t) => t.tokenId === token.tokenId,
       );
       if (existingToken) {
-        existingToken.amount += token.amount;
+        existingToken.amount =
+          BigInt(existingToken.amount) + BigInt(token.amount);
       } else {
-        this.sumValue.tokens.push(cloneDeep(token));
+        this.sumValue.tokens.push({
+          tokenId: token.tokenId,
+          amount: BigInt(token.amount),
+        });
       }
     }
     this.logger.debug(
@@ -83,11 +86,13 @@ export class BoxSelector {
    */
   isCovering = () => {
     const coveringValue = this.request.value
-      ? this.sumValue.value >= this.request.value
+      ? BigInt(this.sumValue.value) >= BigInt(this.request.value)
       : true;
     const coveringTokens = this.request.tokens.every((token) =>
       this.sumValue.tokens.some(
-        (t) => t.tokenId === token.tokenId && t.amount >= token.amount,
+        (t) =>
+          t.tokenId === token.tokenId &&
+          BigInt(t.amount) >= BigInt(token.amount),
       ),
     );
     this.logger.debug(

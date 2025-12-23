@@ -6,7 +6,7 @@
 
 export type Asset = {
   tokenId: string;
-  amount: bigint;
+  amount: bigint | string;
 };
 
 export type AdditionalRegisters = {
@@ -20,7 +20,7 @@ export type AdditionalRegisters = {
 
 export type OutputBox = {
   boxId: string;
-  value: bigint;
+  value: bigint | string;
   ergoTree: string;
   creationHeight: number;
   assets: Array<Asset>;
@@ -30,6 +30,6 @@ export type OutputBox = {
 };
 
 export interface BoxValue {
-  value: bigint;
+  value: bigint | string;
   tokens: Asset[];
 }
