@@ -65,14 +65,9 @@ export const deserializeTxForBoxLookup = (
       boxId: input.boxId,
     })),
     outputs: deserialized.outputs.map((out: Box<Amount>, idx: number) => {
-      const { value, assets, transactionId, index, ...rest } = out;
+      const { transactionId, index, ...rest } = out;
       return {
         ...rest,
-        value: BigInt(value),
-        assets: assets.map(({ tokenId, amount }) => ({
-          tokenId,
-          amount: BigInt(amount),
-        })),
         transactionId: transactionId ?? txId,
         index: index ?? idx,
       };

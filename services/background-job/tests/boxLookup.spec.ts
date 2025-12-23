@@ -144,7 +144,7 @@ describe('deserializeTxForBoxLookup', () => {
    * - call deserializeTxForBoxLookup with a txpot entity
    * @expected
    * - id and inputs[].boxId should be preserved
-   * - outputs[].value and assets[].amount should be bigint
+   * - outputs[].value and assets[].amount should be preserved
    * - outputs[].transactionId and outputs[].index should be set (defaulted if missing)
    */
   it('should convert deserialized tx to minimal box-lookup shape', () => {
@@ -181,10 +181,8 @@ describe('deserializeTxForBoxLookup', () => {
     expect(projected.outputs).toHaveLength(2);
 
     expect(projected.outputs[0].boxId).toBe('out-obj');
-    expect(projected.outputs[0].value).toBe(3n);
-    expect(typeof projected.outputs[0].value).toBe('bigint');
-    expect(projected.outputs[0].assets[0].amount).toBe(5n);
-    expect(typeof projected.outputs[0].assets[0].amount).toBe('bigint');
+    expect(projected.outputs[0].value).toBe('3');
+    expect(projected.outputs[0].assets[0].amount).toBe('5');
     expect(projected.outputs[0].transactionId).toBe('tx-id-obj');
     expect(projected.outputs[0].index).toBe(0);
 
