@@ -224,7 +224,7 @@ describe('DataProvider', () => {
      * @expected
      * - should reject with the thrown error
      */
-    it('should log and rethrow when injected deserializeTx throws', async () => {
+    it('should throw when injected deserializeTx throws', async () => {
       const err = new Error('boom');
       const badDeserialize = () => {
         throw err;

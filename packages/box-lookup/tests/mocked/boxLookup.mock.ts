@@ -3,6 +3,9 @@ import { DeserializeTx, DeserializedTx } from '../../lib';
 import { sampleDeserializedTx, sampleErgoBoxes } from '../testData';
 import { BoxSelector } from '../../lib/boxSelector';
 
+/**
+ * A mock TxPot object used for tests.
+ */
 export const sampleTxPot = {
   getTxsByStatus: vi.fn().mockResolvedValue([]),
   txRepository: {},
@@ -20,6 +23,9 @@ export const noopDeserializeTx: DeserializeTx = () => ({
   outputs: [],
 });
 
+/**
+ * Creates a mock deserializeTx function that returns the sampleDeserializedTx.
+ */
 export const createMockDeserializeTx = () => {
   return vi
     .fn<DeserializeTx>()
