@@ -1,7 +1,7 @@
-import { Postgres1756376732412 } from './postgres/1756376732412Postgres';
-import { Sqlite1756562925822 } from './sqlite/1756562925822-sqlite';
+import { Sqlite1765799182751 } from './sqlite/1765799182751-sqlite';
+import { Postgres1765799319935 } from './postgres/1765799319935-postgres';
 
 export const migrations = {
-  sqlite: [Sqlite1756562925822],
-  postgres: [Postgres1756376732412],
+  sqlite: [Sqlite1765799182751],
+  postgres: [Postgres1765799319935],
 };

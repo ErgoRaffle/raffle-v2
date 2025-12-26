@@ -2,12 +2,11 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./src",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "composite": true
   },
-  "include": ["./src"],
+  "include": ["src/", "vitest.config.ts", "package.json"],
   "references": [
     { "path": "../../packages/extractors/tsconfig.build.json" },
     { "path": "../../packages/boxes/tsconfig.build.json" },

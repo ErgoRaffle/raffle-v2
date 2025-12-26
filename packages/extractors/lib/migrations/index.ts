@@ -1,61 +1,9 @@
 // sqlite migrations
-import { Sqlite1739696777998 } from './sqlite/1739696777998-sqlite';
-import { Sqlite1740392232959 } from './sqlite/1740392232959-sqlite';
-import { Sqlite1740496804795 } from './sqlite/1740496804795-sqlite';
-import { Sqlite1739776460056 } from './sqlite/1739776460056-sqlite';
-import { Sqlite1741479977073 } from './sqlite/1741479977073-sqlite';
-import { Sqlite1739856561630 } from './sqlite/1739856561630-sqlite';
-import { Sqlite1739868074824 } from './sqlite/1739868074824-sqlite';
-import { Sqlite1739877562133 } from './sqlite/1739877562133-sqlite';
-import { Sqlite1740812389338 } from './sqlite/1740812389338-sqlite';
-import { Sqlite1740814926217 } from './sqlite/1740814926217-sqlite';
-import { Sqlite1740896672982 } from './sqlite/1740896672982-sqlite';
-import { Sqlite1740897040526 } from './sqlite/1740897040526-sqlite';
-import { Sqlite1752926068923 } from './sqlite/1752926068923-sqlite';
+import { Sqlite1765798898052 } from './sqlite/1765798898052-sqlite';
 // postgres migrations
-import { Postgres1739623115850 } from './postgres/1739623115850-postgres';
-import { Postgres1740392065101 } from './postgres/1740392065101-postgres';
-import { Postgres1740497015349 } from './postgres/1740497015349-postgres';
-import { Postgres1739776466062 } from './postgres/1739776466062-postgres';
-import { Postgres1741479982422 } from './postgres/1741479982422-postgres';
-import { Postgres1739856465885 } from './postgres/1739856465885-postgres';
-import { Postgres1739868080327 } from './postgres/1739868080327-postgres';
-import { Postgres1739877568072 } from './postgres/1739877568072-postgres';
-import { Postgres1740812408283 } from './postgres/1740812408283-postgres';
-import { Postgres1740815102615 } from './postgres/1740815102615-postgres';
-import { Postgres1740896772976 } from './postgres/1740896772976-postgres';
-import { Postgres1740897033385 } from './postgres/1740897033385-postgres';
-import { Postgres1752930141304 } from './postgres/1752930141304-postgres';
+import { Postgres1765798163301 } from './postgres/1765798163301-postgres';
 
 export const migrations = {
-  sqlite: [
-    Sqlite1739696777998,
-    Sqlite1740392232959,
-    Sqlite1740496804795,
-    Sqlite1739776460056,
-    Sqlite1741479977073,
-    Sqlite1739856561630,
-    Sqlite1739868074824,
-    Sqlite1739877562133,
-    Sqlite1740812389338,
-    Sqlite1740814926217,
-    Sqlite1740896672982,
-    Sqlite1740897040526,
-    Sqlite1752926068923,
-  ],
-  postgres: [
-    Postgres1739623115850,
-    Postgres1740392065101,
-    Postgres1740497015349,
-    Postgres1739776466062,
-    Postgres1741479982422,
-    Postgres1739856465885,
-    Postgres1739868080327,
-    Postgres1739877568072,
-    Postgres1740812408283,
-    Postgres1740815102615,
-    Postgres1740896772976,
-    Postgres1740897033385,
-    Postgres1752930141304,
-  ],
+  sqlite: [Sqlite1765798898052],
+  postgres: [Postgres1765798163301],
 };
