@@ -13,7 +13,7 @@ import dataSource from '../dataSource';
 import { ScannerService } from './scannerService';
 import { TxPotService } from './txPotService';
 import { HealthCheckService } from './healthCheckService';
-import { BoxLookupService } from './boxLookup/boxLoookupService';
+import { BoxLookupService } from './boxLookup/boxLookupService';
 import { ApiService } from './apiService';
 import { CreationService } from './transactions/creationService';
 import { ActivationService } from './transactions/activationService';
