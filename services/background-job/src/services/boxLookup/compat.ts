@@ -6,7 +6,7 @@ import {
   Request as BoxLookupRequest,
 } from '@ergo-raffle/box-lookup';
 import { DeserializedTx } from '@ergo-raffle/box-lookup';
-import { Request } from '../../types/boxLookup';
+import { Request } from '../../types';
 import { Amount, Box, SignedTransaction } from '@fleet-sdk/common';
 
 /**
@@ -64,13 +64,6 @@ export const deserializeTxForBoxLookup = (
     inputs: deserialized.inputs.map((input) => ({
       boxId: input.boxId,
     })),
-    outputs: deserialized.outputs.map((out: Box<Amount>, idx: number) => {
-      const { transactionId, index, ...rest } = out;
-      return {
-        ...rest,
-        transactionId: transactionId ?? txId,
-        index: index ?? idx,
-      };
-    }),
+    outputs: deserialized.outputs.map((out: Box<Amount>) => new ErgoBox(out)),
   };
 };

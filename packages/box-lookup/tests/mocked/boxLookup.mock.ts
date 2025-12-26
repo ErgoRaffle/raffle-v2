@@ -1,100 +1,8 @@
 import { vi } from 'vitest';
-import { Request } from '../../lib/types';
-import { OutputBox, Asset } from '../../lib';
-import { DeserializeTx } from '../../lib';
+import { DeserializeTx, DeserializedTx } from '../../lib';
+import { sampleDeserializedTx, sampleErgoBoxes } from '../testData';
+import { BoxSelector } from '../../lib/boxSelector';
 
-export const sampleNodeURL = 'http://localhost:9053';
-
-// Sample token amounts
-const sampleToken1: Asset = {
-  tokenId: '4ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-  amount: 1000n,
-};
-
-const sampleToken2: Asset = {
-  tokenId: '5ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd118',
-  amount: 500n,
-};
-
-// Sample ergo trees
-const sampleErgoTree =
-  '0008cd0336100ef59ced80ba5f89c4178ebd57b6c1dd0f3d135ee1db9f62fc634d637041';
-
-// Mock callback functions
-const mockOnSuffice = async () => {};
-const mockGetConfirmedBoxes = async () => [];
-
-// Sample ErgoBoxes
-export const sampleErgoBoxes = {
-  validBoxWithTokens: {
-    boxId: '1ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-    value: 1000000n,
-    ergoTree: sampleErgoTree,
-    creationHeight: 9149,
-    assets: [sampleToken1, sampleToken2],
-    additionalRegisters: {},
-    transactionId:
-      '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd117',
-    index: 0,
-  } as OutputBox,
-
-  validBoxWithErgs: {
-    boxId: '2ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd118',
-    value: 5000000n,
-    ergoTree: sampleErgoTree,
-    creationHeight: 9149,
-    assets: [],
-    additionalRegisters: {},
-    transactionId:
-      '3ab9da11fc216660e974842cc3b7705e62ebb9e0bf5ff78e53f9cd40abadd118',
-    index: 0,
-  } as OutputBox,
-};
-
-// Sample mined boxes
-export const sampleMinedBoxes = [
-  {
-    boxId: 'mined-box-1',
-    value: 2000000n,
-    ergoTree: sampleErgoTree,
-    creationHeight: 9149,
-    assets: [sampleToken1],
-    additionalRegisters: {},
-    transactionId: 'mined-tx-1',
-    index: 0,
-  } as OutputBox,
-  {
-    boxId: 'mined-box-2',
-    value: 3000000n,
-    ergoTree: sampleErgoTree,
-    creationHeight: 9149,
-    assets: [sampleToken2],
-    additionalRegisters: {},
-    transactionId: 'mined-tx-2',
-    index: 0,
-  } as OutputBox,
-];
-
-// Sample requests
-export const sampleRequests = {
-  validRequest: {
-    ergoTree: sampleErgoTree,
-    value: 1000000n,
-    tokens: [sampleToken1],
-    onSuffice: mockOnSuffice,
-    getConfirmedBoxes: mockGetConfirmedBoxes,
-  } as Request,
-
-  ergOnlyRequest: {
-    ergoTree: sampleErgoTree,
-    value: 5000000n,
-    tokens: [],
-    onSuffice: mockOnSuffice,
-    getConfirmedBoxes: mockGetConfirmedBoxes,
-  } as Request,
-};
-
-// Mock TxPot instance
 export const sampleTxPot = {
   getTxsByStatus: vi.fn().mockResolvedValue([]),
   txRepository: {},
@@ -111,3 +19,24 @@ export const noopDeserializeTx: DeserializeTx = () => ({
   inputs: [],
   outputs: [],
 });
+
+export const createMockDeserializeTx = () => {
+  return vi
+    .fn<DeserializeTx>()
+    .mockReturnValue(sampleDeserializedTx as unknown as DeserializedTx);
+};
+
+/**
+ * Sets up the default BoxSelector mock used by the BoxLookup tests.
+ */
+export const mockBoxSelector = () => {
+  vi.mocked(BoxSelector).mockImplementation(
+    () =>
+      ({
+        isEligibleForSelection: vi.fn().mockReturnValue(true),
+        addBox: vi.fn(),
+        isCovering: vi.fn().mockReturnValue(true),
+        getBoxes: vi.fn().mockReturnValue([sampleErgoBoxes.validBoxWithTokens]),
+      }) as unknown as BoxSelector,
+  );
+};

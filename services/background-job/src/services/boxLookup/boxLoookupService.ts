@@ -7,8 +7,8 @@ import {
 import { BoxLookup } from '@ergo-raffle/box-lookup';
 
 import { TxPotService } from '../txPotService';
-import { deserializeTxForBoxLookup, toBoxLookupRequest } from '.';
-import { Request } from '../../types/boxLookup';
+import { deserializeTxForBoxLookup, toBoxLookupRequest } from './compat';
+import { Request } from '../../types';
 
 export class BoxLookupService extends AbstractService {
   name = 'BoxLookupService';
