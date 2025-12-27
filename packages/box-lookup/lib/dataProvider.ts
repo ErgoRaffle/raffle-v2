@@ -5,16 +5,10 @@ import {
 } from '@rosen-bridge/tx-pot';
 import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
 import ergoNodeClientFactory from '@rosen-clients/ergo-node';
-import { deserializeTransaction } from '@fleet-sdk/serializer';
 import { ErgoTransactionOutput } from '@rosen-clients/ergo-node';
-import { Box, ErgoBox } from '@fleet-sdk/core';
 
 import { API_LIMIT } from './constants';
-
-export interface RoundState {
-  spentBoxIds: Set<string>;
-  unspentBoxes: ErgoBox[];
-}
+import { OutputBox, RoundState, DeserializeTx } from './types';
 
 export class DataProvider {
   private nodeAPI;
@@ -26,6 +20,7 @@ export class DataProvider {
   constructor(
     private txPot: TxPot,
     nodeURL: string,
+    private deserializeTx: DeserializeTx,
     private logger: AbstractLogger = new DummyLogger(),
   ) {
     this.nodeAPI = ergoNodeClientFactory(nodeURL);
@@ -134,48 +129,49 @@ export class DataProvider {
   }
 
   /**
-   * Convert a node output to an ErgoBox
+   * Convert a node output to an OutputBox
    * @param output - The node output
-   * @returns The ErgoBox
+   * @returns The OutputBox
    */
-  private convertToErgoBox = (output: ErgoTransactionOutput): ErgoBox => {
-    return new ErgoBox({
-      ...output,
-      assets: output.assets ?? [],
-      boxId: output.boxId ?? '',
-      index: output.index ?? 0,
-      transactionId: output.transactionId ?? '',
-    });
+  private convertToOutputBox = (output: ErgoTransactionOutput): OutputBox => {
+    const { assets, boxId, transactionId, index, ...rest } = output;
+    return {
+      ...rest,
+      boxId: boxId ?? '',
+      transactionId: transactionId ?? '',
+      index: index ?? 0,
+      assets: assets ?? [],
+    };
   };
 
   /**
    * Get all spent & unspent boxes that currently placed on the mempool
    * @returns Tuple of [spentBoxIds, unspentBoxes]
    */
-  private getArrangedNodeBoxes = async (): Promise<[string[], ErgoBox[]]> => {
+  private getArrangedNodeBoxes = async (): Promise<[string[], OutputBox[]]> => {
     const spentBoxIds: string[] = [];
-    const unspentBoxes: ErgoBox[] = [];
+    const unspentBoxes: OutputBox[] = [];
     const txIterator = this.getMempoolTxIterator();
 
     for await (const tx of txIterator) {
       spentBoxIds.push(
         ...tx.inputs.map((input: { boxId: string }) => input.boxId),
       );
-      unspentBoxes.push(...tx.outputs.map(this.convertToErgoBox));
+      unspentBoxes.push(...tx.outputs.map(this.convertToOutputBox));
     }
 
     return [spentBoxIds, unspentBoxes];
   };
 
   /**
-   * Deserializes a base64-encoded serialized transaction.
+   * Deserializes a TxPot transaction entity using the injected deserializer.
    * Logs an error if deserialization fails.
    * @param tx Transaction entity from TxPot
    * @returns Deserialized transaction object
    */
-  private deserializeTx = (tx: TransactionEntity) => {
+  private safeDeserializeTx = (tx: TransactionEntity) => {
     try {
-      return deserializeTransaction(Buffer.from(tx.serializedTx, 'base64'));
+      return this.deserializeTx(tx);
     } catch (err) {
       this.logger.error(
         `Invalid ${tx.txId} tx serialized value: ${tx.serializedTx}`,
@@ -188,14 +184,16 @@ export class DataProvider {
    * Get all spent & unspent boxes that currently managed by TxPot instance
    * @returns Tuple of [spentBoxIds, unspentBoxes]
    */
-  private getArrangedTxPotBoxes = async (): Promise<[string[], ErgoBox[]]> => {
+  private getArrangedTxPotBoxes = async (): Promise<
+    [string[], OutputBox[]]
+  > => {
     const spentBoxIds: string[] = [];
-    const unspentBoxes: ErgoBox[] = [];
+    const unspentBoxes: OutputBox[] = [];
 
     const activeTxs = [
       ...(await this.txPot.getTxsByStatus(TransactionStatus.SIGNED, false)),
       ...(await this.txPot.getTxsByStatus(TransactionStatus.SENT, false)),
-    ].map(this.deserializeTx);
+    ].map(this.safeDeserializeTx);
 
     this.logger.debug(
       `Processing active txs in txpot: [${activeTxs.map((tx) => tx.id)}]`,
@@ -205,12 +203,7 @@ export class DataProvider {
       spentBoxIds.push(
         ...tx.inputs.map((input: { boxId: string }) => input.boxId),
       );
-      /**
-       * We know that the outputs are type of Box<bigint> because the transaction is signed
-       */
-      unspentBoxes.push(
-        ...tx.outputs.map((box) => new ErgoBox(box as Box<bigint>)),
-      );
+      unspentBoxes.push(...tx.outputs);
     }
 
     return [spentBoxIds, unspentBoxes];

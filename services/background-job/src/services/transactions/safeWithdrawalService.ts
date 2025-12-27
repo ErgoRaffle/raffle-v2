@@ -1,11 +1,11 @@
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
-import { Request, OnSufficeCallback } from '@ergo-raffle/box-lookup';
+import { OnSufficeCallback, Request } from '../../types';
 import { raffleInfo } from '@ergo-raffle/contracts';
 import { SafeWithdrawTxBuilder } from '@ergo-raffle/transactions';
 import { SafePayBuilder } from '@ergo-raffle/boxes';
 import { ErgoBox } from '@fleet-sdk/core';
 
-import { BoxLookupService } from '../boxLoookupService';
+import { BoxLookupService } from '../boxLookup';
 import { DbService } from '../dbService';
 import {
   signAndAddTx,

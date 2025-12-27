@@ -1,34 +1,38 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { DummyLogger } from '@rosen-bridge/abstract-logger';
-import { TxPot, TransactionEntity } from '@rosen-bridge/tx-pot';
-import { ErgoBox } from '@fleet-sdk/core';
+import { TxPot } from '@rosen-bridge/tx-pot';
 import ergoNodeClientFactory from '@rosen-clients/ergo-node';
-import { serializeTransaction } from '@fleet-sdk/serializer';
 
 import { DataProvider } from '../lib/dataProvider';
+import { OutputBox } from '../lib';
 import {
-  sampleTxPot,
-  sampleNodeAPI,
   sampleNodeURL,
   sampleDeserializedTx,
   sampleUnconfirmedTransactions,
+} from './testData';
+import {
+  sampleTxPot,
+  sampleNodeAPI,
+  createMockDeserializeTx,
 } from './mocked/dataProvider.mock';
 
-// Mock the ergo node client factory
 vi.mock('@rosen-clients/ergo-node');
 
 describe('DataProvider', () => {
   let dataProvider: DataProvider;
   let mockLogger: DummyLogger;
+  let mockDeserializeTx: ReturnType<typeof createMockDeserializeTx>;
 
   beforeEach(() => {
     mockLogger = new DummyLogger();
     vi.mocked(ergoNodeClientFactory).mockReturnValue(
       sampleNodeAPI as unknown as ReturnType<typeof ergoNodeClientFactory>,
     );
+    mockDeserializeTx = createMockDeserializeTx();
     dataProvider = new DataProvider(
       sampleTxPot as unknown as TxPot,
       sampleNodeURL,
+      mockDeserializeTx,
       mockLogger,
     );
   });
@@ -78,7 +82,7 @@ describe('DataProvider', () => {
       // Start first round
       dataProvider['currentRoundState'] = {
         spentBoxIds: new Set<string>(['box-id-1']),
-        unspentBoxes: [{ boxId: 'box-id-2' } as ErgoBox],
+        unspentBoxes: [{ boxId: 'box-id-2' } as OutputBox],
       };
       const firstRoundState = dataProvider.getCurrentRoundState();
 
@@ -97,12 +101,6 @@ describe('DataProvider', () => {
   });
 
   describe('updateRoundWithTxPotData', () => {
-    beforeEach(() => {
-      dataProvider['deserializeTx'] = vi
-        .fn()
-        .mockReturnValue(sampleDeserializedTx);
-    });
-
     /**
      * @target should update round state with TxPot data
      * @dependencies
@@ -192,7 +190,7 @@ describe('DataProvider', () => {
 
       // Modify state1
       state1.spentBoxIds.add('test-box-id');
-      state1.unspentBoxes.push({} as ErgoBox);
+      state1.unspentBoxes.push({} as OutputBox);
 
       // state2 should remain unchanged
       expect(state2.spentBoxIds.has('test-box-id')).toBe(false);
@@ -202,25 +200,42 @@ describe('DataProvider', () => {
     });
   });
 
-  describe('deserializeTx', () => {
+  describe('safeDeserializeTx', () => {
     /**
-     * @target should deserialize valid transaction correctly
+     * @target should use injected deserializeTx for txpot entities
      * @dependencies
      * @scenario
-     * - create a valid transaction entity
-     * - deserialize it
-     * - check if deserialization is correct
+     * - call updateRoundWithTxPotData (internally uses safeDeserializeTx)
+     * - verify injected deserializeTx was called
      * @expected
-     * - should return deserialized transaction object
+     * - injected deserializeTx should be called
      */
-    it('should deserialize valid transaction correctly', async () => {
-      const serializedTx = Buffer.from(
-        serializeTransaction(sampleDeserializedTx).toBytes(),
-      ).toString('base64');
-      const deserializedTx = await dataProvider['deserializeTx']({
-        serializedTx,
-      } as unknown as TransactionEntity);
-      expect(sampleDeserializedTx).toMatchObject(deserializedTx);
+    it('should use injected deserializeTx for txpot entities', async () => {
+      await dataProvider.updateRoundWithTxPotData();
+      expect(mockDeserializeTx).toHaveBeenCalled();
+    });
+
+    /**
+     * @target should rethrow when injected deserializeTx throws
+     * @dependencies
+     * @scenario
+     * - create a DataProvider with a deserializeTx that throws
+     * - call updateRoundWithTxPotData (internally uses safeDeserializeTx)
+     * @expected
+     * - should reject with the thrown error
+     */
+    it('should throw when injected deserializeTx throws', async () => {
+      const err = new Error('boom');
+      const badDeserialize = () => {
+        throw err;
+      };
+      const provider = new DataProvider(
+        sampleTxPot as unknown as TxPot,
+        sampleNodeURL,
+        badDeserialize,
+        mockLogger,
+      );
+      await expect(provider.updateRoundWithTxPotData()).rejects.toThrow('boom');
     });
   });
 });

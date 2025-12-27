@@ -1,10 +1,10 @@
 import { TxPot } from '@rosen-bridge/tx-pot';
 import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
-import { Network } from '@fleet-sdk/core';
 import JsonBigInt from '@rosen-bridge/json-bigint';
 
 import { Request } from './types';
 import { DataProvider } from './dataProvider';
+import { DeserializeTx } from './types';
 import { BoxSelector } from './boxSelector';
 
 export class BoxLookup {
@@ -15,10 +15,10 @@ export class BoxLookup {
   constructor(
     protected txPot: TxPot,
     nodeURL: string,
-    protected networkType: Network,
+    deserializeTx: DeserializeTx,
     protected logger: AbstractLogger = new DummyLogger(),
   ) {
-    this.dataProvider = new DataProvider(txPot, nodeURL, logger);
+    this.dataProvider = new DataProvider(txPot, nodeURL, deserializeTx, logger);
   }
 
   /**
@@ -72,10 +72,10 @@ export class BoxLookup {
     );
     for (const [requestId, request] of this.requests.entries()) {
       this.logger.debug(
-        `Serving request ${requestId} on address ${request.address}`,
+        `Serving request ${requestId} on ergoTree ${request.ergoTree}`,
       );
       await this.dataProvider.updateRoundWithTxPotData();
-      let boxSelector = new BoxSelector(this.logger, request, this.networkType);
+      let boxSelector = new BoxSelector(this.logger, request);
 
       const roundState = this.dataProvider.getCurrentRoundState();
       const unspentBoxIds = new Set(
@@ -126,7 +126,7 @@ export class BoxLookup {
           this.logger.debug(
             `Request ${requestId}: Resetting box selector after onSuffice callback`,
           );
-          boxSelector = new BoxSelector(this.logger, request, this.networkType);
+          boxSelector = new BoxSelector(this.logger, request);
         }
       }
     }

@@ -1,5 +1,5 @@
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
-import { Request, OnSufficeCallback } from '@ergo-raffle/box-lookup';
+import { OnSufficeCallback, Request } from '../../types';
 import {
   ActivationTxBuilder,
   CreationTxBuilder,
@@ -8,7 +8,7 @@ import {
 import { ErgoBox } from '@fleet-sdk/core';
 
 import { CreationParamsEntity } from '../../database/entities';
-import { BoxLookupService } from '../boxLoookupService';
+import { BoxLookupService } from '../boxLookup';
 import { ScannerService } from '../scannerService';
 import { TxPotService } from '../txPotService';
 import { configs } from '../../config';

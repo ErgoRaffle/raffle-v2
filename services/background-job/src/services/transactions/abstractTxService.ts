@@ -6,7 +6,7 @@ import {
 } from '@rosen-bridge/service-manager';
 import { CallbackFunction, TransactionEntity } from '@rosen-bridge/tx-pot';
 
-import { BoxLookupService } from '../boxLoookupService';
+import { BoxLookupService } from '../boxLookup';
 import { ScannerService } from '../scannerService';
 import { TxPotService } from '../txPotService';
 import ErgoNodeNetwork from '../../network/ergoNodeNetwork';

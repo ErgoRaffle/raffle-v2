@@ -1,22 +1,21 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { DummyLogger } from '@rosen-bridge/abstract-logger';
+import { TxPot } from '@rosen-bridge/tx-pot';
 
 import { BoxLookup } from '../lib/boxLookup';
 import {
-  sampleTxPot,
   sampleNodeURL,
-  sampleNetworkType,
-  sampleRequests,
   sampleErgoBoxes,
   sampleMinedBoxes,
+  sampleRequests,
+} from './testData';
+import {
+  sampleTxPot,
+  noopDeserializeTx,
+  mockBoxSelector,
 } from './mocked/boxLookup.mock';
-import { TxPot } from '@rosen-bridge/tx-pot';
 
-// Mock the BoxSelector module
-vi.mock('../lib/boxSelector', () => ({
-  BoxSelector: vi.fn(),
-}));
+vi.mock('../lib/boxSelector');
 
 describe('BoxLookup', () => {
   let boxLookup: BoxLookup;
@@ -27,7 +26,7 @@ describe('BoxLookup', () => {
     boxLookup = new BoxLookup(
       sampleTxPot as unknown as TxPot,
       sampleNodeURL,
-      sampleNetworkType,
+      noopDeserializeTx,
       mockLogger,
     );
     vi.clearAllMocks();
@@ -98,13 +97,13 @@ describe('BoxLookup', () => {
       expect(boxLookup['requests'].has(requestId)).toBe(false);
     });
 
-    /*
+    /**
      * @target should return undefined for non-existent request ID
      * @dependencies
      * @scenario
      * - try to unregister a request with non-existent ID
      * @expected
-     * - should return undefined and log the attempt
+     * - should return undefined
      */
     it('should return undefined for non-existent request ID', () => {
       const result = boxLookup.unregisterRequest(999);
@@ -114,24 +113,9 @@ describe('BoxLookup', () => {
   });
 
   describe('serveRequests', () => {
-    beforeEach(async () => {
-      // Import the mocked BoxSelector
-      const { BoxSelector } = await import('../lib/boxSelector');
+    beforeEach(() => {
+      mockBoxSelector();
 
-      // Set up the mock implementation
-      vi.mocked(BoxSelector).mockImplementation(
-        () =>
-          ({
-            isEligibleForSelection: vi.fn().mockReturnValue(true),
-            addBox: vi.fn(),
-            isCovering: vi.fn().mockReturnValue(true),
-            getBoxes: vi
-              .fn()
-              .mockReturnValue([sampleErgoBoxes.validBoxWithTokens]),
-          }) as any,
-      );
-
-      // Mock the DataProvider methods
       vi.spyOn(boxLookup['dataProvider'], 'startNewRound').mockResolvedValue(
         undefined,
       );
@@ -254,7 +238,6 @@ describe('BoxLookup', () => {
 
       boxLookup.registerRequest(request);
 
-      // Should not throw an error
       await expect(boxLookup.serveRequests()).resolves.not.toThrow();
     });
   });

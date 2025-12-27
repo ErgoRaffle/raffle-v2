@@ -1,5 +1,5 @@
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
-import { Request, OnSufficeCallback } from '@ergo-raffle/box-lookup';
+import { OnSufficeCallback, Request } from '../../types';
 import { raffleInfo } from '@ergo-raffle/contracts';
 import {
   ForwardToTicketRedeemTxBuilder,
@@ -8,7 +8,7 @@ import {
 import { ErgoBox } from '@fleet-sdk/core';
 import { GiftRedeemBuilder, WinnerBuilder } from '@ergo-raffle/boxes';
 
-import { BoxLookupService } from '../boxLoookupService';
+import { BoxLookupService } from '../boxLookup';
 import { DbService } from '../dbService';
 import {
   signAndAddTx,

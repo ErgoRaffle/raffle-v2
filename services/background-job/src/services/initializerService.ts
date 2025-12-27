@@ -5,7 +5,6 @@ import {
   ServiceStatus,
   ServiceManager,
 } from '@rosen-bridge/service-manager';
-import { Network } from '@fleet-sdk/core';
 import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
 
 import { configs } from '../config';
@@ -14,7 +13,7 @@ import dataSource from '../dataSource';
 import { ScannerService } from './scannerService';
 import { TxPotService } from './txPotService';
 import { HealthCheckService } from './healthCheckService';
-import { BoxLookupService } from './boxLoookupService';
+import { BoxLookupService } from './boxLookup/boxLookupService';
 import { ApiService } from './apiService';
 import { CreationService } from './transactions/creationService';
 import { ActivationService } from './transactions/activationService';
@@ -264,7 +263,6 @@ export class InitializerService extends AbstractService {
     BoxLookupService.init(
       configs.boxLookup.updateInterval,
       configs.scanner.node.url,
-      configs.ergo.network === 'testnet' ? Network.Testnet : Network.Mainnet,
       boxLookupLogger,
     );
     this.logger.debug('Box lookup service initialized');
