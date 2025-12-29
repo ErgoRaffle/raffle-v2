@@ -1,9 +1,9 @@
+import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
 import {
   TransactionEntity,
   TransactionStatus,
   TxPot,
 } from '@rosen-bridge/tx-pot';
-import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
 import ergoNodeClientFactory from '@rosen-clients/ergo-node';
 import { ErgoTransactionOutput } from '@rosen-clients/ergo-node';
 

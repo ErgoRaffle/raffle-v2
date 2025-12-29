@@ -1,25 +1,24 @@
-import { describe, expect, it, vi } from 'vitest';
-
-vi.mock('@fleet-sdk/serializer', () => ({
-  deserializeTransaction: vi.fn(),
-}));
-
+import { OutputBox } from '@ergo-raffle/box-lookup';
+import { Amount, BoxCandidate, NonMandatoryRegisters } from '@fleet-sdk/common';
+import { ErgoAddress, ErgoBox, Network } from '@fleet-sdk/core';
 import { deserializeTransaction } from '@fleet-sdk/serializer';
+import { TransactionEntity, TransactionStatus } from '@rosen-bridge/tx-pot';
+import { describe, expect, it, vi } from 'vitest';
 
 import {
   deserializeTxForBoxLookup,
   toBoxLookupRequest,
 } from '../src/services/boxLookup';
-import { ErgoAddress, ErgoBox, Network } from '@fleet-sdk/core';
 import {
   sampleDeserializeTransactionResult,
   sampleErgoBoxCandidate,
   sampleSerializedTx,
   sampleTxId,
 } from './testData';
-import { OutputBox } from '@ergo-raffle/box-lookup';
-import { TransactionEntity, TransactionStatus } from '@rosen-bridge/tx-pot';
-import { Amount, BoxCandidate, NonMandatoryRegisters } from '@fleet-sdk/common';
+
+vi.mock('@fleet-sdk/serializer', () => ({
+  deserializeTransaction: vi.fn(),
+}));
 
 describe('BoxLookup', () => {
   describe('toBoxLookupRequest', () => {

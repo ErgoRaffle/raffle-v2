@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { compile } from '@fleet-sdk/compiler';
 import { Network, SByte, SColl } from '@fleet-sdk/core';
 import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
-import { compile } from '@fleet-sdk/compiler';
+import { describe, it, expect } from 'vitest';
 
 import { ServiceExtractor } from '../../lib/extractors/serviceExtractor';
 import { createDatabase } from '../utils.mock';

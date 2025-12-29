@@ -1,12 +1,12 @@
-import { it, describe, expect } from 'vitest';
 import { TransactionBuilder, TokenAmount } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
-import { SByte, SColl, SConstant } from '@fleet-sdk/serializer';
-
-import * as testUtils from '../testUtils';
-import * as constants from '../../constants';
-import { ScriptNamesType } from '../../lib/types';
 import { mockUTxO } from '@fleet-sdk/mock-chain';
+import { SByte, SColl, SConstant } from '@fleet-sdk/serializer';
+import { it, describe, expect } from 'vitest';
+
+import * as constants from '../../lib/constants';
+import { ScriptNamesType } from '../../lib/types';
+import * as testUtils from '../testUtils';
 
 /*
  * create fixtures that contains below steps data:
@@ -179,7 +179,7 @@ describe('ticketRedeem', () => {
           .payFee(testUtils.TestConstants.FEE)
           .build();
 
-        expect(boxFactory.chain.execute(transaction)).true;
+        expect(boxFactory.chain.execute(transaction)).toBeTruthy();
       },
     );
 
@@ -210,7 +210,7 @@ describe('ticketRedeem', () => {
           .payFee(testUtils.TestConstants.FEE)
           .build();
 
-        expect(boxFactory.chain.execute(transaction)).true;
+        expect(boxFactory.chain.execute(transaction)).toBeTruthy();
       },
     );
 
@@ -560,7 +560,7 @@ describe('ticketRedeem', () => {
           .payFee(testUtils.TestConstants.FEE)
           .build();
 
-        expect(boxFactory.chain.execute(transaction)).true;
+        expect(boxFactory.chain.execute(transaction)).toBeTruthy();
       },
     );
 
@@ -592,7 +592,7 @@ describe('ticketRedeem', () => {
           .payFee(testUtils.TestConstants.FEE)
           .build();
 
-        expect(boxFactory.chain.execute(transaction)).true;
+        expect(boxFactory.chain.execute(transaction)).toBeTruthy();
       },
     );
 

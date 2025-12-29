@@ -4,13 +4,7 @@
     "outDir": "./dist",
     "composite": true
   },
-  "include": [
-    "tests",
-    "constants.ts",
-    "lib/*.ts",
-    "cli/*.ts",
-    "vitest.config.ts"
-  ],
+  "include": ["tests", "lib/", "cli/"],
   "references": [
     {
       "path": "../transactions"

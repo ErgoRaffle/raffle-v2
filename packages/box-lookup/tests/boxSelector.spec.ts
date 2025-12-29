@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach } from 'vitest';
 import { DummyLogger } from '@rosen-bridge/abstract-logger';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 import { BoxSelector } from '../lib/boxSelector';
 import { Request } from '../lib/types';

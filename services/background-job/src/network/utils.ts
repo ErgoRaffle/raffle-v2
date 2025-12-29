@@ -1,4 +1,5 @@
 import JsonBigint from '@rosen-bridge/json-bigint';
+import { AxiosError } from '@rosen-bridge/rate-limited-axios';
 
 import {
   FailedError,
@@ -6,7 +7,6 @@ import {
   UnexpectedApiError,
   ErrorHandler,
 } from './error';
-import { AxiosError } from '@rosen-bridge/rate-limited-axios';
 
 /**
  * handle an axios api error, considering different kinds of events which may

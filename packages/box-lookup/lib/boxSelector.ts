@@ -1,9 +1,9 @@
 import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
 import JsonBigInt from '@rosen-bridge/json-bigint';
 
-import { BoxValue } from './types/box';
 import { Request } from './types';
 import { OutputBox } from './types';
+import { BoxValue } from './types/box';
 
 export class BoxSelector {
   private boxes: OutputBox[] = [];

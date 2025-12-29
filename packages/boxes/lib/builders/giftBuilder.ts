@@ -1,3 +1,4 @@
+import { raffleInfo } from '@ergo-raffle/contracts';
 import {
   OutputBuilder,
   TokenAmount,
@@ -9,8 +10,8 @@ import {
   Box,
   Amount,
 } from '@fleet-sdk/core';
-import { raffleInfo } from '@ergo-raffle/contracts';
 import { blake2b256 } from '@fleet-sdk/crypto';
+
 import { WinnerBuilder } from './winnerBuilder';
 
 /**

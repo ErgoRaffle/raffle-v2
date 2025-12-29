@@ -1,10 +1,10 @@
-import { DataSource, In, QueryRunner } from '@rosen-bridge/extended-typeorm';
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { AbstractInitializableErgoExtractorAction } from '@rosen-bridge/abstract-extractor';
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { DataSource, In, QueryRunner } from '@rosen-bridge/extended-typeorm';
 import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
 
-import { RaffleDetailsBoxInterface } from '../interfaces/types';
 import { PictureEntity, RaffleDetailsEntity } from '../entities';
+import { RaffleDetailsBoxInterface } from '../interfaces/types';
 
 export class RaffleDetailsAction extends AbstractInitializableErgoExtractorAction<
   RaffleDetailsBoxInterface,

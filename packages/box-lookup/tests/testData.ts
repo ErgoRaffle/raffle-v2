@@ -1,5 +1,6 @@
-import { OutputBox, Asset } from '../lib';
 import { TransactionEntity, TransactionStatus } from '@rosen-bridge/tx-pot';
+
+import { OutputBox, Asset } from '../lib';
 import { createRequest } from './utils/requestTestUtils';
 
 export const sampleNodeURL = 'http://localhost:9053';

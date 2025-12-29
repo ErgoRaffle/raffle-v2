@@ -1,4 +1,7 @@
+import { SignedTransaction } from '@fleet-sdk/common';
+import { serializeTransaction } from '@fleet-sdk/serializer';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { DataSource } from '@rosen-bridge/extended-typeorm';
 import {
   AbstractService,
   Dependency,
@@ -9,14 +12,11 @@ import {
   TxPot,
   CallbackFunction,
 } from '@rosen-bridge/tx-pot';
-import { DataSource } from '@rosen-bridge/extended-typeorm';
-import { SignedTransaction } from '@fleet-sdk/common';
-import { serializeTransaction } from '@fleet-sdk/serializer';
 
-import { ErgoNetworkInterface } from '../txPot/ergoNetworkInterface';
-import { DbService } from './dbService';
 import * as constants from '../constants';
+import { ErgoNetworkInterface } from '../txPot/ergoNetworkInterface';
 import { TxType } from '../types/transaction';
+import { DbService } from './dbService';
 
 export class TxPotService extends AbstractService {
   name = 'TxPotService';

@@ -1,11 +1,11 @@
-import { TxPot } from '@rosen-bridge/tx-pot';
 import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
 import JsonBigInt from '@rosen-bridge/json-bigint';
+import { TxPot } from '@rosen-bridge/tx-pot';
 
-import { Request } from './types';
-import { DataProvider } from './dataProvider';
-import { DeserializeTx } from './types';
 import { BoxSelector } from './boxSelector';
+import { DataProvider } from './dataProvider';
+import { Request } from './types';
+import { DeserializeTx } from './types';
 
 export class BoxLookup {
   protected requestsIdCounter: number = 0;

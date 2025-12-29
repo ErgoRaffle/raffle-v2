@@ -1,34 +1,34 @@
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
 import {
   AbstractService,
   Dependency,
   ServiceStatus,
   ServiceManager,
 } from '@rosen-bridge/service-manager';
-import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
 
 import { configs } from '../config';
-import { DbService } from './dbService';
 import dataSource from '../dataSource';
-import { ScannerService } from './scannerService';
-import { TxPotService } from './txPotService';
-import { HealthCheckService } from './healthCheckService';
-import { BoxLookupService } from './boxLookup/boxLookupService';
 import { ApiService } from './apiService';
-import { CreationService } from './transactions/creationService';
+import { BoxLookupService } from './boxLookup/boxLookupService';
+import { DbService } from './dbService';
+import { HealthCheckService } from './healthCheckService';
+import { ScannerService } from './scannerService';
 import { ActivationService } from './transactions/activationService';
-import { GiftTokenReceiptService } from './transactions/giftTokenReceiptService';
+import { AddGiftService } from './transactions/addGiftService';
+import { CreationService } from './transactions/creationService';
+import { DonationService } from './transactions/donationService';
 import { FailureService } from './transactions/failureService';
+import { FeePaymentService } from './transactions/feePaymentService';
+import { GiftAndPrizeService } from './transactions/giftAndPrizeService';
 import { GiftReturnService } from './transactions/giftReturnService';
+import { GiftTokenReceiptService } from './transactions/giftTokenReceiptService';
+import { LicenseRedeemService } from './transactions/licenseRedeemService';
+import { PrizeCreationService } from './transactions/prizeCreationService';
+import { SafeWithdrawalService } from './transactions/safeWithdrawalService';
 import { TicketRedeemService } from './transactions/ticketRedeemService';
 import { WinnerRemovalService } from './transactions/winnerRemovalService';
-import { LicenseRedeemService } from './transactions/licenseRedeemService';
-import { DonationService } from './transactions/donationService';
-import { AddGiftService } from './transactions/addGiftService';
-import { FeePaymentService } from './transactions/feePaymentService';
-import { PrizeCreationService } from './transactions/prizeCreationService';
-import { GiftAndPrizeService } from './transactions/giftAndPrizeService';
-import { SafeWithdrawalService } from './transactions/safeWithdrawalService';
+import { TxPotService } from './txPotService';
 
 export class InitializerService extends AbstractService {
   name = 'InitializerService';

@@ -1,7 +1,8 @@
 import { vi } from 'vitest';
+
 import { DeserializeTx, DeserializedTx } from '../../lib';
-import { sampleDeserializedTx, sampleErgoBoxes } from '../testData';
 import { BoxSelector } from '../../lib/boxSelector';
+import { sampleDeserializedTx, sampleErgoBoxes } from '../testData';
 
 /**
  * A mock TxPot object used for tests.

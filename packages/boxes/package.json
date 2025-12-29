@@ -1,36 +1,39 @@
 {
   "name": "@ergo-raffle/boxes",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "description": "A package to manage raffle boxes creation and utilization",
-  "license": "GPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://git.ergopool.io/ergo/ergoraffle/raffle-v2.git"
+  },
+  "license": "MIT",
   "author": "Ergo Raffle Team",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "CHANGELOG.md"
+  ],
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
+    "clean": "rimraf dist && rimraf tsconfig.build.tsbuildinfo",
     "coverage": "npm run test -- --coverage",
     "lint": "eslint --fix . && npm run prettify",
-    "prettify": "prettier --write . --ignore-path ./.gitignore",
-    "release": "npm run test -- --run && npm run build && npm publish --access public",
+    "lint:check": "eslint . && npm run prettify:check",
+    "prettify": "prettier --write . --ignore-path ../../.gitignore",
+    "prettify:check": "prettier --check . --ignore-path ../../.gitignore",
+    "release": "npm run test -- --run && npm run clean && npm run build && npm publish --access public",
+    "test": "cross-env NODE_OPTIONS=\"--import tsx\" vitest",
     "type-check": "tsc --noEmit"
   },
-  "devDependencies": {
-    "@types/node": "^20.11.9",
-    "@typescript-eslint/eslint-plugin": "^6.19.1",
-    "@typescript-eslint/parser": "^6.19.1",
-    "eslint": "^8.56.0",
-    "eslint-config-prettier": "^9.1.0",
-    "prettier": "^3.2.4",
-    "typescript": "^5.3.3"
-  },
-  "engines": {
-    "node": ">=20.11.0"
-  },
   "dependencies": {
-    "@ergo-raffle/contracts": "^0.1.0",
+    "@ergo-raffle/contracts": "0.0.0",
     "@fleet-sdk/core": "^0.12.0",
     "@fleet-sdk/crypto": "^0.11.0",
     "@fleet-sdk/serializer": "^0.11.0"
+  },
+  "engines": {
+    "node": ">=22.18.0"
   }
 }

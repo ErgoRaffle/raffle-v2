@@ -1,11 +1,11 @@
-import { it, describe, expect } from 'vitest';
 import { TransactionBuilder } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
 import { SColl, SByte } from '@fleet-sdk/serializer';
-import * as testUtils from '../testUtils';
+import { it, describe, expect } from 'vitest';
 
-import * as constants from '../../constants';
+import * as constants from '../../lib/constants';
 import { ScriptNamesType } from '../../lib/types';
+import * as testUtils from '../testUtils';
 
 const ARBITRARY_TOKEN_ID = '10'.repeat(32);
 
@@ -260,7 +260,7 @@ describe('ActiveRaffle', () => {
 
         const result = boxFactory.chain.execute(transaction);
 
-        expect(result).true;
+        expect(result).toBeTruthy();
       },
     );
 
@@ -317,7 +317,7 @@ describe('ActiveRaffle', () => {
 
         const result = boxFactory.chain.execute(transaction);
 
-        expect(result).true;
+        expect(result).toBeTruthy();
       },
     );
 
@@ -893,7 +893,7 @@ describe('ActiveRaffle', () => {
           .build();
 
         const result = boxFactory.chain.execute(transaction);
-        expect(result).true;
+        expect(result).toBeTruthy();
       },
     );
 
@@ -953,7 +953,7 @@ describe('ActiveRaffle', () => {
           .build();
 
         const result = boxFactory.chain.execute(transaction);
-        expect(result).true;
+        expect(result).toBeTruthy();
       },
     );
 
@@ -1606,7 +1606,7 @@ describe('ActiveRaffle', () => {
           .build();
 
         const result = boxFactory.chain.execute(transaction);
-        expect(result).true;
+        expect(result).toBeTruthy();
       },
     );
 
@@ -1639,7 +1639,7 @@ describe('ActiveRaffle', () => {
           .build();
 
         const result = boxFactory.chain.execute(transaction);
-        expect(result).true;
+        expect(result).toBeTruthy();
       },
     );
 

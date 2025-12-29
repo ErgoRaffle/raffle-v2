@@ -1,3 +1,4 @@
+import { raffleInfo } from '@ergo-raffle/contracts';
 import {
   Box,
   OutputBuilder,
@@ -6,7 +7,7 @@ import {
   SByte,
   ErgoAddress,
 } from '@fleet-sdk/core';
-import { raffleInfo } from '@ergo-raffle/contracts';
+
 import { InactiveRaffleBuilder } from './inactiveRaffleBuilder';
 
 /**

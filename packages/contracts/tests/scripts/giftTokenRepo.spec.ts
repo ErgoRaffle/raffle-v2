@@ -1,10 +1,10 @@
-import { it, describe, expect } from 'vitest';
-import { mockUTxO } from '@fleet-sdk/mock-chain';
 import { Box, TransactionBuilder, OutputBuilder } from '@fleet-sdk/core';
+import { mockUTxO } from '@fleet-sdk/mock-chain';
+import { it, describe, expect } from 'vitest';
 
-import * as constants from '../../constants';
-import * as testUtils from '../testUtils';
+import * as constants from '../../lib/constants';
 import { ScriptNamesType } from '../../lib/types';
+import * as testUtils from '../testUtils';
 
 /*
  * create fixtures that contains below steps data:
@@ -74,7 +74,7 @@ describe('giftTokenRepo', () => {
 
         const res = boxFactory.chain.execute(transaction);
 
-        expect(res).true;
+        expect(res).toBeTruthy();
       },
     );
 
@@ -112,7 +112,7 @@ describe('giftTokenRepo', () => {
 
         const res = boxFactory.chain.execute(transaction);
 
-        expect(res).true;
+        expect(res).toBeTruthy();
       },
     );
 
@@ -156,7 +156,7 @@ describe('giftTokenRepo', () => {
           .build();
         const res = boxFactory.chain.execute(transaction);
 
-        expect(res).true;
+        expect(res).toBeTruthy();
       },
     );
 

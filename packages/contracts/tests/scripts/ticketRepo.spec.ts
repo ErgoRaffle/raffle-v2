@@ -1,10 +1,10 @@
-import { it, describe, expect } from 'vitest';
-import { mockUTxO } from '@fleet-sdk/mock-chain';
 import { TransactionBuilder } from '@fleet-sdk/core';
+import { mockUTxO } from '@fleet-sdk/mock-chain';
+import { it, describe, expect } from 'vitest';
 
-import * as constants from '../../constants';
-import * as testUtils from '../testUtils';
+import * as constants from '../../lib/constants';
 import { ScriptNamesType } from '../../lib/types';
+import * as testUtils from '../testUtils';
 
 /*
  * create fixtures that contains below steps data:
@@ -103,7 +103,7 @@ describe('ticketRepo', () => {
           signers: [creator],
         });
         // Check execution result
-        expect(res).true;
+        expect(res).toBeTruthy();
       },
     );
 
@@ -154,7 +154,7 @@ describe('ticketRepo', () => {
           signers: [creator],
         });
         // Check execution result
-        expect(res).true;
+        expect(res).toBeTruthy();
       },
     );
 

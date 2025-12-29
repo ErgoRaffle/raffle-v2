@@ -1,13 +1,13 @@
-import { DataSource } from '@rosen-bridge/extended-typeorm';
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { ErgoAddress, Box } from '@fleet-sdk/core';
+import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 import { AbstractInitializableErgoExtractor } from '@rosen-bridge/abstract-extractor';
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { OutputBox, ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 
 import { WinnerPrizeAction } from '../actions/winnerPrize';
-import { WinnerPrizeBoxInterface } from '../interfaces/types';
 import { WinnerPrizeEntity } from '../entities';
-import { ErgoAddress, Box } from '@fleet-sdk/core';
-import { SConstant, serializeBox } from '@fleet-sdk/serializer';
+import { WinnerPrizeBoxInterface } from '../interfaces/types';
 
 export class WinnerPrizeExtractor extends AbstractInitializableErgoExtractor<
   WinnerPrizeBoxInterface,
@@ -45,16 +45,15 @@ export class WinnerPrizeExtractor extends AbstractInitializableErgoExtractor<
   hasData = (box: OutputBox): boolean => {
     try {
       return (
-        box.ergoTree == this.ergoTree &&
-        box.additionalRegisters.R4 != undefined &&
-        (SConstant.from(box.additionalRegisters.R4).data as bigint[]).length ==
+        box.ergoTree === this.ergoTree &&
+        box.additionalRegisters?.R4 != null &&
+        (SConstant.from(box.additionalRegisters.R4).data as bigint[]).length ===
           3 &&
-        box.additionalRegisters.R5 != undefined &&
-        (SConstant.from(box.additionalRegisters.R5).data as number) !=
-          undefined &&
-        box.additionalRegisters.R6 != undefined &&
-        Number(SConstant.from(box.additionalRegisters.R6).data as bigint) !=
-          undefined &&
+        box.additionalRegisters?.R5 != null &&
+        box.additionalRegisters?.R6 != null &&
+        !Number.isNaN(
+          Number(SConstant.from(box.additionalRegisters.R6).data as bigint),
+        ) &&
         box.assets.length > 1
       );
     } catch (err) {

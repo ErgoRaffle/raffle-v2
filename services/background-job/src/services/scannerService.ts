@@ -1,8 +1,4 @@
-import {
-  AbstractService,
-  Dependency,
-  ServiceStatus,
-} from '@rosen-bridge/service-manager';
+import { raffleInfo } from '@ergo-raffle/contracts';
 import {
   ServiceExtractor,
   InactiveRaffleExtractor,
@@ -20,16 +16,20 @@ import {
   SafePayExtractor,
   DynamicExtractor,
 } from '@ergo-raffle/extractors';
-import { raffleInfo } from '@ergo-raffle/contracts';
-import { ErgoScanner, ErgoNodeNetwork } from '@rosen-bridge/scanner';
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
-import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
-import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
 import { Network } from '@fleet-sdk/core';
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
+import { ErgoScanner, ErgoNodeNetwork } from '@rosen-bridge/scanner';
+import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
+import {
+  AbstractService,
+  Dependency,
+  ServiceStatus,
+} from '@rosen-bridge/service-manager';
 
-import { DbService } from './dbService';
-import { Scanner as ScannerBaseOption } from '../types';
 import { configs } from '../config';
+import { Scanner as ScannerBaseOption } from '../types';
+import { DbService } from './dbService';
 
 export class ScannerService extends AbstractService {
   name = 'ScannerService';

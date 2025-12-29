@@ -1,11 +1,11 @@
-import { it, describe, expect } from 'vitest';
-import { SColl, SByte, SLong } from '@fleet-sdk/serializer';
 import { Box, TransactionBuilder, OutputBuilder } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
+import { SColl, SByte, SLong } from '@fleet-sdk/serializer';
+import { it, describe, expect } from 'vitest';
 
-import * as testUtils from '../testUtils';
-import * as constants from '../../constants';
+import * as constants from '../../lib/constants';
 import { ScriptNamesType } from '../../lib/types';
+import * as testUtils from '../testUtils';
 
 /*
  * create fixtures that contains below steps data:
@@ -97,7 +97,7 @@ describe('Service', () => {
           signers: [creator],
         });
         // Check execution result
-        expect(res).true;
+        expect(res).toBeTruthy();
       },
     );
 
@@ -144,7 +144,7 @@ describe('Service', () => {
           signers: [creator],
         });
         // Check execution result
-        expect(res).true;
+        expect(res).toBeTruthy();
       },
     );
 
@@ -192,7 +192,7 @@ describe('Service', () => {
           signers: [creator],
         });
         // Check execution result
-        expect(res).true;
+        expect(res).toBeTruthy();
       },
     );
 
@@ -666,7 +666,7 @@ describe('Service', () => {
           signers: [creator],
         });
         // Check execution result
-        expect(res).true;
+        expect(res).toBeTruthy();
       },
     );
   });
@@ -728,7 +728,7 @@ describe('Service', () => {
           signers: [someoneWallet],
         });
         // Check execution result
-        expect(res).true;
+        expect(res).toBeTruthy();
       },
     );
   });

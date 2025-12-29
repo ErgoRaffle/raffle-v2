@@ -5,4 +5,4 @@ build/
 tmp/
 temp/
 lib/dataSources/
-lib/run_testnet_scanner.ts
+lib/runTestnetScanner.ts

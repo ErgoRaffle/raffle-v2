@@ -1,11 +1,13 @@
-import { describe, it, expect, beforeEach } from 'vitest';
 import {
   DataSource,
   QueryRunner,
   Repository,
 } from '@rosen-bridge/extended-typeorm';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 import { RaffleDetailsAction } from '../../lib/actions/raffleDetailsAction';
+import { PictureEntity, RaffleDetailsEntity } from '../../lib/entities';
+import { RaffleDetailsBoxInterface } from '../../lib/interfaces/types';
 import { createDatabase } from '../utils.mock';
 import {
   sampleBoxesData,
@@ -13,8 +15,6 @@ import {
   sampleDBPicturesData,
   sampleUpdatedPicturesDBData,
 } from './mocked/raffleDetails.mock';
-import { PictureEntity, RaffleDetailsEntity } from '../../lib/entities';
-import { RaffleDetailsBoxInterface } from '../../lib/interfaces/types';
 
 interface RaffleDetailsTestContext {
   dataSource: DataSource;

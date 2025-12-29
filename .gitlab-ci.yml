@@ -1,12 +1,17 @@
-image: node:20.11.0
+image: node:22.18.0
 
 stages:
   - installation
+  - knip
   - build
   - type-check
   - lint
   - test
   - changeset
+
+variables:
+  npm_config_cache: '${CI_PROJECT_DIR}/.npm'
+  NPM_VERSION: '11.6.2'
 
 installation:
   stage: installation
@@ -19,6 +24,17 @@ installation:
       - '**/dist'
   script:
     - npm ci
+
+knip:
+  stage: knip
+  cache:
+    key: $CI_COMMIT_REF_NAME
+    policy: pull
+    paths:
+      - node_modules
+      - '**/node_modules'
+  script:
+    - npx knip --dependencies
 
 type-check:
   stage: type-check
@@ -54,7 +70,7 @@ lint:
       - '**/node_modules'
       - '**/dist'
   script:
-    - npm run lint
+    - npm run lint:check
 
 test:
   stage: test

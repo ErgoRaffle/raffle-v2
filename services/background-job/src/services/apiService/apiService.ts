@@ -1,16 +1,16 @@
+import { compile } from '@fleet-sdk/compiler';
+import { ErgoAddress, Network } from '@fleet-sdk/core';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { makeFastify, FastifyWithZod } from '@rosen-bridge/fastify-enhanced';
 import {
   AbstractService,
   Dependency,
   ServiceStatus,
 } from '@rosen-bridge/service-manager';
-import { makeFastify, FastifyWithZod } from '@rosen-bridge/fastify-enhanced';
-import { compile } from '@fleet-sdk/compiler';
-import { ErgoAddress, Network } from '@fleet-sdk/core';
 
-import { DbService } from '../dbService';
+import packageJson from '../../../package.json' with { type: 'json' };
 import * as ConfigTypes from '../../types/configs';
-import packageJson from '../../../package.json' assert { type: 'json' };
+import { DbService } from '../dbService';
 import { registerAllRoutes } from './routes';
 
 export class ApiService extends AbstractService {

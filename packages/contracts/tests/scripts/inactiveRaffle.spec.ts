@@ -1,11 +1,11 @@
-import { it, describe, expect } from 'vitest';
+import { TransactionBuilder, OutputBuilder } from '@fleet-sdk/core';
 import { mockUTxO } from '@fleet-sdk/mock-chain';
 import { SColl, SInt, SLong, SByte } from '@fleet-sdk/serializer';
-import { TransactionBuilder, OutputBuilder } from '@fleet-sdk/core';
+import { it, describe, expect } from 'vitest';
 
-import * as constants from '../../constants';
-import * as testUtils from '../testUtils';
+import * as constants from '../../lib/constants';
 import { ScriptNamesType } from '../../lib/types';
+import * as testUtils from '../testUtils';
 
 /*
  * create fixtures that contains below steps data:
@@ -98,7 +98,7 @@ describe('inactiveRaffle', () => {
           signers: [creator],
         });
         // Check execution result
-        expect(res).true;
+        expect(res).toBeTruthy();
       },
     );
 
@@ -149,7 +149,7 @@ describe('inactiveRaffle', () => {
           signers: [creator],
         });
         // Check execution result
-        expect(res).true;
+        expect(res).toBeTruthy();
       },
     );
 
@@ -204,7 +204,7 @@ describe('inactiveRaffle', () => {
           signers: [creator],
         });
         // Check execution result
-        expect(res).true;
+        expect(res).toBeTruthy();
       },
     );
 

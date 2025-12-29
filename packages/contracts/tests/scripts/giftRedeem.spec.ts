@@ -1,10 +1,10 @@
-import { it, describe, expect } from 'vitest';
 import { TransactionBuilder, TokenAmount } from '@fleet-sdk/core';
-
-import * as testUtils from '../testUtils';
-import * as constants from '../../constants';
-import { ScriptNamesType } from '../../lib/types';
 import { mockUTxO } from '@fleet-sdk/mock-chain';
+import { it, describe, expect } from 'vitest';
+
+import * as constants from '../../lib/constants';
+import { ScriptNamesType } from '../../lib/types';
+import * as testUtils from '../testUtils';
 
 /*
  * create fixtures that contains below steps data:
@@ -140,7 +140,7 @@ describe('giftRedeem', () => {
           .payFee(testUtils.TestConstants.FEE)
           .build();
 
-        expect(boxFactory.chain.execute(transaction)).true;
+        expect(boxFactory.chain.execute(transaction)).toBeTruthy();
       },
     );
 
@@ -511,7 +511,7 @@ describe('giftRedeem', () => {
           .payFee(testUtils.TestConstants.FEE)
           .build();
 
-        expect(boxFactory.chain.execute(transaction)).true;
+        expect(boxFactory.chain.execute(transaction)).toBeTruthy();
       },
     );
 

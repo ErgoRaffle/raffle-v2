@@ -1,12 +1,12 @@
-import { it, describe, expect } from 'vitest';
-import { SByte, SColl, SConstant } from '@fleet-sdk/serializer';
 import { TransactionBuilder } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
 import { mockUTxO } from '@fleet-sdk/mock-chain';
+import { SByte, SColl, SConstant } from '@fleet-sdk/serializer';
+import { it, describe, expect } from 'vitest';
 
-import * as testUtils from '../testUtils';
-import * as constants from '../../constants';
+import * as constants from '../../lib/constants';
 import { ScriptNamesType } from '../../lib/types';
+import * as testUtils from '../testUtils';
 
 /*
  * create fixtures that contains below steps data:
@@ -146,7 +146,7 @@ describe('winnerPrize', () => {
 
         const result = boxFactory.chain.execute(transaction);
 
-        expect(result).true;
+        expect(result).toBeTruthy();
       },
     );
 
@@ -657,7 +657,7 @@ describe('winnerPrize', () => {
 
         const result = boxFactory.chain.execute(transaction);
 
-        expect(result).true;
+        expect(result).toBeTruthy();
       },
     );
 
@@ -721,7 +721,7 @@ describe('winnerPrize', () => {
 
         const result = boxFactory.chain.execute(transaction);
 
-        expect(result).true;
+        expect(result).toBeTruthy();
       },
     );
 

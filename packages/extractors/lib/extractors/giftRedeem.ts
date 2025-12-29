@@ -1,13 +1,13 @@
-import { DataSource } from '@rosen-bridge/extended-typeorm';
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { ErgoAddress, Box } from '@fleet-sdk/core';
+import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 import { AbstractInitializableErgoExtractor } from '@rosen-bridge/abstract-extractor';
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { OutputBox, ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 
 import { GiftRedeemAction } from '../actions/giftRedeem';
-import { GiftRedeemBoxInterface } from '../interfaces/types';
 import { GiftRedeemEntity } from '../entities';
-import { ErgoAddress, Box } from '@fleet-sdk/core';
-import { SConstant, serializeBox } from '@fleet-sdk/serializer';
+import { GiftRedeemBoxInterface } from '../interfaces/types';
 
 export class GiftRedeemExtractor extends AbstractInitializableErgoExtractor<
   GiftRedeemBoxInterface,

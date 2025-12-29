@@ -1,11 +1,11 @@
-import { it, describe, expect } from 'vitest';
 import { ErgoUnsignedInput, TransactionBuilder } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
 import { SColl, SLong, SConstant, SByte } from '@fleet-sdk/serializer';
+import { it, describe, expect } from 'vitest';
 
-import * as testUtils from '../testUtils';
-import * as constants from '../../constants';
+import * as constants from '../../lib/constants';
 import { ScriptNamesType } from '../../lib/types';
+import * as testUtils from '../testUtils';
 
 const TEST_INITIAL_SEED = '0123456789012345';
 
@@ -198,7 +198,7 @@ describe('successRaffle', () => {
 
         const res = boxFactory.chain.execute(transaction);
 
-        expect(res).true;
+        expect(res).toBeTruthy();
       },
     );
 
@@ -262,7 +262,7 @@ describe('successRaffle', () => {
 
         const res = boxFactory.chain.execute(transaction);
 
-        expect(res).true;
+        expect(res).toBeTruthy();
       },
     );
 
@@ -338,7 +338,7 @@ describe('successRaffle', () => {
 
         const res = boxFactory.chain.execute(transaction);
 
-        expect(res).true;
+        expect(res).toBeTruthy();
       },
     );
 
@@ -1192,7 +1192,7 @@ describe('successRaffle', () => {
 
         const res = boxFactory.chain.execute(transaction);
 
-        expect(res).true;
+        expect(res).toBeTruthy();
       },
     );
 
@@ -1247,7 +1247,7 @@ describe('successRaffle', () => {
 
         const res = boxFactory.chain.execute(transaction);
 
-        expect(res).true;
+        expect(res).toBeTruthy();
       },
     );
 

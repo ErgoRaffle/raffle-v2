@@ -1,21 +1,21 @@
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
-import { OnSufficeCallback, Request } from '../../types';
+import { GiftTokenRepoBuilder, WinnerBuilder } from '@ergo-raffle/boxes';
 import { raffleInfo } from '@ergo-raffle/contracts';
+import { RaffleBoxType } from '@ergo-raffle/extractors';
 import { GiftTokenReceiptTxBuilder } from '@ergo-raffle/transactions';
 import { ErgoBox } from '@fleet-sdk/core';
-import { RaffleBoxType } from '@ergo-raffle/extractors';
-import { GiftTokenRepoBuilder, WinnerBuilder } from '@ergo-raffle/boxes';
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 
-import { BoxLookupService } from '../boxLookup';
-import { DbService } from '../dbService';
+import { configs } from '../../config';
+import { findAllWinners } from '../../transactions/boxFinder';
 import {
   signAndAddTx,
   convertDbBoxesToErgoBoxes,
 } from '../../transactions/utils';
+import { OnSufficeCallback, Request } from '../../types';
 import { TxType } from '../../types/transaction';
+import { BoxLookupService } from '../boxLookup';
+import { DbService } from '../dbService';
 import { AbstractTxService } from './abstractTxService';
-import { configs } from '../../config';
-import { findAllWinners } from '../../transactions/boxFinder';
 
 export class GiftTokenReceiptService extends AbstractTxService {
   name = 'GiftTokenReceiptService';

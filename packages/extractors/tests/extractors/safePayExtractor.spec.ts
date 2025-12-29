@@ -1,11 +1,11 @@
-import { describe, it, expect } from 'vitest';
-import { Network } from '@fleet-sdk/core';
 import { compile } from '@fleet-sdk/compiler';
+import { Network } from '@fleet-sdk/core';
+import { TxExtra } from '@rosen-bridge/abstract-extractor';
 import {
   ErgoNetworkType,
   InputExtension,
 } from '@rosen-bridge/scanner-interfaces';
-import { TxExtra } from '@rosen-bridge/abstract-extractor';
+import { describe, it, expect } from 'vitest';
 
 import { SafePayExtractor } from '../../lib/extractors/safePayExtractor';
 import { createDatabase } from '../utils.mock';

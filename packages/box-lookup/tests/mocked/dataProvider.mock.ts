@@ -1,5 +1,6 @@
-import { vi } from 'vitest';
 import { TransactionStatus } from '@rosen-bridge/tx-pot';
+import { vi } from 'vitest';
+
 import { DeserializeTx, DeserializedTx } from '../../lib';
 import {
   sampleTransactionEntity,

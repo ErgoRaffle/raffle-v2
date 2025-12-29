@@ -1,9 +1,3 @@
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
-import {
-  AbstractService,
-  Dependency,
-  ServiceStatus,
-} from '@rosen-bridge/service-manager';
 import {
   RaffleBoxEntity,
   InactiveRaffleEntity,
@@ -20,6 +14,7 @@ import {
   SafePayEntity,
   ServiceEntity,
 } from '@ergo-raffle/extractors';
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import {
   IsNull,
   DataSource,
@@ -27,13 +22,18 @@ import {
   MoreThan,
 } from '@rosen-bridge/extended-typeorm';
 import { BlockEntity } from '@rosen-bridge/scanner';
+import {
+  AbstractService,
+  Dependency,
+  ServiceStatus,
+} from '@rosen-bridge/service-manager';
 import { pick } from 'lodash-es';
 
-import { CreationParamsEntity } from '../database/entities/creationParamsEntity';
-import { DonationParamsEntity } from '../database/entities/donationParamsEntity';
-import { AddGiftParamsEntity } from '../database/entities/addGiftParamsEntity';
-import { CreationPictureEntity } from '../database/entities/creationPictureEntity';
 import { configs } from '../config';
+import { AddGiftParamsEntity } from '../database/entities/addGiftParamsEntity';
+import { CreationParamsEntity } from '../database/entities/creationParamsEntity';
+import { CreationPictureEntity } from '../database/entities/creationPictureEntity';
+import { DonationParamsEntity } from '../database/entities/donationParamsEntity';
 
 export class DbService extends AbstractService {
   name = 'DbService';

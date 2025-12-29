@@ -1,7 +1,3 @@
-import { it, describe, expect } from 'vitest';
-import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
-
-import * as testUtils from '../../testUtils';
 import {
   CreationTxBuilder,
   ActivationTxBuilder,
@@ -16,6 +12,10 @@ import {
   ReturnRaffleLicenseTxBuilder,
   SafeWithdrawTxBuilder,
 } from '@ergo-raffle/transactions';
+import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
+import { it, describe, expect } from 'vitest';
+
+import * as testUtils from '../../testUtils';
 
 /*
  * create fixtures that contains below steps data:
@@ -151,7 +151,7 @@ describe('Raffle', () => {
           createRaffleBuilder.build(),
           { signers: [creator] },
         );
-        expect(createRaffleTx.success).true;
+        expect(createRaffleTx.success).toBeTruthy();
 
         // Step 2: Raffle creation phase 2 (merge inactive and ticket repo and create active raffle and winners)
         const inactiveRaffle = createRaffleTx.outputs[2];
@@ -169,7 +169,7 @@ describe('Raffle', () => {
         const activationTx = boxFactory.chain.executeAndReturnOutputs(
           activationBuilder.build(),
         );
-        expect(activationTx.success).true;
+        expect(activationTx.success).toBeTruthy();
 
         const raffleDetails = activationTx.outputs[1];
 
@@ -189,7 +189,7 @@ describe('Raffle', () => {
           );
           winnerBoxes.push(giftTokenReceiptTx.outputs[0]);
           giftTokenRepo = giftTokenReceiptTx.outputs[1];
-          expect(giftTokenReceiptTx.success).true;
+          expect(giftTokenReceiptTx.success).toBeTruthy();
         }
 
         // Step 4: Add two gifts to one of the winners
@@ -222,7 +222,7 @@ describe('Raffle', () => {
             addGiftBuilder.build(),
             { signers: [(giftGiverWallets as KeyedMockChainParty[])[i]] },
           );
-          expect(addGiftTx.success).true;
+          expect(addGiftTx.success).toBeTruthy();
           winner1 = addGiftTx.outputs[0];
           winner1Gifts.push(addGiftTx.outputs[1]);
         }
@@ -253,7 +253,7 @@ describe('Raffle', () => {
               signers: [(donatorWallets as KeyedMockChainParty[])[donateCount]],
             },
           );
-          expect(donateTx.success).true;
+          expect(donateTx.success).toBeTruthy();
           activeRaffle = donateTx.outputs[0];
           tickets.push(donateTx.outputs[1]);
         }
@@ -279,7 +279,7 @@ describe('Raffle', () => {
         const failureTx = boxFactory.chain.executeAndReturnOutputs(
           failureBuilder.build(),
         );
-        expect(failureTx.success).true;
+        expect(failureTx.success).toBeTruthy();
 
         // Step 7: Returning two gifts of the first winner
         let giftRedeem = failureTx.outputs[0];
@@ -299,7 +299,7 @@ describe('Raffle', () => {
           const giftRedeemTx = boxFactory.chain.executeAndReturnOutputs(
             giftReturnBuilder.build(),
           );
-          expect(giftRedeemTx.success).true;
+          expect(giftRedeemTx.success).toBeTruthy();
           winner1 = giftRedeemTx.outputs[0];
 
           const giftSafePayBox = giftRedeemTx.outputs[1];
@@ -314,7 +314,7 @@ describe('Raffle', () => {
           const giftSafeWithdrawTx = boxFactory.chain.executeAndReturnOutputs(
             giftSafeWithdrawBuilder.build(),
           );
-          expect(giftSafeWithdrawTx.success).true;
+          expect(giftSafeWithdrawTx.success).toBeTruthy();
         }
 
         // Step 8: Winner removal transaction
@@ -328,7 +328,7 @@ describe('Raffle', () => {
           const winnerRemovalTx = boxFactory.chain.executeAndReturnOutputs(
             winnerRemovalBuilder.build(),
           );
-          expect(winnerRemovalTx.success).true;
+          expect(winnerRemovalTx.success).toBeTruthy();
           giftRedeem = winnerRemovalTx.outputs[0];
         }
 
@@ -343,7 +343,7 @@ describe('Raffle', () => {
           boxFactory.chain.executeAndReturnOutputs(
             forwardToTicketRedeemBuilder.build(),
           );
-        expect(forwardToTicketRedeemTx.success).true;
+        expect(forwardToTicketRedeemTx.success).toBeTruthy();
 
         // Step 10: Redeem two tickets to donators
         let ticketRedeem = forwardToTicketRedeemTx.outputs[0];
@@ -362,7 +362,7 @@ describe('Raffle', () => {
             ticketRedeemBuilder.build(),
           );
           ticketRedeem = ticketRedeemTx.outputs[0];
-          expect(ticketRedeemTx.success).true;
+          expect(ticketRedeemTx.success).toBeTruthy();
 
           const donationSafePayBox = ticketRedeemTx.outputs[1];
           const donationSafeWithdrawBuilder = new SafeWithdrawTxBuilder()
@@ -377,7 +377,7 @@ describe('Raffle', () => {
             boxFactory.chain.executeAndReturnOutputs(
               donationSafeWithdrawBuilder.build(),
             );
-          expect(donationSafeWithdrawTx.success).true;
+          expect(donationSafeWithdrawTx.success).toBeTruthy();
         }
 
         // Step 11: Return raffle license to service
@@ -392,7 +392,7 @@ describe('Raffle', () => {
         const returnLicenseTx = boxFactory.chain.executeAndReturnOutputs(
           returnLicenseBuilder.build(),
         );
-        expect(returnLicenseTx.success).true;
+        expect(returnLicenseTx.success).toBeTruthy();
 
         const serviceFeeSafePayBox = returnLicenseTx.outputs[1];
         const serviceFeeSafeWithdrawBuilder = new SafeWithdrawTxBuilder()
@@ -405,7 +405,7 @@ describe('Raffle', () => {
           boxFactory.chain.executeAndReturnOutputs(
             serviceFeeSafeWithdrawBuilder.build(),
           );
-        expect(serviceFeeSafeWithdrawTx.success).true;
+        expect(serviceFeeSafeWithdrawTx.success).toBeTruthy();
       },
     );
   });

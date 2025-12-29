@@ -1,11 +1,11 @@
-import { DataSource } from '@rosen-bridge/extended-typeorm';
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { AbstractInitializableErgoExtractorAction } from '@rosen-bridge/abstract-extractor';
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
 import { pick } from 'lodash-es';
 
-import { RaffleBoxInterface } from '../interfaces/types';
 import { RaffleBoxEntity } from '../entities';
+import { RaffleBoxInterface } from '../interfaces/types';
 
 export class RaffleBoxAction extends AbstractInitializableErgoExtractorAction<
   RaffleBoxInterface,

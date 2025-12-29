@@ -16,9 +16,6 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
-    "target": "esnext",
-    "paths": {
-      "@ergo-raffle/transactions": ["./packages/transactions/src"]
-    }
+    "target": "esnext"
   }
 }

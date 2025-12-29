@@ -1,4 +1,8 @@
-import 'reflect-metadata';
+// sort-imports-begin-ignore
+import '@rosen-bridge/extended-typeorm';
+
+// sort-imports-end-ignore
+
 export { ServiceEntity } from './serviceEntity';
 export { InactiveRaffleEntity } from './inactiveRaffleEntity';
 export { RaffleBoxEntity, RaffleBoxType } from './raffleBoxEntity';

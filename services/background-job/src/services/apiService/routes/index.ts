@@ -1,9 +1,9 @@
-import { FastifyWithZod } from '@rosen-bridge/fastify-enhanced';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { FastifyWithZod } from '@rosen-bridge/fastify-enhanced';
 
+import { registerAddGiftRoute } from './addGift';
 import { registerCreationRoute } from './creation';
 import { registerDonationRoute } from './donation';
-import { registerAddGiftRoute } from './addGift';
 
 export const registerAllRoutes = (
   fastify: FastifyWithZod,

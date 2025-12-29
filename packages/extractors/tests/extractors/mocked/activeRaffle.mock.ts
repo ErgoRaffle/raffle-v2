@@ -1,4 +1,5 @@
 import { OutputBox } from '@rosen-bridge/scanner-interfaces';
+
 import { RaffleBoxType } from '../../../lib/entities/raffleBoxEntity';
 
 export const sampleActiveRaffleBoxes: OutputBox[] = [

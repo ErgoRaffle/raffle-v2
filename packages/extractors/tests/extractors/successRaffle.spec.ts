@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { Network } from '@fleet-sdk/core';
 import { compile } from '@fleet-sdk/compiler';
+import { Network } from '@fleet-sdk/core';
+import { describe, it, expect } from 'vitest';
 
 import { SuccessRaffleExtractor } from '../../lib/extractors/successRaffle';
 import { createDatabase } from '../utils.mock';

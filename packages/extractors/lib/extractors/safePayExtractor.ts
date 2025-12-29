@@ -1,21 +1,21 @@
-import { DataSource } from '@rosen-bridge/extended-typeorm';
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { ErgoAddress, Box } from '@fleet-sdk/core';
+import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 import {
   AbstractInitializableErgoExtractor,
   TxExtra,
 } from '@rosen-bridge/abstract-extractor';
-import { ErgoAddress, Box } from '@fleet-sdk/core';
-import { SConstant, serializeBox } from '@fleet-sdk/serializer';
-
-import { SafePayEntity } from '../entities';
-import { SafePayAction } from '../actions/safePayAction';
-import { SafePayBoxInterface } from '../interfaces/types';
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { DataSource } from '@rosen-bridge/extended-typeorm';
 import {
   Transaction,
   OutputBox,
   ErgoNetworkType,
   InputExtension,
 } from '@rosen-bridge/scanner-interfaces';
+
+import { SafePayAction } from '../actions/safePayAction';
+import { SafePayEntity } from '../entities';
+import { SafePayBoxInterface } from '../interfaces/types';
 
 export class SafePayExtractor extends AbstractInitializableErgoExtractor<
   SafePayBoxInterface,

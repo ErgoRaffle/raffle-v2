@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { Network, SByte, SColl, SLong } from '@fleet-sdk/core';
 import { compile } from '@fleet-sdk/compiler';
+import { Network, SByte, SColl, SLong } from '@fleet-sdk/core';
+import { describe, it, expect } from 'vitest';
 
 import { InactiveRaffleExtractor } from '../../lib/extractors/inactiveRaffleExtractor';
 import { createDatabase } from '../utils.mock';

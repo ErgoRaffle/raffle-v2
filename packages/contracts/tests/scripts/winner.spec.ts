@@ -1,11 +1,11 @@
-import { it, describe, expect } from 'vitest';
-import { SColl, SByte, SConstant } from '@fleet-sdk/serializer';
 import { TransactionBuilder, Box } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
+import { SColl, SByte, SConstant } from '@fleet-sdk/serializer';
+import { it, describe, expect } from 'vitest';
 
-import * as testUtils from '../testUtils';
-import * as constants from '../../constants';
+import * as constants from '../../lib/constants';
 import { ScriptNamesType } from '../../lib/types';
+import * as testUtils from '../testUtils';
 
 /*
  * create fixtures that contains below steps data:
@@ -113,7 +113,7 @@ describe('winner', () => {
         });
 
         // Check execution result
-        expect(result).true;
+        expect(result).toBeTruthy();
       },
     );
 
@@ -371,7 +371,7 @@ describe('winner', () => {
         });
 
         // Check execution result
-        expect(result).true;
+        expect(result).toBeTruthy();
       },
     );
 
@@ -706,7 +706,7 @@ describe('winner', () => {
           .payFee(testUtils.TestConstants.FEE)
           .build();
 
-        expect(boxFactory.chain.execute(transaction)).true;
+        expect(boxFactory.chain.execute(transaction)).toBeTruthy();
       },
     );
 
@@ -819,7 +819,7 @@ describe('winner', () => {
           .payFee(testUtils.TestConstants.FEE)
           .build();
 
-        expect(boxFactory.chain.execute(transaction)).true;
+        expect(boxFactory.chain.execute(transaction)).toBeTruthy();
       },
     );
 
@@ -918,7 +918,7 @@ describe('winner', () => {
           .payFee(testUtils.TestConstants.FEE)
           .build();
 
-        expect(boxFactory.chain.execute(transaction)).true;
+        expect(boxFactory.chain.execute(transaction)).toBeTruthy();
       },
     );
 
@@ -1532,7 +1532,7 @@ describe('winner', () => {
           .payFee(testUtils.TestConstants.FEE)
           .build();
 
-        expect(boxFactory.chain.execute(giftReturnTx)).true;
+        expect(boxFactory.chain.execute(giftReturnTx)).toBeTruthy();
       },
     );
 
@@ -2011,7 +2011,7 @@ describe('winner', () => {
           .payFee(testUtils.TestConstants.FEE)
           .build();
 
-        expect(boxFactory.chain.execute(giftReturnTx)).true;
+        expect(boxFactory.chain.execute(giftReturnTx)).toBeTruthy();
       },
     );
 

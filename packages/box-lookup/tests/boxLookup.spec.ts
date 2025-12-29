@@ -1,19 +1,19 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { DummyLogger } from '@rosen-bridge/abstract-logger';
 import { TxPot } from '@rosen-bridge/tx-pot';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 
 import { BoxLookup } from '../lib/boxLookup';
+import {
+  sampleTxPot,
+  noopDeserializeTx,
+  mockBoxSelector,
+} from './mocked/boxLookup.mock';
 import {
   sampleNodeURL,
   sampleErgoBoxes,
   sampleMinedBoxes,
   sampleRequests,
 } from './testData';
-import {
-  sampleTxPot,
-  noopDeserializeTx,
-  mockBoxSelector,
-} from './mocked/boxLookup.mock';
 
 vi.mock('../lib/boxSelector');
 

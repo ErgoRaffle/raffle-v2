@@ -1,11 +1,11 @@
-import { DataSource } from '@rosen-bridge/extended-typeorm';
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { AbstractInitializableErgoExtractorAction } from '@rosen-bridge/abstract-extractor';
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
-
-import { DynamicBoxInterface } from '../interfaces/types';
-import { DynamicBoxEntity } from '../entities';
 import { pick } from 'lodash-es';
+
+import { DynamicBoxEntity } from '../entities';
+import { DynamicBoxInterface } from '../interfaces/types';
 
 export class DynamicBoxAction extends AbstractInitializableErgoExtractorAction<
   DynamicBoxInterface,

@@ -1,15 +1,15 @@
-import { describe, it, expect } from 'vitest';
+import { compile } from '@fleet-sdk/compiler';
 import { Network, SByte, SColl } from '@fleet-sdk/core';
 import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
-import { compile } from '@fleet-sdk/compiler';
+import { describe, it, expect } from 'vitest';
 
+import { PictureEntity } from '../../lib/entities';
 import { RaffleDetailsExtractor } from '../../lib/extractors/raffleDetailsExtractor';
 import { createDatabase } from '../utils.mock';
 import {
   sampleRaffleDetailsBoxes,
   sampleRaffleDetailsExtractedData,
 } from './mocked/raffleDetails.mock';
-import { PictureEntity } from '../../lib/entities';
 
 /*
  * create fixtures that contains below steps data:

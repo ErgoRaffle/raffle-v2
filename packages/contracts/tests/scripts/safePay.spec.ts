@@ -1,10 +1,10 @@
-import { it, describe, expect } from 'vitest';
 import { TransactionBuilder } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
+import { it, describe, expect } from 'vitest';
 
-import * as testUtils from '../testUtils';
-import * as constants from '../../constants';
+import * as constants from '../../lib/constants';
 import { ScriptNamesType } from '../../lib/types';
+import * as testUtils from '../testUtils';
 
 const X_TOKEN_ID = '0001'.repeat(16);
 const Y_TOKEN_ID = '0010'.repeat(16);
@@ -107,7 +107,7 @@ describe('safePay', () => {
 
         const res = boxFactory.chain.execute(transaction);
         // Check execution result
-        expect(res).true;
+        expect(res).toBeTruthy();
       },
     );
 
@@ -146,7 +146,7 @@ describe('safePay', () => {
 
         const res = boxFactory.chain.execute(transaction);
         // Check execution result
-        expect(res).true;
+        expect(res).toBeTruthy();
       },
     );
 

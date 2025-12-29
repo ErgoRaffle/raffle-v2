@@ -1,11 +1,11 @@
-import { DataSource } from '@rosen-bridge/extended-typeorm';
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { AbstractInitializableErgoExtractorAction } from '@rosen-bridge/abstract-extractor';
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
-
-import { TicketBoxInterface } from '../interfaces/types';
-import { TicketEntity } from '../entities/ticket';
 import { pick } from 'lodash-es';
+
+import { TicketEntity } from '../entities/ticket';
+import { TicketBoxInterface } from '../interfaces/types';
 
 export class TicketAction extends AbstractInitializableErgoExtractorAction<
   TicketBoxInterface,

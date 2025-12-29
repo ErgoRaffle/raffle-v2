@@ -1,13 +1,15 @@
+import { Network } from '@fleet-sdk/core';
+import { program } from 'commander';
 import * as fs from 'fs';
 import { exit } from 'process';
 
-import { Network } from '@fleet-sdk/core';
-import { program } from 'commander';
-
-import * as types from '../lib/types';
+import {
+  defaultScriptsVariables,
+  defaultBuildVariables,
+} from '../lib/constants';
 import { logger } from '../lib/logger';
+import * as types from '../lib/types';
 import { compileAll } from '../lib/utils';
-import { defaultScriptsVariables, defaultBuildVariables } from '../constants';
 
 program
   .name('contracts')
@@ -42,7 +44,9 @@ program
         Object.entries(JSON.parse(inputContent)),
       ) as types.ContextVarsType;
     } catch (err) {
-      logger.error(`The compile-all command failed: Input file is not json`);
+      logger.error(
+        `The compile-all command failed: Input file is not json: ${err}`,
+      );
       exit(1);
     }
 

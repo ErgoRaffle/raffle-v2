@@ -1,10 +1,9 @@
-import './bootstrap';
-
-import { ServiceManager } from '@rosen-bridge/service-manager';
 import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
+import { ServiceManager } from '@rosen-bridge/service-manager';
 
-import { InitializerService } from './services/initializerService';
+import './bootstrap';
 import { configs } from './config';
+import { InitializerService } from './services/initializerService';
 
 const logger = CallbackLoggerFactory.getInstance().getLogger(import.meta.url);
 

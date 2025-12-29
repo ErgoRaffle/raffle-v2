@@ -1,6 +1,9 @@
-import * as fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import {
+  first,
+  ensureDefaults,
+  Network,
+  NonMandatoryRegisters,
+} from '@fleet-sdk/common';
 import {
   SAFE_MIN_BOX_VALUE,
   Box,
@@ -10,12 +13,13 @@ import {
   TokenAmount,
   ErgoTree,
 } from '@fleet-sdk/core';
+import type { ErgoUnsignedTransaction } from '@fleet-sdk/core';
+import { blake2b256, bigintBE, hex } from '@fleet-sdk/crypto';
 import {
   KeyedMockChainParty,
   MockChain,
   MockChainParty,
   BlockState,
-  AssetMetadataMap,
   MockChainOptions,
   TransactionExecutionOptions,
   mockUTxO,
@@ -23,27 +27,22 @@ import {
   mockBlockchainStateContext,
   BLOCKCHAIN_PARAMETERS,
 } from '@fleet-sdk/mock-chain';
-import {
-  first,
-  ensureDefaults,
-  Network,
-  NonMandatoryRegisters,
-} from '@fleet-sdk/common';
 import { SColl, SByte, SLong, SInt, SConstant } from '@fleet-sdk/serializer';
-import { blake2b256, bigintBE, hex } from '@fleet-sdk/crypto';
-import type { ErgoUnsignedTransaction } from '@fleet-sdk/core';
 import type { ErgoHDKey } from '@fleet-sdk/wallet';
+import * as fs from 'fs';
+import path from 'path';
+import { exit } from 'process';
 import { ProverBuilder$ } from 'sigmastate-js/main';
-import * as constants from '../constants';
+import { fileURLToPath } from 'url';
+
+import * as constants from '../lib/constants';
 import {
   ContextVarsType,
   RaffleContextVarsInterface,
   ScriptNamesType,
 } from '../lib/types';
-
 import * as utils from '../lib/utils';
 import { compileAll } from '../lib/utils';
-import { exit } from 'process';
 
 interface TestConstantsInterface {
   FEE: bigint | undefined;
@@ -2000,8 +1999,6 @@ export class Tickets extends Array {
 export class RaffleMockChain extends MockChain {
   readonly #parties: MockChainParty[];
   #tip: BlockState;
-  readonly #base: BlockState;
-  #metadataMap: AssetMetadataMap;
 
   constructor();
   constructor(height?: number);
@@ -2021,9 +2018,7 @@ export class RaffleMockChain extends MockChain {
     super();
 
     this.#tip = state;
-    this.#base = { ...state };
     this.#parties = [];
-    this.#metadataMap = new Map();
   }
 
   /**
@@ -2099,7 +2094,7 @@ export class RaffleMockChain extends MockChain {
   ): executeAndReturnOutputsResult {
     const keys = (options?.signers || this.#parties)
       .filter((p): p is KeyedMockChainParty => p instanceof KeyedMockChainParty)
-      .map((p) => p.key);
+      .map((p) => p.key) as unknown as ErgoHDKey[];
 
     const context = mockBlockchainStateContext({
       headers: {

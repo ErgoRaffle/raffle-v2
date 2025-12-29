@@ -6,7 +6,7 @@
     "experimentalDecorators": true,
     "composite": true
   },
-  "include": ["src/", "vitest.config.ts", "package.json"],
+  "include": ["src/", "package.json"],
   "references": [
     { "path": "../../packages/extractors/tsconfig.build.json" },
     { "path": "../../packages/boxes/tsconfig.build.json" },

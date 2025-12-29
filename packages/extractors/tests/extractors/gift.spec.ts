@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest';
+import { compile } from '@fleet-sdk/compiler';
 import { Network } from '@fleet-sdk/core';
 import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
-import { compile } from '@fleet-sdk/compiler';
 import WinstonLogger from '@rosen-bridge/winston-logger/dist/WinstonLogger';
+import { describe, it, expect } from 'vitest';
 
 import { GiftExtractor } from '../../lib/extractors/gift';
 import { createDatabase } from '../utils.mock';

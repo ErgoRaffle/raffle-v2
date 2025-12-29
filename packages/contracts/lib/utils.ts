@@ -1,12 +1,12 @@
 import { compile } from '@fleet-sdk/compiler';
+import { Network } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
 import { SConstant } from '@fleet-sdk/serializer';
-import { Network } from '@fleet-sdk/core';
-import { Value } from 'sigmastate-js/main';
 import * as fs from 'fs';
 import * as path from 'node:path';
+import { Value } from 'sigmastate-js/main';
 
-import * as constants from '../constants';
+import * as constants from './constants';
 import { logger } from './logger';
 import { ContextVarsType, ScriptNamesType } from './types';
 

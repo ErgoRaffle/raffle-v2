@@ -5,6 +5,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from '@rosen-bridge/extended-typeorm';
+
 import { RaffleDetailsEntity } from './raffleDetails';
 
 @Entity('picture')
