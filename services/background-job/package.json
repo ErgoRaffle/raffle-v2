@@ -6,7 +6,7 @@
   "description": "Ergo-Raffle background jobs",
   "repository": {
     "type": "git",
-    "url": "https://git.ergopool.io/ergo/ergoraffle/raffle-v2.git"
+    "url": "https://github.com/ErgoRaffle/raffle-v2"
   },
   "main": "src/index.ts",
   "type": "module",
@@ -21,16 +21,16 @@
     "lint:check": "eslint . && npm run prettify:check",
     "test": "cross-env NODE_OPTIONS=\"--import tsx\" vitest",
     "coverage": "npm run test -- --coverage",
-    "start:dev": "tsx watch ./src/index.ts",
-    "start": "tsx ./dist/index.js",
-    "type-check": "tsc --noEmit",
     "typeorm": "cross-env NODE_OPTIONS=\"--import tsx\" typeorm",
-    "typeorm:generate:postgres": "npm run typeorm migration:generate src/database/migrations/postgres/postgres -- -p -d src/dataSource.ts",
-    "typeorm:generate:sqlite": "npm run typeorm migration:generate src/database/migrations/sqlite/sqlite -- -p -d ./src/dataSource.ts",
+    "typeorm:generate:postgres": "npm run typeorm migration:generate src/database/migrations/postgres/migration -- -p -d src/dataSource.ts",
+    "typeorm:generate:sqlite": "npm run typeorm migration:generate src/database/migrations/sqlite/migration -- -p -d ./src/dataSource.ts",
     "typeorm:migrate:postgres": "npm run typeorm migration:run -- -d ./src/dataSource.ts",
     "typeorm:migrate:sqlite": "npm run typeorm migration:run -- -d ./src/dataSource.ts",
     "config:generate:types": "cross-env NODE_OPTIONS=\"--import tsx\" npx @rosen-bridge/config generate-ts-types --schema ./config/schema.json --output ./src/types/configs.ts --root-type BackgroundJobConfig",
-    "config:generate:defaults": "cross-env NODE_OPTIONS=\"--import tsx\" npx @rosen-bridge/config generate-default --schema ./config/schema.json --output ./config/default.yml --format yaml"
+    "config:generate:defaults": "cross-env NODE_OPTIONS=\"--import tsx\" npx @rosen-bridge/config generate-default --schema ./config/schema.json --output ./config/default.yml --format yaml",
+    "start:dev": "tsx watch ./src/index.ts",
+    "start": "tsx ./src/index.ts",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@ergo-raffle/box-lookup": "0.0.0",
@@ -58,7 +58,7 @@
     "@rosen-bridge/scanner-interfaces": "^0.1.1",
     "@rosen-bridge/scanner-sync-check": "^7.0.0",
     "@rosen-bridge/service-manager": "^0.1.2",
-    "@rosen-bridge/tx-pot": "^1.1.0",
+    "@rosen-bridge/tx-pot": "^2.0.2",
     "@rosen-bridge/winston-logger": "^1.0.3",
     "@rosen-clients/ergo-node": "^1.2.3",
     "config": "^3.3.12",
@@ -71,6 +71,7 @@
     "@types/lodash-es": "^4.17.12"
   },
   "engines": {
-    "node": ">=22.18.0"
+    "node": ">=22.18.0",
+    "npm": "11.6.2"
   }
 }

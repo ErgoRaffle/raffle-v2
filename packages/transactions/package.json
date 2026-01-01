@@ -4,7 +4,7 @@
   "description": "A package to manage transactions",
   "repository": {
     "type": "git",
-    "url": "https://git.ergopool.io/ergo/ergoraffle/raffle-v2.git"
+    "url": "https://github.com/ErgoRaffle/raffle-v2"
   },
   "license": "MIT",
   "author": "Ergo Raffle Team",
@@ -32,6 +32,7 @@
     "@fleet-sdk/crypto": "^0.11.0"
   },
   "engines": {
-    "node": ">=22.18.0"
+    "node": ">=22.18.0",
+    "npm": "11.6.2"
   }
 }

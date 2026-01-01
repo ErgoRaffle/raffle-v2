@@ -9,8 +9,6 @@
     "isolatedModules": false,
     "module": "esnext",
     "moduleResolution": "bundler",
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
     "strictPropertyInitialization": false,
     "noFallthroughCasesInSwitch": true,
     "resolveJsonModule": true,

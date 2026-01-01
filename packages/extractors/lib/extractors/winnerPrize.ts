@@ -45,12 +45,14 @@ export class WinnerPrizeExtractor extends AbstractInitializableErgoExtractor<
   hasData = (box: OutputBox): boolean => {
     try {
       return (
-        box.ergoTree === this.ergoTree &&
-        box.additionalRegisters?.R4 != null &&
-        (SConstant.from(box.additionalRegisters.R4).data as bigint[]).length ===
+        box.ergoTree == this.ergoTree &&
+        box.additionalRegisters.R4 != null &&
+        (SConstant.from(box.additionalRegisters.R4).data as bigint[]).length ==
           3 &&
-        box.additionalRegisters?.R5 != null &&
-        box.additionalRegisters?.R6 != null &&
+        box.additionalRegisters.R5 != undefined &&
+        (SConstant.from(box.additionalRegisters.R5).data as number) !=
+          undefined &&
+        box.additionalRegisters.R6 != undefined &&
         !Number.isNaN(
           Number(SConstant.from(box.additionalRegisters.R6).data as bigint),
         ) &&

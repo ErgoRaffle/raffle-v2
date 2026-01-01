@@ -4,7 +4,7 @@
   "description": "Raffle v2 related contracts",
   "repository": {
     "type": "git",
-    "url": "https://git.ergopool.io/ergo/ergoraffle/raffle-v2.git"
+    "url": "https://github.com/ErgoRaffle/raffle-v2"
   },
   "license": "MIT",
   "author": "Ergo Raffle Team",
@@ -47,6 +47,7 @@
     "@fleet-sdk/mock-chain": "^0.12.0"
   },
   "engines": {
-    "node": ">=22.18.0"
+    "node": ">=22.18.0",
+    "npm": "11.6.2"
   }
 }

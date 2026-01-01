@@ -4,7 +4,7 @@
   "description": "Raffle v2 related extractors",
   "repository": {
     "type": "git",
-    "url": "https://git.ergopool.io/ergo/ergoraffle/raffle-v2.git"
+    "url": "https://github.com/ErgoRaffle/raffle-v2"
   },
   "license": "MIT",
   "author": "Ergo Raffle Team",
@@ -25,10 +25,7 @@
     "prettify:check": "prettier --check . --ignore-path ../../.gitignore",
     "release": "npm run test -- --run && npm run clean && npm run build && npm publish --access public",
     "test": "cross-env NODE_OPTIONS=\"--import tsx\" vitest",
-    "type-check": "tsc --noEmit",
-    "typeorm": "cross-env NODE_OPTIONS=\"--import tsx\" typeorm",
-    "typeorm:generate:postgres": "npm run typeorm migration:generate ./lib/migrations/postgres/postgres -- -p ",
-    "typeorm:generate:sqlite": "npm run typeorm migration:generate ./lib/migrations/sqlite/sqlite -- -p "
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@fleet-sdk/core": "^0.12.0",
@@ -49,6 +46,7 @@
     "@types/lodash-es": "^4.17.12"
   },
   "engines": {
-    "node": ">=22.18.0"
+    "node": ">=22.18.0",
+    "npm": "11.6.2"
   }
 }
