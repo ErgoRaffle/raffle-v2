@@ -9,10 +9,8 @@ export { BaseProxyGenerator } from './generators/baseProxyGenerator';
 
 // Types and interfaces
 export type {
-  BaseProxyParams,
   CreationProxyParams,
   DonationProxyParams,
   AddGiftProxyParams,
   ProxyGenerationResult,
-  ErgoScriptParams,
 } from './types';

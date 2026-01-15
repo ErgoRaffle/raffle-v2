@@ -12,6 +12,7 @@ export class ProxyFactory {
   private readonly creationGenerator: CreationProxyGenerator;
   private readonly donationGenerator: DonationProxyGenerator;
   private readonly addGiftGenerator: AddGiftProxyGenerator;
+  private static instance: ProxyFactory;
 
   constructor(networkType: Network = Network.Mainnet) {
     this.creationGenerator = new CreationProxyGenerator(networkType);
@@ -19,27 +20,39 @@ export class ProxyFactory {
     this.addGiftGenerator = new AddGiftProxyGenerator(networkType);
   }
 
+  static init = (networkType: Network = Network.Mainnet): void => {
+    if (this.instance) return;
+    this.instance = new ProxyFactory(networkType);
+  };
+
+  static getInstance = (): ProxyFactory => {
+    if (!this.instance) {
+      throw new Error(`${ProxyFactory.name} is not initialized`);
+    }
+    return this.instance;
+  };
+
   /**
    * Get the creation proxy generator instance
    * @returns CreationProxyGenerator instance
    */
-  getCreationGenerator(): CreationProxyGenerator {
+  getCreationGenerator = (): CreationProxyGenerator => {
     return this.creationGenerator;
-  }
+  };
 
   /**
    * Get the donation proxy generator instance
    * @returns DonationProxyGenerator instance
    */
-  getDonationGenerator(): DonationProxyGenerator {
+  getDonationGenerator = (): DonationProxyGenerator => {
     return this.donationGenerator;
-  }
+  };
 
   /**
    * Get the add gift proxy generator instance
    * @returns AddGiftProxyGenerator instance
    */
-  getAddGiftGenerator(): AddGiftProxyGenerator {
+  getAddGiftGenerator = (): AddGiftProxyGenerator => {
     return this.addGiftGenerator;
-  }
+  };
 }

@@ -1,17 +1,9 @@
-/**
- * Base interface for all proxy generation parameters
- */
-export interface BaseProxyParams {
-  /** The proxy address that will be generated */
-  proxyAddress?: string;
-  /** Required nano ERGs for the transaction */
-  requiredNanoErgs?: bigint;
-}
+import { TokenAmount } from '@fleet-sdk/core';
 
 /**
  * Parameters for Creation proxy generation
  */
-export interface CreationProxyParams extends BaseProxyParams {
+export interface CreationProxyParams {
   /** Raffle name */
   name: string;
   /** Raffle description */
@@ -45,7 +37,7 @@ export interface CreationProxyParams extends BaseProxyParams {
 /**
  * Parameters for Donation proxy generation
  */
-export interface DonationProxyParams extends BaseProxyParams {
+export interface DonationProxyParams {
   /** Number of tickets to buy */
   ticketCount: number;
   /** Raffle ID */
@@ -63,7 +55,7 @@ export interface DonationProxyParams extends BaseProxyParams {
 /**
  * Parameters for AddGift proxy generation
  */
-export interface AddGiftProxyParams extends BaseProxyParams {
+export interface AddGiftProxyParams {
   /** Raffle ID */
   raffleId: string;
   /** Winner index to receive the gift */
@@ -80,21 +72,8 @@ export interface AddGiftProxyParams extends BaseProxyParams {
 export interface ProxyGenerationResult {
   /** Generated proxy address */
   proxyAddress: string;
-  /** Generated ErgoTree hash */
-  ergoTree: string;
   /** Required nano ERGs */
   requiredNanoErgs: bigint;
   /** Additional required tokens (if any) */
-  requiredTokens?: Array<{
-    tokenId: string;
-    amount: bigint;
-  }>;
-}
-
-/**
- * ErgoScript contract template parameters
- */
-export interface ErgoScriptParams {
-  /** Contract-specific parameters */
-  [key: string]: any;
+  requiredTokens?: Array<TokenAmount<bigint>>;
 }
