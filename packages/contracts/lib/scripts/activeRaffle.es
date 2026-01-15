@@ -17,7 +17,7 @@
   //
   // Spent in 3 transactions:
   //   - Donation
-  //      [ActiveRaffle, UserBox] --> [ActiveRaffle, Ticket]
+  //      [ActiveRaffle, Proxy] --> [ActiveRaffle, Ticket]
   //   - Successful end
   //      [ActiveRaffle, RaffleDetail] + [(DataInput)Oracle] --> [SuccessRaffle, ServiceFee, ImplementerFee]
   //   - Failure end
@@ -40,7 +40,7 @@
 
   if(HEIGHT < deadline){
     // Donation
-    // [ActiveRaffle, UserBox] --> [ActiveRaffle, Ticket]
+    // [ActiveRaffle, Proxy] --> [ActiveRaffle, Ticket]
     val outputRaffle = OUTPUTS(0)
     val ticket = OUTPUTS(1)
     val onSaleTickets = ticket.tokens(0)._2

@@ -16,7 +16,7 @@
   //   - RaffleLicense redeem from SuccessRaffle or TicketRedeem
   //      [Service, (SuccessRaffle | TicketRedeem)] --> [Service, (ProjectFund | ServiceFee)]
   //   - New raffle creation
-  //      [Service, UserBox] --> [Service, TicketRepo, InactiveRaffle, Change]
+  //      [Service, Proxy] --> [Service, TicketRepo, InactiveRaffle, Change]
   // 
 
   val ownerNft = fromBase64("OWNER_NFT_B64")
@@ -44,7 +44,7 @@
       sigmaProp(selfReplication)
     } else if (outputService.tokens(1)._2 == SELF.tokens(1)._2 - 1L) {
       // New raffle creation
-      // [Service, UserBox] --> [Service, TicketRepo, InactiveRaffle, Change]
+      // [Service, Proxy] --> [Service, TicketRepo, InactiveRaffle, Change]
       val winnersPercentList = getVar[Coll[Long]](0).get
       val winnersPercentBytes = winnersPercentList.fold(
         Coll[Byte](), 

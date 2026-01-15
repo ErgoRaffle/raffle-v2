@@ -1,5 +1,5 @@
 {
-  "name": "proxy-factory",
+  "name": "@ergo-raffle/proxy-factory",
   "version": "0.0.0",
   "description": "Compile and generate proxy addresses for each raffle action",
   "repository": {
@@ -26,6 +26,11 @@
     "release": "npm run test -- --run && npm run clean && npm run build && npm publish --access public",
     "test": "cross-env NODE_OPTIONS=\"--import tsx\" vitest",
     "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fleet-sdk/core": "^0.12.0",
+    "@fleet-sdk/crypto": "^0.11.0",
+    "@ergo-raffle/contracts": "^0.0.0"
   },
   "engines": {
     "node": ">=22.18.0"
