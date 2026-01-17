@@ -4,6 +4,8 @@ import { TokenAmount } from '@fleet-sdk/core';
  * Parameters for Creation proxy generation
  */
 export interface CreationProxyParams {
+  /** Creation fee in nano ERGs */
+  creationFee: bigint;
   /** Raffle name */
   name: string;
   /** Raffle description */
@@ -22,8 +24,8 @@ export interface CreationProxyParams {
   creatorErgoTreeHash: string;
   /** Number of winners */
   winnerCount: number;
-  /** Winners share percentages as comma-separated string */
-  winnersPercentList: string;
+  /** Winners share percentages */
+  winnersPercentList: bigint[];
   /** Raffle deadline */
   deadline: number;
   /** Expiration height for the proxy contract */

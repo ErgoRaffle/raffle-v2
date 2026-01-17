@@ -1,8 +1,9 @@
 import { raffleInfo } from '@ergo-raffle/contracts';
 import { Network, TokenAmount } from '@fleet-sdk/core';
+import { blake2b256 } from '@fleet-sdk/crypto';
 
 import { CreationProxyParams, ProxyGenerationResult } from '../types';
-import { stringToBase64 } from '../utils';
+import { bigIntToUint8Array, hexToBase64, stringToBase64 } from '../utils';
 import { BaseProxyGenerator } from './baseProxyGenerator';
 
 /**
@@ -76,83 +77,78 @@ export class CreationProxyGenerator extends BaseProxyGenerator<CreationProxyPara
     script: string,
     params: CreationProxyParams,
   ): string => {
-    // TODO: Implement actual ErgoScript parameter substitution
-    // This is where you'll replace placeholders in the .es file with actual values
-
     let filledScript = script;
-
-    // Setup parameter replacements from raffleInfo
-    filledScript = filledScript.replace(
+    const scriptParameters: Map<string, string> = new Map();
+    scriptParameters.set(
       'INACTIVE_RAFFLE_SCRIPT_HASH',
       raffleInfo.addresses.inactiveRaffle,
     );
-    filledScript = filledScript.replace(
+    scriptParameters.set(
       'SERVICE_NFT_B64',
-      stringToBase64(raffleInfo.tokens.serviceNft),
+      hexToBase64(raffleInfo.tokens.serviceNft),
     );
-    filledScript = filledScript.replace(
+    scriptParameters.set(
       'RAFFLE_LICENSE_B64',
-      stringToBase64(raffleInfo.tokens.raffleLicense),
+      hexToBase64(raffleInfo.tokens.raffleLicense),
     );
-
-    // User parameter replacements (serialized to base64)
-    filledScript = filledScript.replace(
-      'NAME_B64',
-      stringToBase64(params.name),
-    );
-    filledScript = filledScript.replace(
-      'DESCRIPTION_B64',
-      stringToBase64(params.description),
-    );
-    filledScript = filledScript.replace(
-      'PICTURES_B64',
-      stringToBase64(params.pictures?.join(',') || ''),
-    );
-
-    filledScript = filledScript.replace(
-      'TICKET_PRICE',
-      params.ticketPrice.toString(),
-    );
-    filledScript = filledScript.replace('GOAL', params.goal.toString());
-    filledScript = filledScript.replace('DEADLINE', params.deadline.toString());
-    filledScript = filledScript.replace(
+    scriptParameters.set(
       'EXPIRATION_HEIGHT',
       params.expirationHeight.toString(),
     );
-    filledScript = filledScript.replace(
-      'WINNER_COUNT',
-      params.winnerCount.toString(),
-    );
-
-    filledScript = filledScript.replace(
+    scriptParameters.set('TICKET_PRICE', params.ticketPrice.toString());
+    scriptParameters.set('GOAL', params.goal.toString());
+    scriptParameters.set('DEADLINE', params.deadline.toString());
+    scriptParameters.set('WINNER_COUNT', params.winnerCount.toString());
+    scriptParameters.set('WINNERS_PERCENT', params.winnersPercent.toString());
+    scriptParameters.set('TX_FEE', params.txFee.toString());
+    scriptParameters.set(
       'CREATOR_ERGO_TREE_HASH_B64',
-      stringToBase64(params.creatorErgoTreeHash),
+      hexToBase64(params.creatorErgoTreeHash),
     );
-    filledScript = filledScript.replace(
+    scriptParameters.set(
       'IMPLEMENTOR_ERGO_TREE_HASH_B64',
-      stringToBase64(params.implementorErgoTreeHash),
+      hexToBase64(params.implementorErgoTreeHash),
     );
-
-    filledScript = filledScript.replace(
-      'WINNERS_PERCENT',
-      params.winnersPercent.toString(),
-    );
-    filledScript = filledScript.replace('TX_FEE', params.txFee.toString());
-    filledScript = filledScript.replace(
+    const winnersPercentListHash = Buffer.from(
+      blake2b256(
+        Buffer.concat(
+          params.winnersPercentList.map((n) => bigIntToUint8Array(n)),
+        ),
+      ),
+    ).toString('base64');
+    scriptParameters.set(
       'WINNERS_PERCENT_LIST_HASH_B64',
-      stringToBase64(params.winnersPercentList),
+      winnersPercentListHash,
     );
+    scriptParameters.set('NAME_B64', stringToBase64(params.name));
+    scriptParameters.set('DESCRIPTION_B64', stringToBase64(params.description));
+
+    // TODO: Fix pictures serialization and constraints
+    // if(params.pictures) {
+    //   const pictures = params.pictures.map((picture) => Buffer.from(stringToBase64(picture)));
+    //   const x = SColl(SColl(SByte), [
+    //     ...pictures.map((picture) => Array.from(picture)),
+    //   ]).toHex();
+    //   scriptParameters.set('PICTURES_B64', x);
+    // }
 
     if (params.collectingTokenId) {
-      filledScript = filledScript.replace(
+      scriptParameters.set(
         'COLLECTING_TOKEN_ID_B64',
-        stringToBase64(params.collectingTokenId),
+        hexToBase64(params.collectingTokenId),
       );
+      scriptParameters.set('IS_ERG_GOAL', 'false');
     } else {
-      filledScript = filledScript.replace(
+      scriptParameters.set(
         'COLLECTING_TOKEN_ID_B64',
-        stringToBase64(''),
+        hexToBase64('0'.repeat(64)),
       );
+      scriptParameters.set('IS_ERG_GOAL', 'true');
+    }
+
+    // Setup parameter replacements from scriptParameters
+    for (const [key, value] of scriptParameters) {
+      filledScript = filledScript.replace(key, value);
     }
 
     return filledScript;
@@ -162,9 +158,17 @@ export class CreationProxyGenerator extends BaseProxyGenerator<CreationProxyPara
    * Calculate required nano ERGs for creation transaction
    * @returns Required nano ERGs
    */
-  protected calculateRequiredNanoErgs = (): bigint => {
-    // TODO: Implement actual fee calculation
-    return BigInt(1_000_000_000);
+  protected calculateRequiredNanoErgs = (
+    params: CreationProxyParams,
+  ): bigint => {
+    const requiredNanoErgsWithWinnerCountFee =
+      params.txFee * BigInt(params.winnerCount) * BigInt(5) +
+      params.txFee * BigInt(10);
+    const requiredNanoErgsWithCreationFee =
+      params.creationFee + params.txFee * BigInt(2);
+    return requiredNanoErgsWithWinnerCountFee > requiredNanoErgsWithCreationFee
+      ? requiredNanoErgsWithWinnerCountFee
+      : requiredNanoErgsWithCreationFee;
   };
 
   /**

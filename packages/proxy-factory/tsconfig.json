@@ -4,5 +4,9 @@
     "outDir": "./dist"
   },
   "include": ["tests", "lib"],
-  "references": [{ "path": "../contracts" }]
+  "references": [
+    { "path": "../contracts" },
+    { "path": "../boxes" },
+    { "path": "../transactions" }
+  ]
 }

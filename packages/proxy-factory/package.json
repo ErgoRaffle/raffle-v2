@@ -21,8 +21,8 @@
     "coverage": "npm run test -- --coverage",
     "lint": "eslint --fix . && npm run prettify",
     "lint:check": "eslint . && npm run prettify:check",
-    "prettify": "prettier --write . --ignore-path ../../.gitignore",
-    "prettify:check": "prettier --check . --ignore-path ../../.gitignore",
+    "prettify": "prettier --write . --ignore-path ../../.gitignore --ignore-path .prettierignore",
+    "prettify:check": "prettier --check . --ignore-path ../../.gitignore --ignore-path .prettierignore",
     "release": "npm run test -- --run && npm run clean && npm run build && npm publish --access public",
     "test": "cross-env NODE_OPTIONS=\"--import tsx\" vitest",
     "type-check": "tsc --noEmit"
@@ -30,9 +30,17 @@
   "dependencies": {
     "@fleet-sdk/core": "^0.12.0",
     "@fleet-sdk/crypto": "^0.11.0",
+    "@fleet-sdk/compiler": "^0.12.0",
     "@ergo-raffle/contracts": "^0.0.0"
   },
+  "devDependencies": {
+    "@ergo-raffle/transactions": "^0.0.0",
+    "@fleet-sdk/common": "^0.10.0",
+    "@fleet-sdk/mock-chain": "^0.12.0",
+    "sigmastate-js": "^0.4.6"
+  },
   "engines": {
-    "node": ">=22.18.0"
+    "node": ">=22.18.0",
+    "npm": "11.6.2"
   }
 }
