@@ -1,5 +1,9 @@
 import { Network, SignedTransaction } from '@fleet-sdk/common';
-import type { ErgoUnsignedTransaction } from '@fleet-sdk/core';
+import type {
+  Box,
+  ErgoUnsignedTransaction,
+  OutputBuilder,
+} from '@fleet-sdk/core';
 import { bigintBE, hex } from '@fleet-sdk/crypto';
 import {
   KeyedMockChainParty,
@@ -7,6 +11,7 @@ import {
   BlockState,
   mockBlockchainStateContext,
   BLOCKCHAIN_PARAMETERS,
+  mockUTxO,
 } from '@fleet-sdk/mock-chain';
 import { ProverBuilder$ } from 'sigmastate-js/main';
 
@@ -89,3 +94,23 @@ export class CustomMockChain extends MockChain {
     return prover.signReduced(reducedTx, undefined);
   };
 }
+
+/**
+ * Mock a utxo from an output builder
+ * @param box - output builder
+ * @returns mocked utxo
+ */
+export const createMockUtxo = (box: OutputBuilder): Box<bigint> => {
+  return mockUTxO({
+    ergoTree: box.ergoTree,
+    value: box.value,
+    creationHeight: box.creationHeight,
+    assets: box.assets
+      .toArray()
+      .map((asset: { tokenId: string; amount: bigint }) => ({
+        tokenId: asset.tokenId,
+        amount: BigInt(asset.amount.toString()),
+      })),
+    additionalRegisters: box.additionalRegisters,
+  });
+};

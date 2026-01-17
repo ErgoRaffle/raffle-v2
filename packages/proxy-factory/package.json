@@ -35,6 +35,7 @@
   },
   "devDependencies": {
     "@ergo-raffle/transactions": "^0.0.0",
+    "@ergo-raffle/boxes": "^0.0.0",
     "@fleet-sdk/common": "^0.10.0",
     "@fleet-sdk/mock-chain": "^0.12.0",
     "sigmastate-js": "^0.4.6"

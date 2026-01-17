@@ -194,8 +194,6 @@ export class ServiceBuilder {
       throw new Error('Implementer fee percent not set');
     if (!this.creationFee) throw new Error('Creation fee not set');
     if (!this.txFee) throw new Error('Transaction fee not set');
-    if (!this.serviceNftId) throw new Error('Service NFT not set');
-    if (!this.licensingTokenId) throw new Error('License token not set');
     if (!this.licensingTokenAmount)
       throw new Error('License token amount not set');
   };
@@ -211,8 +209,14 @@ export class ServiceBuilder {
 
     return new OutputBuilder(this.value!, this.ergoTree!, this.creationHeight!)
       .addTokens([
-        { tokenId: this.serviceNftId!, amount: this.serviceNftAmount },
-        { tokenId: this.licensingTokenId!, amount: this.licensingTokenAmount! },
+        {
+          tokenId: this.serviceNftId || raffleInfo.tokens.serviceNft,
+          amount: this.serviceNftAmount || 1n,
+        },
+        {
+          tokenId: this.licensingTokenId || raffleInfo.tokens.raffleLicense,
+          amount: this.licensingTokenAmount!,
+        },
       ])
       .setAdditionalRegisters({
         R4: SColl(SLong, [
