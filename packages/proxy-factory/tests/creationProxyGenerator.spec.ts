@@ -257,6 +257,7 @@ describe('CreationProxy', () => {
         })),
       );
     });
+
     /**
      * @target creation proxy should refund to user address successfully
      * @scenario
@@ -309,6 +310,95 @@ describe('CreationProxy', () => {
         .from([proxyBox])
         .to([creatorRefundBox])
         .payFee(proxyParams.txFee)
+        .build();
+
+      // Execute transaction and expect it to throw an error
+      expect(() => {
+        chain.executeTx(transaction, [creator]);
+      }).toThrow();
+    });
+
+    /**
+     * @target creation proxy should fail to refund with incorrect recipient address
+     * @scenario
+     * - set chain height to >= expirationHeight
+     * - create transaction with only proxy box as input
+     * - create one output box to wrong address (implementer instead of creator) with all tokens
+     * - execute transaction
+     * - check execution throws error
+     * @expected
+     * - transaction execution should throw an error
+     */
+    it('should fail to refund proxy with incorrect recipient address', () => {
+      // Set chain height to >= expirationHeight to trigger refund scenario
+      chain.setTip(proxyParams.expirationHeight);
+
+      // Create refund box with wrong recipient address (implementer instead of creator)
+      const wrongRecipientRefundBox = new OutputBuilder(
+        BigInt(proxyBox.value) - proxyParams.txFee,
+        implementer.address.toString(), // Wrong recipient address
+      ).addTokens(
+        proxyBox.assets.map((asset) => ({
+          tokenId: asset.tokenId,
+          amount: BigInt(asset.amount),
+        })),
+      );
+
+      // [Proxy] --> [WrongRecipientRefund]
+      const transaction = new TransactionBuilder(chain.height)
+        .from([proxyBox])
+        .to([wrongRecipientRefundBox])
+        .payFee(proxyParams.txFee)
+        .build();
+
+      // Execute transaction and expect it to throw an error
+      expect(() => {
+        chain.executeTx(transaction, [creator]);
+      }).toThrow();
+    });
+
+    /**
+     * @target creation proxy should fail to refund with burnt tokens
+     * @scenario
+     * - set chain height to >= expirationHeight
+     * - create transaction with only proxy box as input
+     * - create one output box to creator address but with missing tokens (burnt)
+     * - execute transaction
+     * - check execution throws error
+     * @expected
+     * - transaction execution should throw an error
+     */
+    it('should fail to refund proxy with burnt tokens', () => {
+      // Set chain height to >= expirationHeight to trigger refund scenario
+      chain.setTip(proxyParams.expirationHeight);
+
+      // Create creation proxy input box including collecting token
+      proxyParams.collectingTokenId = '0'.repeat(64);
+      proxyResult = new ProxyFactory(Network.Mainnet)
+        .getCreationGenerator()
+        .generateCreationProxy(proxyParams);
+
+      proxyBox = new ErgoUnsignedInput(
+        mockUTxO({
+          ergoTree: ErgoAddress.fromBase58(proxyResult.proxyAddress).ergoTree,
+          value: 100000000000n,
+          creationHeight: 5,
+          assets: proxyResult.requiredTokens || [],
+        }),
+      );
+
+      // Create refund box with missing tokens (simulating burnt tokens)
+      const refundBoxWithBurntTokens = new OutputBuilder(
+        BigInt(proxyBox.value) - proxyParams.txFee,
+        creator.address.toString(),
+      );
+
+      // [Proxy] --> [CreatorRefundWithBurntTokens]
+      const transaction = new TransactionBuilder(chain.height)
+        .from([proxyBox])
+        .to([refundBoxWithBurntTokens])
+        .payFee(proxyParams.txFee)
+        .burnTokens(proxyBox.assets[0])
         .build();
 
       // Execute transaction and expect it to throw an error
