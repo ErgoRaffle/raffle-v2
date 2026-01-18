@@ -1,5 +1,5 @@
-import { ActiveRaffleBuilder } from '@ergo-raffle/boxes';
-import { DonateTxBuilder } from '@ergo-raffle/transactions';
+import { WinnerBuilder } from '@ergo-raffle/boxes';
+import { AddGiftTxBuilder } from '@ergo-raffle/transactions';
 import { Amount, Network } from '@fleet-sdk/common';
 import {
   ErgoUnsignedInput,
@@ -10,23 +10,24 @@ import {
 } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
 import { KeyedMockChainParty, mockUTxO } from '@fleet-sdk/mock-chain';
+import { Buffer } from 'buffer';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 import { ProxyFactory } from '../lib/proxyFactory';
-import { DonationProxyParams, ProxyGenerationResult } from '../lib/types';
+import { AddGiftProxyParams, ProxyGenerationResult } from '../lib/types';
 import { createMockUtxo, CustomMockChain } from './testUtils';
 
-describe('DonationProxy', () => {
+describe('AddGiftProxy', () => {
   let chain: CustomMockChain;
-  let donator: KeyedMockChainParty;
+  let giftGiver: KeyedMockChainParty;
   let creator: KeyedMockChainParty;
-  let implementer: KeyedMockChainParty;
   let proxyBox: Box<Amount>;
-  let activeRaffleBuilder: ActiveRaffleBuilder;
-  let activeRaffleBox: Box<Amount>;
-  let proxyParams: DonationProxyParams;
+  let winnerBox: Box<Amount>;
+  let winnerBuilder: WinnerBuilder;
+  let proxyParams: AddGiftProxyParams;
   let proxyResult: ProxyGenerationResult;
   let raffleId: string;
+  let winnerIndex: number;
 
   beforeAll(() => {
     // Set up mock chain
@@ -34,22 +35,21 @@ describe('DonationProxy', () => {
     chain.setTip(100);
 
     // Create parties
-    donator = chain.newParty('donator');
+    giftGiver = chain.newParty('giftGiver');
     creator = chain.newParty('creator');
-    implementer = chain.newParty('implementer');
 
-    // Generate donation proxy contract using ProxyFactory
+    // Generate add gift proxy contract using ProxyFactory
     const proxyFactory = new ProxyFactory(Network.Mainnet);
-    const proxyGenerator = proxyFactory.getDonationGenerator();
+    const proxyGenerator = proxyFactory.getAddGiftGenerator();
 
     raffleId = '1'.repeat(64); // Mock raffle ID
+    winnerIndex = 1;
 
     proxyParams = {
-      ticketCount: 10,
-      ticketPrice: 100n,
       raffleId: raffleId,
-      donatorErgoTreeHash: Buffer.from(
-        blake2b256(Buffer.from(donator.ergoTree, 'hex')),
+      winnerIndex: winnerIndex,
+      giftGiverErgoTreeHash: Buffer.from(
+        blake2b256(Buffer.from(giftGiver.ergoTree, 'hex')),
       ).toString('hex'),
       raffleDeadline: chain.height + 1000,
       expirationHeight: chain.height + 100,
@@ -58,7 +58,7 @@ describe('DonationProxy', () => {
 
     proxyResult = proxyGenerator.generateProxy(proxyParams);
 
-    // Create donation proxy input box
+    // Create add gift proxy input box
     proxyBox = new ErgoUnsignedInput(
       mockUTxO({
         ergoTree: ErgoAddress.fromBase58(proxyResult.proxyAddress).ergoTree,
@@ -68,56 +68,49 @@ describe('DonationProxy', () => {
       }),
     );
 
-    // Create active raffle box
-    activeRaffleBuilder = new ActiveRaffleBuilder()
-      .setValue(1_000_000_000n)
+    // Create winner box
+    winnerBuilder = new WinnerBuilder()
+      .setValue(4_000_000n)
       .setCreationHeight(4)
-      .setWinnersPercent(200n)
-      .setServiceFeePercent(100n)
-      .setImplementerFeePercent(100n)
-      .setTicketPrice(proxyParams.ticketPrice)
-      .setGoal(1000n)
+      .setRewardPercent(1000n)
       .setDeadline(BigInt(proxyParams.raffleDeadline))
       .setTxFee(proxyParams.txFee)
-      .setWinnersCount(1)
-      .setTotalSoldTickets(0n)
-      .setServiceAddress(creator.address.toString())
-      .setImplementerAddress(implementer.address.toString())
-      .setProjectAddress(creator.address.toString())
-      .setTicketId(raffleId)
-      .setTicketCount(1_000_000_000n);
+      .setWinnerIndex(winnerIndex)
+      .setGiftCount(0n)
+      .setTicketToken(raffleId)
+      .setGiftToken('2'.repeat(64), 100n);
 
-    activeRaffleBox = createMockUtxo(activeRaffleBuilder.build());
+    winnerBox = createMockUtxo(winnerBuilder.build());
   });
 
-  describe('donation transaction', () => {
-    let donateTxBuilder: DonateTxBuilder;
+  describe('gift addition transaction', () => {
+    let addGiftTxBuilder: AddGiftTxBuilder;
 
     beforeEach(() => {
-      // Create donation transaction builder with all correct parameters
-      donateTxBuilder = new DonateTxBuilder()
-        .setActiveRaffle(activeRaffleBox)
-        .setDonatorUtxos([proxyBox])
-        .setDonatorAddress(donator.address.toString())
-        .setDonationTicketCount(BigInt(proxyParams.ticketCount))
+      // Create gift addition transaction builder with all correct parameters
+      addGiftTxBuilder = new AddGiftTxBuilder()
+        .setWinner(winnerBox)
+        .setGiftGiverUtxos([proxyBox])
+        .setGiftGiverAddress(giftGiver.address.toString())
+        .setGiftValue(BigInt(proxyBox.value) - proxyParams.txFee)
         .setChainHeight(chain.height)
         .setTxFee(proxyParams.txFee);
     });
 
     /**
-     * @target donation proxy should create an erg-goal donation successfully
+     * @target add gift proxy should create a gift successfully
      * @scenario
-     * - create active raffle input box and donation proxy input box
-     * - create two output boxes: updated active raffle, ticket
+     * - create winner input box and add gift proxy input box
+     * - create two output boxes: updated winner, gift
      * - execute transaction
      * - check execution done successfully
      * @expected
      * - transaction must be done successfully
      */
-    it('should create an erg-goal donation via donation proxy successfully', () => {
+    it('should create a gift via add gift proxy successfully', () => {
       // Execute transaction
-      // [ActiveRaffle, Proxy, DonatorUtxo] --> [ActiveRaffle, Ticket, Change]
-      const transaction = donateTxBuilder.build();
+      // [Winner, Proxy] --> [Winner, Gift]
+      const transaction = addGiftTxBuilder.build();
 
       const res = chain.executeTx(transaction, []);
 
@@ -126,49 +119,46 @@ describe('DonationProxy', () => {
     });
 
     /**
-     * @target donation proxy should create a token-goal donation successfully
+     * @target add gift proxy should create a gift with tokens successfully
      * @scenario
-     * - set collecting token id in proxy params
-     * - generate donation proxy containing collecting token
-     * - update active raffle to have collecting token
-     * - update donation transaction builder to use updated active raffle and proxy box
+     * - create winner input box and add gift proxy input box
+     * - add gift tokens to the transaction builder
+     * - create two output boxes: updated winner, gift
      * - execute transaction
      * - check execution done successfully
+     * @expected
+     * - transaction must be done successfully
      */
-    it('should create a token-goal donation via donation proxy successfully', () => {
-      const collectingTokenId = '0'.repeat(64);
-      const proxyResult = new ProxyFactory(Network.Mainnet)
-        .getDonationGenerator()
-        .generateProxy({
-          ...proxyParams,
-          requiredTokenId: collectingTokenId,
-        });
-
-      // Create donation proxy input box including collecting token
+    it('should create a gift with tokens via add gift proxy successfully', () => {
+      const giftTokenId = '4'.repeat(64);
+      const giftTokenAmount = 10n;
       const proxyBox = new ErgoUnsignedInput(
         mockUTxO({
           ergoTree: ErgoAddress.fromBase58(proxyResult.proxyAddress).ergoTree,
           value: proxyResult.requiredNanoErgs,
           creationHeight: 5,
-          assets: proxyResult.requiredTokens,
+          assets: [
+            {
+              tokenId: giftTokenId,
+              amount: giftTokenAmount,
+            },
+          ],
         }),
       );
 
-      // Change active raffle to have collecting token
-      activeRaffleBuilder = activeRaffleBuilder
-        .setCollectingTokenId(collectingTokenId)
-        .setCollectingTokenCount(1n);
-
-      const activeRaffleBox = createMockUtxo(activeRaffleBuilder.build());
-
-      // Update builder with new boxes
-      donateTxBuilder
-        .setActiveRaffle(activeRaffleBox)
-        .setDonatorUtxos([proxyBox]);
+      // Add gift tokens to the builder
+      addGiftTxBuilder
+        .setGiftTokens([
+          {
+            tokenId: giftTokenId,
+            amount: giftTokenAmount,
+          },
+        ])
+        .setGiftGiverUtxos([proxyBox]);
 
       // Execute transaction
-      // [ActiveRaffle, Proxy, DonatorUtxo] --> [ActiveRaffle, Ticket, Change]
-      const transaction = donateTxBuilder.build();
+      // [Winner, Proxy] --> [Winner, Gift, Change]
+      const transaction = addGiftTxBuilder.build();
       const res = chain.executeTx(transaction, []);
 
       // Check execution result
@@ -176,7 +166,7 @@ describe('DonationProxy', () => {
     });
 
     /**
-     * @target donation proxy should fail with incorrect parameters
+     * @target add gift proxy should fail with incorrect parameters
      * @scenario
      * - for each parameter, modify it to an incorrect value
      * - build and execute transaction
@@ -185,34 +175,39 @@ describe('DonationProxy', () => {
      * - transaction execution should throw an error for each incorrect parameter
      */
     const testCases: Array<
-      [string, (builder: DonateTxBuilder) => DonateTxBuilder]
+      [string, (builder: AddGiftTxBuilder) => AddGiftTxBuilder]
     > = [
       [
-        'ticketCount',
-        (builder) =>
-          builder.setDonationTicketCount(BigInt(proxyParams.ticketCount) - 1n),
-      ],
-      [
-        'donatorAddress',
-        (builder) => builder.setDonatorAddress(creator.address.toString()), // Wrong donator
-      ],
-      [
-        'raffleId',
+        'winnerIndex',
         (builder) => {
-          return builder.setActiveRaffle(
+          return builder.setWinner(
             createMockUtxo(
-              activeRaffleBuilder.setTicketId('2'.repeat(64)).build(),
+              winnerBuilder.setWinnerIndex(winnerIndex + 1).build(),
             ),
           );
         },
       ],
+      [
+        'raffleId',
+        (builder) => {
+          return builder.setWinner(
+            createMockUtxo(
+              winnerBuilder.setTicketToken('2'.repeat(64)).build(),
+            ),
+          );
+        },
+      ],
+      [
+        'giftGiverAddress',
+        (builder) => builder.setGiftGiverAddress(creator.address.toString()), // Wrong gift giver
+      ],
     ];
 
     it.each(testCases)(
-      'should fail donation transaction with incorrect %s',
+      'should fail gift addition transaction with incorrect %s',
       (_, modifier) => {
         // apply modifier on builder
-        const builder = donateTxBuilder;
+        const builder = addGiftTxBuilder;
         modifier(builder);
 
         // Each incorrect parameter should cause transaction execution to fail
@@ -224,13 +219,13 @@ describe('DonationProxy', () => {
   });
 
   describe('refund transaction', () => {
-    let donatorRefundBox: OutputBuilder;
+    let giftGiverRefundBox: OutputBuilder;
 
     beforeEach(() => {
-      // create donator refund box with all tokens from proxy box
-      donatorRefundBox = new OutputBuilder(
+      // create gift giver refund box with all tokens from proxy box
+      giftGiverRefundBox = new OutputBuilder(
         BigInt(proxyBox.value) - proxyParams.txFee,
-        donator.address.toString(),
+        giftGiver.address.toString(),
       ).addTokens(
         proxyBox.assets.map((asset) => ({
           tokenId: asset.tokenId,
@@ -240,41 +235,41 @@ describe('DonationProxy', () => {
     });
 
     /**
-     * @target donation proxy should refund to donator address successfully
+     * @target add gift proxy should refund to gift giver address successfully
      * @scenario
      * - set chain height to >= expirationHeight
      * - create transaction with only proxy box as input
-     * - create one output box to donator address with all tokens
+     * - create one output box to gift giver address with all tokens
      * - execute transaction
      * - check execution done successfully
      * @expected
      * - transaction must be done successfully
      */
-    it('should refund proxy to donator address successfully', () => {
+    it('should refund proxy to gift giver address successfully', () => {
       // Set chain height to >= expirationHeight to trigger refund scenario
       // expirationHeight is chain.height + 100 = 200
       chain.setTip(proxyParams.expirationHeight);
 
-      // [Proxy] --> [DonatorRefund]
+      // [Proxy] --> [GiftGiverRefund]
       const transaction = new TransactionBuilder(chain.height)
         .from([proxyBox])
-        .to([donatorRefundBox])
+        .to([giftGiverRefundBox])
         .payFee(proxyParams.txFee)
         .build();
 
       // Execute transaction
-      const res = chain.executeTx(transaction, [donator]);
+      const res = chain.executeTx(transaction, [giftGiver]);
 
       // Check execution result
       expect(res).toBeTruthy();
     });
 
     /**
-     * @target donation proxy should fail to refund when deadline has not passed
+     * @target add gift proxy should fail to refund when deadline has not passed
      * @scenario
      * - set chain height to < expirationHeight and < deadline
      * - create transaction with only proxy box as input
-     * - create one output box to donator address with all tokens
+     * - create one output box to gift giver address with all tokens
      * - execute transaction
      * - check execution throws error
      * @expected
@@ -286,25 +281,25 @@ describe('DonationProxy', () => {
       // Set to 150 which is < 200 and < 1100
       chain.setTip(150);
 
-      // [Proxy] --> [DonatorRefund]
+      // [Proxy] --> [GiftGiverRefund]
       const transaction = new TransactionBuilder(chain.height)
         .from([proxyBox])
-        .to([donatorRefundBox])
+        .to([giftGiverRefundBox])
         .payFee(proxyParams.txFee)
         .build();
 
       // Execute transaction and expect it to throw an error
       expect(() => {
-        chain.executeTx(transaction, [donator]);
+        chain.executeTx(transaction, [giftGiver]);
       }).toThrow();
     });
 
     /**
-     * @target donation proxy should fail to refund with incorrect recipient address
+     * @target add gift proxy should fail to refund with incorrect recipient address
      * @scenario
      * - set chain height to >= expirationHeight
      * - create transaction with only proxy box as input
-     * - create one output box to wrong address (creator instead of donator) with all tokens
+     * - create one output box to wrong address (creator instead of gift giver) with all tokens
      * - execute transaction
      * - check execution throws error
      * @expected
@@ -314,7 +309,7 @@ describe('DonationProxy', () => {
       // Set chain height to >= expirationHeight to trigger refund scenario
       chain.setTip(proxyParams.expirationHeight);
 
-      // Create refund box with wrong recipient address (creator instead of donator)
+      // Create refund box with wrong recipient address (creator instead of gift giver)
       const wrongRecipientRefundBox = new OutputBuilder(
         BigInt(proxyBox.value) - proxyParams.txFee,
         creator.address.toString(), // Wrong recipient address
@@ -334,16 +329,16 @@ describe('DonationProxy', () => {
 
       // Execute transaction and expect it to throw an error
       expect(() => {
-        chain.executeTx(transaction, [donator]);
+        chain.executeTx(transaction, [giftGiver]);
       }).toThrow();
     });
 
     /**
-     * @target donation proxy should fail to refund with burnt tokens
+     * @target add gift proxy should fail to refund with burnt tokens
      * @scenario
      * - set chain height to >= expirationHeight
      * - create transaction with only proxy box as input
-     * - create one output box to donator address but with missing tokens (burnt)
+     * - create one output box to gift giver address but with missing tokens (burnt)
      * - execute transaction
      * - check execution throws error
      * @expected
@@ -353,28 +348,29 @@ describe('DonationProxy', () => {
       // Set chain height to >= expirationHeight to trigger refund scenario
       chain.setTip(proxyParams.expirationHeight);
 
-      // Create donation proxy input box including collecting token
-      proxyParams.requiredTokenId = '0'.repeat(64);
-      proxyResult = new ProxyFactory(Network.Mainnet)
-        .getDonationGenerator()
-        .generateProxy(proxyParams);
-
+      // Create add gift proxy input box including gift token
+      const giftTokenId = '0'.repeat(64);
       proxyBox = new ErgoUnsignedInput(
         mockUTxO({
           ergoTree: ErgoAddress.fromBase58(proxyResult.proxyAddress).ergoTree,
           value: 100000000000n,
           creationHeight: 5,
-          assets: proxyResult.requiredTokens,
+          assets: [
+            {
+              tokenId: giftTokenId,
+              amount: 10n,
+            },
+          ],
         }),
       );
 
       // Create refund box with missing tokens (simulating burnt tokens)
       const refundBoxWithBurntTokens = new OutputBuilder(
         BigInt(proxyBox.value) - proxyParams.txFee,
-        donator.address.toString(),
+        giftGiver.address.toString(),
       );
 
-      // [Proxy] --> [DonatorRefundWithBurntTokens]
+      // [Proxy] --> [GiftGiverRefundWithBurntTokens]
       const transaction = new TransactionBuilder(chain.height)
         .from([proxyBox])
         .to([refundBoxWithBurntTokens])
@@ -384,7 +380,7 @@ describe('DonationProxy', () => {
 
       // Execute transaction and expect it to throw an error
       expect(() => {
-        chain.executeTx(transaction, [donator]);
+        chain.executeTx(transaction, [giftGiver]);
       }).toThrow();
     });
   });

@@ -16,7 +16,7 @@
   //   - Winner box gift token receipt
   //      [Winner, GiftTokenRepo] --> [Winner, GiftTokenRepo(optional)]
   //   - New gift creation
-  //      [Winner, UserBox] --> [Winner, Gift]
+  //      [Winner, Proxy] --> [Winner, Gift]
   //   - Winner prize creation (for successfully ended raffle) 
   //      [SuccessRaffle, Winner] --> [SuccessRaffle, WinnerPrize]
   //   - Gift return (for failed raffle) 

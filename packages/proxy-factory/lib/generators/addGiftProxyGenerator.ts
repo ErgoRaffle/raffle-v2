@@ -1,7 +1,8 @@
+import { raffleInfo } from '@ergo-raffle/contracts';
 import { Network, TokenAmount } from '@fleet-sdk/core';
 
 import { AddGiftProxyParams, ProxyGenerationResult } from '../types';
-import { stringToBase64 } from '../utils';
+import { hashAndSerializeToBase64, hexToBase64 } from '../utils';
 import { BaseProxyGenerator } from './baseProxyGenerator';
 
 /**
@@ -9,6 +10,8 @@ import { BaseProxyGenerator } from './baseProxyGenerator';
  * Handles the generation of proxy contracts for adding gifts to raffle winners
  */
 export class AddGiftProxyGenerator extends BaseProxyGenerator<AddGiftProxyParams> {
+  protected scriptName = 'addGiftProxy';
+
   constructor(networkType: Network = Network.Mainnet) {
     super(networkType);
   }
@@ -20,17 +23,15 @@ export class AddGiftProxyGenerator extends BaseProxyGenerator<AddGiftProxyParams
   generateAddGiftProxy = (
     params: AddGiftProxyParams,
   ): ProxyGenerationResult => {
-    this.validateAddGiftParams(params);
-
-    const contractScript = this.loadScript('addGiftProxy');
-    return this.generateProxyFromScript(contractScript, params);
+    return this.generateProxy(params);
   };
 
   /**
-   * Validate add gift parameters
+   * Validate add gift-specific parameters
+   * Base parameters (txFee, expirationHeight, raffleDeadline) are validated in base class
    * @param params - Parameters to validate
    */
-  private validateAddGiftParams = (params: AddGiftProxyParams): void => {
+  protected validateSpecificParams = (params: AddGiftProxyParams): void => {
     if (!params.raffleId || params.raffleId.trim().length === 0) {
       throw new Error('Raffle ID is required');
     }
@@ -40,8 +41,8 @@ export class AddGiftProxyGenerator extends BaseProxyGenerator<AddGiftProxyParams
     }
 
     if (
-      !params.giftGiverAddress ||
-      params.giftGiverAddress.trim().length === 0
+      !params.giftGiverErgoTreeHash ||
+      params.giftGiverErgoTreeHash.trim().length === 0
     ) {
       throw new Error('Gift giver address is required');
     }
@@ -57,26 +58,29 @@ export class AddGiftProxyGenerator extends BaseProxyGenerator<AddGiftProxyParams
     script: string,
     params: AddGiftProxyParams,
   ): string => {
-    // TODO: Implement actual ErgoScript parameter substitution
-    // This is where you'll replace placeholders in the .es file with actual values
+    const scriptParameters: Map<string, string> = new Map();
+    scriptParameters.set('RAFFLE_ID_B64', hexToBase64(params.raffleId));
+    scriptParameters.set('DEADLINE', params.raffleDeadline.toString());
+    scriptParameters.set('WINNER_INDEX', params.winnerIndex.toString());
+    scriptParameters.set(
+      'GIFT_GIVER_ERGO_TREE_HASH_B64',
+      hexToBase64(params.giftGiverErgoTreeHash),
+    );
+    scriptParameters.set(
+      'GIFT_SCRIPT_HASH_B64',
+      hashAndSerializeToBase64(raffleInfo.addresses.gift),
+    );
+    scriptParameters.set(
+      'EXPIRATION_HEIGHT',
+      params.expirationHeight.toString(),
+    );
+    scriptParameters.set('TX_FEE', params.txFee.toString());
 
+    // Setup parameter replacements from scriptParameters
     let filledScript = script;
-
-    // Parameter replacements
-    filledScript = filledScript.replace(
-      'RAFFLE_ID_B64',
-      stringToBase64(params.raffleId),
-    );
-    filledScript = filledScript.replace('DEADLINE', params.deadline.toString());
-    filledScript = filledScript.replace(
-      'WINNER_INDEX',
-      params.winnerIndex.toString(),
-    );
-    filledScript = filledScript.replace(
-      'GIFT_GIVER_ADDRESS_B64',
-      stringToBase64(params.giftGiverAddress),
-    );
-
+    for (const [key, value] of scriptParameters) {
+      filledScript = filledScript.replace(key, value);
+    }
     return filledScript;
   };
 
@@ -84,14 +88,16 @@ export class AddGiftProxyGenerator extends BaseProxyGenerator<AddGiftProxyParams
    * Calculate required nano ERGs for add gift transaction
    * @returns Required nano ERGs
    */
-  protected calculateRequiredNanoErgs = (): bigint => {
-    // Add gift requires 3x the transaction fee
-    const baseTxFee = BigInt(1_000_000); // 0.001 ERG base transaction fee
-    return baseTxFee * BigInt(3);
+  protected calculateRequiredNanoErgs = (
+    params: AddGiftProxyParams,
+  ): bigint => {
+    // Add gift requires 4x the transaction fee
+    return params.txFee * 4n;
   };
 
   /**
    * Calculate required tokens for add gift transaction
+   * @param params - Contract parameters
    * @returns Required tokens array
    */
   protected calculateRequiredTokens = (): Array<TokenAmount<bigint>> => {

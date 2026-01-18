@@ -27,7 +27,7 @@
   // val pictures = fromBase64("PICTURES_B64")
   val ticketPrice = TICKET_PRICE
   val goal = GOAL
-  val deadline = DEADLINE
+  val raffleDeadline = DEADLINE
   val winnerCount = WINNER_COUNT
   val winnersPercent = WINNERS_PERCENT
   val txFee = TX_FEE
@@ -37,7 +37,7 @@
   val isErgGoal = IS_ERG_GOAL
   val collectingTokenId = fromBase64("COLLECTING_TOKEN_ID_B64") // Optional
 
-  if(HEIGHT < expirationHeight && HEIGHT < deadline) {  
+  if(HEIGHT < expirationHeight && HEIGHT < raffleDeadline) {  
     // New raffle creation
     // [Service, Proxy] --> [Service, TicketRepo, InactiveRaffle, Change]
     val service = INPUTS(0)
@@ -57,7 +57,7 @@
       inactiveRaffle.R4[Coll[Long]].get(0) == winnersPercent,
       inactiveRaffle.R4[Coll[Long]].get(3) == ticketPrice,
       inactiveRaffle.R4[Coll[Long]].get(4) == goal,
-      inactiveRaffle.R4[Coll[Long]].get(5) == deadline,
+      inactiveRaffle.R4[Coll[Long]].get(5) == raffleDeadline,
       inactiveRaffle.R5[Coll[Coll[Byte]]].get(1) == implementorErgoTreeHash,
       inactiveRaffle.R5[Coll[Coll[Byte]]].get(2) == creatorErgoTreeHash,
       inactiveRaffle.R6[Coll[Coll[Byte]]].get(0) == name,

@@ -64,7 +64,7 @@ export interface AddGiftProxyParams extends BaseProxyParams {
   /** Winner index to receive the gift */
   winnerIndex: number;
   /** Gift giver address */
-  giftGiverAddress: string;
+  giftGiverErgoTreeHash: string;
 }
 
 /**
