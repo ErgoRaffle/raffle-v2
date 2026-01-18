@@ -2,7 +2,7 @@ import { raffleInfo } from '@ergo-raffle/contracts';
 import { Network, TokenAmount } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
 
-import { CreationProxyParams, ProxyGenerationResult } from '../types';
+import { CreationProxyParams } from '../types';
 import { bigIntToUint8Array, hexToBase64, stringToBase64 } from '../utils';
 import { BaseProxyGenerator } from './baseProxyGenerator';
 
@@ -11,29 +11,17 @@ import { BaseProxyGenerator } from './baseProxyGenerator';
  * Handles the generation of proxy contracts for raffle creation requests
  */
 export class CreationProxyGenerator extends BaseProxyGenerator<CreationProxyParams> {
+  protected scriptName = 'creationProxy';
+
   constructor(networkType: Network = Network.Mainnet) {
     super(networkType);
   }
 
   /**
-   * Generate proxy for raffle creation
-   * @param params - Creation parameters from API
-   * @returns ProxyGenerationResult with generated address and requirements
-   */
-  generateCreationProxy = (
-    params: CreationProxyParams,
-  ): ProxyGenerationResult => {
-    this.validateCreationParams(params);
-
-    const contractScript = this.loadScript('creationProxy');
-    return this.generateProxyFromScript(contractScript, params);
-  };
-
-  /**
-   * Validate creation parameters
+   * Validate creation-specific parameters
    * @param params - Parameters to validate
    */
-  private validateCreationParams = (params: CreationProxyParams): void => {
+  protected validateSpecificParams = (params: CreationProxyParams): void => {
     if (!params.name || params.name.trim().length === 0) {
       throw new Error('Raffle name is required');
     }
@@ -48,10 +36,6 @@ export class CreationProxyGenerator extends BaseProxyGenerator<CreationProxyPara
 
     if (!params.goal || params.goal <= 0n) {
       throw new Error('Valid funding goal is required');
-    }
-
-    if (!params.deadline || params.deadline <= 0) {
-      throw new Error('Valid deadline is required');
     }
 
     if (!params.winnerCount || params.winnerCount <= 0) {
@@ -97,7 +81,7 @@ export class CreationProxyGenerator extends BaseProxyGenerator<CreationProxyPara
     );
     scriptParameters.set('TICKET_PRICE', params.ticketPrice.toString());
     scriptParameters.set('GOAL', params.goal.toString());
-    scriptParameters.set('DEADLINE', params.deadline.toString());
+    scriptParameters.set('DEADLINE', params.raffleDeadline.toString());
     scriptParameters.set('WINNER_COUNT', params.winnerCount.toString());
     scriptParameters.set('WINNERS_PERCENT', params.winnersPercent.toString());
     scriptParameters.set('TX_FEE', params.txFee.toString());

@@ -63,11 +63,11 @@ describe('CreationProxy', () => {
       ).toString('hex'),
       winnerCount: winnerCount,
       winnersPercentList,
-      deadline: chain.height + 1000,
+      raffleDeadline: chain.height + 1000,
       expirationHeight: chain.height + 100,
     };
 
-    proxyResult = proxyGenerator.generateCreationProxy(proxyParams);
+    proxyResult = proxyGenerator.generateProxy(proxyParams);
 
     // Create creation proxy input box
     proxyBox = new ErgoUnsignedInput(
@@ -103,7 +103,7 @@ describe('CreationProxy', () => {
         .setCreatorAddress(creator.address.toString())
         .setImplementerErgoTree(implementer.ergoTree)
         .setWinnersCount(proxyParams.winnerCount)
-        .setDeadline(BigInt(proxyParams.deadline))
+        .setDeadline(BigInt(proxyParams.raffleDeadline))
         .setWinnersPercent(proxyParams.winnersPercentList.map(BigInt))
         .setTicketPrice(proxyParams.ticketPrice)
         .setWinnersSharePercent(BigInt(proxyParams.winnersPercent))
@@ -152,12 +152,12 @@ describe('CreationProxy', () => {
      */
     it('should create a token-goal raffle via creation proxy successfully', () => {
       proxyParams.collectingTokenId = '0'.repeat(64);
-      proxyResult = new ProxyFactory(Network.Mainnet)
+      const proxyResult = new ProxyFactory(Network.Mainnet)
         .getCreationGenerator()
-        .generateCreationProxy(proxyParams);
+        .generateProxy(proxyParams);
 
       // Create creation proxy input box including collecting token
-      proxyBox = new ErgoUnsignedInput(
+      const proxyBox = new ErgoUnsignedInput(
         mockUTxO({
           ergoTree: ErgoAddress.fromBase58(proxyResult.proxyAddress).ergoTree,
           value: 100000000000n,
@@ -202,7 +202,8 @@ describe('CreationProxy', () => {
       ['goal', (builder) => builder.setGoal(proxyParams.goal + 1n)],
       [
         'deadline',
-        (builder) => builder.setDeadline(BigInt(proxyParams.deadline) + 1n),
+        (builder) =>
+          builder.setDeadline(BigInt(proxyParams.raffleDeadline) + 1n),
       ],
       [
         'implementerErgoTreeHash',
@@ -232,12 +233,13 @@ describe('CreationProxy', () => {
     it.each(testCases)(
       'should fail creation transaction with incorrect %s',
       (_, modifier) => {
+        // apply modifier on builder
         const builder = createRaffleBuilder;
-        const ModifiedTxBuilder = modifier(builder);
+        modifier(builder);
 
         // Each incorrect parameter should cause transaction execution to fail
         expect(() => {
-          chain.executeTx(ModifiedTxBuilder.build(), []);
+          chain.executeTx(builder.build(), []);
         }).toThrow();
       },
     );
@@ -376,7 +378,7 @@ describe('CreationProxy', () => {
       proxyParams.collectingTokenId = '0'.repeat(64);
       proxyResult = new ProxyFactory(Network.Mainnet)
         .getCreationGenerator()
-        .generateCreationProxy(proxyParams);
+        .generateProxy(proxyParams);
 
       proxyBox = new ErgoUnsignedInput(
         mockUTxO({

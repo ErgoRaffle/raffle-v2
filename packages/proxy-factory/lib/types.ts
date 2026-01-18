@@ -1,9 +1,18 @@
 import { TokenAmount } from '@fleet-sdk/core';
 
+export interface BaseProxyParams {
+  /** Tx fee in nano ERGs */
+  txFee: bigint;
+  /** Expiration height for the proxy contract */
+  expirationHeight: number;
+  /** Raffle deadline */
+  raffleDeadline: number;
+}
+
 /**
  * Parameters for Creation proxy generation
  */
-export interface CreationProxyParams {
+export interface CreationProxyParams extends BaseProxyParams {
   /** Creation fee in nano ERGs */
   creationFee: bigint;
   /** Raffle name */
@@ -16,8 +25,6 @@ export interface CreationProxyParams {
   goal: bigint;
   /** Winners percentage */
   winnersPercent: number;
-  /** Transaction fee in nano ERGs */
-  txFee: bigint;
   /** Implementer address */
   implementorErgoTreeHash: string;
   /** Creator address */
@@ -26,10 +33,6 @@ export interface CreationProxyParams {
   winnerCount: number;
   /** Winners share percentages */
   winnersPercentList: bigint[];
-  /** Raffle deadline */
-  deadline: number;
-  /** Expiration height for the proxy contract */
-  expirationHeight: number;
   /** Collecting token ID (optional for ERG-only raffles) */
   collectingTokenId?: string;
   /** Raffle pictures URLs */
@@ -39,33 +42,29 @@ export interface CreationProxyParams {
 /**
  * Parameters for Donation proxy generation
  */
-export interface DonationProxyParams {
+export interface DonationProxyParams extends BaseProxyParams {
   /** Number of tickets to buy */
   ticketCount: number;
+  /** Ticket price */
+  ticketPrice: bigint;
   /** Raffle ID */
   raffleId: string;
   /** Donator address */
-  donatorAddress: string;
-  /** Raffle deadline */
-  deadline: number;
-  /** Required token ID (if collecting token) */
+  donatorErgoTreeHash: string;
+  /** Required token ID (if token-goal raffle) */
   requiredTokenId?: string;
-  /** Required token amount (if collecting token) */
-  requiredTokenCount?: bigint;
 }
 
 /**
  * Parameters for AddGift proxy generation
  */
-export interface AddGiftProxyParams {
+export interface AddGiftProxyParams extends BaseProxyParams {
   /** Raffle ID */
   raffleId: string;
   /** Winner index to receive the gift */
   winnerIndex: number;
   /** Gift giver address */
   giftGiverAddress: string;
-  /** Raffle deadline */
-  deadline: number;
 }
 
 /**

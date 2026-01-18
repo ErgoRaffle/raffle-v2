@@ -1,3 +1,6 @@
+import { ErgoAddress } from '@fleet-sdk/core';
+import { blake2b256 } from '@fleet-sdk/crypto';
+
 /**
  * Serialize string to base64
  * @param str - String to serialize
@@ -14,6 +17,18 @@ export const stringToBase64 = (str: string): string => {
  */
 export const hexToBase64 = (str: string): string => {
   return Buffer.from(str, 'hex').toString('base64');
+};
+
+/**
+ * Hash the hex encoded string and serialize to base64
+ * @param str - Hex encoded string to hash and serialize to base64
+ * @returns Base64 encoded string
+ */
+export const hashAndSerializeToBase64 = (str: string): string => {
+  const ergoTree = ErgoAddress.fromBase58(str).ergoTree;
+  return Buffer.from(blake2b256(Buffer.from(ergoTree, 'hex'))).toString(
+    'base64',
+  );
 };
 
 /**
