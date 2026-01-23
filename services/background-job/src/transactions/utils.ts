@@ -9,17 +9,17 @@ import { bigintBE, hex } from '@fleet-sdk/crypto';
 import { deserializeBox } from '@fleet-sdk/serializer';
 import { ErgoHDKey } from '@fleet-sdk/wallet';
 import { AbstractErgoExtractorEntity } from '@rosen-bridge/abstract-extractor';
-import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
 import JsonBigInt from '@rosen-bridge/json-bigint';
 import { ProverBuilder$ } from 'sigmastate-js/main';
 
 import { configs } from '../config';
+import callbackLogger from '../loggers';
 import ErgoNodeNetwork from '../network/ergoNodeNetwork';
 import { TxPotService } from '../services/txPotService';
 import { BoxValue } from '../types/box';
 import { TxType } from './types';
 
-const logger = CallbackLoggerFactory.getInstance().getLogger(import.meta.url);
+const logger = callbackLogger.child(import.meta.url);
 
 /**
  * Signs an unsigned Ergo transaction with the provided keys.

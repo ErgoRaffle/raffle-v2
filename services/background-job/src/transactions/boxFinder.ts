@@ -2,12 +2,12 @@ import { WinnerBuilder } from '@ergo-raffle/boxes';
 import { raffleInfo } from '@ergo-raffle/contracts';
 import { RaffleBoxType } from '@ergo-raffle/extractors';
 import { ErgoBox, ErgoAddress } from '@fleet-sdk/core';
-import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
 
+import callbackLogger from '../loggers';
 import { DbService } from '../services/dbService';
 import { convertDbBoxesToErgoBoxes } from './utils';
 
-const logger = CallbackLoggerFactory.getInstance().getLogger(import.meta.url);
+const logger = callbackLogger.child(import.meta.url);
 
 /**
  * Find all winner boxes for a raffle

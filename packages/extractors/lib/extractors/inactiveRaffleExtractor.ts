@@ -39,7 +39,7 @@ export class InactiveRaffleExtractor extends AbstractInitializableErgoExtractor<
     super(ErgoNetworkType.Node, url, address, logger, initialize);
     this.id = id;
     this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
-    this.actions = new InactiveRaffleAction(dataSource, this.logger);
+    this.actions = new InactiveRaffleAction(dataSource, logger);
     this.serviceErgoTree =
       ErgoAddress.fromBase58(serviceAddress).ergoTree.toString();
     this.licenseTokenId = licenseTokenId;

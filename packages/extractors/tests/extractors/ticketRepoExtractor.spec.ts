@@ -1,7 +1,7 @@
 import { compile } from '@fleet-sdk/compiler';
-import { Network } from '@fleet-sdk/core';
+import { ErgoTree, Network } from '@fleet-sdk/core';
 import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 import { TicketRepoExtractor } from '../../lib/extractors/ticketRepoExtractor';
 import { createDatabase } from '../utils.mock';
@@ -10,30 +10,25 @@ import {
   sampleTicketRepoExtractedData,
 } from './mocked/ticketRepo.mock';
 
-/*
- * create fixtures that contains below steps data:
- *   - create datasource and initial database
- *   - create extractor
- * @returns vitest customized "it" object
- */
-const createTicketRepoExtractorTest = async () => {
+interface TestInterface {
+  extractor: TicketRepoExtractor;
+  boxFalseErgoTree: ErgoTree;
+}
+
+beforeEach<TestInterface>(async (ctx) => {
   const dataSource = await createDatabase();
   const boxErgoTree = compile('{sigmaProp(true);}');
   const boxFalseErgoTree = compile('{sigmaProp(false);}');
 
-  return it.extend({
-    extractor: new TicketRepoExtractor(
-      dataSource,
-      'TicketRepo',
-      'http://127.0.0.1/',
-      ErgoNetworkType.Node,
-      boxErgoTree.toAddress(Network.Testnet).toString(),
-    ),
-    boxFalseErgoTree: boxFalseErgoTree,
-  });
-};
-
-const extractorTest = await createTicketRepoExtractorTest();
+  ctx.extractor = new TicketRepoExtractor(
+    dataSource,
+    'TicketRepo',
+    'http://127.0.0.1/',
+    ErgoNetworkType.Node,
+    boxErgoTree.toAddress(Network.Testnet).toString(),
+  );
+  ctx.boxFalseErgoTree = boxFalseErgoTree;
+});
 
 describe('TicketRepoExtractor', () => {
   describe('extractBoxData', () => {
@@ -46,16 +41,13 @@ describe('TicketRepoExtractor', () => {
      * @expected
      * - TicketRepos should extract successfully
      */
-    extractorTest(
-      `should successfully extract data from a sample TicketRepo box`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.extractBoxData(
-          sampleTicketRepo[0],
-        );
+    it<TestInterface>(`should successfully extract data from a sample TicketRepo box`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.extractBoxData(sampleTicketRepo[0]);
 
-        expect(extractedData).toEqual(sampleTicketRepoExtractedData);
-      },
-    );
+      expect(extractedData).toEqual(sampleTicketRepoExtractedData);
+    });
   });
 
   describe('hasData', () => {
@@ -69,14 +61,13 @@ describe('TicketRepoExtractor', () => {
      * @expected
      * - TicketRepos box checking result must be true
      */
-    extractorTest(
-      `should return true for hasData method when the box contains valid data`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData(sampleTicketRepo[0]);
+    it<TestInterface>(`should return true for hasData method when the box contains valid data`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.hasData(sampleTicketRepo[0]);
 
-        expect(extractedData).toBeTruthy();
-      },
-    );
+      expect(extractedData).toBeTruthy();
+    });
 
     /**
      * @target should return false for hasData method when provided with an invalid box address
@@ -88,18 +79,18 @@ describe('TicketRepoExtractor', () => {
      * @expected
      * - TicketRepos box checking result must be false
      */
-    extractorTest(
-      `should return false for hasData method when provided with an invalid box address`,
-      async ({ extractor, boxFalseErgoTree }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleTicketRepo[0],
-          // set invalid ergoTree
-          ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
-        });
+    it<TestInterface>(`should return false for hasData method when provided with an invalid box address`, async ({
+      extractor,
+      boxFalseErgoTree,
+    }) => {
+      const extractedData = await extractor.hasData({
+        ...sampleTicketRepo[0],
+        // set invalid ergoTree
+        ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
+      });
 
-        expect(extractedData).toBeFalsy();
-      },
-    );
+      expect(extractedData).toBeFalsy();
+    });
 
     /**
      * @target should return false for hasData method when the assets list is empty
@@ -111,17 +102,16 @@ describe('TicketRepoExtractor', () => {
      * @expected
      * - TicketRepos box checking result must be false
      */
-    extractorTest(
-      `should return false for hasData method when the assets list is empty`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleTicketRepo[0],
-          assets: [],
-        });
+    it<TestInterface>(`should return false for hasData method when the assets list is empty`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.hasData({
+        ...sampleTicketRepo[0],
+        assets: [],
+      });
 
-        expect(extractedData).toBeFalsy();
-      },
-    );
+      expect(extractedData).toBeFalsy();
+    });
 
     /**
      * @target should return false for hasData method when the assets list contains more than one item
@@ -133,25 +123,24 @@ describe('TicketRepoExtractor', () => {
      * @expected
      * - TicketRepos box checking result must be false
      */
-    extractorTest(
-      `should return false for hasData method when the assets list contains more than one item`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleTicketRepo[0],
-          assets: [
-            {
-              tokenId: '1'.repeat(64),
-              amount: 1n,
-            },
-            {
-              tokenId: '2'.repeat(64),
-              amount: 1n,
-            },
-          ],
-        });
+    it<TestInterface>(`should return false for hasData method when the assets list contains more than one item`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.hasData({
+        ...sampleTicketRepo[0],
+        assets: [
+          {
+            tokenId: '1'.repeat(64),
+            amount: 1n,
+          },
+          {
+            tokenId: '2'.repeat(64),
+            amount: 1n,
+          },
+        ],
+      });
 
-        expect(extractedData).toBeFalsy();
-      },
-    );
+      expect(extractedData).toBeFalsy();
+    });
   });
 });

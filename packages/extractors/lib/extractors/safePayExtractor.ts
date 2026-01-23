@@ -39,7 +39,7 @@ export class SafePayExtractor extends AbstractInitializableErgoExtractor<
     super(type, url, address, logger, initialize);
     this.id = id;
     this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
-    this.actions = new SafePayAction(dataSource, this.logger);
+    this.actions = new SafePayAction(dataSource, logger);
 
     this.successRaffleErgoTree =
       ErgoAddress.fromBase58(successAddress).ergoTree.toString();

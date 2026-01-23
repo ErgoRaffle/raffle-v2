@@ -162,7 +162,7 @@ class ErgoNodeNetwork {
         )}`,
       );
 
-      return !box.spentTransactionId;
+      return !box.transactionId;
     } catch (error) {
       const baseError =
         'Failed to check if box is unspent and valid using Ergo Node:';

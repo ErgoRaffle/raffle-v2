@@ -1,20 +1,48 @@
-import { TokenAmount, TransactionBuilder } from '@fleet-sdk/core';
+import {
+  ErgoUnsignedInput,
+  OutputBuilder,
+  TokenAmount,
+  TransactionBuilder,
+} from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
+import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
 import { SByte, SColl, SConstant } from '@fleet-sdk/serializer';
-import { it, describe, expect } from 'vitest';
+import { it, describe, expect, beforeEach } from 'vitest';
 
 import * as constants from '../../lib/constants';
 import { ScriptNamesType } from '../../lib/types';
 import * as testUtils from '../testUtils';
 
+interface RaffleGiftTestInterface {
+  boxFactory: testUtils.RaffleBoxFactory;
+  someoneWallet: KeyedMockChainParty;
+  creator: KeyedMockChainParty;
+  prizeBox: ErgoUnsignedInput;
+  prizeOutputBox: OutputBuilder;
+  unwrappedGiftOutputBox: OutputBuilder;
+  giftBox: ErgoUnsignedInput;
+  winnerBox: ErgoUnsignedInput;
+  winnerOutputBox: OutputBuilder;
+  giftRedeemBox: ErgoUnsignedInput;
+  redeemedGiftOutputBox: OutputBuilder;
+  ticketBox: ErgoUnsignedInput;
+}
+
+interface TestInterface {
+  raffleGiftErgTestRequirements: RaffleGiftTestInterface;
+  raffleGiftTokenTestRequirements: RaffleGiftTestInterface;
+}
+
 /*
- * create fixtures that contains below steps data:
+ * provide test requirements that contains below data:
  *   - mock boxFactory.chain and partners
  *   - compile contracts
  *   - create gift input box
- * @returns vitest customized "it" object
+ * @returns object
  */
-const createRaffleGiftTest = (extraGiftTokens: TokenAmount<bigint>[] = []) => {
+const provideRaffleGiftTestRequirements = (
+  extraGiftTokens: TokenAmount<bigint>[] = [],
+) => {
   const winnerIndex = 1;
   const winnerTicketIndex = 1n;
   const giftCount = 1n;
@@ -107,7 +135,7 @@ const createRaffleGiftTest = (extraGiftTokens: TokenAmount<bigint>[] = []) => {
     0: SColl(SByte, Array.from(Buffer.from(creator.ergoTree, 'hex'))),
   });
 
-  // Create giftBox input box
+  // Create raffleGiftErgTestRequirements.giftBox input box
   const giftOutputBoxTokens = giftBox.assets.slice(1, giftBox.assets.length);
 
   // Create redeemedGift output box
@@ -132,7 +160,7 @@ const createRaffleGiftTest = (extraGiftTokens: TokenAmount<bigint>[] = []) => {
     [0n, 5n, 100_000n], // from-ticket-range, to-ticket-range, ticket-price
   );
 
-  return it.extend({
+  return {
     boxFactory: boxFactory,
     someoneWallet: someone,
     creator: creator,
@@ -145,14 +173,16 @@ const createRaffleGiftTest = (extraGiftTokens: TokenAmount<bigint>[] = []) => {
     giftRedeemBox: giftRedeemBox,
     redeemedGiftOutputBox: redeemedGiftOutputBox,
     ticketBox: ticketBox,
-  });
+  };
 };
 
 describe('gift', () => {
-  const raffleGiftErgTest = createRaffleGiftTest();
-  const raffleGiftTokenTest = createRaffleGiftTest([
-    { tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 100n },
-  ]);
+  beforeEach<TestInterface>((ctx) => {
+    ctx.raffleGiftErgTestRequirements = provideRaffleGiftTestRequirements();
+    ctx.raffleGiftTokenTestRequirements = provideRaffleGiftTestRequirements([
+      { tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 100n },
+    ]);
+  });
 
   describe('Gift return', () => {
     /**
@@ -163,29 +193,31 @@ describe('gift', () => {
      * @expected
      * - transaction result must be true
      */
-    raffleGiftErgTest(
-      'should successfully return the gift containing Erg',
-      ({
-        boxFactory,
-        giftBox,
-        winnerBox,
-        winnerOutputBox,
-        giftRedeemBox,
-        redeemedGiftOutputBox,
-      }) => {
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([winnerBox, giftBox])
-          .to([winnerOutputBox, redeemedGiftOutputBox])
-          .withDataFrom([giftRedeemBox])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+    it<TestInterface>('should successfully return the gift containing Erg', ({
+      raffleGiftErgTestRequirements,
+    }) => {
+      const transaction = new TransactionBuilder(
+        raffleGiftErgTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          raffleGiftErgTestRequirements.winnerBox,
+          raffleGiftErgTestRequirements.giftBox,
+        ])
+        .to([
+          raffleGiftErgTestRequirements.winnerOutputBox,
+          raffleGiftErgTestRequirements.redeemedGiftOutputBox,
+        ])
+        .withDataFrom([raffleGiftErgTestRequirements.giftRedeemBox])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(boxFactory.chain.execute(transaction)).toBeTruthy();
-      },
-    );
+      expect(
+        raffleGiftErgTestRequirements.boxFactory.chain.execute(transaction),
+      ).toBeTruthy();
+    });
 
     /**
      * @target should successfully return the gift containing Erg and tokens
@@ -195,29 +227,31 @@ describe('gift', () => {
      * @expected
      * - transaction result must be true
      */
-    raffleGiftTokenTest(
-      'should successfully return the gift containing Erg and tokens',
-      ({
-        boxFactory,
-        giftBox,
-        winnerBox,
-        winnerOutputBox,
-        giftRedeemBox,
-        redeemedGiftOutputBox,
-      }) => {
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([winnerBox, giftBox])
-          .to([winnerOutputBox, redeemedGiftOutputBox])
-          .withDataFrom([giftRedeemBox])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+    it<TestInterface>('should successfully return the gift containing Erg and tokens', ({
+      raffleGiftTokenTestRequirements,
+    }) => {
+      const transaction = new TransactionBuilder(
+        raffleGiftTokenTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          raffleGiftTokenTestRequirements.winnerBox,
+          raffleGiftTokenTestRequirements.giftBox,
+        ])
+        .to([
+          raffleGiftTokenTestRequirements.winnerOutputBox,
+          raffleGiftTokenTestRequirements.redeemedGiftOutputBox,
+        ])
+        .withDataFrom([raffleGiftTokenTestRequirements.giftRedeemBox])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(boxFactory.chain.execute(transaction)).toBeTruthy();
-      },
-    );
+      expect(
+        raffleGiftTokenTestRequirements.boxFactory.chain.execute(transaction),
+      ).toBeTruthy();
+    });
 
     /**
      * @target should fail if winner box belongs to a different raffle
@@ -228,10 +262,11 @@ describe('gift', () => {
      * @expected
      * - transaction result must throw error
      */
-    raffleGiftErgTest(
-      'should fail if winner box belongs to a different raffle',
-      ({ boxFactory, giftBox, giftRedeemBox, redeemedGiftOutputBox }) => {
-        const winnerBox = boxFactory.createWinnerSingleBoxMock(
+    it<TestInterface>('should fail if winner box belongs to a different raffle', ({
+      raffleGiftErgTestRequirements,
+    }) => {
+      const winnerBox =
+        raffleGiftErgTestRequirements.boxFactory.createWinnerSingleBoxMock(
           1,
           1,
           testUtils.TestConstants.TICKET_TOKEN_ID,
@@ -248,34 +283,40 @@ describe('gift', () => {
           ],
         );
 
-        const winnerOutputBox =
-          boxFactory.createWinnerOutputBoxWithConstantRegisters(
-            SConstant.from(winnerBox.additionalRegisters.R4!).data as bigint[],
-            testUtils.TestConstants.TICKET_TOKEN_ID,
-            // set different gift token id
-            testUtils.TestConstants.X_TOKEN_ID,
-            2n,
-            0n,
-          );
+      const winnerOutputBox =
+        raffleGiftErgTestRequirements.boxFactory.createWinnerOutputBoxWithConstantRegisters(
+          SConstant.from(winnerBox.additionalRegisters.R4!).data as bigint[],
+          testUtils.TestConstants.TICKET_TOKEN_ID,
+          // set different gift token id
+          testUtils.TestConstants.X_TOKEN_ID,
+          2n,
+          0n,
+        );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([winnerBox, giftBox])
-          .to([winnerOutputBox, redeemedGiftOutputBox])
-          .withDataFrom([giftRedeemBox])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          // burn unused gift token
-          .burnTokens({
-            tokenId: testUtils.TestConstants.GIFT_TOKEN_ID,
-            amount: 1n,
-          })
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        raffleGiftErgTestRequirements.boxFactory.chain.height,
+      )
+        .from([winnerBox, raffleGiftErgTestRequirements.giftBox])
+        .to([
+          winnerOutputBox,
+          raffleGiftErgTestRequirements.redeemedGiftOutputBox,
+        ])
+        .withDataFrom([raffleGiftErgTestRequirements.giftRedeemBox])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        // burn unused gift token
+        .burnTokens({
+          tokenId: testUtils.TestConstants.GIFT_TOKEN_ID,
+          amount: 1n,
+        })
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() =>
+        raffleGiftErgTestRequirements.boxFactory.chain.execute(transaction),
+      ).toThrowError();
+    });
 
     /**
      * @target should fail if two similar gifts are spent in the transaction and one gift is stolen
@@ -287,46 +328,57 @@ describe('gift', () => {
      * @expected
      * - transaction result must throw error
      */
-    raffleGiftErgTest(
-      'should fail if two similar gifts are spent in the transaction and one gift is stolen',
-      ({
-        boxFactory,
-        creator,
-        someoneWallet,
-        giftBox,
-        winnerBox,
-        winnerOutputBox,
-        giftRedeemBox,
-        redeemedGiftOutputBox,
-      }) => {
-        const giftBox2 = boxFactory.createGiftBoxMock(
+    it<TestInterface>('should fail if two similar gifts are spent in the transaction and one gift is stolen', ({
+      raffleGiftErgTestRequirements,
+    }) => {
+      const giftBox2 =
+        raffleGiftErgTestRequirements.boxFactory.createGiftBoxMock(
           1,
-          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+          blake2b256(
+            Buffer.from(raffleGiftErgTestRequirements.creator.ergoTree, 'hex'),
+          ),
           testUtils.TestConstants.FEE * 3n,
           testUtils.TestConstants.GIFT_TOKEN_ID,
           1n,
         );
 
-        const stoleBox = boxFactory.createSafePayOutputBox(
+      const stoleBox =
+        raffleGiftErgTestRequirements.boxFactory.createSafePayOutputBox(
           testUtils.TestConstants.FEE * 3n,
           // stole one gift token
           [{ tokenId: testUtils.TestConstants.GIFT_TOKEN_ID, amount: 1n }],
-          blake2b256(Buffer.from(someoneWallet.ergoTree, 'hex')),
+          blake2b256(
+            Buffer.from(
+              raffleGiftErgTestRequirements.someoneWallet.ergoTree,
+              'hex',
+            ),
+          ),
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([winnerBox, giftBox, giftBox2])
-          .to([winnerOutputBox, redeemedGiftOutputBox, stoleBox])
-          .withDataFrom([giftRedeemBox])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        raffleGiftErgTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          raffleGiftErgTestRequirements.winnerBox,
+          raffleGiftErgTestRequirements.giftBox,
+          giftBox2,
+        ])
+        .to([
+          raffleGiftErgTestRequirements.winnerOutputBox,
+          raffleGiftErgTestRequirements.redeemedGiftOutputBox,
+          stoleBox,
+        ])
+        .withDataFrom([raffleGiftErgTestRequirements.giftRedeemBox])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() =>
+        raffleGiftErgTestRequirements.boxFactory.chain.execute(transaction),
+      ).toThrowError();
+    });
 
     /**
      * @target should fail if safe pay box does not have enough Erg
@@ -337,36 +389,42 @@ describe('gift', () => {
      * @expected
      * - transaction result must throw error
      */
-    raffleGiftErgTest(
-      'should fail if safe pay box does not have enough Erg',
-      ({
-        boxFactory,
-        someoneWallet,
-        giftBox,
-        winnerBox,
-        winnerOutputBox,
-        giftRedeemBox,
-      }) => {
-        const redeemedGiftOutputBox = boxFactory.createSafePayOutputBox(
-          BigInt(giftBox.value.toString()) - testUtils.TestConstants.FEE * 2n,
-          giftBox.assets.slice(1),
-          SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
+    it<TestInterface>('should fail if safe pay box does not have enough Erg', ({
+      raffleGiftErgTestRequirements,
+    }) => {
+      const redeemedGiftOutputBox =
+        raffleGiftErgTestRequirements.boxFactory.createSafePayOutputBox(
+          BigInt(raffleGiftErgTestRequirements.giftBox.value.toString()) -
+            testUtils.TestConstants.FEE * 2n,
+          raffleGiftErgTestRequirements.giftBox.assets.slice(1),
+          SConstant.from(
+            raffleGiftErgTestRequirements.giftBox.additionalRegisters.R4!,
+          ).data as Uint8Array,
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([winnerBox, giftBox])
-          .to([winnerOutputBox, redeemedGiftOutputBox])
-          .withDataFrom([giftRedeemBox])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          .sendChangeTo(someoneWallet.ergoTree)
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        raffleGiftErgTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          raffleGiftErgTestRequirements.winnerBox,
+          raffleGiftErgTestRequirements.giftBox,
+        ])
+        .to([
+          raffleGiftErgTestRequirements.winnerOutputBox,
+          redeemedGiftOutputBox,
+        ])
+        .withDataFrom([raffleGiftErgTestRequirements.giftRedeemBox])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        .sendChangeTo(raffleGiftErgTestRequirements.someoneWallet.ergoTree)
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() =>
+        raffleGiftErgTestRequirements.boxFactory.chain.execute(transaction),
+      ).toThrowError();
+    });
 
     /**
      * @target should fail if safe pay box does not have enough tokens
@@ -377,38 +435,44 @@ describe('gift', () => {
      * @expected
      * - transaction result must throw error
      */
-    raffleGiftTokenTest(
-      'should fail if safe pay box does not have enough tokens',
-      ({
-        boxFactory,
-        someoneWallet,
-        giftBox,
-        winnerBox,
-        winnerOutputBox,
-        giftRedeemBox,
-      }) => {
-        const redeemedGiftOutputBox = boxFactory.createSafePayOutputBox(
-          BigInt(giftBox.value.toString()) - testUtils.TestConstants.FEE,
+    it<TestInterface>('should fail if safe pay box does not have enough tokens', ({
+      raffleGiftTokenTestRequirements,
+    }) => {
+      const redeemedGiftOutputBox =
+        raffleGiftTokenTestRequirements.boxFactory.createSafePayOutputBox(
+          BigInt(raffleGiftTokenTestRequirements.giftBox.value.toString()) -
+            testUtils.TestConstants.FEE,
           // missing tokens
           [],
-          SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
+          SConstant.from(
+            raffleGiftTokenTestRequirements.giftBox.additionalRegisters.R4!,
+          ).data as Uint8Array,
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([winnerBox, giftBox])
-          .to([winnerOutputBox, redeemedGiftOutputBox])
-          .withDataFrom([giftRedeemBox])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          .sendChangeTo(someoneWallet.ergoTree)
-          .burnTokens(giftBox.assets[1])
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        raffleGiftTokenTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          raffleGiftTokenTestRequirements.winnerBox,
+          raffleGiftTokenTestRequirements.giftBox,
+        ])
+        .to([
+          raffleGiftTokenTestRequirements.winnerOutputBox,
+          redeemedGiftOutputBox,
+        ])
+        .withDataFrom([raffleGiftTokenTestRequirements.giftRedeemBox])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        .sendChangeTo(raffleGiftTokenTestRequirements.someoneWallet.ergoTree)
+        .burnTokens(raffleGiftTokenTestRequirements.giftBox.assets[1])
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() =>
+        raffleGiftTokenTestRequirements.boxFactory.chain.execute(transaction),
+      ).toThrowError();
+    });
 
     /**
      * @target should fail if safe pay ergo tree hash is not correct
@@ -419,36 +483,45 @@ describe('gift', () => {
      * @expected
      * - transaction result must throw error
      */
-    raffleGiftErgTest(
-      'should fail if safe pay ergo tree hash is not correct',
-      ({
-        boxFactory,
-        someoneWallet,
-        giftBox,
-        winnerBox,
-        winnerOutputBox,
-        giftRedeemBox,
-      }) => {
-        const redeemedGiftOutputBox = boxFactory.createSafePayOutputBox(
-          BigInt(giftBox.value.toString()) - testUtils.TestConstants.FEE,
-          giftBox.assets.slice(1),
+    it<TestInterface>('should fail if safe pay ergo tree hash is not correct', ({
+      raffleGiftErgTestRequirements,
+    }) => {
+      const redeemedGiftOutputBox =
+        raffleGiftErgTestRequirements.boxFactory.createSafePayOutputBox(
+          BigInt(raffleGiftErgTestRequirements.giftBox.value.toString()) -
+            testUtils.TestConstants.FEE,
+          raffleGiftErgTestRequirements.giftBox.assets.slice(1),
           // set different destination address
-          blake2b256(Buffer.from(someoneWallet.ergoTree, 'hex')),
+          blake2b256(
+            Buffer.from(
+              raffleGiftErgTestRequirements.someoneWallet.ergoTree,
+              'hex',
+            ),
+          ),
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([winnerBox, giftBox])
-          .to([winnerOutputBox, redeemedGiftOutputBox])
-          .withDataFrom([giftRedeemBox])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        raffleGiftErgTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          raffleGiftErgTestRequirements.winnerBox,
+          raffleGiftErgTestRequirements.giftBox,
+        ])
+        .to([
+          raffleGiftErgTestRequirements.winnerOutputBox,
+          redeemedGiftOutputBox,
+        ])
+        .withDataFrom([raffleGiftErgTestRequirements.giftRedeemBox])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() =>
+        raffleGiftErgTestRequirements.boxFactory.chain.execute(transaction),
+      ).toThrowError();
+    });
   });
 
   describe('Gift unwrap', () => {
@@ -460,29 +533,31 @@ describe('gift', () => {
      * @expected
      * - transaction result must be true
      */
-    raffleGiftErgTest(
-      'should successfully unwrap the gift containing Erg',
-      ({
-        boxFactory,
-        prizeBox,
-        giftBox,
-        prizeOutputBox,
-        unwrappedGiftOutputBox,
-        ticketBox,
-      }) => {
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([prizeBox, giftBox])
-          .to([prizeOutputBox, unwrappedGiftOutputBox])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          .withDataFrom([ticketBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+    it<TestInterface>('should successfully unwrap the gift containing Erg', ({
+      raffleGiftErgTestRequirements,
+    }) => {
+      const transaction = new TransactionBuilder(
+        raffleGiftErgTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          raffleGiftErgTestRequirements.prizeBox,
+          raffleGiftErgTestRequirements.giftBox,
+        ])
+        .to([
+          raffleGiftErgTestRequirements.prizeOutputBox,
+          raffleGiftErgTestRequirements.unwrappedGiftOutputBox,
+        ])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        .withDataFrom([raffleGiftErgTestRequirements.ticketBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(boxFactory.chain.execute(transaction)).toBeTruthy();
-      },
-    );
+      expect(
+        raffleGiftErgTestRequirements.boxFactory.chain.execute(transaction),
+      ).toBeTruthy();
+    });
 
     /**
      * @target should successfully unwrap the gift containing Erg and tokens
@@ -492,32 +567,34 @@ describe('gift', () => {
      * @expected
      * - transaction result must be true
      */
-    raffleGiftTokenTest(
-      'should successfully unwrap the gift containing Erg and tokens',
-      ({
-        boxFactory,
-        prizeBox,
-        giftBox,
-        prizeOutputBox,
-        unwrappedGiftOutputBox,
-        ticketBox,
-      }) => {
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([prizeBox, giftBox])
-          .to([prizeOutputBox, unwrappedGiftOutputBox])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          .withDataFrom([ticketBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+    it<TestInterface>('should successfully unwrap the gift containing Erg and tokens', ({
+      raffleGiftTokenTestRequirements,
+    }) => {
+      const transaction = new TransactionBuilder(
+        raffleGiftTokenTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          raffleGiftTokenTestRequirements.prizeBox,
+          raffleGiftTokenTestRequirements.giftBox,
+        ])
+        .to([
+          raffleGiftTokenTestRequirements.prizeOutputBox,
+          raffleGiftTokenTestRequirements.unwrappedGiftOutputBox,
+        ])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        .withDataFrom([raffleGiftTokenTestRequirements.ticketBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(boxFactory.chain.execute(transaction)).toBeTruthy();
-      },
-    );
+      expect(
+        raffleGiftTokenTestRequirements.boxFactory.chain.execute(transaction),
+      ).toBeTruthy();
+    });
 
     /**
-     * @target should fail if winner box belongs to a different raffle
+     * @target should fail if winner box of a token-goal raffle belongs to a different raffle
      * @scenario
      * - create prizeBox input box by different gift token
      * - create prize output box by different gift token
@@ -526,19 +603,20 @@ describe('gift', () => {
      * @expected
      * - transaction result must throw error
      */
-    raffleGiftErgTest(
-      'should fail if winner box belongs to a different raffle',
-      ({ boxFactory, giftBox, unwrappedGiftOutputBox, ticketBox }) => {
-        const winnerIndex = 1;
-        const winnerTicketIndex = 1n;
-        const giftCount = 1n;
-        const totalPrize = 20_000_000n;
-        const winnerRewardPercent = 200n;
-        const prizeAmount = (totalPrize * winnerRewardPercent) / 1000n;
+    it<TestInterface>('should fail if winner box of a token-goal raffle belongs to a different raffle', ({
+      raffleGiftErgTestRequirements,
+    }) => {
+      const winnerIndex = 1;
+      const winnerTicketIndex = 1n;
+      const giftCount = 1n;
+      const totalPrize = 20_000_000n;
+      const winnerRewardPercent = 200n;
+      const prizeAmount = (totalPrize * winnerRewardPercent) / 1000n;
 
-        const differentRaffleGiftTokenId = 'ab'.repeat(32);
+      const differentRaffleGiftTokenId = 'ab'.repeat(32);
 
-        const prizeBox = boxFactory.createWinnerPrizeBoxMock(
+      const prizeBox =
+        raffleGiftErgTestRequirements.boxFactory.createWinnerPrizeBoxMock(
           testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
           winnerIndex,
           winnerTicketIndex,
@@ -550,7 +628,8 @@ describe('gift', () => {
           differentRaffleGiftTokenId,
         );
 
-        const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
+      const prizeOutputBox =
+        raffleGiftErgTestRequirements.boxFactory.createWinnerPrizeOutputBox(
           testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
           winnerIndex,
           winnerTicketIndex,
@@ -562,24 +641,30 @@ describe('gift', () => {
           // set different gift token
           differentRaffleGiftTokenId,
         );
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([prizeBox, giftBox])
-          .to([prizeOutputBox, unwrappedGiftOutputBox])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          .withDataFrom([ticketBox])
-          // burn giftTokens on the gift box
-          .burnTokens({
-            tokenId: testUtils.TestConstants.GIFT_TOKEN_ID,
-            amount: 1n,
-          })
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        raffleGiftErgTestRequirements.boxFactory.chain.height,
+      )
+        .from([prizeBox, raffleGiftErgTestRequirements.giftBox])
+        .to([
+          prizeOutputBox,
+          raffleGiftErgTestRequirements.unwrappedGiftOutputBox,
+        ])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        .withDataFrom([raffleGiftErgTestRequirements.ticketBox])
+        // burn giftTokens on the gift box
+        .burnTokens({
+          tokenId: testUtils.TestConstants.GIFT_TOKEN_ID,
+          amount: 1n,
+        })
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() =>
+        raffleGiftErgTestRequirements.boxFactory.chain.execute(transaction),
+      ).toThrowError();
+    });
 
     /**
      * @target should fail if winner box belongs to a different raffle
@@ -591,46 +676,57 @@ describe('gift', () => {
      * @expected
      * - transaction result must throw error
      */
-    raffleGiftErgTest(
-      'should fail if winner box belongs to a different raffle',
-      ({
-        boxFactory,
-        creator,
-        someoneWallet,
-        prizeBox,
-        giftBox,
-        prizeOutputBox,
-        unwrappedGiftOutputBox,
-        ticketBox,
-      }) => {
-        const giftBox2 = boxFactory.createGiftBoxMock(
+    it<TestInterface>('should fail if winner box belongs to a different raffle', ({
+      raffleGiftErgTestRequirements,
+    }) => {
+      const giftBox2 =
+        raffleGiftErgTestRequirements.boxFactory.createGiftBoxMock(
           1,
-          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+          blake2b256(
+            Buffer.from(raffleGiftErgTestRequirements.creator.ergoTree, 'hex'),
+          ),
           testUtils.TestConstants.FEE * 3n,
           testUtils.TestConstants.GIFT_TOKEN_ID,
           1n,
         );
 
-        const stoleBox = boxFactory.createSafePayOutputBox(
+      const stoleBox =
+        raffleGiftErgTestRequirements.boxFactory.createSafePayOutputBox(
           testUtils.TestConstants.FEE * 3n,
           // stole one gift token
           [{ tokenId: testUtils.TestConstants.GIFT_TOKEN_ID, amount: 1n }],
-          blake2b256(Buffer.from(someoneWallet.ergoTree, 'hex')),
+          blake2b256(
+            Buffer.from(
+              raffleGiftErgTestRequirements.someoneWallet.ergoTree,
+              'hex',
+            ),
+          ),
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([prizeBox, giftBox, giftBox2])
-          .to([prizeOutputBox, unwrappedGiftOutputBox, stoleBox])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          .withDataFrom([ticketBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        raffleGiftErgTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          raffleGiftErgTestRequirements.prizeBox,
+          raffleGiftErgTestRequirements.giftBox,
+          giftBox2,
+        ])
+        .to([
+          raffleGiftErgTestRequirements.prizeOutputBox,
+          raffleGiftErgTestRequirements.unwrappedGiftOutputBox,
+          stoleBox,
+        ])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        .withDataFrom([raffleGiftErgTestRequirements.ticketBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() =>
+        raffleGiftErgTestRequirements.boxFactory.chain.execute(transaction),
+      ).toThrowError();
+    });
 
     /**
      * @target should fail if safe pay box does not have enough Erg
@@ -641,42 +737,46 @@ describe('gift', () => {
      * @expected
      * - transaction result must throw error
      */
-    raffleGiftErgTest(
-      'should fail if safe pay box does not have enough Erg',
-      ({
-        boxFactory,
-        creator,
-        someoneWallet,
-        prizeBox,
-        giftBox,
-        prizeOutputBox,
-        ticketBox,
-      }) => {
-        const giftOutputBoxTokens = giftBox.assets.slice(
+    it<TestInterface>('should fail if safe pay box does not have enough Erg', ({
+      raffleGiftErgTestRequirements,
+    }) => {
+      const giftOutputBoxTokens =
+        raffleGiftErgTestRequirements.giftBox.assets.slice(
           1,
-          giftBox.assets.length,
+          raffleGiftErgTestRequirements.giftBox.assets.length,
         );
-        const unwrappedGiftOutputBox = boxFactory.createSafePayOutputBox(
+      const unwrappedGiftOutputBox =
+        raffleGiftErgTestRequirements.boxFactory.createSafePayOutputBox(
           // reduced by one fee from Erg value
-          BigInt(giftBox.value) - testUtils.TestConstants.FEE * 2n,
+          BigInt(raffleGiftErgTestRequirements.giftBox.value) -
+            testUtils.TestConstants.FEE * 2n,
           giftOutputBoxTokens,
-          blake2b256(creator.ergoTree),
+          blake2b256(raffleGiftErgTestRequirements.creator.ergoTree),
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([prizeBox, giftBox])
-          .to([prizeOutputBox, unwrappedGiftOutputBox])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          .withDataFrom([ticketBox])
-          .sendChangeTo(someoneWallet.address)
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        raffleGiftErgTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          raffleGiftErgTestRequirements.prizeBox,
+          raffleGiftErgTestRequirements.giftBox,
+        ])
+        .to([
+          raffleGiftErgTestRequirements.prizeOutputBox,
+          unwrappedGiftOutputBox,
+        ])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        .withDataFrom([raffleGiftErgTestRequirements.ticketBox])
+        .sendChangeTo(raffleGiftErgTestRequirements.someoneWallet.address)
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() =>
+        raffleGiftErgTestRequirements.boxFactory.chain.execute(transaction),
+      ).toThrowError();
+    });
 
     /**
      * @target should fail if safe pay box does not have enough tokens
@@ -687,37 +787,41 @@ describe('gift', () => {
      * @expected
      * - transaction result must throw error
      */
-    raffleGiftTokenTest(
-      'should fail if safe pay box does not have enough tokens',
-      ({
-        boxFactory,
-        creator,
-        prizeBox,
-        giftBox,
-        prizeOutputBox,
-        ticketBox,
-      }) => {
-        const unwrappedGiftOutputBox = boxFactory.createSafePayOutputBox(
-          BigInt(giftBox.value) - testUtils.TestConstants.FEE,
+    it<TestInterface>('should fail if safe pay box does not have enough tokens', ({
+      raffleGiftTokenTestRequirements,
+    }) => {
+      const unwrappedGiftOutputBox =
+        raffleGiftTokenTestRequirements.boxFactory.createSafePayOutputBox(
+          BigInt(raffleGiftTokenTestRequirements.giftBox.value) -
+            testUtils.TestConstants.FEE,
           // missing tokens
           [],
-          blake2b256(creator.ergoTree),
+          blake2b256(raffleGiftTokenTestRequirements.creator.ergoTree),
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([prizeBox, giftBox])
-          .to([prizeOutputBox, unwrappedGiftOutputBox])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          .withDataFrom([ticketBox])
-          .burnTokens(giftBox.assets[1])
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        raffleGiftTokenTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          raffleGiftTokenTestRequirements.prizeBox,
+          raffleGiftTokenTestRequirements.giftBox,
+        ])
+        .to([
+          raffleGiftTokenTestRequirements.prizeOutputBox,
+          unwrappedGiftOutputBox,
+        ])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        .withDataFrom([raffleGiftTokenTestRequirements.ticketBox])
+        .burnTokens(raffleGiftTokenTestRequirements.giftBox.assets[1])
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() =>
+        raffleGiftTokenTestRequirements.boxFactory.chain.execute(transaction),
+      ).toThrowError();
+    });
 
     /**
      * @target should fail if safe pay ergo tree hash is not correct
@@ -728,39 +832,49 @@ describe('gift', () => {
      * @expected
      * - transaction result must throw error
      */
-    raffleGiftErgTest(
-      'should fail if safe pay ergo tree hash is not correct',
-      ({
-        boxFactory,
-        someoneWallet,
-        prizeBox,
-        giftBox,
-        prizeOutputBox,
-        ticketBox,
-      }) => {
-        const giftOutputBoxTokens = giftBox.assets.slice(
+    it<TestInterface>('should fail if safe pay ergo tree hash is not correct', ({
+      raffleGiftErgTestRequirements,
+    }) => {
+      const giftOutputBoxTokens =
+        raffleGiftErgTestRequirements.giftBox.assets.slice(
           1,
-          giftBox.assets.length,
+          raffleGiftErgTestRequirements.giftBox.assets.length,
         );
-        const unwrappedGiftOutputBox = boxFactory.createSafePayOutputBox(
-          BigInt(giftBox.value) - testUtils.TestConstants.FEE,
+      const unwrappedGiftOutputBox =
+        raffleGiftErgTestRequirements.boxFactory.createSafePayOutputBox(
+          BigInt(raffleGiftErgTestRequirements.giftBox.value) -
+            testUtils.TestConstants.FEE,
           giftOutputBoxTokens,
           // set invalid destination address
-          blake2b256(Buffer.from(someoneWallet.ergoTree, 'hex')),
+          blake2b256(
+            Buffer.from(
+              raffleGiftErgTestRequirements.someoneWallet.ergoTree,
+              'hex',
+            ),
+          ),
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([prizeBox, giftBox])
-          .to([prizeOutputBox, unwrappedGiftOutputBox])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          .withDataFrom([ticketBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        raffleGiftErgTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          raffleGiftErgTestRequirements.prizeBox,
+          raffleGiftErgTestRequirements.giftBox,
+        ])
+        .to([
+          raffleGiftErgTestRequirements.prizeOutputBox,
+          unwrappedGiftOutputBox,
+        ])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        .withDataFrom([raffleGiftErgTestRequirements.ticketBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() =>
+        raffleGiftErgTestRequirements.boxFactory.chain.execute(transaction),
+      ).toThrowError();
+    });
   });
 });

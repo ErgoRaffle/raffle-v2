@@ -29,7 +29,7 @@ export class WinnerExtractor extends AbstractInitializableErgoExtractor<
     super(type, url, address, logger, initialize);
     this.id = id;
     this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
-    this.actions = new WinnerAction(dataSource, this.logger);
+    this.actions = new WinnerAction(dataSource, logger);
   }
 
   /**

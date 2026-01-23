@@ -1,7 +1,8 @@
 import { compile } from '@fleet-sdk/compiler';
-import { Network } from '@fleet-sdk/core';
+import { ErgoTree, Network } from '@fleet-sdk/core';
+import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 import { GiftRedeemExtractor } from '../../lib/extractors/giftRedeem';
 import { createDatabase } from '../utils.mock';
@@ -10,34 +11,30 @@ import {
   sampleGiftRedeemExtractedData,
 } from './mocked/giftRedeem.mock';
 
-/*
- * create fixtures that contains below steps data:
- *   - create datasource and initial database
- *   - create extractor
- * @returns vitest customized "it" object
- */
-const createGiftRedeemExtractorTest = async () => {
-  const dataSource = await createDatabase();
-  const boxErgoTree = compile('{sigmaProp(true);}');
-  const boxFalseErgoTree = compile('{sigmaProp(false);}');
+interface TestInterface {
+  extractor: GiftRedeemExtractor;
+  dataSource: DataSource;
+  boxFalseErgoTree: ErgoTree;
+}
 
-  return it.extend({
-    extractor: new GiftRedeemExtractor(
+describe('GiftRedeemExtractor', () => {
+  beforeEach<TestInterface>(async (ctx) => {
+    const dataSource = await createDatabase();
+    const boxErgoTree = compile('{sigmaProp(true);}');
+    const boxFalseErgoTree = compile('{sigmaProp(false);}');
+
+    ctx.extractor = new GiftRedeemExtractor(
       dataSource,
       'GiftRedeem',
       'http://127.0.0.1/',
       ErgoNetworkType.Node,
       boxErgoTree.toAddress(Network.Testnet).toString(),
       '716149d5c68e4ea1ea0529b60c7029797ffb26f3d401d44f9aadd4b090593e4e',
-    ),
-    dataSource: dataSource,
-    boxFalseErgoTree: boxFalseErgoTree,
+    );
+    ctx.dataSource = dataSource;
+    ctx.boxFalseErgoTree = boxFalseErgoTree;
   });
-};
 
-const extractorTest = await createGiftRedeemExtractorTest();
-
-describe('GiftRedeemExtractor', () => {
   describe('extractBoxData', () => {
     /**
      * @target should successfully extract data from a sample GiftRedeem box
@@ -48,16 +45,15 @@ describe('GiftRedeemExtractor', () => {
      * @expected
      * - GiftRedeems should extract successfully
      */
-    extractorTest(
-      `should successfully extract data from a sample GiftRedeem box`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.extractBoxData(
-          sampleGiftRedeemBoxes[0],
-        );
+    it<TestInterface>(`should successfully extract data from a sample GiftRedeem box`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.extractBoxData(
+        sampleGiftRedeemBoxes[0],
+      );
 
-        expect(extractedData).toEqual(sampleGiftRedeemExtractedData);
-      },
-    );
+      expect(extractedData).toEqual(sampleGiftRedeemExtractedData);
+    });
   });
 
   describe('hasData', () => {
@@ -71,14 +67,13 @@ describe('GiftRedeemExtractor', () => {
      * @expected
      * - GiftRedeems box checking result must be true
      */
-    extractorTest(
-      `should return true when valid box data is provided`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData(sampleGiftRedeemBoxes[0]);
+    it<TestInterface>(`should return true when valid box data is provided`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.hasData(sampleGiftRedeemBoxes[0]);
 
-        expect(extractedData).toBeTruthy();
-      },
-    );
+      expect(extractedData).toBeTruthy();
+    });
 
     /**
      * @target should return false when an invalid box address is provided
@@ -90,17 +85,17 @@ describe('GiftRedeemExtractor', () => {
      * @expected
      * - GiftRedeems box checking result must be false
      */
-    extractorTest(
-      `should return false when an invalid box address is provided`,
-      async ({ extractor, boxFalseErgoTree }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleGiftRedeemBoxes[0],
-          ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
-        });
+    it<TestInterface>(`should return false when an invalid box address is provided`, async ({
+      extractor,
+      boxFalseErgoTree,
+    }) => {
+      const extractedData = await extractor.hasData({
+        ...sampleGiftRedeemBoxes[0],
+        ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
+      });
 
-        expect(extractedData).toBeFalsy();
-      },
-    );
+      expect(extractedData).toBeFalsy();
+    });
 
     /**
      * @target should return false when R6 is empty
@@ -112,20 +107,19 @@ describe('GiftRedeemExtractor', () => {
      * @expected
      * - GiftRedeems box checking result must be false
      */
-    extractorTest(
-      `should return false when R6 is empty`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleGiftRedeemBoxes[0],
-          additionalRegisters: {
-            ...sampleGiftRedeemBoxes[0].additionalRegisters,
-            R6: undefined,
-          },
-        });
+    it<TestInterface>(`should return false when R6 is empty`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.hasData({
+        ...sampleGiftRedeemBoxes[0],
+        additionalRegisters: {
+          ...sampleGiftRedeemBoxes[0].additionalRegisters,
+          R6: undefined,
+        },
+      });
 
-        expect(extractedData).toBeFalsy();
-      },
-    );
+      expect(extractedData).toBeFalsy();
+    });
 
     /**
      * @target should return false when the asset's licenseTokenId is invalid
@@ -137,27 +131,26 @@ describe('GiftRedeemExtractor', () => {
      * @expected
      * - GiftRedeems box checking result must be false
      */
-    extractorTest(
-      `should return false when the asset's licenseTokenId is invalid`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleGiftRedeemBoxes[0],
-          assets: [
-            {
-              // invalid licenseTokenId
-              tokenId: '1'.repeat(64),
-              amount: 1n,
-            },
-            {
-              tokenId: '2'.repeat(64),
-              amount: 1n,
-            },
-          ],
-        });
+    it<TestInterface>(`should return false when the asset's licenseTokenId is invalid`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.hasData({
+        ...sampleGiftRedeemBoxes[0],
+        assets: [
+          {
+            // invalid licenseTokenId
+            tokenId: '1'.repeat(64),
+            amount: 1n,
+          },
+          {
+            tokenId: '2'.repeat(64),
+            amount: 1n,
+          },
+        ],
+      });
 
-        expect(extractedData).toBeFalsy();
-      },
-    );
+      expect(extractedData).toBeFalsy();
+    });
 
     /**
      * @target should return false when assets are empty
@@ -169,16 +162,15 @@ describe('GiftRedeemExtractor', () => {
      * @expected
      * - GiftRedeems box checking result must be false
      */
-    extractorTest(
-      `should return false when assets are empty`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleGiftRedeemBoxes[0],
-          assets: [],
-        });
+    it<TestInterface>(`should return false when assets are empty`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.hasData({
+        ...sampleGiftRedeemBoxes[0],
+        assets: [],
+      });
 
-        expect(extractedData).toBeFalsy();
-      },
-    );
+      expect(extractedData).toBeFalsy();
+    });
   });
 });

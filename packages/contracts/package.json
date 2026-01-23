@@ -25,11 +25,11 @@
     "lint:check": "eslint . && npm run prettify:check",
     "make-build-template": "tsx ./cli/index.ts make-input-template --for-build",
     "make-input-template": "tsx ./cli/index.ts make-input-template",
-    "prettify": "prettier --write {lib,cli,tests}/*.ts",
-    "prettify:check": "prettier --check {lib,cli,tests}/*.ts",
+    "prettify": "prettier --write . --ignore-path ../../.gitignore --ignore-path .prettierignore",
+    "prettify:check": "prettier --check . --ignore-path ../../.gitignore --ignore-path .prettierignore",
     "release": "npm run test -- --run && npm run build && npm publish --access public",
     "test": "cross-env NODE_OPTIONS=\"--import tsx\" vitest",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc -p ./tsconfig.check.json"
   },
   "dependencies": {
     "@fleet-sdk/common": "^0.10.0",

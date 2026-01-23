@@ -1,11 +1,11 @@
-import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
 import { ServiceManager } from '@rosen-bridge/service-manager';
 
 import './bootstrap';
 import { configs } from './config';
+import callbackLogger from './loggers';
 import { InitializerService } from './services/initializerService';
 
-const logger = CallbackLoggerFactory.getInstance().getLogger(import.meta.url);
+const logger = callbackLogger.child(import.meta.url);
 
 const main = async () => {
   const serviceManager = ServiceManager.setup();
@@ -15,7 +15,7 @@ const main = async () => {
   logger.debug('Initializing services');
   await InitializerService.init(
     serviceManager,
-    CallbackLoggerFactory.getInstance().getLogger('Initializer'),
+    callbackLogger.child('Initializer'),
   );
   serviceManager.register(InitializerService.getInstance());
   logger.debug('Initializer service registered to the service manager');

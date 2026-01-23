@@ -1,8 +1,9 @@
 import { compile } from '@fleet-sdk/compiler';
-import { Network } from '@fleet-sdk/core';
+import { ErgoTree, Network } from '@fleet-sdk/core';
+import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
-import WinstonLogger from '@rosen-bridge/winston-logger/dist/WinstonLogger';
-import { describe, it, expect } from 'vitest';
+import WinstonLogger from '@rosen-bridge/winston-logger';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 import { GiftExtractor } from '../../lib/extractors/gift';
 import { createDatabase } from '../utils.mock';
@@ -12,39 +13,35 @@ import {
   sampleGiftExtractedData,
 } from './mocked/gift.mock';
 
-/*
- * create fixtures that contains below steps data:
- *   - create datasource and initial database
- *   - create extractor
- * @returns vitest customized "it" object
- */
-const createGiftExtractorTest = async () => {
-  const dataSource = await createDatabase();
-  const boxErgoTree = compile('{sigmaProp(true);}');
-  const boxFalseErgoTree = compile('{sigmaProp(false);}');
+interface TestInterface {
+  extractor: GiftExtractor;
+  dataSource: DataSource;
+  boxFalseErgoTree: ErgoTree;
+}
 
-  const winstonLogger = new WinstonLogger([
-    { type: 'console', level: 'debug' },
-  ]);
-  const logger = winstonLogger.getLogger(import.meta.url);
+describe('GiftExtractor', () => {
+  beforeEach<TestInterface>(async (ctx) => {
+    const dataSource = await createDatabase();
+    const boxErgoTree = compile('{sigmaProp(true);}');
+    const boxFalseErgoTree = compile('{sigmaProp(false);}');
 
-  return it.extend({
-    extractor: new GiftExtractor(
+    const winstonLogger = WinstonLogger.createLogger([
+      { type: 'console', level: 'debug' },
+    ]);
+    const logger = winstonLogger.child(import.meta.url);
+
+    ctx.extractor = new GiftExtractor(
       dataSource,
       'Gift',
       'http://127.0.0.1/',
       ErgoNetworkType.Node,
       boxErgoTree.toAddress(Network.Testnet).toString(),
       logger,
-    ),
-    dataSource: dataSource,
-    boxFalseErgoTree: boxFalseErgoTree,
+    );
+    ctx.dataSource = dataSource;
+    ctx.boxFalseErgoTree = boxFalseErgoTree;
   });
-};
 
-const extractorTest = await createGiftExtractorTest();
-
-describe('GiftExtractor', () => {
   describe('extractBoxData', () => {
     /**
      * @target should successfully extract data from a sample gift box
@@ -55,21 +52,20 @@ describe('GiftExtractor', () => {
      * @expected
      * - Gifts should extract successfully
      */
-    extractorTest(
-      `should successfully extract data from a sample gift box`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.extractBoxData(
-          sampleGiftBoxes[0],
-          sampleGiftExtension,
-          {
-            raffleId:
-              'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
-          },
-        );
+    it<TestInterface>(`should successfully extract data from a sample gift box`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.extractBoxData(
+        sampleGiftBoxes[0],
+        sampleGiftExtension,
+        {
+          raffleId:
+            'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
+        },
+      );
 
-        expect(extractedData).toEqual(sampleGiftExtractedData);
-      },
-    );
+      expect(extractedData).toEqual(sampleGiftExtractedData);
+    });
 
     /**
      * @target should fail extracting data from a sample gift box and by empty extension value
@@ -80,21 +76,20 @@ describe('GiftExtractor', () => {
      * @expected
      * - Gifts should not extract successfully
      */
-    extractorTest(
-      `should fail extracting data from a sample gift box and by empty extension value`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.extractBoxData(
-          sampleGiftBoxes[0],
-          [],
-          {
-            raffleId:
-              'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
-          },
-        );
+    it<TestInterface>(`should fail extracting data from a sample gift box and by empty extension value`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.extractBoxData(
+        sampleGiftBoxes[0],
+        [],
+        {
+          raffleId:
+            'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
+        },
+      );
 
-        expect(extractedData).toEqual(undefined);
-      },
-    );
+      expect(extractedData).toEqual(undefined);
+    });
   });
 
   describe('hasData', () => {
@@ -108,14 +103,13 @@ describe('GiftExtractor', () => {
      * @expected
      * - Gifts box checking result must be true
      */
-    extractorTest(
-      `should return true with valid box data`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData(sampleGiftBoxes[0]);
+    it<TestInterface>(`should return true with valid box data`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.hasData(sampleGiftBoxes[0]);
 
-        expect(extractedData).toBeTruthy();
-      },
-    );
+      expect(extractedData).toBeTruthy();
+    });
 
     /**
      * @target should return false with an invalid box address
@@ -127,17 +121,17 @@ describe('GiftExtractor', () => {
      * @expected
      * - Gifts box checking result must be false
      */
-    extractorTest(
-      `should return false with an invalid box address`,
-      async ({ extractor, boxFalseErgoTree }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleGiftBoxes[0],
-          ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
-        });
+    it<TestInterface>(`should return false with an invalid box address`, async ({
+      extractor,
+      boxFalseErgoTree,
+    }) => {
+      const extractedData = await extractor.hasData({
+        ...sampleGiftBoxes[0],
+        ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
+      });
 
-        expect(extractedData).toBeFalsy();
-      },
-    );
+      expect(extractedData).toBeFalsy();
+    });
 
     /**
      * @target should return false with an empty R5 value
@@ -149,19 +143,18 @@ describe('GiftExtractor', () => {
      * @expected
      * - Gifts box checking result must be false
      */
-    extractorTest(
-      `should return false with an empty R5 value`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleGiftBoxes[0],
-          additionalRegisters: {
-            ...sampleGiftBoxes[0].additionalRegisters,
-            R5: undefined,
-          },
-        });
+    it<TestInterface>(`should return false with an empty R5 value`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.hasData({
+        ...sampleGiftBoxes[0],
+        additionalRegisters: {
+          ...sampleGiftBoxes[0].additionalRegisters,
+          R5: undefined,
+        },
+      });
 
-        expect(extractedData).toBeFalsy();
-      },
-    );
+      expect(extractedData).toBeFalsy();
+    });
   });
 });

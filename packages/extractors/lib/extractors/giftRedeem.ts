@@ -32,7 +32,7 @@ export class GiftRedeemExtractor extends AbstractInitializableErgoExtractor<
     this.id = id;
     this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
     this.raffleLicenseId = raffleLicenseId;
-    this.actions = new GiftRedeemAction(dataSource, this.logger);
+    this.actions = new GiftRedeemAction(dataSource, logger);
   }
 
   /**

@@ -1,5 +1,4 @@
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
-import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
 import {
   AbstractService,
   Dependency,
@@ -9,6 +8,7 @@ import {
 
 import { configs } from '../config';
 import dataSource from '../dataSource';
+import callbackLogger from '../loggers';
 import { ApiService } from './apiService';
 import { BoxLookupService } from './boxLookup/boxLookupService';
 import { DbService } from './dbService';
@@ -183,51 +183,28 @@ export class InitializerService extends AbstractService {
    */
   private initializeAllServices = async (): Promise<void> => {
     // Create logger instances for each service
-    const dbLogger = CallbackLoggerFactory.getInstance().getLogger('DbService');
-    const scannerLogger =
-      CallbackLoggerFactory.getInstance().getLogger('ScannerService');
-    const txPotLogger =
-      CallbackLoggerFactory.getInstance().getLogger('TxPotService');
-    const healthCheckLogger =
-      CallbackLoggerFactory.getInstance().getLogger('HealthCheckService');
-    const boxLookupLogger =
-      CallbackLoggerFactory.getInstance().getLogger('BoxLookupService');
-    const apiLogger =
-      CallbackLoggerFactory.getInstance().getLogger('ApiService');
-    const creationLogger =
-      CallbackLoggerFactory.getInstance().getLogger('CreationService');
-    const activationLogger =
-      CallbackLoggerFactory.getInstance().getLogger('ActivationService');
-    const giftTokenReceiptLogger =
-      CallbackLoggerFactory.getInstance().getLogger('GiftTokenReceiptService');
-    const donationLogger =
-      CallbackLoggerFactory.getInstance().getLogger('DonationService');
-    const addGiftLogger =
-      CallbackLoggerFactory.getInstance().getLogger('AddGiftService');
-    const feePaymentLogger =
-      CallbackLoggerFactory.getInstance().getLogger('FeePaymentService');
-    const prizeCreationLogger = CallbackLoggerFactory.getInstance().getLogger(
-      'PrizeCreationService',
+    const dbLogger = callbackLogger.child('DbService');
+    const scannerLogger = callbackLogger.child('ScannerService');
+    const txPotLogger = callbackLogger.child('TxPotService');
+    const healthCheckLogger = callbackLogger.child('HealthCheckService');
+    const boxLookupLogger = callbackLogger.child('BoxLookupService');
+    const apiLogger = callbackLogger.child('ApiService');
+    const creationLogger = callbackLogger.child('CreationService');
+    const activationLogger = callbackLogger.child('ActivationService');
+    const giftTokenReceiptLogger = callbackLogger.child(
+      'GiftTokenReceiptService',
     );
-    const giftAndPrizeLogger = CallbackLoggerFactory.getInstance().getLogger(
-      'GiftAndPrizeService',
-    );
-    const failureLogger =
-      CallbackLoggerFactory.getInstance().getLogger('FailureService');
-    const giftReturnLogger =
-      CallbackLoggerFactory.getInstance().getLogger('GiftReturnService');
-    const winnerRemovalLogger = CallbackLoggerFactory.getInstance().getLogger(
-      'WinnerRemovalService',
-    );
-    const ticketRedeemLogger = CallbackLoggerFactory.getInstance().getLogger(
-      'TicketRedeemService',
-    );
-    const licenseRedeemLogger = CallbackLoggerFactory.getInstance().getLogger(
-      'LicenseRedeemService',
-    );
-    const safeWithdrawalLogger = CallbackLoggerFactory.getInstance().getLogger(
-      'SafeWithdrawalService',
-    );
+    const donationLogger = callbackLogger.child('DonationService');
+    const addGiftLogger = callbackLogger.child('AddGiftService');
+    const feePaymentLogger = callbackLogger.child('FeePaymentService');
+    const prizeCreationLogger = callbackLogger.child('PrizeCreationService');
+    const giftAndPrizeLogger = callbackLogger.child('GiftAndPrizeService');
+    const failureLogger = callbackLogger.child('FailureService');
+    const giftReturnLogger = callbackLogger.child('GiftReturnService');
+    const winnerRemovalLogger = callbackLogger.child('WinnerRemovalService');
+    const ticketRedeemLogger = callbackLogger.child('TicketRedeemService');
+    const licenseRedeemLogger = callbackLogger.child('LicenseRedeemService');
+    const safeWithdrawalLogger = callbackLogger.child('SafeWithdrawalService');
 
     // Initialize database service
     this.logger.debug('Initializing database service');

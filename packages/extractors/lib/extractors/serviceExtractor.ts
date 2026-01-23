@@ -35,7 +35,7 @@ export class ServiceExtractor extends AbstractInitializableErgoExtractor<
     this.id = id;
     this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
     this.serviceNFTId = serviceNFTId;
-    this.actions = new ServiceAction(dataSource, this.logger);
+    this.actions = new ServiceAction(dataSource, logger);
   }
 
   /**

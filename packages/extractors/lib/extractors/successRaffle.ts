@@ -35,7 +35,7 @@ export class SuccessRaffleExtractor extends AbstractInitializableErgoExtractor<
     this.id = id;
     this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
     this.raffleLicenseId = raffleLicenseId;
-    this.actions = new SuccessRaffleAction(dataSource, this.logger);
+    this.actions = new SuccessRaffleAction(dataSource, logger);
   }
 
   /**

@@ -23,7 +23,7 @@ export class DynamicExtractor extends AbstractErgoExtractor<
     private networkType: Network = Network.Mainnet,
   ) {
     super(logger);
-    this.actions = new DynamicBoxAction(dataSource, this.logger);
+    this.actions = new DynamicBoxAction(dataSource, logger);
   }
 
   /**

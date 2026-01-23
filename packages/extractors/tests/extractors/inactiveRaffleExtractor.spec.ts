@@ -1,6 +1,6 @@
 import { compile } from '@fleet-sdk/compiler';
-import { Network, SByte, SColl, SLong } from '@fleet-sdk/core';
-import { describe, it, expect } from 'vitest';
+import { ErgoTree, Network, SByte, SColl, SLong } from '@fleet-sdk/core';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 import { InactiveRaffleExtractor } from '../../lib/extractors/inactiveRaffleExtractor';
 import { createDatabase } from '../utils.mock';
@@ -11,33 +11,28 @@ import {
   sampleInactiveRaffleExtractedData,
 } from './mocked/inactiveRaffle.mock';
 
-/*
- * create fixtures that contains below steps data:
- *   - create datasource and initial database
- *   - create extractor
- * @returns vitest customized "it" object
- */
-const createInactiveRaffleExtractorTest = async () => {
-  const dataSource = await createDatabase();
-  const boxErgoTree = compile('{sigmaProp(true);}');
-  const boxFalseErgoTree = compile('{sigmaProp(false);}');
+interface TestInterface {
+  extractor: InactiveRaffleExtractor;
+  boxFalseErgoTree: ErgoTree;
+}
 
-  return it.extend({
-    extractor: new InactiveRaffleExtractor(
+describe('InactiveRaffleExtractor', () => {
+  beforeEach<TestInterface>(async (ctx) => {
+    const dataSource = await createDatabase();
+    const boxErgoTree = compile('{sigmaProp(true);}');
+    const boxFalseErgoTree = compile('{sigmaProp(false);}');
+
+    ctx.extractor = new InactiveRaffleExtractor(
       dataSource,
       'InactiveRaffle',
       'http://127.0.0.1/',
       boxErgoTree.toAddress(Network.Testnet).toString(),
       serviceWallet.address.toString(),
       '2'.repeat(64),
-    ),
-    boxFalseErgoTree: boxFalseErgoTree,
+    );
+    ctx.boxFalseErgoTree = boxFalseErgoTree;
   });
-};
 
-const extractorTest = await createInactiveRaffleExtractorTest();
-
-describe('InactiveRaffleExtractor', () => {
   describe('extractBoxData', () => {
     /**
      * @target should extract data from sample InactiveRaffle box
@@ -48,17 +43,16 @@ describe('InactiveRaffleExtractor', () => {
      * @expected
      * - InactiveRaffles should extract successfully
      */
-    extractorTest(
-      `should extract data from sample InactiveRaffle box`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.extractBoxData(
-          sampleInactiveRaffleBoxes[0],
-          sampleInactiveRaffleExtensions,
-        );
+    it<TestInterface>(`should extract data from sample InactiveRaffle box`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.extractBoxData(
+        sampleInactiveRaffleBoxes[0],
+        sampleInactiveRaffleExtensions,
+      );
 
-        expect(extractedData).toEqual(sampleInactiveRaffleExtractedData);
-      },
-    );
+      expect(extractedData).toEqual(sampleInactiveRaffleExtractedData);
+    });
 
     /**
      * @target should extract data from sample InactiveRaffle box with empty extension data
@@ -69,17 +63,16 @@ describe('InactiveRaffleExtractor', () => {
      * @expected
      * - InactiveRaffles should extract successfully
      */
-    extractorTest(
-      `should extract data from sample InactiveRaffle box with empty extension data`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.extractBoxData(
-          sampleInactiveRaffleBoxes[0],
-          [],
-        );
+    it<TestInterface>(`should extract data from sample InactiveRaffle box with empty extension data`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.extractBoxData(
+        sampleInactiveRaffleBoxes[0],
+        [],
+      );
 
-        expect(extractedData).toEqual(undefined);
-      },
-    );
+      expect(extractedData).toEqual(undefined);
+    });
   });
 
   describe('hasData', () => {
@@ -93,16 +86,15 @@ describe('InactiveRaffleExtractor', () => {
      * @expected
      * - InactiveRaffles box checking result must be true
      */
-    extractorTest(
-      `should returns true with valid box data`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData(
-          sampleInactiveRaffleBoxes[0],
-        );
+    it<TestInterface>(`should returns true with valid box data`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.hasData(
+        sampleInactiveRaffleBoxes[0],
+      );
 
-        expect(extractedData).toBeTruthy();
-      },
-    );
+      expect(extractedData).toBeTruthy();
+    });
 
     /**
      * @target should returns false with invalid box data
@@ -114,18 +106,18 @@ describe('InactiveRaffleExtractor', () => {
      * @expected
      * - InactiveRaffles box checking result must be false
      */
-    extractorTest(
-      `should returns false with invalid box data`,
-      async ({ extractor, boxFalseErgoTree }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleInactiveRaffleBoxes[0],
-          // set invalid ergoTree
-          ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
-        });
+    it<TestInterface>(`should returns false with invalid box data`, async ({
+      extractor,
+      boxFalseErgoTree,
+    }) => {
+      const extractedData = await extractor.hasData({
+        ...sampleInactiveRaffleBoxes[0],
+        // set invalid ergoTree
+        ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
+      });
 
-        expect(extractedData).toBeFalsy();
-      },
-    );
+      expect(extractedData).toBeFalsy();
+    });
 
     /**
      * @target should returns false when license token-id is invalid
@@ -137,23 +129,22 @@ describe('InactiveRaffleExtractor', () => {
      * @expected
      * - InactiveRaffles box checking result must be false
      */
-    extractorTest(
-      `should returns false when license token-id is invalid`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleInactiveRaffleBoxes[0],
-          assets: [
-            {
-              // set invalid raffle-license token id
-              tokenId: '3'.repeat(64),
-              amount: 1n,
-            },
-          ],
-        });
+    it<TestInterface>(`should returns false when license token-id is invalid`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.hasData({
+        ...sampleInactiveRaffleBoxes[0],
+        assets: [
+          {
+            // set invalid raffle-license token id
+            tokenId: '3'.repeat(64),
+            amount: 1n,
+          },
+        ],
+      });
 
-        expect(extractedData).toBeFalsy();
-      },
-    );
+      expect(extractedData).toBeFalsy();
+    });
 
     /**
      * @target should returns false when additionalRegisters is empty
@@ -165,17 +156,16 @@ describe('InactiveRaffleExtractor', () => {
      * @expected
      * - InactiveRaffles box checking result must be false
      */
-    extractorTest(
-      `should returns false when additionalRegisters is empty`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleInactiveRaffleBoxes[0],
-          additionalRegisters: {},
-        });
+    it<TestInterface>(`should returns false when additionalRegisters is empty`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.hasData({
+        ...sampleInactiveRaffleBoxes[0],
+        additionalRegisters: {},
+      });
 
-        expect(extractedData).toBeFalsy();
-      },
-    );
+      expect(extractedData).toBeFalsy();
+    });
 
     /**
      * @target should returns false when R4 length is not valid
@@ -187,20 +177,19 @@ describe('InactiveRaffleExtractor', () => {
      * @expected
      * - InactiveRaffles box checking result must be false
      */
-    extractorTest(
-      `should returns false when R4 length is not valid`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleInactiveRaffleBoxes[0],
-          additionalRegisters: {
-            ...sampleInactiveRaffleBoxes[0].additionalRegisters,
-            R4: SColl(SLong, []).toHex(),
-          },
-        });
+    it<TestInterface>(`should returns false when R4 length is not valid`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.hasData({
+        ...sampleInactiveRaffleBoxes[0],
+        additionalRegisters: {
+          ...sampleInactiveRaffleBoxes[0].additionalRegisters,
+          R4: SColl(SLong, []).toHex(),
+        },
+      });
 
-        expect(extractedData).toBeFalsy();
-      },
-    );
+      expect(extractedData).toBeFalsy();
+    });
 
     /**
      * @target should returns false when R7 length is not valid
@@ -212,19 +201,18 @@ describe('InactiveRaffleExtractor', () => {
      * @expected
      * - InactiveRaffles box checking result must be false
      */
-    extractorTest(
-      `should returns false when R7 length is not valid`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleInactiveRaffleBoxes[0],
-          additionalRegisters: {
-            ...sampleInactiveRaffleBoxes[0].additionalRegisters,
-            R7: SColl(SColl(SByte), []).toHex(),
-          },
-        });
+    it<TestInterface>(`should returns false when R7 length is not valid`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.hasData({
+        ...sampleInactiveRaffleBoxes[0],
+        additionalRegisters: {
+          ...sampleInactiveRaffleBoxes[0].additionalRegisters,
+          R7: SColl(SColl(SByte), []).toHex(),
+        },
+      });
 
-        expect(extractedData).toBeFalsy();
-      },
-    );
+      expect(extractedData).toBeFalsy();
+    });
   });
 });

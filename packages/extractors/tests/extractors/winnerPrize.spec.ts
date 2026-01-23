@@ -1,7 +1,8 @@
 import { compile } from '@fleet-sdk/compiler';
-import { Network, SColl, SLong } from '@fleet-sdk/core';
+import { ErgoTree, Network, SColl, SLong } from '@fleet-sdk/core';
+import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 import { WinnerPrizeExtractor } from '../../lib/extractors/winnerPrize';
 import { createDatabase } from '../utils.mock';
@@ -10,33 +11,29 @@ import {
   sampleWinnerPrizeExtractedData,
 } from './mocked/winnerPrize.mock';
 
-/*
- * create fixtures that contains below steps data:
- *   - create datasource and initial database
- *   - create extractor
- * @returns vitest customized "it" object
- */
-const createWinnerPrizeExtractorTest = async () => {
-  const dataSource = await createDatabase();
-  const boxErgoTree = compile('{sigmaProp(true);}');
-  const boxFalseErgoTree = compile('{sigmaProp(false);}');
+interface TestInterface {
+  extractor: WinnerPrizeExtractor;
+  dataSource: DataSource;
+  boxFalseErgoTree: ErgoTree;
+}
 
-  return it.extend({
-    extractor: new WinnerPrizeExtractor(
+describe('WinnerPrizeExtractor', () => {
+  beforeEach<TestInterface>(async (ctx) => {
+    const dataSource = await createDatabase();
+    const boxErgoTree = compile('{sigmaProp(true);}');
+    const boxFalseErgoTree = compile('{sigmaProp(false);}');
+
+    ctx.extractor = new WinnerPrizeExtractor(
       dataSource,
       'WinnerPrize',
       'http://127.0.0.1/',
       ErgoNetworkType.Node,
       boxErgoTree.toAddress(Network.Testnet).toString(),
-    ),
-    dataSource: dataSource,
-    boxFalseErgoTree: boxFalseErgoTree,
+    );
+    ctx.dataSource = dataSource;
+    ctx.boxFalseErgoTree = boxFalseErgoTree;
   });
-};
 
-const extractorTest = await createWinnerPrizeExtractorTest();
-
-describe('WinnerPrizeExtractor', () => {
   describe('extractBoxData', () => {
     /**
      * @target should successfully extract data from a sample WinnerPrize box
@@ -47,16 +44,15 @@ describe('WinnerPrizeExtractor', () => {
      * @expected
      * - WinnerPrizes should extract successfully
      */
-    extractorTest(
-      `should successfully extract data from a sample WinnerPrize box`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.extractBoxData(
-          sampleWinnerPrizeBoxes[0],
-        );
+    it<TestInterface>(`should successfully extract data from a sample WinnerPrize box`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.extractBoxData(
+        sampleWinnerPrizeBoxes[0],
+      );
 
-        expect(extractedData).toEqual(sampleWinnerPrizeExtractedData);
-      },
-    );
+      expect(extractedData).toEqual(sampleWinnerPrizeExtractedData);
+    });
   });
 
   describe('hasData', () => {
@@ -70,16 +66,13 @@ describe('WinnerPrizeExtractor', () => {
      * @expected
      * - WinnerPrizes box checking result must be true
      */
-    extractorTest(
-      `should return true when valid box data is provided`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData(
-          sampleWinnerPrizeBoxes[0],
-        );
+    it<TestInterface>(`should return true when valid box data is provided`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.hasData(sampleWinnerPrizeBoxes[0]);
 
-        expect(extractedData).toBeTruthy();
-      },
-    );
+      expect(extractedData).toBeTruthy();
+    });
 
     /**
      * @target should return false when an invalid box address is provided
@@ -91,17 +84,17 @@ describe('WinnerPrizeExtractor', () => {
      * @expected
      * - WinnerPrizes box checking result must be false
      */
-    extractorTest(
-      `should return false when an invalid box address is provided`,
-      async ({ extractor, boxFalseErgoTree }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleWinnerPrizeBoxes[0],
-          ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
-        });
+    it<TestInterface>(`should return false when an invalid box address is provided`, async ({
+      extractor,
+      boxFalseErgoTree,
+    }) => {
+      const extractedData = await extractor.hasData({
+        ...sampleWinnerPrizeBoxes[0],
+        ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
+      });
 
-        expect(extractedData).toBeFalsy();
-      },
-    );
+      expect(extractedData).toBeFalsy();
+    });
 
     /**
      * @target should return false when R4 length is not valid
@@ -113,20 +106,19 @@ describe('WinnerPrizeExtractor', () => {
      * @expected
      * - WinnerPrizes box checking result must be false
      */
-    extractorTest(
-      `should return false when R4 length is not valid`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleWinnerPrizeBoxes[0],
-          additionalRegisters: {
-            ...sampleWinnerPrizeBoxes[0].additionalRegisters,
-            R4: SColl(SLong, []).toHex(),
-          },
-        });
+    it<TestInterface>(`should return false when R4 length is not valid`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.hasData({
+        ...sampleWinnerPrizeBoxes[0],
+        additionalRegisters: {
+          ...sampleWinnerPrizeBoxes[0].additionalRegisters,
+          R4: SColl(SLong, []).toHex(),
+        },
+      });
 
-        expect(extractedData).toBeFalsy();
-      },
-    );
+      expect(extractedData).toBeFalsy();
+    });
 
     /**
      * @target should return false when R5 is empty
@@ -138,20 +130,19 @@ describe('WinnerPrizeExtractor', () => {
      * @expected
      * - WinnerPrizes box checking result must be false
      */
-    extractorTest(
-      `should return false when R5 is empty`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleWinnerPrizeBoxes[0],
-          additionalRegisters: {
-            ...sampleWinnerPrizeBoxes[0].additionalRegisters,
-            R5: undefined,
-          },
-        });
+    it<TestInterface>(`should return false when R5 is empty`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.hasData({
+        ...sampleWinnerPrizeBoxes[0],
+        additionalRegisters: {
+          ...sampleWinnerPrizeBoxes[0].additionalRegisters,
+          R5: undefined,
+        },
+      });
 
-        expect(extractedData).toBeFalsy();
-      },
-    );
+      expect(extractedData).toBeFalsy();
+    });
 
     /**
      * @target should return false when R6 is empty
@@ -163,20 +154,19 @@ describe('WinnerPrizeExtractor', () => {
      * @expected
      * - WinnerPrizes box checking result must be false
      */
-    extractorTest(
-      `should return false when R6 is empty`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleWinnerPrizeBoxes[0],
-          additionalRegisters: {
-            ...sampleWinnerPrizeBoxes[0].additionalRegisters,
-            R6: undefined,
-          },
-        });
+    it<TestInterface>(`should return false when R6 is empty`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.hasData({
+        ...sampleWinnerPrizeBoxes[0],
+        additionalRegisters: {
+          ...sampleWinnerPrizeBoxes[0].additionalRegisters,
+          R6: undefined,
+        },
+      });
 
-        expect(extractedData).toBeFalsy();
-      },
-    );
+      expect(extractedData).toBeFalsy();
+    });
 
     /**
      * @target should return false when assets are empty
@@ -188,16 +178,15 @@ describe('WinnerPrizeExtractor', () => {
      * @expected
      * - WinnerPrizes box checking result must be false
      */
-    extractorTest(
-      `should return false when assets are empty`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleWinnerPrizeBoxes[0],
-          assets: [],
-        });
+    it<TestInterface>(`should return false when assets are empty`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.hasData({
+        ...sampleWinnerPrizeBoxes[0],
+        assets: [],
+      });
 
-        expect(extractedData).toBeFalsy();
-      },
-    );
+      expect(extractedData).toBeFalsy();
+    });
   });
 });

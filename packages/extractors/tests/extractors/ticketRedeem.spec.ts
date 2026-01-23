@@ -1,7 +1,7 @@
 import { compile } from '@fleet-sdk/compiler';
-import { Network, SColl, SLong } from '@fleet-sdk/core';
+import { ErgoTree, Network, SColl, SLong } from '@fleet-sdk/core';
 import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 import { TicketRedeemExtractor } from '../../lib/extractors/ticketRedeem';
 import { createDatabase } from '../utils.mock';
@@ -10,33 +10,28 @@ import {
   sampleTicketRedeemExtractedData,
 } from './mocked/ticketRedeem.mock';
 
-/*
- * create fixtures that contains below steps data:
- *   - create datasource and initial database
- *   - create extractor
- * @returns vitest customized "it" object
- */
-const createTicketRedeemExtractorTest = async () => {
-  const dataSource = await createDatabase();
-  const boxErgoTree = compile('{sigmaProp(true);}');
-  const boxFalseErgoTree = compile('{sigmaProp(false);}');
+interface TestInterface {
+  extractor: TicketRedeemExtractor;
+  boxFalseErgoTree: ErgoTree;
+}
 
-  return it.extend({
-    extractor: new TicketRedeemExtractor(
+describe('TicketRedeemExtractor', () => {
+  beforeEach<TestInterface>(async (ctx) => {
+    const dataSource = await createDatabase();
+    const boxErgoTree = compile('{sigmaProp(true);}');
+    const boxFalseErgoTree = compile('{sigmaProp(false);}');
+
+    ctx.extractor = new TicketRedeemExtractor(
       dataSource,
       'TicketRedeem',
       'http://127.0.0.1/',
       ErgoNetworkType.Node,
       boxErgoTree.toAddress(Network.Testnet).toString(),
       '716149d5c68e4ea1ea0529b60c7029797ffb26f3d401d44f9aadd4b090593e4e',
-    ),
-    boxFalseErgoTree: boxFalseErgoTree,
+    );
+    ctx.boxFalseErgoTree = boxFalseErgoTree;
   });
-};
 
-const extractorTest = await createTicketRedeemExtractorTest();
-
-describe('TicketRedeemExtractor', () => {
   describe('extractBoxData', () => {
     /**
      * @target should extract data from a sample TicketRedeem box successfully
@@ -47,16 +42,15 @@ describe('TicketRedeemExtractor', () => {
      * @expected
      * - TicketRedeems should extract successfully
      */
-    extractorTest(
-      `should extract data from a sample TicketRedeem box successfully`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.extractBoxData(
-          sampleTicketRedeemBoxes[0],
-        );
+    it<TestInterface>(`should extract data from a sample TicketRedeem box successfully`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.extractBoxData(
+        sampleTicketRedeemBoxes[0],
+      );
 
-        expect(extractedData).toEqual(sampleTicketRedeemExtractedData);
-      },
-    );
+      expect(extractedData).toEqual(sampleTicketRedeemExtractedData);
+    });
   });
 
   describe('hasData', () => {
@@ -70,16 +64,13 @@ describe('TicketRedeemExtractor', () => {
      * @expected
      * - TicketRedeems box checking result must be true
      */
-    extractorTest(
-      `should return true for valid box data`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData(
-          sampleTicketRedeemBoxes[0],
-        );
+    it<TestInterface>(`should return true for valid box data`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.hasData(sampleTicketRedeemBoxes[0]);
 
-        expect(extractedData).toBeTruthy();
-      },
-    );
+      expect(extractedData).toBeTruthy();
+    });
 
     /**
      * @target should return false for invalid box address
@@ -91,17 +82,17 @@ describe('TicketRedeemExtractor', () => {
      * @expected
      * - TicketRedeems box checking result must be false
      */
-    extractorTest(
-      `should return false for invalid box address`,
-      async ({ extractor, boxFalseErgoTree }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleTicketRedeemBoxes[0],
-          ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
-        });
+    it<TestInterface>(`should return false for invalid box address`, async ({
+      extractor,
+      boxFalseErgoTree,
+    }) => {
+      const extractedData = await extractor.hasData({
+        ...sampleTicketRedeemBoxes[0],
+        ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
+      });
 
-        expect(extractedData).toBeFalsy();
-      },
-    );
+      expect(extractedData).toBeFalsy();
+    });
 
     /**
      * @target should return false when assets is empty
@@ -113,17 +104,16 @@ describe('TicketRedeemExtractor', () => {
      * @expected
      * - TicketRedeems box checking result must be false
      */
-    extractorTest(
-      `should return false when assets is empty`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleTicketRedeemBoxes[0],
-          assets: [],
-        });
+    it<TestInterface>(`should return false when assets is empty`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.hasData({
+        ...sampleTicketRedeemBoxes[0],
+        assets: [],
+      });
 
-        expect(extractedData).toBeFalsy();
-      },
-    );
+      expect(extractedData).toBeFalsy();
+    });
 
     /**
      * @target should return false when R4 length is invalid
@@ -135,20 +125,19 @@ describe('TicketRedeemExtractor', () => {
      * @expected
      * - TicketRedeems box checking result must be false
      */
-    extractorTest(
-      `should return false when R4 length is invalid`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleTicketRedeemBoxes[0],
-          additionalRegisters: {
-            ...sampleTicketRedeemBoxes[0].additionalRegisters,
-            R4: SColl(SLong, [1n]).toHex(),
-          },
-        });
+    it<TestInterface>(`should return false when R4 length is invalid`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.hasData({
+        ...sampleTicketRedeemBoxes[0],
+        additionalRegisters: {
+          ...sampleTicketRedeemBoxes[0].additionalRegisters,
+          R4: SColl(SLong, [1n]).toHex(),
+        },
+      });
 
-        expect(extractedData).toBeFalsy();
-      },
-    );
+      expect(extractedData).toBeFalsy();
+    });
 
     /**
      * @target should return false when the asset's licenseTokenId is invalid
@@ -160,27 +149,26 @@ describe('TicketRedeemExtractor', () => {
      * @expected
      * - TicketRedeems box checking result must be false
      */
-    extractorTest(
-      `should return false when the asset's licenseTokenId is invalid`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleTicketRedeemBoxes[0],
-          assets: [
-            {
-              // invalid licenseTokenId
-              tokenId: '1'.repeat(64),
-              amount: 1n,
-            },
-            {
-              tokenId: '2'.repeat(64),
-              amount: 1n,
-            },
-          ],
-        });
+    it<TestInterface>(`should return false when the asset's licenseTokenId is invalid`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.hasData({
+        ...sampleTicketRedeemBoxes[0],
+        assets: [
+          {
+            // invalid licenseTokenId
+            tokenId: '1'.repeat(64),
+            amount: 1n,
+          },
+          {
+            tokenId: '2'.repeat(64),
+            amount: 1n,
+          },
+        ],
+      });
 
-        expect(extractedData).toBeFalsy();
-      },
-    );
+      expect(extractedData).toBeFalsy();
+    });
 
     /**
      * @target should return false when R5 is missing
@@ -192,18 +180,17 @@ describe('TicketRedeemExtractor', () => {
      * @expected
      * - TicketRedeems box checking result must be false
      */
-    extractorTest(
-      `should return false when R5 is missing`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleTicketRedeemBoxes[0],
-          additionalRegisters: {
-            R4: sampleTicketRedeemBoxes[0].additionalRegisters!.R4,
-          },
-        });
+    it<TestInterface>(`should return false when R5 is missing`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.hasData({
+        ...sampleTicketRedeemBoxes[0],
+        additionalRegisters: {
+          R4: sampleTicketRedeemBoxes[0].additionalRegisters!.R4,
+        },
+      });
 
-        expect(extractedData).toBeFalsy();
-      },
-    );
+      expect(extractedData).toBeFalsy();
+    });
   });
 });
