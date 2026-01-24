@@ -1,4 +1,5 @@
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { DefaultLogger } from '@rosen-bridge/abstract-logger';
 import {
   AbstractService,
   Dependency,
@@ -8,7 +9,6 @@ import {
 
 import { configs } from '../config';
 import dataSource from '../dataSource';
-import callbackLogger from '../loggers';
 import { ApiService } from './apiService';
 import { BoxLookupService } from './boxLookup/boxLookupService';
 import { DbService } from './dbService';
@@ -183,28 +183,30 @@ export class InitializerService extends AbstractService {
    */
   private initializeAllServices = async (): Promise<void> => {
     // Create logger instances for each service
-    const dbLogger = callbackLogger.child('DbService');
-    const scannerLogger = callbackLogger.child('ScannerService');
-    const txPotLogger = callbackLogger.child('TxPotService');
-    const healthCheckLogger = callbackLogger.child('HealthCheckService');
-    const boxLookupLogger = callbackLogger.child('BoxLookupService');
-    const apiLogger = callbackLogger.child('ApiService');
-    const creationLogger = callbackLogger.child('CreationService');
-    const activationLogger = callbackLogger.child('ActivationService');
-    const giftTokenReceiptLogger = callbackLogger.child(
+    const defaultLogger = DefaultLogger.getInstance();
+
+    const dbLogger = defaultLogger.child('DbService');
+    const scannerLogger = defaultLogger.child('ScannerService');
+    const txPotLogger = defaultLogger.child('TxPotService');
+    const healthCheckLogger = defaultLogger.child('HealthCheckService');
+    const boxLookupLogger = defaultLogger.child('BoxLookupService');
+    const apiLogger = defaultLogger.child('ApiService');
+    const creationLogger = defaultLogger.child('CreationService');
+    const activationLogger = defaultLogger.child('ActivationService');
+    const giftTokenReceiptLogger = defaultLogger.child(
       'GiftTokenReceiptService',
     );
-    const donationLogger = callbackLogger.child('DonationService');
-    const addGiftLogger = callbackLogger.child('AddGiftService');
-    const feePaymentLogger = callbackLogger.child('FeePaymentService');
-    const prizeCreationLogger = callbackLogger.child('PrizeCreationService');
-    const giftAndPrizeLogger = callbackLogger.child('GiftAndPrizeService');
-    const failureLogger = callbackLogger.child('FailureService');
-    const giftReturnLogger = callbackLogger.child('GiftReturnService');
-    const winnerRemovalLogger = callbackLogger.child('WinnerRemovalService');
-    const ticketRedeemLogger = callbackLogger.child('TicketRedeemService');
-    const licenseRedeemLogger = callbackLogger.child('LicenseRedeemService');
-    const safeWithdrawalLogger = callbackLogger.child('SafeWithdrawalService');
+    const donationLogger = defaultLogger.child('DonationService');
+    const addGiftLogger = defaultLogger.child('AddGiftService');
+    const feePaymentLogger = defaultLogger.child('FeePaymentService');
+    const prizeCreationLogger = defaultLogger.child('PrizeCreationService');
+    const giftAndPrizeLogger = defaultLogger.child('GiftAndPrizeService');
+    const failureLogger = defaultLogger.child('FailureService');
+    const giftReturnLogger = defaultLogger.child('GiftReturnService');
+    const winnerRemovalLogger = defaultLogger.child('WinnerRemovalService');
+    const ticketRedeemLogger = defaultLogger.child('TicketRedeemService');
+    const licenseRedeemLogger = defaultLogger.child('LicenseRedeemService');
+    const safeWithdrawalLogger = defaultLogger.child('SafeWithdrawalService');
 
     // Initialize database service
     this.logger.debug('Initializing database service');

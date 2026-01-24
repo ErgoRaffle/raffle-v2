@@ -1,11 +1,11 @@
+import { DefaultLogger } from '@rosen-bridge/abstract-logger';
 import { ServiceManager } from '@rosen-bridge/service-manager';
 
 import './bootstrap';
 import { configs } from './config';
-import callbackLogger from './loggers';
 import { InitializerService } from './services/initializerService';
 
-const logger = callbackLogger.child(import.meta.url);
+const logger = DefaultLogger.getInstance().child(import.meta.url);
 
 const main = async () => {
   const serviceManager = ServiceManager.setup();
@@ -13,10 +13,7 @@ const main = async () => {
   configs.ergo.fee = BigInt(configs.ergo.fee);
 
   logger.debug('Initializing services');
-  await InitializerService.init(
-    serviceManager,
-    callbackLogger.child('Initializer'),
-  );
+  await InitializerService.init(serviceManager, logger.child('Initializer'));
   serviceManager.register(InitializerService.getInstance());
   logger.debug('Initializer service registered to the service manager');
 
