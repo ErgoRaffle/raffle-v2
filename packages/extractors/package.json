@@ -36,8 +36,7 @@
     "@rosen-bridge/scanner": "^8.0.1",
     "@rosen-bridge/scanner-interfaces": "^0.2.1",
     "@rosen-bridge/winston-logger": "^3.0.0",
-    "lodash-es": "^4.17.21",
-    "sqlite3": "^5.1.7"
+    "lodash-es": "^4.17.21"
   },
   "devDependencies": {
     "@fleet-sdk/compiler": "^0.12.0",
