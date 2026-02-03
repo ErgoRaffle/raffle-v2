@@ -42,7 +42,9 @@ export const mockBoxSelector = () => {
         isEligibleForSelection: vi.fn().mockReturnValue(true),
         addBox: vi.fn(),
         isCovering: vi.fn().mockReturnValue(true),
-        getBoxes: vi.fn().mockReturnValue([sampleErgoBoxes.validBoxWithTokens]),
+        flushCoveringBoxes: vi
+          .fn()
+          .mockReturnValue([sampleErgoBoxes.validBoxWithTokens]),
       }) as unknown as BoxSelector,
   );
 };

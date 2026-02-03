@@ -81,8 +81,8 @@ export class BoxSelector {
   };
 
   /**
-   * Check if the selected boxes are covering the request
-   * @returns True if the selected boxes are covering the request, false otherwise
+   * Check if there exists a set of boxes that covers the request
+   * @returns True if there exists a set of boxes that covers the request, false otherwise
    */
   isCovering = () => {
     const coveringValue = this.request.value
@@ -102,10 +102,16 @@ export class BoxSelector {
   };
 
   /**
-   * Get the selected boxes
-   * @returns The selected boxes
+   * Flush the covering boxes and update the selector state
+   * @returns Covering boxes
    */
-  getBoxes = () => {
-    return this.boxes;
+  flushCoveringBoxes = (): OutputBox[] => {
+    const coveringBoxes = this.boxes;
+    this.boxes = [];
+    this.sumValue = {
+      value: 0n,
+      tokens: [],
+    };
+    return coveringBoxes;
   };
 }
