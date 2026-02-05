@@ -75,7 +75,8 @@ export class BoxLookup {
         `Serving request ${requestId} on ergoTree ${request.ergoTree}`,
       );
       await this.dataProvider.updateRoundWithTxPotData();
-      let boxSelector = new BoxSelector(this.logger, request);
+      const boxSelectorClass = request.boxSelector ?? BoxSelector;
+      const boxSelector = new boxSelectorClass(this.logger, request);
 
       const roundState = this.dataProvider.getCurrentRoundState();
       const unspentBoxIds = new Set(
@@ -105,15 +106,15 @@ export class BoxLookup {
         boxSelector.addBox(box);
 
         if (boxSelector.isCovering()) {
+          const coveringBoxes = boxSelector.flushCoveringBoxes();
           this.logger.info(
-            `Request ${requestId}: Request satisfied with boxes: ${boxSelector
-              .getBoxes()
+            `Request ${requestId}: Request satisfied with boxes: ${coveringBoxes
               .map((box) => box.boxId)
               .join(', ')} calling onSuffice`,
           );
           try {
             await request.onSuffice(
-              boxSelector.getBoxes(),
+              coveringBoxes,
               this.dataProvider.getCurrentRoundState().unspentBoxes,
               requestId,
             );
@@ -126,7 +127,6 @@ export class BoxLookup {
           this.logger.debug(
             `Request ${requestId}: Resetting box selector after onSuffice callback`,
           );
-          boxSelector = new BoxSelector(this.logger, request);
         }
       }
     }
