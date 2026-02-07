@@ -1,5 +1,6 @@
-import { raffleInfo } from '@ergo-raffle/contracts';
 import { OutputBuilder, SColl, SByte, ErgoAddress } from '@fleet-sdk/core';
+
+import { raffleInfo } from '@ergo-raffle/contracts';
 
 /**
  * Builder class for creating Ticket Repository boxes in the ErgoRaffle protocol

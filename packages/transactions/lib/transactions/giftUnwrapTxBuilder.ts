@@ -1,5 +1,3 @@
-import { WinnerPrizeBuilder } from '@ergo-raffle/boxes';
-import { SafePayBuilder } from '@ergo-raffle/boxes';
 import {
   TransactionBuilder,
   Box,
@@ -9,6 +7,9 @@ import {
   SColl,
   SByte,
 } from '@fleet-sdk/core';
+
+import { WinnerPrizeBuilder } from '@ergo-raffle/boxes';
+import { SafePayBuilder } from '@ergo-raffle/boxes';
 
 /**
  * Builder class for creating gift unwrap transactions

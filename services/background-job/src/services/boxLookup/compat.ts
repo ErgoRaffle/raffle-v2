@@ -1,12 +1,13 @@
+import { Amount, Box, SignedTransaction } from '@fleet-sdk/common';
+import { ErgoAddress, ErgoBox } from '@fleet-sdk/core';
+import { deserializeTransaction } from '@fleet-sdk/serializer';
+import { TransactionEntity } from '@rosen-bridge/tx-pot';
+
 import {
   OutputBox,
   Request as BoxLookupRequest,
 } from '@ergo-raffle/box-lookup';
 import { DeserializedTx } from '@ergo-raffle/box-lookup';
-import { Amount, Box, SignedTransaction } from '@fleet-sdk/common';
-import { ErgoAddress, ErgoBox } from '@fleet-sdk/core';
-import { deserializeTransaction } from '@fleet-sdk/serializer';
-import { TransactionEntity } from '@rosen-bridge/tx-pot';
 
 import { Request } from '../../types';
 

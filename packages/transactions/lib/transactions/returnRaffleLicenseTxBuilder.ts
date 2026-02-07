@@ -1,5 +1,3 @@
-import { ServiceBuilder } from '@ergo-raffle/boxes';
-import { SafePayBuilder } from '@ergo-raffle/boxes';
 import {
   TransactionBuilder,
   Box,
@@ -10,6 +8,9 @@ import {
   SByte,
   ErgoAddress,
 } from '@fleet-sdk/core';
+
+import { ServiceBuilder } from '@ergo-raffle/boxes';
+import { SafePayBuilder } from '@ergo-raffle/boxes';
 
 /**
  * Builder class for creating return raffle license transactions

@@ -1,8 +1,9 @@
+import { ErgoBox } from '@fleet-sdk/core';
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+
 import { SafePayBuilder } from '@ergo-raffle/boxes';
 import { raffleInfo } from '@ergo-raffle/contracts';
 import { SafeWithdrawTxBuilder } from '@ergo-raffle/transactions';
-import { ErgoBox } from '@fleet-sdk/core';
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 
 import { configs } from '../../config';
 import {

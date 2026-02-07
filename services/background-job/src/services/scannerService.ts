@@ -1,3 +1,14 @@
+import { Network } from '@fleet-sdk/core';
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { DefaultLogger } from '@rosen-bridge/abstract-logger';
+import { ErgoScanner, ErgoNodeNetwork } from '@rosen-bridge/scanner';
+import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
+import {
+  AbstractService,
+  Dependency,
+  ServiceStatus,
+} from '@rosen-bridge/service-manager';
+
 import { raffleInfo } from '@ergo-raffle/contracts';
 import {
   ServiceExtractor,
@@ -16,16 +27,6 @@ import {
   SafePayExtractor,
   DynamicExtractor,
 } from '@ergo-raffle/extractors';
-import { Network } from '@fleet-sdk/core';
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
-import { DefaultLogger } from '@rosen-bridge/abstract-logger';
-import { ErgoScanner, ErgoNodeNetwork } from '@rosen-bridge/scanner';
-import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
-import {
-  AbstractService,
-  Dependency,
-  ServiceStatus,
-} from '@rosen-bridge/service-manager';
 
 import { configs } from '../config';
 import { Scanner as ScannerBaseOption } from '../types';

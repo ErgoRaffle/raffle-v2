@@ -1,10 +1,11 @@
-import { TicketRedeemBuilder } from '@ergo-raffle/boxes';
 import {
   TransactionBuilder,
   Box,
   Amount,
   ErgoUnsignedTransaction,
 } from '@fleet-sdk/core';
+
+import { TicketRedeemBuilder } from '@ergo-raffle/boxes';
 
 /**
  * Builder class for creating forward to ticket redeem transactions

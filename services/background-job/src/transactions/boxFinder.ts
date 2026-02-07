@@ -1,8 +1,9 @@
+import { ErgoBox, ErgoAddress } from '@fleet-sdk/core';
+import { DefaultLogger } from '@rosen-bridge/abstract-logger';
+
 import { WinnerBuilder } from '@ergo-raffle/boxes';
 import { raffleInfo } from '@ergo-raffle/contracts';
 import { RaffleBoxType } from '@ergo-raffle/extractors';
-import { ErgoBox, ErgoAddress } from '@fleet-sdk/core';
-import { DefaultLogger } from '@rosen-bridge/abstract-logger';
 
 import { DbService } from '../services/dbService';
 import { convertDbBoxesToErgoBoxes } from './utils';

@@ -1,12 +1,13 @@
-import { WinnerBuilder } from '@ergo-raffle/boxes';
-import { GiftTokenRepoBuilder } from '@ergo-raffle/boxes';
-import { raffleInfo } from '@ergo-raffle/contracts';
 import {
   TransactionBuilder,
   Box,
   Amount,
   ErgoUnsignedTransaction,
 } from '@fleet-sdk/core';
+
+import { WinnerBuilder } from '@ergo-raffle/boxes';
+import { GiftTokenRepoBuilder } from '@ergo-raffle/boxes';
+import { raffleInfo } from '@ergo-raffle/contracts';
 
 /**
  * Builder class for creating gift token receipt transactions

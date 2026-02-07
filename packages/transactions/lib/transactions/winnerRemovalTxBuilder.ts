@@ -1,10 +1,11 @@
-import { GiftRedeemBuilder } from '@ergo-raffle/boxes';
 import {
   TransactionBuilder,
   Box,
   Amount,
   ErgoUnsignedTransaction,
 } from '@fleet-sdk/core';
+
+import { GiftRedeemBuilder } from '@ergo-raffle/boxes';
 
 /**
  * Builder class for creating winner removal transactions

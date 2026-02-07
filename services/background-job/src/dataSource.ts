@@ -1,3 +1,14 @@
+import { DataSource } from '@rosen-bridge/extended-typeorm';
+import {
+  BlockEntity,
+  ExtractorStatusEntity,
+  migrations as scannerMigrations,
+} from '@rosen-bridge/scanner';
+import {
+  TransactionEntity,
+  migrations as txpotMigrations,
+} from '@rosen-bridge/tx-pot';
+
 import {
   ServiceEntity,
   InactiveRaffleEntity,
@@ -15,16 +26,6 @@ import {
   DynamicBoxEntity,
   migrations as extractorsMigrations,
 } from '@ergo-raffle/extractors';
-import { DataSource } from '@rosen-bridge/extended-typeorm';
-import {
-  BlockEntity,
-  ExtractorStatusEntity,
-  migrations as scannerMigrations,
-} from '@rosen-bridge/scanner';
-import {
-  TransactionEntity,
-  migrations as txpotMigrations,
-} from '@rosen-bridge/tx-pot';
 
 import { configs } from './config';
 import {

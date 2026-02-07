@@ -1,7 +1,8 @@
+import './bootstrap';
+
 import { DefaultLogger } from '@rosen-bridge/abstract-logger';
 import { ServiceManager } from '@rosen-bridge/service-manager';
 
-import './bootstrap';
 import { configs } from './config';
 import { InitializerService } from './services/initializerService';
 

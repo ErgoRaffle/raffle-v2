@@ -1,10 +1,11 @@
+import { ErgoBox } from '@fleet-sdk/core';
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+
 import {
   ActivationTxBuilder,
   CreationTxBuilder,
   GiftTokenReceiptTxBuilder,
 } from '@ergo-raffle/transactions';
-import { ErgoBox } from '@fleet-sdk/core';
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 
 import { configs } from '../../config';
 import {

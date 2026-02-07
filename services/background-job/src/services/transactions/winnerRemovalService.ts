@@ -1,11 +1,12 @@
+import { ErgoBox } from '@fleet-sdk/core';
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+
 import { GiftRedeemBuilder, WinnerBuilder } from '@ergo-raffle/boxes';
 import { raffleInfo } from '@ergo-raffle/contracts';
 import {
   ForwardToTicketRedeemTxBuilder,
   WinnerRemovalTxBuilder,
 } from '@ergo-raffle/transactions';
-import { ErgoBox } from '@fleet-sdk/core';
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 
 import { configs } from '../../config';
 import { findAllWinners } from '../../transactions/boxFinder';

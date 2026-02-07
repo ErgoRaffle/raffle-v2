@@ -1,8 +1,9 @@
+import { ErgoBox } from '@fleet-sdk/core';
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+
 import { WinnerBuilder } from '@ergo-raffle/boxes';
 import { raffleInfo } from '@ergo-raffle/contracts';
 import { GiftReturnTxBuilder } from '@ergo-raffle/transactions';
-import { ErgoBox } from '@fleet-sdk/core';
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 
 import { configs } from '../../config';
 import { findGiftRedeemBox } from '../../transactions/boxFinder';

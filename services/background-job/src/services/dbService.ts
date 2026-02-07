@@ -1,3 +1,18 @@
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import {
+  IsNull,
+  DataSource,
+  LessThanOrEqual,
+  MoreThan,
+} from '@rosen-bridge/extended-typeorm';
+import { BlockEntity } from '@rosen-bridge/scanner';
+import {
+  AbstractService,
+  Dependency,
+  ServiceStatus,
+} from '@rosen-bridge/service-manager';
+import { pick } from 'lodash-es';
+
 import {
   RaffleBoxEntity,
   InactiveRaffleEntity,
@@ -14,20 +29,6 @@ import {
   SafePayEntity,
   ServiceEntity,
 } from '@ergo-raffle/extractors';
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
-import {
-  IsNull,
-  DataSource,
-  LessThanOrEqual,
-  MoreThan,
-} from '@rosen-bridge/extended-typeorm';
-import { BlockEntity } from '@rosen-bridge/scanner';
-import {
-  AbstractService,
-  Dependency,
-  ServiceStatus,
-} from '@rosen-bridge/service-manager';
-import { pick } from 'lodash-es';
 
 import { configs } from '../config';
 import { AddGiftParamsEntity } from '../database/entities/addGiftParamsEntity';

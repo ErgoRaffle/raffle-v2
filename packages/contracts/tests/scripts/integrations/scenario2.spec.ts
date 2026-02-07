@@ -1,3 +1,7 @@
+import { ErgoUnsignedInput } from '@fleet-sdk/core';
+import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
+import { it, describe, expect, beforeEach } from 'vitest';
+
 import {
   CreationTxBuilder,
   ActivationTxBuilder,
@@ -10,9 +14,6 @@ import {
   ReturnRaffleLicenseTxBuilder,
   SafeWithdrawTxBuilder,
 } from '@ergo-raffle/transactions';
-import { ErgoUnsignedInput } from '@fleet-sdk/core';
-import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
-import { it, describe, expect, beforeEach } from 'vitest';
 
 import * as testUtils from '../../testUtils';
 

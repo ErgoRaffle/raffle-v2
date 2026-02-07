@@ -29,7 +29,7 @@
     "prettify:check": "prettier --check . --ignore-path ../../.gitignore --ignore-path .prettierignore",
     "release": "npm run test -- --run && npm run build && npm publish --access public",
     "test": "cross-env NODE_OPTIONS=\"--import tsx\" vitest",
-    "type-check": "tsc -p ./tsconfig.check.json"
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@fleet-sdk/common": "^0.10.0",

@@ -1,6 +1,7 @@
-import { AddGiftTxBuilder } from '@ergo-raffle/transactions';
 import { ErgoBox } from '@fleet-sdk/core';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+
+import { AddGiftTxBuilder } from '@ergo-raffle/transactions';
 
 import { configs } from '../../config';
 import { AddGiftParamsEntity } from '../../database/entities';

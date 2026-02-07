@@ -1,4 +1,3 @@
-import { ActiveRaffleBuilder, TicketBuilder } from '@ergo-raffle/boxes';
 import {
   TransactionBuilder,
   Box,
@@ -9,6 +8,8 @@ import {
   SByte,
   ErgoAddress,
 } from '@fleet-sdk/core';
+
+import { ActiveRaffleBuilder, TicketBuilder } from '@ergo-raffle/boxes';
 
 /**
  * Builder class for creating donate transactions

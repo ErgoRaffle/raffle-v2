@@ -1,5 +1,3 @@
-import { SuccessRaffleBuilder } from '@ergo-raffle/boxes';
-import { WinnerPrizeBuilder } from '@ergo-raffle/boxes';
 import {
   TransactionBuilder,
   Box,
@@ -10,6 +8,9 @@ import {
   SLong,
 } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
+
+import { SuccessRaffleBuilder } from '@ergo-raffle/boxes';
+import { WinnerPrizeBuilder } from '@ergo-raffle/boxes';
 
 /**
  * Builder class for creating prize creation transactions
