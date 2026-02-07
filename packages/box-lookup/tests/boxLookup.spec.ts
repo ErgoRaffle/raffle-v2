@@ -241,4 +241,61 @@ describe('BoxLookup', () => {
       await expect(boxLookup.serveRequests()).resolves.not.toThrow();
     });
   });
+
+  /**
+   * @target should call before hook before any onSuffice and after hook after finishing
+   * @dependencies
+   * @scenario
+   * - register a request with onSuffice callback
+   * - set boxLookup hooks (before/after)
+   * - call serveRequests
+   * - verify before is called once and before onSuffice
+   * - verify after is called once and after onSuffice
+   * @expected
+   * - should invoke before hook before onSuffice and after hook after processing
+   */
+  it('should call before hook before any onSuffice and after hook after finishing', async () => {
+    mockBoxSelector();
+    vi.spyOn(boxLookup['dataProvider'], 'startNewRound').mockResolvedValue(
+      undefined,
+    );
+    vi.spyOn(
+      boxLookup['dataProvider'],
+      'updateRoundWithTxPotData',
+    ).mockResolvedValue(undefined);
+    vi.spyOn(boxLookup['dataProvider'], 'getCurrentRoundState').mockReturnValue(
+      {
+        spentBoxIds: new Set(['spent-box-1', 'spent-box-2']),
+        unspentBoxes: [
+          sampleErgoBoxes.validBoxWithTokens,
+          sampleErgoBoxes.validBoxWithErgs,
+        ],
+      },
+    );
+
+    const before = vi.fn();
+    const after = vi.fn();
+    const mockOnSuffice = vi.fn().mockResolvedValue(undefined);
+    boxLookup['hooks'] = { before, after };
+
+    const request = {
+      ...sampleRequests.validRequest,
+      onSuffice: mockOnSuffice,
+      getConfirmedBoxes: vi.fn().mockResolvedValue(sampleMinedBoxes),
+    };
+
+    boxLookup.registerRequest(request);
+    await boxLookup.serveRequests();
+
+    expect(before).toHaveBeenCalledTimes(1);
+    expect(after).toHaveBeenCalledTimes(1);
+    expect(mockOnSuffice).toHaveBeenCalled();
+
+    const beforeOrder = before.mock.invocationCallOrder[0] ?? 0;
+    const onSufficeOrder = mockOnSuffice.mock.invocationCallOrder[0] ?? 0;
+    const afterOrder = after.mock.invocationCallOrder[0] ?? 0;
+
+    expect(beforeOrder).toBeLessThan(onSufficeOrder);
+    expect(afterOrder).toBeGreaterThan(onSufficeOrder);
+  });
 });
