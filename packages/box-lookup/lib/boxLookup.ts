@@ -68,75 +68,71 @@ export class BoxLookup {
   public serveRequests = async () => {
     if (this.requests.size <= 0) return;
     await this.dataProvider.startNewRound();
-    try {
-      if (this.hooks.before) await this.hooks.before();
-      this.logger.info(
-        `Starting to serve ${this.requests.size} box lookup request(s)`,
+    if (this.hooks.before) await this.hooks.before();
+    this.logger.info(
+      `Starting to serve ${this.requests.size} box lookup request(s)`,
+    );
+    for (const [requestId, request] of this.requests.entries()) {
+      this.logger.debug(
+        `Serving request ${requestId} on ergoTree ${request.ergoTree}`,
       );
-      for (const [requestId, request] of this.requests.entries()) {
-        this.logger.debug(
-          `Serving request ${requestId} on ergoTree ${request.ergoTree}`,
-        );
-        await this.dataProvider.updateRoundWithTxPotData();
-        const boxSelectorClass = request.boxSelector ?? BoxSelector;
-        const boxSelector = new boxSelectorClass(this.logger, request);
+      await this.dataProvider.updateRoundWithTxPotData();
+      const boxSelectorClass = request.boxSelector ?? BoxSelector;
+      const boxSelector = new boxSelectorClass(this.logger, request);
 
-        const roundState = this.dataProvider.getCurrentRoundState();
-        const unspentBoxIds = new Set(
-          roundState.unspentBoxes.map((box) => box.boxId),
-        );
-        // Filter out spent boxes and available boxes in the round
-        const unspentMinedBoxes = (await request.getConfirmedBoxes()).filter(
-          (box) =>
-            !roundState.spentBoxIds.has(box.boxId) &&
-            !unspentBoxIds.has(box.boxId),
-        );
-        this.logger.debug(
-          `Request ${requestId}: Found ${unspentMinedBoxes.length} new confirmed unspent box(es): [${unspentMinedBoxes.map((box) => box.boxId).join(', ')}]`,
-        );
-        // Filter out boxes that are not related to the request
-        const totalBoxes = [
-          ...roundState.unspentBoxes,
-          ...unspentMinedBoxes,
-        ].filter((box) => boxSelector.isEligibleForSelection(box));
+      const roundState = this.dataProvider.getCurrentRoundState();
+      const unspentBoxIds = new Set(
+        roundState.unspentBoxes.map((box) => box.boxId),
+      );
+      // Filter out spent boxes and available boxes in the round
+      const unspentMinedBoxes = (await request.getConfirmedBoxes()).filter(
+        (box) =>
+          !roundState.spentBoxIds.has(box.boxId) &&
+          !unspentBoxIds.has(box.boxId),
+      );
+      this.logger.debug(
+        `Request ${requestId}: Found ${unspentMinedBoxes.length} new confirmed unspent box(es): [${unspentMinedBoxes.map((box) => box.boxId).join(', ')}]`,
+      );
+      // Filter out boxes that are not related to the request
+      const totalBoxes = [
+        ...roundState.unspentBoxes,
+        ...unspentMinedBoxes,
+      ].filter((box) => boxSelector.isEligibleForSelection(box));
 
-        this.logger.debug(
-          `Request ${requestId}: Total of ${totalBoxes.length} related box(es) found`,
-        );
-        for (const box of totalBoxes) {
-          // Break the loop if the request is unregistered from the box lookup
-          if (!this.requests.has(requestId)) break;
-          boxSelector.addBox(box);
+      this.logger.debug(
+        `Request ${requestId}: Total of ${totalBoxes.length} related box(es) found`,
+      );
+      for (const box of totalBoxes) {
+        // Break the loop if the request is unregistered from the box lookup
+        if (!this.requests.has(requestId)) break;
+        boxSelector.addBox(box);
 
-          if (boxSelector.isCovering()) {
-            const coveringBoxes = boxSelector.flushCoveringBoxes();
-            this.logger.info(
-              `Request ${requestId}: Request satisfied with boxes: ${coveringBoxes
-                .map((box) => box.boxId)
-                .join(', ')} calling onSuffice`,
+        if (boxSelector.isCovering()) {
+          const coveringBoxes = boxSelector.flushCoveringBoxes();
+          this.logger.info(
+            `Request ${requestId}: Request satisfied with boxes: ${coveringBoxes
+              .map((box) => box.boxId)
+              .join(', ')} calling onSuffice`,
+          );
+          try {
+            await request.onSuffice(
+              coveringBoxes,
+              this.dataProvider.getCurrentRoundState().unspentBoxes,
+              requestId,
             );
-            try {
-              await request.onSuffice(
-                coveringBoxes,
-                this.dataProvider.getCurrentRoundState().unspentBoxes,
-                requestId,
-              );
-              await this.dataProvider.updateRoundWithTxPotData();
-            } catch (error) {
-              this.logger.error(
-                `Request ${requestId}: Error occurred while processing 'onSuffice' callback: ${error}`,
-              );
-            }
-            this.logger.debug(
-              `Request ${requestId}: Resetting box selector after onSuffice callback`,
+            await this.dataProvider.updateRoundWithTxPotData();
+          } catch (error) {
+            this.logger.error(
+              `Request ${requestId}: Error occurred while processing 'onSuffice' callback: ${error}`,
             );
           }
+          this.logger.debug(
+            `Request ${requestId}: Resetting box selector after onSuffice callback`,
+          );
         }
       }
-      this.logger.info('Completed serving all box lookup requests');
-    } finally {
-      // Always run after hook (if provided) once the round finishes.
-      if (this.hooks.after) await this.hooks.after();
     }
+    this.logger.info('Completed serving all box lookup requests');
+    if (this.hooks.after) await this.hooks.after();
   };
 }
