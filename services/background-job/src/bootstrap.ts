@@ -1,9 +1,7 @@
-// sort-imports-begin-ignore
+import '@rosen-bridge/extended-typeorm/bootstrap';
+
 import { DefaultLogger } from '@rosen-bridge/abstract-logger';
 import CallbackLogger from '@rosen-bridge/callback-logger';
-import '@rosen-bridge/extended-typeorm';
-// sort-imports-end-ignore
-
 import WinstonLogger from '@rosen-bridge/winston-logger';
 
 import packageJson from '../package.json' with { type: 'json' };

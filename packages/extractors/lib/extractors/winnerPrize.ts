@@ -46,16 +46,15 @@ export class WinnerPrizeExtractor extends AbstractInitializableErgoExtractor<
     try {
       return (
         box.ergoTree == this.ergoTree &&
-        box.additionalRegisters.R4 != null &&
+        box.additionalRegisters.R4 != undefined &&
         (SConstant.from(box.additionalRegisters.R4).data as bigint[]).length ==
           3 &&
         box.additionalRegisters.R5 != undefined &&
         (SConstant.from(box.additionalRegisters.R5).data as number) !=
           undefined &&
         box.additionalRegisters.R6 != undefined &&
-        !Number.isNaN(
-          Number(SConstant.from(box.additionalRegisters.R6).data as bigint),
-        ) &&
+        (SConstant.from(box.additionalRegisters.R6).data as bigint) !=
+          undefined &&
         box.assets.length > 1
       );
     } catch (err) {

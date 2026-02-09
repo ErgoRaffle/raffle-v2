@@ -1,7 +1,7 @@
 {
   "$schema": "https://unpkg.com/knip/schema.json",
   "ignore": ["packages/try/*"],
-  "ignoreDependencies": ["@rosen-bridge/changeset-formatter"],
+  "ignoreDependencies": ["@rosen-bridge/changeset-formatter", "pg"],
   "ignoreBinaries": ["typeorm"],
   "workspaces": {
     "packages/**": {

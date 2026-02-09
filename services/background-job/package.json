@@ -63,6 +63,7 @@
     "@rosen-clients/ergo-node": "^3.1.1",
     "config": "^3.3.12",
     "lodash-es": "^4.17.21",
+    "pg": "^8.4.0",
     "sigmastate-js": "^0.4.6",
     "zod": "^3.25.76"
   },
