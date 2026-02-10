@@ -4,11 +4,12 @@ import {
   Dependency,
   ServiceStatus,
 } from '@rosen-bridge/service-manager';
+
 import { BoxLookup } from '@ergo-raffle/box-lookup';
 
+import { Request } from '../../types';
 import { TxPotService } from '../txPotService';
 import { deserializeTxForBoxLookup, toBoxLookupRequest } from './compat';
-import { Request } from '../../types';
 
 export class BoxLookupService extends AbstractService {
   name = 'BoxLookupService';

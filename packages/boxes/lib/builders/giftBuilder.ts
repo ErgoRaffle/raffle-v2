@@ -9,8 +9,10 @@ import {
   Box,
   Amount,
 } from '@fleet-sdk/core';
-import { raffleInfo } from '@ergo-raffle/contracts';
 import { blake2b256 } from '@fleet-sdk/crypto';
+
+import { raffleInfo } from '@ergo-raffle/contracts';
+
 import { WinnerBuilder } from './winnerBuilder';
 
 /**

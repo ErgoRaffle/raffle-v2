@@ -1,23 +1,24 @@
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
-import { OnSufficeCallback, Request } from '../../types';
-import { raffleInfo } from '@ergo-raffle/contracts';
-import { ActivationTxBuilder } from '@ergo-raffle/transactions';
-import { InactiveRaffleBuilder } from '@ergo-raffle/boxes';
 import { ErgoBox } from '@fleet-sdk/core';
-import { RaffleBoxType } from '@ergo-raffle/extractors';
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 
-import { BoxLookupService } from '../boxLookup';
-import { DbService } from '../dbService';
-import {
-  signAndAddTx,
-  convertDbBoxesToErgoBoxes,
-} from '../../transactions/utils';
-import { TxType } from '../../types/transaction';
-import { AbstractTxService } from './abstractTxService';
+import { InactiveRaffleBuilder } from '@ergo-raffle/boxes';
+import { raffleInfo } from '@ergo-raffle/contracts';
+import { RaffleBoxType } from '@ergo-raffle/extractors';
+import { ActivationTxBuilder } from '@ergo-raffle/transactions';
+
 import {
   GIFT_TOKEN_DESCRIPTION_PREFIX,
   GIFT_TOKEN_NAME_PREFIX,
 } from '../../constants';
+import {
+  signAndAddTx,
+  convertDbBoxesToErgoBoxes,
+} from '../../transactions/utils';
+import { OnSufficeCallback, Request } from '../../types';
+import { TxType } from '../../types/transaction';
+import { BoxLookupService } from '../boxLookup';
+import { DbService } from '../dbService';
+import { AbstractTxService } from './abstractTxService';
 
 export class ActivationService extends AbstractTxService {
   name = 'ActivationService';

@@ -1,12 +1,12 @@
-import { FastifyWithZod } from '@rosen-bridge/fastify-enhanced';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { FastifyWithZod } from '@rosen-bridge/fastify-enhanced';
 
-import { DbService } from '../../dbService';
-import { DonationService } from '../../transactions/donationService';
 import {
   donationRequestSchema,
   donationResponseSchema,
 } from '../../../types/api';
+import { DbService } from '../../dbService';
+import { DonationService } from '../../transactions/donationService';
 
 export const registerDonationRoute = (
   fastify: FastifyWithZod,

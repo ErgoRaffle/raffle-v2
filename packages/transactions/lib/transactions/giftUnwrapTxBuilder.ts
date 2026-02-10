@@ -7,6 +7,7 @@ import {
   SColl,
   SByte,
 } from '@fleet-sdk/core';
+
 import { WinnerPrizeBuilder } from '@ergo-raffle/boxes';
 import { SafePayBuilder } from '@ergo-raffle/boxes';
 

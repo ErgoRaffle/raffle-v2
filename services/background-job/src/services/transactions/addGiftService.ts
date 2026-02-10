@@ -1,22 +1,23 @@
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
-import { OnSufficeCallback, Request } from '../../types';
-import { AddGiftTxBuilder } from '@ergo-raffle/transactions';
 import { ErgoBox } from '@fleet-sdk/core';
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 
-import { AddGiftParamsEntity } from '../../database/entities';
-import { BoxLookupService } from '../boxLookup';
-import { ScannerService } from '../scannerService';
-import { TxPotService } from '../txPotService';
+import { AddGiftTxBuilder } from '@ergo-raffle/transactions';
+
 import { configs } from '../../config';
+import { AddGiftParamsEntity } from '../../database/entities';
+import { findWinner } from '../../transactions/boxFinder';
 import {
   signAndAddTx,
   convertDbBoxesToErgoBoxes,
   calculateBoxesAssetSum,
 } from '../../transactions/utils';
+import { OnSufficeCallback, Request } from '../../types';
 import { TxType } from '../../types/transaction';
+import { BoxLookupService } from '../boxLookup';
 import { DbService } from '../dbService';
+import { ScannerService } from '../scannerService';
+import { TxPotService } from '../txPotService';
 import { AbstractTxService } from './abstractTxService';
-import { findWinner } from '../../transactions/boxFinder';
 
 export class AddGiftService extends AbstractTxService {
   name = 'AddGiftService';

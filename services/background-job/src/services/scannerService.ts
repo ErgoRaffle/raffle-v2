@@ -1,8 +1,15 @@
+import { Network } from '@fleet-sdk/core';
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { DefaultLogger } from '@rosen-bridge/abstract-logger';
+import { ErgoScanner, ErgoNodeNetwork } from '@rosen-bridge/scanner';
+import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 import {
   AbstractService,
   Dependency,
   ServiceStatus,
 } from '@rosen-bridge/service-manager';
+
+import { raffleInfo } from '@ergo-raffle/contracts';
 import {
   ServiceExtractor,
   InactiveRaffleExtractor,
@@ -20,16 +27,10 @@ import {
   SafePayExtractor,
   DynamicExtractor,
 } from '@ergo-raffle/extractors';
-import { raffleInfo } from '@ergo-raffle/contracts';
-import { ErgoScanner, ErgoNodeNetwork } from '@rosen-bridge/scanner';
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
-import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
-import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
-import { Network } from '@fleet-sdk/core';
 
-import { DbService } from './dbService';
-import { Scanner as ScannerBaseOption } from '../types';
 import { configs } from '../config';
+import { Scanner as ScannerBaseOption } from '../types';
+import { DbService } from './dbService';
 
 export class ScannerService extends AbstractService {
   name = 'ScannerService';
@@ -59,7 +60,7 @@ export class ScannerService extends AbstractService {
       network: new ErgoNodeNetwork(this.scannerConfig.node.url),
       initialHeight: this.scannerConfig.node.initialHeight,
       dataSource: DbService.getInstance().dataSource,
-      logger: CallbackLoggerFactory.getInstance().getLogger('raffle-scanner'),
+      logger: DefaultLogger.getInstance().child('raffle-scanner'),
     });
   }
 
@@ -76,7 +77,7 @@ export class ScannerService extends AbstractService {
       ErgoNetworkType.Node,
       raffleInfo.addresses.service,
       raffleInfo.tokens.serviceNft,
-      CallbackLoggerFactory.getInstance().getLogger('raffle-service-extractor'),
+      DefaultLogger.getInstance().child('raffle-service-extractor'),
       false,
     );
     await this.ergoScanner.registerExtractor(raffleServiceExtractor);
@@ -88,9 +89,7 @@ export class ScannerService extends AbstractService {
       raffleInfo.addresses.inactiveRaffle,
       configs.addresses.serviceFeeAddress,
       raffleInfo.tokens.raffleLicense,
-      CallbackLoggerFactory.getInstance().getLogger(
-        'raffle-inactiveRaffle-extractor',
-      ),
+      DefaultLogger.getInstance().child('raffle-inactiveRaffle-extractor'),
       false,
     );
     await this.ergoScanner.registerExtractor(inactiveRaffleExtractor);
@@ -101,9 +100,7 @@ export class ScannerService extends AbstractService {
       this.scannerConfig.node.url,
       ErgoNetworkType.Node,
       raffleInfo.addresses.ticketRepo,
-      CallbackLoggerFactory.getInstance().getLogger(
-        'raffle-ticketRepo-extractor',
-      ),
+      DefaultLogger.getInstance().child('raffle-ticketRepo-extractor'),
       false,
     );
     await this.ergoScanner.registerExtractor(ticketRepoExtractor);
@@ -115,9 +112,7 @@ export class ScannerService extends AbstractService {
       ErgoNetworkType.Node,
       raffleInfo.addresses.activeRaffle,
       raffleInfo.tokens.raffleLicense,
-      CallbackLoggerFactory.getInstance().getLogger(
-        'raffle-activeRaffle-extractor',
-      ),
+      DefaultLogger.getInstance().child('raffle-activeRaffle-extractor'),
       false,
     );
     await this.ergoScanner.registerExtractor(activeRaffleExtractor);
@@ -128,9 +123,7 @@ export class ScannerService extends AbstractService {
       this.scannerConfig.node.url,
       ErgoNetworkType.Node,
       raffleInfo.addresses.giftTokenRepo,
-      CallbackLoggerFactory.getInstance().getLogger(
-        'raffle-giftTokenRepo-extractor',
-      ),
+      DefaultLogger.getInstance().child('raffle-giftTokenRepo-extractor'),
       false,
     );
     await this.ergoScanner.registerExtractor(giftTokenRepoExtractor);
@@ -141,7 +134,7 @@ export class ScannerService extends AbstractService {
       this.scannerConfig.node.url,
       ErgoNetworkType.Node,
       raffleInfo.addresses.winner,
-      CallbackLoggerFactory.getInstance().getLogger('raffle-winner-extractor'),
+      DefaultLogger.getInstance().child('raffle-winner-extractor'),
       false,
     );
     await this.ergoScanner.registerExtractor(winnerExtractor);
@@ -152,7 +145,7 @@ export class ScannerService extends AbstractService {
       this.scannerConfig.node.url,
       ErgoNetworkType.Node,
       raffleInfo.addresses.raffleDetails,
-      CallbackLoggerFactory.getInstance().getLogger('raffle-details-extractor'),
+      DefaultLogger.getInstance().child('raffle-details-extractor'),
       false,
     );
     await this.ergoScanner.registerExtractor(raffleDetailsExtractor);
@@ -163,7 +156,7 @@ export class ScannerService extends AbstractService {
       this.scannerConfig.node.url,
       ErgoNetworkType.Node,
       raffleInfo.addresses.gift,
-      CallbackLoggerFactory.getInstance().getLogger('raffle-gift-extractor'),
+      DefaultLogger.getInstance().child('raffle-gift-extractor'),
       false,
     );
     await this.ergoScanner.registerExtractor(giftExtractor);
@@ -174,7 +167,7 @@ export class ScannerService extends AbstractService {
       this.scannerConfig.node.url,
       ErgoNetworkType.Node,
       raffleInfo.addresses.ticket,
-      CallbackLoggerFactory.getInstance().getLogger('raffle-ticket-extractor'),
+      DefaultLogger.getInstance().child('raffle-ticket-extractor'),
       false,
     );
     await this.ergoScanner.registerExtractor(ticketExtractor);
@@ -185,9 +178,7 @@ export class ScannerService extends AbstractService {
       this.scannerConfig.node.url,
       ErgoNetworkType.Node,
       raffleInfo.addresses.winnerPrize,
-      CallbackLoggerFactory.getInstance().getLogger(
-        'raffle-winnerPrize-extractor',
-      ),
+      DefaultLogger.getInstance().child('raffle-winnerPrize-extractor'),
       false,
     );
     await this.ergoScanner.registerExtractor(winnerPrize);
@@ -199,9 +190,7 @@ export class ScannerService extends AbstractService {
       ErgoNetworkType.Node,
       raffleInfo.addresses.giftRedeem,
       raffleInfo.tokens.raffleLicense,
-      CallbackLoggerFactory.getInstance().getLogger(
-        'raffle-giftRedeem-extractor',
-      ),
+      DefaultLogger.getInstance().child('raffle-giftRedeem-extractor'),
       false,
     );
     await this.ergoScanner.registerExtractor(giftRedeem);
@@ -212,9 +201,7 @@ export class ScannerService extends AbstractService {
       this.scannerConfig.node.url,
       raffleInfo.addresses.successRaffle,
       raffleInfo.tokens.raffleLicense,
-      CallbackLoggerFactory.getInstance().getLogger(
-        'raffle-successRaffle-extractor',
-      ),
+      DefaultLogger.getInstance().child('raffle-successRaffle-extractor'),
       false,
     );
     await this.ergoScanner.registerExtractor(successRaffle);
@@ -226,9 +213,7 @@ export class ScannerService extends AbstractService {
       ErgoNetworkType.Node,
       raffleInfo.addresses.ticketRedeem,
       raffleInfo.tokens.raffleLicense,
-      CallbackLoggerFactory.getInstance().getLogger(
-        'raffle-ticketRedeem-extractor',
-      ),
+      DefaultLogger.getInstance().child('raffle-ticketRedeem-extractor'),
       false,
     );
     await this.ergoScanner.registerExtractor(ticketRedeem);
@@ -240,7 +225,7 @@ export class ScannerService extends AbstractService {
       ErgoNetworkType.Node,
       raffleInfo.addresses.safePay,
       raffleInfo.addresses.successRaffle,
-      CallbackLoggerFactory.getInstance().getLogger('raffle-safePay-extractor'),
+      DefaultLogger.getInstance().child('raffle-safePay-extractor'),
       false,
     );
     await this.ergoScanner.registerExtractor(safePayExtractor);
@@ -248,7 +233,7 @@ export class ScannerService extends AbstractService {
     this.dynamicExtractor = new DynamicExtractor(
       DbService.getInstance().dataSource,
       'Dynamic',
-      CallbackLoggerFactory.getInstance().getLogger('dynamic-extractor'),
+      DefaultLogger.getInstance().child('dynamic-extractor'),
       configs.ergo.network === 'mainnet' ? Network.Mainnet : Network.Testnet,
     );
     await this.ergoScanner.registerExtractor(this.dynamicExtractor);

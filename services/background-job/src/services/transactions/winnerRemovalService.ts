@@ -1,23 +1,24 @@
+import { ErgoBox } from '@fleet-sdk/core';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
-import { OnSufficeCallback, Request } from '../../types';
+
+import { GiftRedeemBuilder, WinnerBuilder } from '@ergo-raffle/boxes';
 import { raffleInfo } from '@ergo-raffle/contracts';
 import {
   ForwardToTicketRedeemTxBuilder,
   WinnerRemovalTxBuilder,
 } from '@ergo-raffle/transactions';
-import { ErgoBox } from '@fleet-sdk/core';
-import { GiftRedeemBuilder, WinnerBuilder } from '@ergo-raffle/boxes';
 
-import { BoxLookupService } from '../boxLookup';
-import { DbService } from '../dbService';
+import { configs } from '../../config';
+import { findAllWinners } from '../../transactions/boxFinder';
 import {
   signAndAddTx,
   convertDbBoxesToErgoBoxes,
 } from '../../transactions/utils';
+import { OnSufficeCallback, Request } from '../../types';
 import { TxType } from '../../types/transaction';
+import { BoxLookupService } from '../boxLookup';
+import { DbService } from '../dbService';
 import { AbstractTxService } from './abstractTxService';
-import { configs } from '../../config';
-import { findAllWinners } from '../../transactions/boxFinder';
 
 export class WinnerRemovalService extends AbstractTxService {
   name = 'WinnerRemovalService';

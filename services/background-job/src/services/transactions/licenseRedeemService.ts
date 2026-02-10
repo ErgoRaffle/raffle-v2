@@ -1,21 +1,22 @@
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
-import { OnSufficeCallback, Request } from '../../types';
-import { raffleInfo } from '@ergo-raffle/contracts';
-import { ReturnRaffleLicenseTxBuilder } from '@ergo-raffle/transactions';
 import { ErgoBox } from '@fleet-sdk/core';
-import { SuccessRaffleBuilder, TicketRedeemBuilder } from '@ergo-raffle/boxes';
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import JsonBigInt from '@rosen-bridge/json-bigint';
 
-import { BoxLookupService } from '../boxLookup';
-import { DbService } from '../dbService';
+import { SuccessRaffleBuilder, TicketRedeemBuilder } from '@ergo-raffle/boxes';
+import { raffleInfo } from '@ergo-raffle/contracts';
+import { ReturnRaffleLicenseTxBuilder } from '@ergo-raffle/transactions';
+
+import { configs } from '../../config';
+import { findServiceBox } from '../../transactions/boxFinder';
 import {
   signAndAddTx,
   convertDbBoxesToErgoBoxes,
 } from '../../transactions/utils';
+import { OnSufficeCallback, Request } from '../../types';
 import { TxType } from '../../types/transaction';
+import { BoxLookupService } from '../boxLookup';
+import { DbService } from '../dbService';
 import { AbstractTxService } from './abstractTxService';
-import { configs } from '../../config';
-import { findServiceBox } from '../../transactions/boxFinder';
 
 /**
  * Enum for raffle box types used in license redeem service

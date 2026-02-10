@@ -1,48 +1,53 @@
 {
   "name": "@ergo-raffle/contracts",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "description": "Raffle v2 related contracts",
-  "license": "GPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ErgoRaffle/raffle-v2"
+  },
+  "license": "MIT",
   "author": "Ergo Raffle Team",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "CHANGELOG.md"
+  ],
   "scripts": {
     "build": "mkdir -p dist/ && tsx --trace-warnings ./cli/index.ts build configs.json",
     "build-testnet": "npm run build -- --testnet",
+    "clean": "rimraf dist && rimraf tsconfig.build.tsbuildinfo",
+    "compile-contracts": "tsx ./cli/index.ts compile-contracts",
     "coverage": "npm run test -- --coverage",
     "lint": "eslint --fix . && npm run prettify",
-    "prettify": "prettier --write . --ignore-path ./.gitignore --ignore-path ./.prettierignore",
-    "release": "npm run test -- --run && npm run build && npm publish --access public",
-    "test": "NODE_OPTIONS='--import tsx' vitest",
-    "test:related": "NODE_OPTIONS='--import tsx' vitest related --run",
-    "type-check": "tsc --noEmit",
-    "compile-contracts": "tsx ./cli/index.ts compile-contracts",
+    "lint:check": "eslint . && npm run prettify:check",
+    "make-build-template": "tsx ./cli/index.ts make-input-template --for-build",
     "make-input-template": "tsx ./cli/index.ts make-input-template",
-    "make-build-template": "tsx ./cli/index.ts make-input-template --for-build"
-  },
-  "devDependencies": {
-    "@fleet-sdk/mock-chain": "^0.12.0",
-    "@types/node": "^20.11.9",
-    "@typescript-eslint/eslint-plugin": "^6.19.1",
-    "@typescript-eslint/parser": "^6.19.1",
-    "eslint": "^8.56.0",
-    "eslint-config-prettier": "^9.1.0",
-    "prettier": "^3.2.4",
-    "typescript": "^5.3.3"
+    "prettify": "prettier --write . --ignore-path ../../.gitignore --ignore-path .prettierignore",
+    "prettify:check": "prettier --check . --ignore-path ../../.gitignore --ignore-path .prettierignore",
+    "release": "npm run test -- --run && npm run build && npm publish --access public",
+    "test": "cross-env NODE_OPTIONS=\"--import tsx\" vitest",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@ergo-raffle/transactions": "^0.0.1",
     "@fleet-sdk/common": "^0.10.0",
     "@fleet-sdk/compiler": "^0.12.0",
     "@fleet-sdk/core": "^0.12.0",
     "@fleet-sdk/crypto": "^0.11.0",
     "@fleet-sdk/serializer": "^0.11.0",
+    "@fleet-sdk/wallet": "^0.12.0",
     "commander": "^12.1.0",
     "sigmastate-js": "^0.4.6",
     "winston": "^3.13.0"
   },
+  "devDependencies": {
+    "@ergo-raffle/transactions": "0.0.0",
+    "@fleet-sdk/mock-chain": "^0.12.0"
+  },
   "engines": {
-    "node": ">=20.11.0"
+    "node": ">=22.18.0",
+    "npm": "11.6.2"
   }
 }

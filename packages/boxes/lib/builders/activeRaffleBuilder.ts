@@ -8,11 +8,13 @@ import {
   SInt,
   ErgoAddress,
 } from '@fleet-sdk/core';
-import { SConstant } from '@fleet-sdk/serializer';
-import { raffleInfo } from '@ergo-raffle/contracts';
 import { blake2b256 } from '@fleet-sdk/crypto';
-import { InactiveRaffleBuilder } from './inactiveRaffleBuilder';
+import { SConstant } from '@fleet-sdk/serializer';
+
+import { raffleInfo } from '@ergo-raffle/contracts';
+
 import { RaffleStatus } from '../types';
+import { InactiveRaffleBuilder } from './inactiveRaffleBuilder';
 
 /**
  * Builder class for creating Active Raffle boxes in the ErgoRaffle protocol

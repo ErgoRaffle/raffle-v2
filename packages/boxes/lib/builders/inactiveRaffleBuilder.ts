@@ -8,9 +8,11 @@ import {
   Box,
   Amount,
 } from '@fleet-sdk/core';
-import { SConstant } from '@fleet-sdk/serializer';
-import { raffleInfo } from '@ergo-raffle/contracts';
 import { blake2b256 } from '@fleet-sdk/crypto';
+import { SConstant } from '@fleet-sdk/serializer';
+
+import { raffleInfo } from '@ergo-raffle/contracts';
+
 import { bigIntToUint8Array } from '../utils';
 import { ServiceBuilder } from './serviceBuilder';
 

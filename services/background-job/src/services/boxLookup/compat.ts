@@ -1,13 +1,15 @@
+import { Amount, Box, SignedTransaction } from '@fleet-sdk/common';
 import { ErgoAddress, ErgoBox } from '@fleet-sdk/core';
-import { TransactionEntity } from '@rosen-bridge/tx-pot';
 import { deserializeTransaction } from '@fleet-sdk/serializer';
+import { TransactionEntity } from '@rosen-bridge/tx-pot';
+
 import {
   OutputBox,
   Request as BoxLookupRequest,
 } from '@ergo-raffle/box-lookup';
 import { DeserializedTx } from '@ergo-raffle/box-lookup';
+
 import { Request } from '../../types';
-import { Amount, Box, SignedTransaction } from '@fleet-sdk/common';
 
 /**
  * Adapts a background-job request (fleet `ErgoBox`) into a `box-lookup` request (DTO `OutputBox`).

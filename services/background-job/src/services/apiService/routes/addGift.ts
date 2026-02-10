@@ -1,13 +1,13 @@
-import { FastifyWithZod } from '@rosen-bridge/fastify-enhanced';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { FastifyWithZod } from '@rosen-bridge/fastify-enhanced';
 
-import { DbService } from '../../dbService';
-import { AddGiftService } from '../../transactions/addGiftService';
+import { configs } from '../../../config';
 import {
   addGiftRequestSchema,
   addGiftResponseSchema,
 } from '../../../types/api';
-import { configs } from '../../../config';
+import { DbService } from '../../dbService';
+import { AddGiftService } from '../../transactions/addGiftService';
 
 export const registerAddGiftRoute = (
   fastify: FastifyWithZod,

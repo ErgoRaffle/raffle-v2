@@ -1,8 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "rootDir": "./lib",
-    "composite": true
+    "rootDir": "./lib"
   },
   "exclude": ["tests"],
   "references": [

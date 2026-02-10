@@ -1,20 +1,38 @@
-import { it, describe, expect } from 'vitest';
-import { SColl, SByte, SLong } from '@fleet-sdk/serializer';
-import { Box, TransactionBuilder, OutputBuilder } from '@fleet-sdk/core';
+import {
+  Box,
+  TransactionBuilder,
+  OutputBuilder,
+  ErgoUnsignedInput,
+} from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
+import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
+import { SColl, SByte, SLong } from '@fleet-sdk/serializer';
+import { it, describe, expect, beforeEach } from 'vitest';
 
-import * as testUtils from '../testUtils';
-import * as constants from '../../constants';
+import * as constants from '../../lib/constants';
 import { ScriptNamesType } from '../../lib/types';
+import * as testUtils from '../testUtils';
+
+interface RaffleServiceTestInterface {
+  boxFactory: testUtils.RaffleBoxFactory;
+  creator: KeyedMockChainParty;
+  someoneWallet: KeyedMockChainParty;
+  inputBoxes: ErgoUnsignedInput[] | Box<bigint>[];
+}
+
+interface TestInterface {
+  raffleServiceTestRequirements: RaffleServiceTestInterface;
+  raffleServiceBy10WinnersTestRequirements: RaffleServiceTestInterface;
+}
 
 /*
- * create fixtures that contains below steps data:
- *   - mock boxFactory.chain and partners
+ * provide test requirements that contains below data:
+ *   - mock raffleServiceTestRequirements.boxFactory.chain and partners
  *   - compile contracts
  *   - create service input box
- * @returns vitest customized "it" object
+ * @returns object
  */
-const createRaffleServiceTest = (winnersCount: bigint = 1n) => {
+const provideRaffleServiceTestRequirements = (winnersCount: bigint = 1n) => {
   const boxFactory = new testUtils.RaffleBoxFactory(
     { height: 1000 },
     constants.scriptList.filter(
@@ -42,17 +60,20 @@ const createRaffleServiceTest = (winnersCount: bigint = 1n) => {
     ]),
   });
 
-  return it.extend({
+  return {
     boxFactory: boxFactory,
     someoneWallet: someone,
     creator: creator,
     inputBoxes: [serviceBox, ...creator.utxos.toArray()],
-  });
+  };
 };
 
 describe('Service', () => {
-  const raffleServiceTest = createRaffleServiceTest();
-  const raffleServiceBy10WinnersTest = createRaffleServiceTest(10n);
+  beforeEach<TestInterface>(async (ctx) => {
+    ctx.raffleServiceTestRequirements = provideRaffleServiceTestRequirements();
+    ctx.raffleServiceBy10WinnersTestRequirements =
+      provideRaffleServiceTestRequirements(10n);
+  });
 
   describe('Create raffle', () => {
     /**
@@ -65,41 +86,47 @@ describe('Service', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    raffleServiceTest(
-      'should create raffle by 1 winner and by erg-goal successfully',
-      ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
-        const serviceOutputBox = boxFactory.createServiceOutputBox(
-          creator.ergoTree,
+    it<TestInterface>('should create raffle by 1 winner and by erg-goal successfully', ({
+      raffleServiceTestRequirements,
+    }) => {
+      const serviceOutputBox =
+        raffleServiceTestRequirements.boxFactory.createServiceOutputBox(
+          raffleServiceTestRequirements.creator.ergoTree,
         );
-        const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
-        const inactiveRaffleOutputBox =
-          boxFactory.createInactiveRaffleOutputBox(
-            creator.ergoTree,
-            someoneWallet.ergoTree,
-            creator.ergoTree,
-            1,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            1_000_000_000n,
-            inputBoxes[0].boxId.toString(),
-          );
-        // Execute transaction
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from(inputBoxes)
-          .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .sendChangeTo(creator.address)
-          .build();
+      const ticketRepoOutputBox =
+        raffleServiceTestRequirements.boxFactory.createTicketRepoOutputBox();
+      const inactiveRaffleOutputBox =
+        raffleServiceTestRequirements.boxFactory.createInactiveRaffleOutputBox(
+          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.someoneWallet.ergoTree,
+          raffleServiceTestRequirements.creator.ergoTree,
+          1,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          1_000_000_000n,
+          raffleServiceTestRequirements.inputBoxes[0].boxId.toString(),
+        );
+      // Execute transaction
+      const transaction = new TransactionBuilder(
+        raffleServiceTestRequirements.boxFactory.chain.height,
+      )
+        .from(raffleServiceTestRequirements.inputBoxes)
+        .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .sendChangeTo(raffleServiceTestRequirements.creator.address)
+        .build();
 
-        const res = boxFactory.chain.execute(transaction, {
-          signers: [creator],
-        });
-        // Check execution result
-        expect(res).true;
-      },
-    );
+      const res = raffleServiceTestRequirements.boxFactory.chain.execute(
+        transaction,
+        {
+          signers: [raffleServiceTestRequirements.creator],
+        },
+      );
+      // Check execution result
+      expect(res).toBeTruthy();
+    });
 
     /**
      * @target service should create new raffle by 10 winners successfully
@@ -111,42 +138,49 @@ describe('Service', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    raffleServiceBy10WinnersTest(
-      'should create raffle by 10 winners and by erg-goal successfully',
-      ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
-        // Create output boxes
-        const serviceOutputBox = boxFactory.createServiceOutputBox(
-          creator.ergoTree,
+    it<TestInterface>('should create raffle by 10 winners and by erg-goal successfully', ({
+      raffleServiceBy10WinnersTestRequirements,
+    }) => {
+      // Create output boxes
+      const serviceOutputBox =
+        raffleServiceBy10WinnersTestRequirements.boxFactory.createServiceOutputBox(
+          raffleServiceBy10WinnersTestRequirements.creator.ergoTree,
         );
-        const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
-        const inactiveRaffleOutputBox =
-          boxFactory.createInactiveRaffleOutputBox(
-            creator.ergoTree,
-            someoneWallet.ergoTree,
-            creator.ergoTree,
-            10,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            1_000_000_000n,
-            inputBoxes[0].boxId.toString(),
-          );
-        // Execute transaction
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from(inputBoxes)
-          .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .sendChangeTo(creator.address)
-          .build();
+      const ticketRepoOutputBox =
+        raffleServiceBy10WinnersTestRequirements.boxFactory.createTicketRepoOutputBox();
+      const inactiveRaffleOutputBox =
+        raffleServiceBy10WinnersTestRequirements.boxFactory.createInactiveRaffleOutputBox(
+          raffleServiceBy10WinnersTestRequirements.creator.ergoTree,
+          raffleServiceBy10WinnersTestRequirements.someoneWallet.ergoTree,
+          raffleServiceBy10WinnersTestRequirements.creator.ergoTree,
+          10,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          1_000_000_000n,
+          raffleServiceBy10WinnersTestRequirements.inputBoxes[0].boxId.toString(),
+        );
+      // Execute transaction
+      const transaction = new TransactionBuilder(
+        raffleServiceBy10WinnersTestRequirements.boxFactory.chain.height,
+      )
+        .from(raffleServiceBy10WinnersTestRequirements.inputBoxes)
+        .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .sendChangeTo(raffleServiceBy10WinnersTestRequirements.creator.address)
+        .build();
 
-        const res = boxFactory.chain.execute(transaction, {
-          signers: [creator],
-        });
-        // Check execution result
-        expect(res).true;
-      },
-    );
+      const res =
+        raffleServiceBy10WinnersTestRequirements.boxFactory.chain.execute(
+          transaction,
+          {
+            signers: [raffleServiceBy10WinnersTestRequirements.creator],
+          },
+        );
+      // Check execution result
+      expect(res).toBeTruthy();
+    });
 
     /**
      * @target service should create new raffle by 1 winner and donate able
@@ -159,42 +193,48 @@ describe('Service', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    raffleServiceTest(
-      'should create raffle by 1 winner and X token-goal successfully',
-      ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
-        // Create output boxes
-        const serviceOutputBox = boxFactory.createServiceOutputBox(
-          creator.ergoTree,
+    it<TestInterface>('should create raffle by 1 winner and X token-goal successfully', ({
+      raffleServiceTestRequirements,
+    }) => {
+      // Create output boxes
+      const serviceOutputBox =
+        raffleServiceTestRequirements.boxFactory.createServiceOutputBox(
+          raffleServiceTestRequirements.creator.ergoTree,
         );
-        const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
-        const inactiveRaffleOutputBox =
-          boxFactory.createInactiveRaffleOutputBox(
-            creator.ergoTree,
-            someoneWallet.ergoTree,
-            creator.ergoTree,
-            1,
-            { tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 1n },
-            undefined,
-            undefined,
-            undefined,
-            1_000_000_000n,
-            inputBoxes[0].boxId.toString(),
-          );
-        // Execute transaction
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from(inputBoxes)
-          .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .sendChangeTo(creator.address)
-          .build();
+      const ticketRepoOutputBox =
+        raffleServiceTestRequirements.boxFactory.createTicketRepoOutputBox();
+      const inactiveRaffleOutputBox =
+        raffleServiceTestRequirements.boxFactory.createInactiveRaffleOutputBox(
+          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.someoneWallet.ergoTree,
+          raffleServiceTestRequirements.creator.ergoTree,
+          1,
+          { tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 1n },
+          undefined,
+          undefined,
+          undefined,
+          1_000_000_000n,
+          raffleServiceTestRequirements.inputBoxes[0].boxId.toString(),
+        );
+      // Execute transaction
+      const transaction = new TransactionBuilder(
+        raffleServiceTestRequirements.boxFactory.chain.height,
+      )
+        .from(raffleServiceTestRequirements.inputBoxes)
+        .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .sendChangeTo(raffleServiceTestRequirements.creator.address)
+        .build();
 
-        const res = boxFactory.chain.execute(transaction, {
-          signers: [creator],
-        });
-        // Check execution result
-        expect(res).true;
-      },
-    );
+      const res = raffleServiceTestRequirements.boxFactory.chain.execute(
+        transaction,
+        {
+          signers: [raffleServiceTestRequirements.creator],
+        },
+      );
+      // Check execution result
+      expect(res).toBeTruthy();
+    });
 
     /**
      * @target service should fail when try to create new raffle without LicenseToken
@@ -205,36 +245,41 @@ describe('Service', () => {
      * @expected
      * - transaction result must throw error
      */
-    raffleServiceTest(
-      'should fail when try to create new raffle without LicenseToken on the inactiveRaffleOutputBox',
-      ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
-        // Create output boxes
-        const serviceOutputBox = boxFactory.createServiceOutputBox(
-          creator.ergoTree,
+    it<TestInterface>('should fail when try to create new raffle without LicenseToken on the inactiveRaffleOutputBox', ({
+      raffleServiceTestRequirements,
+    }) => {
+      // Create output boxes
+      const serviceOutputBox =
+        raffleServiceTestRequirements.boxFactory.createServiceOutputBox(
+          raffleServiceTestRequirements.creator.ergoTree,
         );
-        const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
-        const inactiveRaffleOutputBox =
-          boxFactory.createInactiveRaffleOutputBox(
-            creator.ergoTree,
-            someoneWallet.ergoTree,
-            creator.ergoTree,
-          );
-        inactiveRaffleOutputBox.assets.remove(
-          testUtils.TestConstants.LICENSE_TOKEN_ID,
+      const ticketRepoOutputBox =
+        raffleServiceTestRequirements.boxFactory.createTicketRepoOutputBox();
+      const inactiveRaffleOutputBox =
+        raffleServiceTestRequirements.boxFactory.createInactiveRaffleOutputBox(
+          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.someoneWallet.ergoTree,
+          raffleServiceTestRequirements.creator.ergoTree,
         );
-        // Execute transaction
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from(inputBoxes)
-          .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .sendChangeTo(creator.address)
-          .build();
+      inactiveRaffleOutputBox.assets.remove(
+        testUtils.TestConstants.LICENSE_TOKEN_ID,
+      );
+      // Execute transaction
+      const transaction = new TransactionBuilder(
+        raffleServiceTestRequirements.boxFactory.chain.height,
+      )
+        .from(raffleServiceTestRequirements.inputBoxes)
+        .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .sendChangeTo(raffleServiceTestRequirements.creator.address)
+        .build();
 
-        expect(() =>
-          boxFactory.chain.execute(transaction, { signers: [creator] }),
-        ).toThrowError();
-      },
-    );
+      expect(() =>
+        raffleServiceTestRequirements.boxFactory.chain.execute(transaction, {
+          signers: [raffleServiceTestRequirements.creator],
+        }),
+      ).toThrowError();
+    });
 
     /**
      * @target service should fail when try to create new raffle with unbalanced LicenseToken
@@ -246,37 +291,42 @@ describe('Service', () => {
      * @expected
      * - transaction result must throw error
      */
-    raffleServiceTest(
-      'should fail when try to create new raffle without decreasing LicenseToken from serviceOutputBox',
-      ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
-        // Create output boxes
-        const serviceOutputBox = boxFactory.createServiceOutputBox(
-          creator.ergoTree,
+    it<TestInterface>('should fail when try to create new raffle without decreasing LicenseToken from serviceOutputBox', ({
+      raffleServiceTestRequirements,
+    }) => {
+      // Create output boxes
+      const serviceOutputBox =
+        raffleServiceTestRequirements.boxFactory.createServiceOutputBox(
+          raffleServiceTestRequirements.creator.ergoTree,
           1000000000n,
         );
-        const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
-        const inactiveRaffleOutputBox =
-          boxFactory.createInactiveRaffleOutputBox(
-            creator.ergoTree,
-            someoneWallet.ergoTree,
-            creator.ergoTree,
-          );
-        inactiveRaffleOutputBox.assets.remove(
-          testUtils.TestConstants.LICENSE_TOKEN_ID,
+      const ticketRepoOutputBox =
+        raffleServiceTestRequirements.boxFactory.createTicketRepoOutputBox();
+      const inactiveRaffleOutputBox =
+        raffleServiceTestRequirements.boxFactory.createInactiveRaffleOutputBox(
+          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.someoneWallet.ergoTree,
+          raffleServiceTestRequirements.creator.ergoTree,
         );
-        // Execute transaction
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from(inputBoxes)
-          .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .sendChangeTo(creator.address)
-          .build();
+      inactiveRaffleOutputBox.assets.remove(
+        testUtils.TestConstants.LICENSE_TOKEN_ID,
+      );
+      // Execute transaction
+      const transaction = new TransactionBuilder(
+        raffleServiceTestRequirements.boxFactory.chain.height,
+      )
+        .from(raffleServiceTestRequirements.inputBoxes)
+        .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .sendChangeTo(raffleServiceTestRequirements.creator.address)
+        .build();
 
-        expect(() =>
-          boxFactory.chain.execute(transaction, { signers: [creator] }),
-        ).toThrowError();
-      },
-    );
+      expect(() =>
+        raffleServiceTestRequirements.boxFactory.chain.execute(transaction, {
+          signers: [raffleServiceTestRequirements.creator],
+        }),
+      ).toThrowError();
+    });
 
     /**
      * @target service should fail when try to create new raffle with incorrect service fee
@@ -287,37 +337,42 @@ describe('Service', () => {
      * @expected
      * - transaction result must throw error
      */
-    raffleServiceTest(
-      'should fail when try to create new raffle with incorrect service fee',
-      ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
-        // Create output boxes
-        const serviceOutputBox = boxFactory.createServiceOutputBox(
-          creator.ergoTree,
+    it<TestInterface>('should fail when try to create new raffle with incorrect service fee', ({
+      raffleServiceTestRequirements,
+    }) => {
+      // Create output boxes
+      const serviceOutputBox =
+        raffleServiceTestRequirements.boxFactory.createServiceOutputBox(
+          raffleServiceTestRequirements.creator.ergoTree,
         );
-        const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
-        const inactiveRaffleOutputBox =
-          boxFactory.createInactiveRaffleOutputBox(
-            creator.ergoTree,
-            someoneWallet.ergoTree,
-            creator.ergoTree,
-            1,
-            undefined,
-            undefined,
-            110n,
-          );
-        // Execute transaction
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from(inputBoxes)
-          .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .sendChangeTo(creator.address)
-          .build();
+      const ticketRepoOutputBox =
+        raffleServiceTestRequirements.boxFactory.createTicketRepoOutputBox();
+      const inactiveRaffleOutputBox =
+        raffleServiceTestRequirements.boxFactory.createInactiveRaffleOutputBox(
+          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.someoneWallet.ergoTree,
+          raffleServiceTestRequirements.creator.ergoTree,
+          1,
+          undefined,
+          undefined,
+          110n,
+        );
+      // Execute transaction
+      const transaction = new TransactionBuilder(
+        raffleServiceTestRequirements.boxFactory.chain.height,
+      )
+        .from(raffleServiceTestRequirements.inputBoxes)
+        .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .sendChangeTo(raffleServiceTestRequirements.creator.address)
+        .build();
 
-        expect(() =>
-          boxFactory.chain.execute(transaction, { signers: [creator] }),
-        ).toThrowError();
-      },
-    );
+      expect(() =>
+        raffleServiceTestRequirements.boxFactory.chain.execute(transaction, {
+          signers: [raffleServiceTestRequirements.creator],
+        }),
+      ).toThrowError();
+    });
 
     /**
      * @target service should fail when try to create new raffle with invalid service fee on the output service box
@@ -328,39 +383,44 @@ describe('Service', () => {
      * @expected
      * - transaction result must throw error
      */
-    raffleServiceTest(
-      'should fail when try to create new raffle with invalid license fee on the output service box',
-      ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
-        // Create output boxes
-        const serviceOutputBox = boxFactory.createServiceOutputBox(
-          creator.ergoTree,
+    it<TestInterface>('should fail when try to create new raffle with invalid license fee on the output service box', ({
+      raffleServiceTestRequirements,
+    }) => {
+      // Create output boxes
+      const serviceOutputBox =
+        raffleServiceTestRequirements.boxFactory.createServiceOutputBox(
+          raffleServiceTestRequirements.creator.ergoTree,
           20n,
           10n,
           110n,
         );
-        const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
-        const inactiveRaffleOutputBox =
-          boxFactory.createInactiveRaffleOutputBox(
-            creator.ergoTree,
-            someoneWallet.ergoTree,
-            creator.ergoTree,
-          );
-        // Execute transaction
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from(inputBoxes)
-          .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .sendChangeTo(creator.address)
-          .build();
+      const ticketRepoOutputBox =
+        raffleServiceTestRequirements.boxFactory.createTicketRepoOutputBox();
+      const inactiveRaffleOutputBox =
+        raffleServiceTestRequirements.boxFactory.createInactiveRaffleOutputBox(
+          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.someoneWallet.ergoTree,
+          raffleServiceTestRequirements.creator.ergoTree,
+        );
+      // Execute transaction
+      const transaction = new TransactionBuilder(
+        raffleServiceTestRequirements.boxFactory.chain.height,
+      )
+        .from(raffleServiceTestRequirements.inputBoxes)
+        .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .sendChangeTo(raffleServiceTestRequirements.creator.address)
+        .build();
 
-        expect(() =>
-          boxFactory.chain.execute(transaction, { signers: [creator] }),
-        ).toThrowError();
-      },
-    );
+      expect(() =>
+        raffleServiceTestRequirements.boxFactory.chain.execute(transaction, {
+          signers: [raffleServiceTestRequirements.creator],
+        }),
+      ).toThrowError();
+    });
 
     /**
-     * @target service should fail when try to create new raffle with incorrect sum of winners percents
+     * @target service should fail when try to create new raffle with incorrect sum of winners percents(more than 1000)
      * @scenario
      * - create three output boxes by values(by incorrect winners percents)
      * - execute transaction
@@ -368,40 +428,46 @@ describe('Service', () => {
      * @expected
      * - transaction result must throw error
      */
-    raffleServiceTest(
-      'should fail when try to create new raffle with incorrect sum of winners percents',
-      ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
-        const serviceBox = inputBoxes[0];
-        serviceBox.setContextExtension({
-          0: SColl(SLong, [500n, 600n]),
-        });
-        // Create output boxes
-        const serviceOutputBox = boxFactory.createServiceOutputBox(
-          creator.ergoTree,
+    it<TestInterface>('should fail when try to create new raffle with incorrect sum of winners percents(more than 1000)', ({
+      raffleServiceTestRequirements,
+    }) => {
+      const serviceBox = raffleServiceTestRequirements
+        .inputBoxes[0] as ErgoUnsignedInput;
+      serviceBox.setContextExtension({
+        0: SColl(SLong, [500n, 600n]),
+      });
+      // Create output boxes
+      const serviceOutputBox =
+        raffleServiceTestRequirements.boxFactory.createServiceOutputBox(
+          raffleServiceTestRequirements.creator.ergoTree,
         );
-        const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
-        const inactiveRaffleOutputBox =
-          boxFactory.createInactiveRaffleOutputBox(
-            creator.ergoTree,
-            someoneWallet.ergoTree,
-            creator.ergoTree,
-            2,
-            undefined,
-            [500n, 600n],
-          );
-        // Execute transaction
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from(inputBoxes)
-          .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .sendChangeTo(creator.address)
-          .build();
+      const ticketRepoOutputBox =
+        raffleServiceTestRequirements.boxFactory.createTicketRepoOutputBox();
+      const inactiveRaffleOutputBox =
+        raffleServiceTestRequirements.boxFactory.createInactiveRaffleOutputBox(
+          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.someoneWallet.ergoTree,
+          raffleServiceTestRequirements.creator.ergoTree,
+          2,
+          undefined,
+          [500n, 600n],
+        );
+      // Execute transaction
+      const transaction = new TransactionBuilder(
+        raffleServiceTestRequirements.boxFactory.chain.height,
+      )
+        .from(raffleServiceTestRequirements.inputBoxes)
+        .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .sendChangeTo(raffleServiceTestRequirements.creator.address)
+        .build();
 
-        expect(() =>
-          boxFactory.chain.execute(transaction, { signers: [creator] }),
-        ).toThrowError();
-      },
-    );
+      expect(() =>
+        raffleServiceTestRequirements.boxFactory.chain.execute(transaction, {
+          signers: [raffleServiceTestRequirements.creator],
+        }),
+      ).toThrowError();
+    });
 
     /**
      * @target service should fail when try to create new raffle with invalid winners hash
@@ -412,38 +478,43 @@ describe('Service', () => {
      * @expected
      * - transaction result must throw error
      */
-    raffleServiceTest(
-      'should fail when try to create new raffle with invalid winners hash',
-      ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
-        // Create output boxes
-        const serviceOutputBox = boxFactory.createServiceOutputBox(
-          creator.ergoTree,
+    it<TestInterface>('should fail when try to create new raffle with invalid winners hash', ({
+      raffleServiceTestRequirements,
+    }) => {
+      // Create output boxes
+      const serviceOutputBox =
+        raffleServiceTestRequirements.boxFactory.createServiceOutputBox(
+          raffleServiceTestRequirements.creator.ergoTree,
         );
-        const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
-        const inactiveRaffleOutputBox =
-          boxFactory.createInactiveRaffleOutputBox(
-            creator.ergoTree,
-            someoneWallet.ergoTree,
-            creator.ergoTree,
-            1,
-            undefined,
-            undefined,
-            undefined,
-            Buffer.from('invalid winners count hash').toString('hex'),
-          );
-        // Execute transaction
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from(inputBoxes)
-          .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .sendChangeTo(creator.address)
-          .build();
+      const ticketRepoOutputBox =
+        raffleServiceTestRequirements.boxFactory.createTicketRepoOutputBox();
+      const inactiveRaffleOutputBox =
+        raffleServiceTestRequirements.boxFactory.createInactiveRaffleOutputBox(
+          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.someoneWallet.ergoTree,
+          raffleServiceTestRequirements.creator.ergoTree,
+          1,
+          undefined,
+          undefined,
+          undefined,
+          Buffer.from('invalid winners count hash').toString('hex'),
+        );
+      // Execute transaction
+      const transaction = new TransactionBuilder(
+        raffleServiceTestRequirements.boxFactory.chain.height,
+      )
+        .from(raffleServiceTestRequirements.inputBoxes)
+        .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .sendChangeTo(raffleServiceTestRequirements.creator.address)
+        .build();
 
-        expect(() =>
-          boxFactory.chain.execute(transaction, { signers: [creator] }),
-        ).toThrowError();
-      },
-    );
+      expect(() =>
+        raffleServiceTestRequirements.boxFactory.chain.execute(transaction, {
+          signers: [raffleServiceTestRequirements.creator],
+        }),
+      ).toThrowError();
+    });
 
     /**
      * @target service should fail of try to create new raffle with incorrect winners count
@@ -454,41 +525,47 @@ describe('Service', () => {
      * @expected
      * - transaction result must throw error
      */
-    raffleServiceTest(
-      'should fail of try to create new raffle with incorrect winners count',
-      ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
-        // Mock Required Things
-        const serviceBox = inputBoxes[0];
-        serviceBox.setContextExtension({
-          0: SColl(SLong, [500n, 500n]),
-        });
-        // Create output boxes
-        const serviceOutputBox = boxFactory.createServiceOutputBox(
-          creator.ergoTree,
+    it<TestInterface>('should fail of try to create new raffle with incorrect winners count', ({
+      raffleServiceTestRequirements,
+    }) => {
+      // Mock Required Things
+      const serviceBox = raffleServiceTestRequirements
+        .inputBoxes[0] as ErgoUnsignedInput;
+      serviceBox.setContextExtension({
+        0: SColl(SLong, [500n, 500n]),
+      });
+      // Create output boxes
+      const serviceOutputBox =
+        raffleServiceTestRequirements.boxFactory.createServiceOutputBox(
+          raffleServiceTestRequirements.creator.ergoTree,
         );
-        const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
-        const inactiveRaffleOutputBox =
-          boxFactory.createInactiveRaffleOutputBox(
-            creator.ergoTree,
-            someoneWallet.ergoTree,
-            creator.ergoTree,
-            2,
-            undefined,
-            [1000n],
-          );
-        // Execute transaction
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from(inputBoxes)
-          .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .sendChangeTo(creator.address)
-          .build();
+      const ticketRepoOutputBox =
+        raffleServiceTestRequirements.boxFactory.createTicketRepoOutputBox();
+      const inactiveRaffleOutputBox =
+        raffleServiceTestRequirements.boxFactory.createInactiveRaffleOutputBox(
+          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.someoneWallet.ergoTree,
+          raffleServiceTestRequirements.creator.ergoTree,
+          2,
+          undefined,
+          [1000n],
+        );
+      // Execute transaction
+      const transaction = new TransactionBuilder(
+        raffleServiceTestRequirements.boxFactory.chain.height,
+      )
+        .from(raffleServiceTestRequirements.inputBoxes)
+        .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .sendChangeTo(raffleServiceTestRequirements.creator.address)
+        .build();
 
-        expect(() =>
-          boxFactory.chain.execute(transaction, { signers: [creator] }),
-        ).toThrowError();
-      },
-    );
+      expect(() =>
+        raffleServiceTestRequirements.boxFactory.chain.execute(transaction, {
+          signers: [raffleServiceTestRequirements.creator],
+        }),
+      ).toThrowError();
+    });
 
     /**
      * @target service should fail when try to create new raffle with incorrect winners count in extension
@@ -499,37 +576,42 @@ describe('Service', () => {
      * @expected
      * - transaction result must throw error
      */
-    raffleServiceTest(
-      'should fail when try to create new raffle with incorrect winners count in extension',
-      ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
-        // Create output boxes
-        const serviceOutputBox = boxFactory.createServiceOutputBox(
-          creator.ergoTree,
+    it<TestInterface>('should fail when try to create new raffle with incorrect winners count in extension', ({
+      raffleServiceTestRequirements,
+    }) => {
+      // Create output boxes
+      const serviceOutputBox =
+        raffleServiceTestRequirements.boxFactory.createServiceOutputBox(
+          raffleServiceTestRequirements.creator.ergoTree,
         );
-        const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
-        const inactiveRaffleOutputBox =
-          boxFactory.createInactiveRaffleOutputBox(
-            creator.ergoTree,
-            someoneWallet.ergoTree,
-            creator.ergoTree,
-            2,
-          );
-        // Execute transaction
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from(inputBoxes)
-          .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .sendChangeTo(creator.address)
-          .build();
+      const ticketRepoOutputBox =
+        raffleServiceTestRequirements.boxFactory.createTicketRepoOutputBox();
+      const inactiveRaffleOutputBox =
+        raffleServiceTestRequirements.boxFactory.createInactiveRaffleOutputBox(
+          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.someoneWallet.ergoTree,
+          raffleServiceTestRequirements.creator.ergoTree,
+          2,
+        );
+      // Execute transaction
+      const transaction = new TransactionBuilder(
+        raffleServiceTestRequirements.boxFactory.chain.height,
+      )
+        .from(raffleServiceTestRequirements.inputBoxes)
+        .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .sendChangeTo(raffleServiceTestRequirements.creator.address)
+        .build();
 
-        expect(() =>
-          boxFactory.chain.execute(transaction, { signers: [creator] }),
-        ).toThrowError();
-      },
-    );
+      expect(() =>
+        raffleServiceTestRequirements.boxFactory.chain.execute(transaction, {
+          signers: [raffleServiceTestRequirements.creator],
+        }),
+      ).toThrowError();
+    });
 
     /**
-     * @target service should fail when try to create new raffle with incorrect sum of winners percents
+     * @target service should fail when try to create new raffle with incorrect sum of winners percents(less than 1000)
      * @scenario
      * - create three output boxes by values(with incorrect sum of winners percents)
      * - execute transaction
@@ -537,41 +619,47 @@ describe('Service', () => {
      * @expected
      * - transaction result must throw error
      */
-    raffleServiceTest(
-      'should fail when try to create new raffle with incorrect sum of winners percents',
-      ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
-        // Mock Required Things
-        const serviceBox = inputBoxes[0];
-        serviceBox.setContextExtension({
-          0: SColl(SLong, [450n, 450n]),
-        });
-        // Create output boxes
-        const serviceOutputBox = boxFactory.createServiceOutputBox(
-          creator.ergoTree,
+    it<TestInterface>('should fail when try to create new raffle with incorrect sum of winners percents(less than 1000)', ({
+      raffleServiceTestRequirements,
+    }) => {
+      // Mock Required Things
+      const serviceBox = raffleServiceTestRequirements
+        .inputBoxes[0] as ErgoUnsignedInput;
+      serviceBox.setContextExtension({
+        0: SColl(SLong, [450n, 450n]),
+      });
+      // Create output boxes
+      const serviceOutputBox =
+        raffleServiceTestRequirements.boxFactory.createServiceOutputBox(
+          raffleServiceTestRequirements.creator.ergoTree,
         );
-        const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
-        const inactiveRaffleOutputBox =
-          boxFactory.createInactiveRaffleOutputBox(
-            creator.ergoTree,
-            someoneWallet.ergoTree,
-            creator.ergoTree,
-            2,
-            undefined,
-            [450n, 450n],
-          );
-        // Execute transaction
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from(inputBoxes)
-          .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .sendChangeTo(creator.address)
-          .build();
+      const ticketRepoOutputBox =
+        raffleServiceTestRequirements.boxFactory.createTicketRepoOutputBox();
+      const inactiveRaffleOutputBox =
+        raffleServiceTestRequirements.boxFactory.createInactiveRaffleOutputBox(
+          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.someoneWallet.ergoTree,
+          raffleServiceTestRequirements.creator.ergoTree,
+          2,
+          undefined,
+          [450n, 450n],
+        );
+      // Execute transaction
+      const transaction = new TransactionBuilder(
+        raffleServiceTestRequirements.boxFactory.chain.height,
+      )
+        .from(raffleServiceTestRequirements.inputBoxes)
+        .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .sendChangeTo(raffleServiceTestRequirements.creator.address)
+        .build();
 
-        expect(() =>
-          boxFactory.chain.execute(transaction, { signers: [creator] }),
-        ).toThrowError();
-      },
-    );
+      expect(() =>
+        raffleServiceTestRequirements.boxFactory.chain.execute(transaction, {
+          signers: [raffleServiceTestRequirements.creator],
+        }),
+      ).toThrowError();
+    });
 
     /**
      * @target service should fail when try to create new raffle with incorrect ticket-id
@@ -582,44 +670,50 @@ describe('Service', () => {
      * @expected
      * - transaction result must throw error
      */
-    raffleServiceTest(
-      'should fail when try to create new raffle with incorrect ticket-id',
-      ({ boxFactory, someoneWallet, creator, inputBoxes }) => {
-        const serviceBox = inputBoxes[0];
-        serviceBox.setContextExtension({
-          0: SColl(SLong, [500n, 500n]),
-        });
-        // Create output boxes
-        const serviceOutputBox = boxFactory.createServiceOutputBox(
-          creator.ergoTree,
+    it<TestInterface>('should fail when try to create new raffle with incorrect ticket-id', ({
+      raffleServiceTestRequirements,
+    }) => {
+      const serviceBox = raffleServiceTestRequirements
+        .inputBoxes[0] as ErgoUnsignedInput;
+      serviceBox.setContextExtension({
+        0: SColl(SLong, [500n, 500n]),
+      });
+      // Create output boxes
+      const serviceOutputBox =
+        raffleServiceTestRequirements.boxFactory.createServiceOutputBox(
+          raffleServiceTestRequirements.creator.ergoTree,
         );
-        const ticketRepoOutputBox = boxFactory.createTicketRepoOutputBox();
-        const inactiveRaffleOutputBox =
-          boxFactory.createInactiveRaffleOutputBox(
-            creator.ergoTree,
-            someoneWallet.ergoTree,
-            creator.ergoTree,
-            2,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            1_000_000_000n,
-            '0'.repeat(64),
-          );
-        // Execute transaction
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from(inputBoxes)
-          .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .sendChangeTo(creator.address)
-          .build();
+      const ticketRepoOutputBox =
+        raffleServiceTestRequirements.boxFactory.createTicketRepoOutputBox();
+      const inactiveRaffleOutputBox =
+        raffleServiceTestRequirements.boxFactory.createInactiveRaffleOutputBox(
+          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.someoneWallet.ergoTree,
+          raffleServiceTestRequirements.creator.ergoTree,
+          2,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          1_000_000_000n,
+          '0'.repeat(64),
+        );
+      // Execute transaction
+      const transaction = new TransactionBuilder(
+        raffleServiceTestRequirements.boxFactory.chain.height,
+      )
+        .from(raffleServiceTestRequirements.inputBoxes)
+        .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .sendChangeTo(raffleServiceTestRequirements.creator.address)
+        .build();
 
-        expect(() =>
-          boxFactory.chain.execute(transaction, { signers: [creator] }),
-        ).toThrowError();
-      },
-    );
+      expect(() =>
+        raffleServiceTestRequirements.boxFactory.chain.execute(transaction, {
+          signers: [raffleServiceTestRequirements.creator],
+        }),
+      ).toThrowError();
+    });
   });
 
   describe('Spend raffle', () => {
@@ -632,43 +726,45 @@ describe('Service', () => {
      * @expected
      * - transaction result must be true
      */
-    raffleServiceTest(
-      'should spend raffle ServiceBox by OwnerNFT',
-      ({ boxFactory, creator, inputBoxes }) => {
-        const serviceBox = inputBoxes[0];
-        creator.addBalance({
-          tokens: [
-            { tokenId: testUtils.TestConstants.OWNER_NFT_ID, amount: 1n },
-          ],
-        });
-        const newInputBoxes: Box<bigint>[] = [
-          serviceBox,
-          ...creator.utxos.toArray(),
-        ];
-        // Create output boxes
-        const outputBox = new OutputBuilder(
-          15_000_000n,
-          creator.address.ergoTree,
-        ).addTokens([
-          {
-            tokenId: testUtils.TestConstants.OWNER_NFT_ID,
-            amount: 1n,
-          },
-        ]);
-        // Execute transaction
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from(newInputBoxes)
-          .to([outputBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .sendChangeTo(creator.address)
-          .build();
-        const res = boxFactory.chain.execute(transaction, {
-          signers: [creator],
-        });
-        // Check execution result
-        expect(res).true;
-      },
-    );
+    it<TestInterface>('should spend raffle ServiceBox by OwnerNFT', ({
+      raffleServiceTestRequirements,
+    }) => {
+      const serviceBox = raffleServiceTestRequirements.inputBoxes[0];
+      raffleServiceTestRequirements.creator.addBalance({
+        tokens: [{ tokenId: testUtils.TestConstants.OWNER_NFT_ID, amount: 1n }],
+      });
+      const newInputBoxes: Box<bigint>[] = [
+        serviceBox,
+        ...raffleServiceTestRequirements.creator.utxos.toArray(),
+      ];
+      // Create output boxes
+      const outputBox = new OutputBuilder(
+        15_000_000n,
+        raffleServiceTestRequirements.creator.address.ergoTree,
+      ).addTokens([
+        {
+          tokenId: testUtils.TestConstants.OWNER_NFT_ID,
+          amount: 1n,
+        },
+      ]);
+      // Execute transaction
+      const transaction = new TransactionBuilder(
+        raffleServiceTestRequirements.boxFactory.chain.height,
+      )
+        .from(newInputBoxes)
+        .to([outputBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .sendChangeTo(raffleServiceTestRequirements.creator.address)
+        .build();
+      const res = raffleServiceTestRequirements.boxFactory.chain.execute(
+        transaction,
+        {
+          signers: [raffleServiceTestRequirements.creator],
+        },
+      );
+      // Check execution result
+      expect(res).toBeTruthy();
+    });
   });
 
   describe('Close/Redeem raffle', () => {
@@ -681,19 +777,23 @@ describe('Service', () => {
      * @expected
      * - transaction result must be true
      */
-    raffleServiceTest(
-      'should close raffle or Redeem Raffle',
-      ({ boxFactory, creator, someoneWallet }) => {
-        // Mock Required Things
-        const serviceBox = boxFactory.createServiceBoxMock(
-          creator.ergoTree,
+    it<TestInterface>('should close raffle or Redeem Raffle', ({
+      raffleServiceTestRequirements,
+    }) => {
+      // Mock Required Things
+      const serviceBox =
+        raffleServiceTestRequirements.boxFactory.createServiceBoxMock(
+          raffleServiceTestRequirements.creator.ergoTree,
           999_999_999n,
         );
-        const successRaffleInputBox = boxFactory.createSuccessRaffleBoxMock(
+      const successRaffleInputBox =
+        raffleServiceTestRequirements.boxFactory.createSuccessRaffleBoxMock(
           testUtils.TestConstants.CREATION_FEE +
             4n * testUtils.TestConstants.FEE,
           testUtils.TestConstants.LICENSE_TOKEN_ID,
-          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+          blake2b256(
+            Buffer.from(raffleServiceTestRequirements.creator.ergoTree, 'hex'),
+          ),
           '0123456789012345',
           [],
           60n,
@@ -706,30 +806,35 @@ describe('Service', () => {
           undefined,
         );
 
-        // Create output boxes
-        const serviceOutputBox = boxFactory.createServiceOutputBox(
-          creator.ergoTree,
+      // Create output boxes
+      const serviceOutputBox =
+        raffleServiceTestRequirements.boxFactory.createServiceOutputBox(
+          raffleServiceTestRequirements.creator.ergoTree,
           1_000_000_000n,
         );
-        const inputBoxes: Box<bigint>[] = [
-          serviceBox,
-          successRaffleInputBox,
-          ...creator.utxos.toArray(),
-        ];
-        // Execute transaction
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from(inputBoxes)
-          .to([serviceOutputBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .sendChangeTo(creator.address)
-          .build();
+      const inputBoxes: Box<bigint>[] = [
+        serviceBox,
+        successRaffleInputBox,
+        ...raffleServiceTestRequirements.creator.utxos.toArray(),
+      ];
+      // Execute transaction
+      const transaction = new TransactionBuilder(
+        raffleServiceTestRequirements.boxFactory.chain.height,
+      )
+        .from(inputBoxes)
+        .to([serviceOutputBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .sendChangeTo(raffleServiceTestRequirements.creator.address)
+        .build();
 
-        const res = boxFactory.chain.execute(transaction, {
-          signers: [someoneWallet],
-        });
-        // Check execution result
-        expect(res).true;
-      },
-    );
+      const res = raffleServiceTestRequirements.boxFactory.chain.execute(
+        transaction,
+        {
+          signers: [raffleServiceTestRequirements.someoneWallet],
+        },
+      );
+      // Check execution result
+      expect(res).toBeTruthy();
+    });
   });
 });

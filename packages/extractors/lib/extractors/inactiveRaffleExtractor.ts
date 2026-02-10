@@ -1,9 +1,11 @@
-import { DataSource } from '@rosen-bridge/extended-typeorm';
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { Box, ErgoAddress } from '@fleet-sdk/core';
+import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 import {
   AbstractInitializableErgoExtractor,
   boxHasToken,
 } from '@rosen-bridge/abstract-extractor';
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { DataSource } from '@rosen-bridge/extended-typeorm';
 import {
   OutputBox,
   ErgoNetworkType,
@@ -11,10 +13,8 @@ import {
 } from '@rosen-bridge/scanner-interfaces';
 
 import { InactiveRaffleAction } from '../actions/inactiveRaffleAction';
-import { InactiveRaffleBoxInterface } from '../interfaces/types';
 import { InactiveRaffleEntity } from '../entities';
-import { Box, ErgoAddress } from '@fleet-sdk/core';
-import { SConstant, serializeBox } from '@fleet-sdk/serializer';
+import { InactiveRaffleBoxInterface } from '../interfaces/types';
 
 export class InactiveRaffleExtractor extends AbstractInitializableErgoExtractor<
   InactiveRaffleBoxInterface,
@@ -39,7 +39,7 @@ export class InactiveRaffleExtractor extends AbstractInitializableErgoExtractor<
     super(ErgoNetworkType.Node, url, address, logger, initialize);
     this.id = id;
     this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
-    this.actions = new InactiveRaffleAction(dataSource, this.logger);
+    this.actions = new InactiveRaffleAction(dataSource, logger);
     this.serviceErgoTree =
       ErgoAddress.fromBase58(serviceAddress).ergoTree.toString();
     this.licenseTokenId = licenseTokenId;

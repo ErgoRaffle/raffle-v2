@@ -1,21 +1,22 @@
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
-import { OnSufficeCallback, Request } from '../../types';
-import { DonateTxBuilder } from '@ergo-raffle/transactions';
 import { ErgoBox } from '@fleet-sdk/core';
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 
-import { DonationParamsEntity } from '../../database/entities';
-import { BoxLookupService } from '../boxLookup';
-import { ScannerService } from '../scannerService';
-import { TxPotService } from '../txPotService';
+import { DonateTxBuilder } from '@ergo-raffle/transactions';
+
 import { configs } from '../../config';
+import { DonationParamsEntity } from '../../database/entities';
+import { findActiveRaffle } from '../../transactions/boxFinder';
 import {
   signAndAddTx,
   convertDbBoxesToErgoBoxes,
 } from '../../transactions/utils';
+import { OnSufficeCallback, Request } from '../../types';
 import { TxType } from '../../types/transaction';
+import { BoxLookupService } from '../boxLookup';
 import { DbService } from '../dbService';
+import { ScannerService } from '../scannerService';
+import { TxPotService } from '../txPotService';
 import { AbstractTxService } from './abstractTxService';
-import { findActiveRaffle } from '../../transactions/boxFinder';
 
 export class DonationService extends AbstractTxService {
   name = 'DonationService';

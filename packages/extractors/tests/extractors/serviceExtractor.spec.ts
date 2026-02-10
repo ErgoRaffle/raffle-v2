@@ -1,37 +1,32 @@
-import { describe, it, expect } from 'vitest';
-import { Network, SByte, SColl } from '@fleet-sdk/core';
-import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 import { compile } from '@fleet-sdk/compiler';
+import { ErgoTree, Network, SByte, SColl } from '@fleet-sdk/core';
+import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 import { ServiceExtractor } from '../../lib/extractors/serviceExtractor';
 import { createDatabase } from '../utils.mock';
 import { sampleRaffleServiceBoxes } from './mocked/raffleService.mock';
 
-/*
- * create fixtures that contains below steps data:
- *   - create datasource and initial database
- *   - create extractor
- * @returns vitest customized "it" object
- */
-const createRaffleServiceExtractorTest = async () => {
+interface TestInterface {
+  extractor: ServiceExtractor;
+  boxFalseErgoTree: ErgoTree;
+}
+
+beforeEach<TestInterface>(async (ctx) => {
   const dataSource = await createDatabase();
   const boxErgoTree = compile('{sigmaProp(true);}');
   const boxFalseErgoTree = compile('{sigmaProp(false);}');
 
-  return it.extend({
-    extractor: new ServiceExtractor(
-      dataSource,
-      'RaffleService',
-      'http://127.0.0.1/',
-      ErgoNetworkType.Node,
-      boxErgoTree.toAddress(Network.Testnet).toString(),
-      '1'.repeat(64),
-    ),
-    boxFalseErgoTree: boxFalseErgoTree,
-  });
-};
-
-const raffleServiceExtractorTest = await createRaffleServiceExtractorTest();
+  ctx.extractor = new ServiceExtractor(
+    dataSource,
+    'RaffleService',
+    'http://127.0.0.1/',
+    ErgoNetworkType.Node,
+    boxErgoTree.toAddress(Network.Testnet).toString(),
+    '1'.repeat(64),
+  );
+  ctx.boxFalseErgoTree = boxFalseErgoTree;
+});
 
 describe('RaffleServiceExtractor', () => {
   describe('extractBoxData', () => {
@@ -44,22 +39,21 @@ describe('RaffleServiceExtractor', () => {
      * @expected
      * - RaffleServices should extract successfully
      */
-    raffleServiceExtractorTest(
-      `should extract data from sample RaffleService box`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.extractBoxData(
-          sampleRaffleServiceBoxes[0],
-        );
+    it<TestInterface>(`should extract data from sample RaffleService box`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.extractBoxData(
+        sampleRaffleServiceBoxes[0],
+      );
 
-        expect(extractedData).toMatchObject({
-          boxId: sampleRaffleServiceBoxes[0].boxId,
-          txId: sampleRaffleServiceBoxes[0].transactionId,
-          serviceFeePercent: 100,
-          implementerFeePercent: 100,
-          creationFee: 800n,
-        });
-      },
-    );
+      expect(extractedData).toMatchObject({
+        boxId: sampleRaffleServiceBoxes[0].boxId,
+        txId: sampleRaffleServiceBoxes[0].transactionId,
+        serviceFeePercent: 100,
+        implementerFeePercent: 100,
+        creationFee: 800n,
+      });
+    });
   });
 
   describe('hasData', () => {
@@ -73,16 +67,15 @@ describe('RaffleServiceExtractor', () => {
      * @expected
      * - RaffleServices box checking result must be true
      */
-    raffleServiceExtractorTest(
-      `should result of hasData method be true by valid box data`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData(
-          sampleRaffleServiceBoxes[0],
-        );
+    it<TestInterface>(`should result of hasData method be true by valid box data`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.hasData(
+        sampleRaffleServiceBoxes[0],
+      );
 
-        expect(extractedData).toBeTruthy();
-      },
-    );
+      expect(extractedData).toBeTruthy();
+    });
 
     /**
      * @target should result of hasData method be false by invalid box address
@@ -94,17 +87,17 @@ describe('RaffleServiceExtractor', () => {
      * @expected
      * - RaffleServices box checking result must be false
      */
-    raffleServiceExtractorTest(
-      `should result of hasData method be false by invalid box address`,
-      async ({ extractor, boxFalseErgoTree }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleRaffleServiceBoxes[0],
-          ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
-        });
+    it<TestInterface>(`should result of hasData method be false by invalid box address`, async ({
+      extractor,
+      boxFalseErgoTree,
+    }) => {
+      const extractedData = await extractor.hasData({
+        ...sampleRaffleServiceBoxes[0],
+        ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
+      });
 
-        expect(extractedData).toBeFalsy();
-      },
-    );
+      expect(extractedData).toBeFalsy();
+    });
 
     /**
      * @target should result of hasData method be false by invalid serviceNFT
@@ -116,17 +109,16 @@ describe('RaffleServiceExtractor', () => {
      * @expected
      * - RaffleServices box checking result must be false
      */
-    raffleServiceExtractorTest(
-      `should result of hasData method be false by invalid box serviceNFT`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleRaffleServiceBoxes[0],
-          assets: [{ tokenId: '0'.repeat(64), amount: 1n }],
-        });
+    it<TestInterface>(`should result of hasData method be false by invalid box serviceNFT`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.hasData({
+        ...sampleRaffleServiceBoxes[0],
+        assets: [{ tokenId: '0'.repeat(64), amount: 1n }],
+      });
 
-        expect(extractedData).toBeFalsy();
-      },
-    );
+      expect(extractedData).toBeFalsy();
+    });
 
     /**
      * @target should result of hasData method be false when the R4 missed
@@ -138,17 +130,16 @@ describe('RaffleServiceExtractor', () => {
      * @expected
      * - RaffleServices box checking result must be false
      */
-    raffleServiceExtractorTest(
-      `should result of hasData method be false when the R4 missed`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleRaffleServiceBoxes[0],
-          additionalRegisters: {},
-        });
+    it<TestInterface>(`should result of hasData method be false when the R4 missed`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.hasData({
+        ...sampleRaffleServiceBoxes[0],
+        additionalRegisters: {},
+      });
 
-        expect(extractedData).toBeFalsy();
-      },
-    );
+      expect(extractedData).toBeFalsy();
+    });
 
     /**
      * @target should result of hasData method be false when the R4 value length is not equal to 4
@@ -160,18 +151,17 @@ describe('RaffleServiceExtractor', () => {
      * @expected
      * - RaffleServices box checking result must be false
      */
-    raffleServiceExtractorTest(
-      `should result of hasData method be false when the R4 value length is not equal to 4`,
-      async ({ extractor }) => {
-        const extractedData = await extractor.hasData({
-          ...sampleRaffleServiceBoxes[0],
-          additionalRegisters: {
-            R4: SColl(SByte, [1, 2, 3]).toHex(),
-          },
-        });
+    it<TestInterface>(`should result of hasData method be false when the R4 value length is not equal to 4`, async ({
+      extractor,
+    }) => {
+      const extractedData = await extractor.hasData({
+        ...sampleRaffleServiceBoxes[0],
+        additionalRegisters: {
+          R4: SColl(SByte, [1, 2, 3]).toHex(),
+        },
+      });
 
-        expect(extractedData).toBeFalsy();
-      },
-    );
+      expect(extractedData).toBeFalsy();
+    });
   });
 });

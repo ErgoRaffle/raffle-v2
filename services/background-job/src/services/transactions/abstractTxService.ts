@@ -1,3 +1,4 @@
+import { deserializeTransaction } from '@fleet-sdk/serializer';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import {
   AbstractService,
@@ -6,12 +7,11 @@ import {
 } from '@rosen-bridge/service-manager';
 import { CallbackFunction, TransactionEntity } from '@rosen-bridge/tx-pot';
 
+import ErgoNodeNetwork from '../../network/ergoNodeNetwork';
+import { TxType } from '../../types/transaction';
 import { BoxLookupService } from '../boxLookup';
 import { ScannerService } from '../scannerService';
 import { TxPotService } from '../txPotService';
-import ErgoNodeNetwork from '../../network/ergoNodeNetwork';
-import { TxType } from '../../types/transaction';
-import { deserializeTransaction } from '@fleet-sdk/serializer';
 
 export abstract class AbstractTxService extends AbstractService {
   protected dependencies: Dependency[] = [

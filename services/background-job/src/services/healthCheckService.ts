@@ -1,17 +1,17 @@
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { DiscordNotification } from '@rosen-bridge/discord-notification';
+import { HealthCheck } from '@rosen-bridge/health-check';
+import { ScannerSyncHealthCheckParam } from '@rosen-bridge/scanner-sync-check';
 import {
   AbstractService,
   Dependency,
   ServiceStatus,
 } from '@rosen-bridge/service-manager';
-import { HealthCheck } from '@rosen-bridge/health-check';
-import { DiscordNotification } from '@rosen-bridge/discord-notification';
-import { ScannerSyncHealthCheckParam } from '@rosen-bridge/scanner-sync-check';
 
-import { ScannerService } from './scannerService';
 import { configs } from '../config';
 import { ERGO_BLOCK_TIME, ERGO_CHAIN_NAME } from '../constants';
 import { DbService } from './dbService';
+import { ScannerService } from './scannerService';
 
 export class HealthCheckService extends AbstractService {
   name = 'HealthCheckService';

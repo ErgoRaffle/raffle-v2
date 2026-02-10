@@ -1,5 +1,5 @@
-import { Request } from '../../lib/types';
 import { Asset, OutputBox } from '../../lib';
+import { Request } from '../../lib/types';
 
 /**
  * Builds a request fixture with injected callbacks.

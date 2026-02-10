@@ -9,16 +9,11 @@
     "isolatedModules": false,
     "module": "esnext",
     "moduleResolution": "bundler",
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
     "strictPropertyInitialization": false,
     "noFallthroughCasesInSwitch": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
-    "target": "esnext",
-    "paths": {
-      "@ergo-raffle/transactions": ["./packages/transactions/src"]
-    }
+    "target": "esnext"
   }
 }

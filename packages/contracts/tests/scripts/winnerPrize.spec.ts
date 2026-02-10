@@ -1,106 +1,111 @@
-import { it, describe, expect } from 'vitest';
-import { SByte, SColl, SConstant } from '@fleet-sdk/serializer';
-import { TransactionBuilder } from '@fleet-sdk/core';
+import {
+  ErgoUnsignedInput,
+  OutputBuilder,
+  TransactionBuilder,
+} from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
-import { mockUTxO } from '@fleet-sdk/mock-chain';
+import { KeyedMockChainParty, mockUTxO } from '@fleet-sdk/mock-chain';
+import { SByte, SColl, SConstant } from '@fleet-sdk/serializer';
+import { it, describe, expect, beforeEach } from 'vitest';
 
-import * as testUtils from '../testUtils';
-import * as constants from '../../constants';
+import * as constants from '../../lib/constants';
 import { ScriptNamesType } from '../../lib/types';
+import * as testUtils from '../testUtils';
 
-/*
- * create fixtures that contains below steps data:
- *   - mock boxFactory.chain and partners
- *   - compile contracts
- *   - create winnerPrize input box
- * @returns vitest customized "it" object
- */
-const createWinnerPrizeTest = () => {
-  const totalPrize = 20_000_000n;
-  const winnerRewardPercent = 200n;
-  const winnerTicketIndex = 1n;
-  const prizeAmount = (totalPrize * winnerRewardPercent) / 1000n;
-  const winnerGiftTokensAmount = 1n;
-
-  const boxFactory = new testUtils.RaffleBoxFactory(
-    { height: 1000 },
-    constants.scriptList.filter(
-      (value) => value != 'winnerPrize',
-    ) as ScriptNamesType[],
-  );
-  boxFactory.chain.setTip(100);
-  const { creator, someone, unknown } = boxFactory.createPartners({
-    creator: testUtils.TestConstants.CREATOR_DEFAULT_BALANCE,
-    someone: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
-    unknown: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
-  });
-  creator.addBalance({
-    tokens: [{ tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 100n }],
-  });
-
-  // create winnerPrize input box
-  const winnerPrizeBox = boxFactory.createWinnerPrizeBoxMock(
-    testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
-    1,
-    winnerTicketIndex,
-    1n,
-    0n,
-    winnerGiftTokensAmount,
-  );
-
-  // create gift input box
-  const giftBox = boxFactory.createGiftBoxMock(
-    1,
-    blake2b256(Buffer.from(someone.ergoTree, 'hex')),
-    testUtils.TestConstants.FEE * 10n,
-    testUtils.TestConstants.GIFT_TOKEN_ID,
-    1n,
-  );
-
-  // create ticket box
-  const ticketBox = boxFactory.createTicketBoxMock(
-    someone.ergoTree,
-    5n,
-    testUtils.TestConstants.TICKET_TOKEN_ID,
-    [0n, 5n, 100_000n], // from-ticket-range, to-ticket-range, ticket-price
-  );
-
-  // create winnerPrize input box for final prize transaction
-  const winnerPrizeBoxForFinalPrize = boxFactory.createWinnerPrizeBoxMock(
-    testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
-    1,
-    winnerTicketIndex,
-    1n,
-    1n,
-    winnerGiftTokensAmount,
-  );
-  winnerPrizeBoxForFinalPrize.setContextExtension({
-    0: SColl(SByte, Array.from(Buffer.from(someone.ergoTree, 'hex'))),
-  });
-
-  // create final prize box
-  const finalPrizeBox = boxFactory.createSafePayOutputBox(
-    BigInt(winnerPrizeBoxForFinalPrize.value.toString()) -
-      testUtils.TestConstants.FEE,
-    [],
-    SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array,
-  );
-
-  return it.extend({
-    boxFactory: boxFactory,
-    someoneWallet: someone,
-    creator: creator,
-    unknownWallet: unknown,
-    ticketBox: ticketBox,
-    winnerPrizeBox: winnerPrizeBox,
-    giftBox: giftBox,
-    winnerPrizeBoxForFinalPrize: winnerPrizeBoxForFinalPrize,
-    finalPrizeBox: finalPrizeBox,
-  });
-};
+interface TestInterface {
+  boxFactory: testUtils.RaffleBoxFactory;
+  someoneWallet: KeyedMockChainParty;
+  creator: KeyedMockChainParty;
+  unknownWallet: KeyedMockChainParty;
+  ticketBox: ErgoUnsignedInput;
+  winnerPrizeBox: ErgoUnsignedInput;
+  giftBox: ErgoUnsignedInput;
+  winnerPrizeBoxForFinalPrize: ErgoUnsignedInput;
+  finalPrizeBox: OutputBuilder;
+}
 
 describe('winnerPrize', () => {
-  const winnerPrizeTest = createWinnerPrizeTest();
+  beforeEach<TestInterface>((ctx) => {
+    const totalPrize = 20_000_000n;
+    const winnerRewardPercent = 200n;
+    const winnerTicketIndex = 1n;
+    const prizeAmount = (totalPrize * winnerRewardPercent) / 1000n;
+    const winnerGiftTokensAmount = 1n;
+
+    const boxFactory = new testUtils.RaffleBoxFactory(
+      { height: 1000 },
+      constants.scriptList.filter(
+        (value) => value != 'winnerPrize',
+      ) as ScriptNamesType[],
+    );
+    boxFactory.chain.setTip(100);
+    const { creator, someone, unknown } = boxFactory.createPartners({
+      creator: testUtils.TestConstants.CREATOR_DEFAULT_BALANCE,
+      someone: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
+      unknown: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    });
+    creator.addBalance({
+      tokens: [{ tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 100n }],
+    });
+
+    // create winnerPrize input box
+    const winnerPrizeBox = boxFactory.createWinnerPrizeBoxMock(
+      testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
+      1,
+      winnerTicketIndex,
+      1n,
+      0n,
+      winnerGiftTokensAmount,
+    );
+
+    // create gift input box
+    const giftBox = boxFactory.createGiftBoxMock(
+      1,
+      blake2b256(Buffer.from(someone.ergoTree, 'hex')),
+      testUtils.TestConstants.FEE * 10n,
+      testUtils.TestConstants.GIFT_TOKEN_ID,
+      1n,
+    );
+
+    // create ticket box
+    const ticketBox = boxFactory.createTicketBoxMock(
+      someone.ergoTree,
+      5n,
+      testUtils.TestConstants.TICKET_TOKEN_ID,
+      [0n, 5n, 100_000n], // from-ticket-range, to-ticket-range, ticket-price
+    );
+
+    // create winnerPrize input box for final prize transaction
+    const winnerPrizeBoxForFinalPrize = boxFactory.createWinnerPrizeBoxMock(
+      testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
+      1,
+      winnerTicketIndex,
+      1n,
+      1n,
+      winnerGiftTokensAmount,
+    );
+    winnerPrizeBoxForFinalPrize.setContextExtension({
+      0: SColl(SByte, Array.from(Buffer.from(someone.ergoTree, 'hex'))),
+    });
+
+    // create final prize box
+    const finalPrizeBox = boxFactory.createSafePayOutputBox(
+      BigInt(winnerPrizeBoxForFinalPrize.value.toString()) -
+        testUtils.TestConstants.FEE,
+      [],
+      SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array,
+    );
+
+    ctx.boxFactory = boxFactory;
+    ctx.someoneWallet = someone;
+    ctx.creator = creator;
+    ctx.unknownWallet = unknown;
+    ctx.ticketBox = ticketBox;
+    ctx.winnerPrizeBox = winnerPrizeBox;
+    ctx.giftBox = giftBox;
+    ctx.winnerPrizeBoxForFinalPrize = winnerPrizeBoxForFinalPrize;
+    ctx.finalPrizeBox = finalPrizeBox;
+  });
 
   describe('Gift unwrap', () => {
     /**
@@ -113,42 +118,44 @@ describe('winnerPrize', () => {
      * @expected
      * - transaction result must be true
      */
-    winnerPrizeTest(
-      'should successfully unwrap the gift for the winner ticket',
-      ({ boxFactory, ticketBox, winnerPrizeBox, giftBox }) => {
-        const totalPrize = 20_000_000n;
-        const winnerRewardPercent = 200n;
-        const winnerTicketIndex = 1n;
-        const prizeAmount = (totalPrize * winnerRewardPercent) / 1000n;
-        const winnerGiftTokensAmount = 2n;
+    it<TestInterface>('should successfully unwrap the gift for the winner ticket', ({
+      boxFactory,
+      ticketBox,
+      winnerPrizeBox,
+      giftBox,
+    }) => {
+      const totalPrize = 20_000_000n;
+      const winnerRewardPercent = 200n;
+      const winnerTicketIndex = 1n;
+      const prizeAmount = (totalPrize * winnerRewardPercent) / 1000n;
+      const winnerGiftTokensAmount = 2n;
 
-        const winnerPrizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
-          1,
-          winnerTicketIndex,
-          1n,
-          1n,
-          winnerGiftTokensAmount,
-        );
+      const winnerPrizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
+        testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
+        1,
+        winnerTicketIndex,
+        1n,
+        1n,
+        winnerGiftTokensAmount,
+      );
 
-        const redeemedGift = boxFactory.createSafePayOutputBox(
-          BigInt(giftBox.value.toString()) - testUtils.TestConstants.FEE,
-          giftBox.assets.slice(1),
-          SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
-        );
+      const redeemedGift = boxFactory.createSafePayOutputBox(
+        BigInt(giftBox.value.toString()) - testUtils.TestConstants.FEE,
+        giftBox.assets.slice(1),
+        SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
+      );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([winnerPrizeBox, giftBox])
-          .to([winnerPrizeOutputBox, redeemedGift])
-          .payFee(testUtils.TestConstants.FEE)
-          .withDataFrom([ticketBox])
-          .build();
+      const transaction = new TransactionBuilder(boxFactory.chain.height)
+        .from([winnerPrizeBox, giftBox])
+        .to([winnerPrizeOutputBox, redeemedGift])
+        .payFee(testUtils.TestConstants.FEE)
+        .withDataFrom([ticketBox])
+        .build();
 
-        const result = boxFactory.chain.execute(transaction);
+      const result = boxFactory.chain.execute(transaction);
 
-        expect(result).true;
-      },
-    );
+      expect(result).toBeTruthy();
+    });
 
     /**
      * @target should fail if ticket box belongs to another raffle
@@ -161,48 +168,50 @@ describe('winnerPrize', () => {
      * @expected
      * - transaction result must throw error
      */
-    winnerPrizeTest(
-      'should fail if ticket box belongs to another raffle',
-      ({ boxFactory, someoneWallet, winnerPrizeBox, giftBox }) => {
-        const totalPrize = 20_000_000n;
-        const winnerRewardPercent = 200n;
-        const winnerTicketIndex = 1n;
-        const prizeAmount = (totalPrize * winnerRewardPercent) / 1000n;
-        const winnerGiftTokensAmount = 2n;
+    it<TestInterface>('should fail if ticket box belongs to another raffle', ({
+      boxFactory,
+      someoneWallet,
+      winnerPrizeBox,
+      giftBox,
+    }) => {
+      const totalPrize = 20_000_000n;
+      const winnerRewardPercent = 200n;
+      const winnerTicketIndex = 1n;
+      const prizeAmount = (totalPrize * winnerRewardPercent) / 1000n;
+      const winnerGiftTokensAmount = 2n;
 
-        const ticketBox = boxFactory.createTicketBoxMock(
-          someoneWallet.ergoTree,
-          5n,
-          // set invalid ticket token id
-          testUtils.TestConstants.X_TOKEN_ID,
-          [0n, 5n, 100_000n], // from-ticket-range, to-ticket-range, ticket-price
-        );
+      const ticketBox = boxFactory.createTicketBoxMock(
+        someoneWallet.ergoTree,
+        5n,
+        // set invalid ticket token id
+        testUtils.TestConstants.X_TOKEN_ID,
+        [0n, 5n, 100_000n], // from-ticket-range, to-ticket-range, ticket-price
+      );
 
-        const winnerPrizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
-          1,
-          winnerTicketIndex,
-          1n,
-          1n,
-          winnerGiftTokensAmount,
-        );
+      const winnerPrizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
+        testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
+        1,
+        winnerTicketIndex,
+        1n,
+        1n,
+        winnerGiftTokensAmount,
+      );
 
-        const redeemedGift = boxFactory.createSafePayOutputBox(
-          BigInt(giftBox.value.toString()) - testUtils.TestConstants.FEE,
-          giftBox.assets.slice(1),
-          SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
-        );
+      const redeemedGift = boxFactory.createSafePayOutputBox(
+        BigInt(giftBox.value.toString()) - testUtils.TestConstants.FEE,
+        giftBox.assets.slice(1),
+        SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
+      );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([winnerPrizeBox, giftBox])
-          .to([winnerPrizeOutputBox, redeemedGift])
-          .payFee(testUtils.TestConstants.FEE)
-          .withDataFrom([ticketBox])
-          .build();
+      const transaction = new TransactionBuilder(boxFactory.chain.height)
+        .from([winnerPrizeBox, giftBox])
+        .to([winnerPrizeOutputBox, redeemedGift])
+        .payFee(testUtils.TestConstants.FEE)
+        .withDataFrom([ticketBox])
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() => boxFactory.chain.execute(transaction)).toThrowError();
+    });
 
     /**
      * @target should fail if ticket box range does not contain the winner ticket index
@@ -215,48 +224,50 @@ describe('winnerPrize', () => {
      * @expected
      * - transaction result must throw error
      */
-    winnerPrizeTest(
-      'should fail if ticket box range does not contain the winner ticket index',
-      ({ boxFactory, someoneWallet, winnerPrizeBox, giftBox }) => {
-        const totalPrize = 20_000_000n;
-        const winnerRewardPercent = 200n;
-        const winnerTicketIndex = 1n;
-        const prizeAmount = (totalPrize * winnerRewardPercent) / 1000n;
-        const winnerGiftTokensAmount = 2n;
+    it<TestInterface>('should fail if ticket box range does not contain the winner ticket index', ({
+      boxFactory,
+      someoneWallet,
+      winnerPrizeBox,
+      giftBox,
+    }) => {
+      const totalPrize = 20_000_000n;
+      const winnerRewardPercent = 200n;
+      const winnerTicketIndex = 1n;
+      const prizeAmount = (totalPrize * winnerRewardPercent) / 1000n;
+      const winnerGiftTokensAmount = 2n;
 
-        const ticketBox = boxFactory.createTicketBoxMock(
-          someoneWallet.ergoTree,
-          3n,
-          testUtils.TestConstants.TICKET_TOKEN_ID,
-          // set invalid winner range
-          [2n, 5n, 100_000n], // from-ticket-range, to-ticket-range, ticket-price
-        );
+      const ticketBox = boxFactory.createTicketBoxMock(
+        someoneWallet.ergoTree,
+        3n,
+        testUtils.TestConstants.TICKET_TOKEN_ID,
+        // set invalid winner range
+        [2n, 5n, 100_000n], // from-ticket-range, to-ticket-range, ticket-price
+      );
 
-        const winnerPrizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
-          1,
-          winnerTicketIndex,
-          1n,
-          1n,
-          winnerGiftTokensAmount,
-        );
+      const winnerPrizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
+        testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
+        1,
+        winnerTicketIndex,
+        1n,
+        1n,
+        winnerGiftTokensAmount,
+      );
 
-        const redeemedGift = boxFactory.createSafePayOutputBox(
-          BigInt(giftBox.value.toString()) - testUtils.TestConstants.FEE,
-          giftBox.assets.slice(1),
-          SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
-        );
+      const redeemedGift = boxFactory.createSafePayOutputBox(
+        BigInt(giftBox.value.toString()) - testUtils.TestConstants.FEE,
+        giftBox.assets.slice(1),
+        SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
+      );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([winnerPrizeBox, giftBox])
-          .to([winnerPrizeOutputBox, redeemedGift])
-          .payFee(testUtils.TestConstants.FEE)
-          .withDataFrom([ticketBox])
-          .build();
+      const transaction = new TransactionBuilder(boxFactory.chain.height)
+        .from([winnerPrizeBox, giftBox])
+        .to([winnerPrizeOutputBox, redeemedGift])
+        .payFee(testUtils.TestConstants.FEE)
+        .withDataFrom([ticketBox])
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() => boxFactory.chain.execute(transaction)).toThrowError();
+    });
 
     /**
      * @target should fail if the gift belongs to another winner
@@ -271,49 +282,51 @@ describe('winnerPrize', () => {
      * @expected
      * - transaction result must throw error
      */
-    winnerPrizeTest(
-      'should fail if the gift belongs to another winner',
-      ({ boxFactory, someoneWallet, ticketBox, winnerPrizeBox }) => {
-        const totalPrize = 20_000_000n;
-        const winnerRewardPercent = 200n;
-        const winnerTicketIndex = 1n;
-        const prizeAmount = (totalPrize * winnerRewardPercent) / 1000n;
-        const winnerGiftTokensAmount = 2n;
+    it<TestInterface>('should fail if the gift belongs to another winner', ({
+      boxFactory,
+      someoneWallet,
+      ticketBox,
+      winnerPrizeBox,
+    }) => {
+      const totalPrize = 20_000_000n;
+      const winnerRewardPercent = 200n;
+      const winnerTicketIndex = 1n;
+      const prizeAmount = (totalPrize * winnerRewardPercent) / 1000n;
+      const winnerGiftTokensAmount = 2n;
 
-        const giftBox = boxFactory.createGiftBoxMock(
-          // set different winnerIndex
-          2,
-          blake2b256(Buffer.from(someoneWallet.ergoTree, 'hex')),
-          testUtils.TestConstants.FEE * 10n,
-          testUtils.TestConstants.GIFT_TOKEN_ID,
-          1n,
-        );
+      const giftBox = boxFactory.createGiftBoxMock(
+        // set different winnerIndex
+        2,
+        blake2b256(Buffer.from(someoneWallet.ergoTree, 'hex')),
+        testUtils.TestConstants.FEE * 10n,
+        testUtils.TestConstants.GIFT_TOKEN_ID,
+        1n,
+      );
 
-        const winnerPrizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
-          1,
-          winnerTicketIndex,
-          1n,
-          1n,
-          winnerGiftTokensAmount,
-        );
+      const winnerPrizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
+        testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
+        1,
+        winnerTicketIndex,
+        1n,
+        1n,
+        winnerGiftTokensAmount,
+      );
 
-        const redeemedGift = boxFactory.createSafePayOutputBox(
-          BigInt(giftBox.value.toString()) - testUtils.TestConstants.FEE,
-          giftBox.assets.slice(1),
-          SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
-        );
+      const redeemedGift = boxFactory.createSafePayOutputBox(
+        BigInt(giftBox.value.toString()) - testUtils.TestConstants.FEE,
+        giftBox.assets.slice(1),
+        SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
+      );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([winnerPrizeBox, giftBox])
-          .to([winnerPrizeOutputBox, redeemedGift])
-          .payFee(testUtils.TestConstants.FEE)
-          .withDataFrom([ticketBox])
-          .build();
+      const transaction = new TransactionBuilder(boxFactory.chain.height)
+        .from([winnerPrizeBox, giftBox])
+        .to([winnerPrizeOutputBox, redeemedGift])
+        .payFee(testUtils.TestConstants.FEE)
+        .withDataFrom([ticketBox])
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() => boxFactory.chain.execute(transaction)).toThrowError();
+    });
 
     /**
      * @target should fail if gift belongs to another raffle with the same winner index
@@ -328,69 +341,71 @@ describe('winnerPrize', () => {
      * @expected
      * - transaction result must throw error
      */
-    winnerPrizeTest(
-      'should fail if gift belongs to another raffle with the same winner index',
-      ({ boxFactory, someoneWallet, ticketBox, winnerPrizeBox }) => {
-        const totalPrize = 20_000_000n;
-        const winnerRewardPercent = 200n;
-        const winnerTicketIndex = 1n;
-        const prizeAmount = (totalPrize * winnerRewardPercent) / 1000n;
-        const winnerGiftTokensAmount = 2n;
+    it<TestInterface>('should fail if gift belongs to another raffle with the same winner index', ({
+      boxFactory,
+      someoneWallet,
+      ticketBox,
+      winnerPrizeBox,
+    }) => {
+      const totalPrize = 20_000_000n;
+      const winnerRewardPercent = 200n;
+      const winnerTicketIndex = 1n;
+      const prizeAmount = (totalPrize * winnerRewardPercent) / 1000n;
+      const winnerGiftTokensAmount = 2n;
 
-        const extraGiftTokenInput = mockUTxO({
-          value: testUtils.TestConstants.FEE,
-          ergoTree: constants.TRUE_SCRIPT_HEX,
-          assets: [
-            {
-              tokenId: testUtils.TestConstants.GIFT_TOKEN_ID,
-              amount: 1n,
-            },
-          ],
-        });
+      const extraGiftTokenInput = mockUTxO({
+        value: testUtils.TestConstants.FEE,
+        ergoTree: constants.TRUE_SCRIPT_HEX,
+        assets: [
+          {
+            tokenId: testUtils.TestConstants.GIFT_TOKEN_ID,
+            amount: 1n,
+          },
+        ],
+      });
 
-        const giftBox = boxFactory.createGiftBoxMock(
-          1,
-          blake2b256(Buffer.from(someoneWallet.ergoTree, 'hex')),
-          testUtils.TestConstants.FEE * 10n,
-          // set giftTokenId
-          testUtils.TestConstants.X_TOKEN_ID,
-          1n,
-        );
+      const giftBox = boxFactory.createGiftBoxMock(
+        1,
+        blake2b256(Buffer.from(someoneWallet.ergoTree, 'hex')),
+        testUtils.TestConstants.FEE * 10n,
+        // set giftTokenId
+        testUtils.TestConstants.X_TOKEN_ID,
+        1n,
+      );
 
-        const winnerPrizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
-          1,
-          winnerTicketIndex,
-          1n,
-          1n,
-          winnerGiftTokensAmount,
-        );
+      const winnerPrizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
+        testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
+        1,
+        winnerTicketIndex,
+        1n,
+        1n,
+        winnerGiftTokensAmount,
+      );
 
-        const redeemedGift = boxFactory.createSafePayOutputBox(
-          BigInt(giftBox.value.toString()),
-          [
-            ...giftBox.assets.slice(1),
-            {
-              tokenId: testUtils.TestConstants.X_TOKEN_ID,
-              amount: 1n,
-            },
-          ],
-          SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
-        );
+      const redeemedGift = boxFactory.createSafePayOutputBox(
+        BigInt(giftBox.value.toString()),
+        [
+          ...giftBox.assets.slice(1),
+          {
+            tokenId: testUtils.TestConstants.X_TOKEN_ID,
+            amount: 1n,
+          },
+        ],
+        SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
+      );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([winnerPrizeBox, giftBox, extraGiftTokenInput])
-          .to([winnerPrizeOutputBox, redeemedGift])
-          .payFee(testUtils.TestConstants.FEE)
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          .withDataFrom([ticketBox])
-          .build();
+      const transaction = new TransactionBuilder(boxFactory.chain.height)
+        .from([winnerPrizeBox, giftBox, extraGiftTokenInput])
+        .to([winnerPrizeOutputBox, redeemedGift])
+        .payFee(testUtils.TestConstants.FEE)
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        .withDataFrom([ticketBox])
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() => boxFactory.chain.execute(transaction)).toThrowError();
+    });
 
     /**
      * @target should fail if gift token is not collected by the winner prize box
@@ -402,47 +417,49 @@ describe('winnerPrize', () => {
      * @expected
      * - transaction result must throw error
      */
-    winnerPrizeTest(
-      'should fail if gift token is not collected by the winner prize box',
-      ({ boxFactory, ticketBox, winnerPrizeBox, giftBox }) => {
-        const totalPrize = 20_000_000n;
-        const winnerRewardPercent = 200n;
-        const winnerTicketIndex = 1n;
-        const prizeAmount = (totalPrize * winnerRewardPercent) / 1000n;
-        const winnerGiftTokensAmount = 2n;
+    it<TestInterface>('should fail if gift token is not collected by the winner prize box', ({
+      boxFactory,
+      ticketBox,
+      winnerPrizeBox,
+      giftBox,
+    }) => {
+      const totalPrize = 20_000_000n;
+      const winnerRewardPercent = 200n;
+      const winnerTicketIndex = 1n;
+      const prizeAmount = (totalPrize * winnerRewardPercent) / 1000n;
+      const winnerGiftTokensAmount = 2n;
 
-        const winnerPrizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
-          1,
-          winnerTicketIndex,
-          1n,
-          1n,
-          winnerGiftTokensAmount - 1n,
-        );
+      const winnerPrizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
+        testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
+        1,
+        winnerTicketIndex,
+        1n,
+        1n,
+        winnerGiftTokensAmount - 1n,
+      );
 
-        const redeemedGift = boxFactory.createSafePayOutputBox(
-          BigInt(giftBox.value.toString()) - testUtils.TestConstants.FEE,
-          giftBox.assets.slice(1),
-          SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
-        );
+      const redeemedGift = boxFactory.createSafePayOutputBox(
+        BigInt(giftBox.value.toString()) - testUtils.TestConstants.FEE,
+        giftBox.assets.slice(1),
+        SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
+      );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([winnerPrizeBox, giftBox])
-          .to([winnerPrizeOutputBox, redeemedGift])
-          .payFee(testUtils.TestConstants.FEE)
-          .withDataFrom([ticketBox])
-          .burnTokens({
-            tokenId: testUtils.TestConstants.GIFT_TOKEN_ID,
-            amount: 1n,
-          })
-          .build();
+      const transaction = new TransactionBuilder(boxFactory.chain.height)
+        .from([winnerPrizeBox, giftBox])
+        .to([winnerPrizeOutputBox, redeemedGift])
+        .payFee(testUtils.TestConstants.FEE)
+        .withDataFrom([ticketBox])
+        .burnTokens({
+          tokenId: testUtils.TestConstants.GIFT_TOKEN_ID,
+          amount: 1n,
+        })
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() => boxFactory.chain.execute(transaction)).toThrowError();
+    });
 
     /**
-     * @target should fail if gift token is not collected by the winner prize box
+     * @target should fail if gift token stole and not collected by the winner prize box
      * @scenario
      * - create winnerPrize output box by decreased amount of gift token
      * - create redeemedGift output box that contains one stolen gift token
@@ -451,45 +468,47 @@ describe('winnerPrize', () => {
      * @expected
      * - transaction result must throw error
      */
-    winnerPrizeTest(
-      'should fail if gift token is not collected by the winner prize box',
-      ({ boxFactory, ticketBox, giftBox, winnerPrizeBox }) => {
-        const totalPrize = 20_000_000n;
-        const winnerRewardPercent = 200n;
-        const winnerTicketIndex = 1n;
-        const prizeAmount = (totalPrize * winnerRewardPercent) / 1000n;
-        const winnerGiftTokensAmount = 2n;
+    it<TestInterface>('should fail if gift token stole and not collected by the winner prize box', ({
+      boxFactory,
+      ticketBox,
+      giftBox,
+      winnerPrizeBox,
+    }) => {
+      const totalPrize = 20_000_000n;
+      const winnerRewardPercent = 200n;
+      const winnerTicketIndex = 1n;
+      const prizeAmount = (totalPrize * winnerRewardPercent) / 1000n;
+      const winnerGiftTokensAmount = 2n;
 
-        const winnerPrizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
-          1,
-          winnerTicketIndex,
-          1n,
-          1n,
-          // set invalid amount of giftToken
-          winnerGiftTokensAmount - 1n,
-        );
+      const winnerPrizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
+        testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
+        1,
+        winnerTicketIndex,
+        1n,
+        1n,
+        // set invalid amount of giftToken
+        winnerGiftTokensAmount - 1n,
+      );
 
-        const redeemedGift = boxFactory.createSafePayOutputBox(
-          BigInt(giftBox.value.toString()) - testUtils.TestConstants.FEE,
-          giftBox.assets.slice(1),
-          SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
-        );
+      const redeemedGift = boxFactory.createSafePayOutputBox(
+        BigInt(giftBox.value.toString()) - testUtils.TestConstants.FEE,
+        giftBox.assets.slice(1),
+        SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
+      );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([winnerPrizeBox, giftBox])
-          .to([winnerPrizeOutputBox, redeemedGift])
-          .payFee(testUtils.TestConstants.FEE)
-          .withDataFrom([ticketBox])
-          .burnTokens({
-            tokenId: testUtils.TestConstants.GIFT_TOKEN_ID,
-            amount: 1n,
-          })
-          .build();
+      const transaction = new TransactionBuilder(boxFactory.chain.height)
+        .from([winnerPrizeBox, giftBox])
+        .to([winnerPrizeOutputBox, redeemedGift])
+        .payFee(testUtils.TestConstants.FEE)
+        .withDataFrom([ticketBox])
+        .burnTokens({
+          tokenId: testUtils.TestConstants.GIFT_TOKEN_ID,
+          amount: 1n,
+        })
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() => boxFactory.chain.execute(transaction)).toThrowError();
+    });
 
     /**
      * @target should fail if unwrapped gift count is not updated correctly
@@ -501,41 +520,43 @@ describe('winnerPrize', () => {
      * @expected
      * - transaction result must throw error
      */
-    winnerPrizeTest(
-      'should fail if unwrapped gift count is not updated correctly',
-      ({ boxFactory, ticketBox, winnerPrizeBox, giftBox }) => {
-        const totalPrize = 20_000_000n;
-        const winnerRewardPercent = 200n;
-        const winnerTicketIndex = 1n;
-        const prizeAmount = (totalPrize * winnerRewardPercent) / 1000n;
-        const winnerGiftTokensAmount = 2n;
+    it<TestInterface>('should fail if unwrapped gift count is not updated correctly', ({
+      boxFactory,
+      ticketBox,
+      winnerPrizeBox,
+      giftBox,
+    }) => {
+      const totalPrize = 20_000_000n;
+      const winnerRewardPercent = 200n;
+      const winnerTicketIndex = 1n;
+      const prizeAmount = (totalPrize * winnerRewardPercent) / 1000n;
+      const winnerGiftTokensAmount = 2n;
 
-        const winnerPrizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
-          1,
-          winnerTicketIndex,
-          1n,
-          // put invalid amount of unwrapped gift value
-          2n,
-          winnerGiftTokensAmount,
-        );
+      const winnerPrizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
+        testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
+        1,
+        winnerTicketIndex,
+        1n,
+        // put invalid amount of unwrapped gift value
+        2n,
+        winnerGiftTokensAmount,
+      );
 
-        const redeemedGift = boxFactory.createSafePayOutputBox(
-          BigInt(giftBox.value.toString()) - testUtils.TestConstants.FEE,
-          giftBox.assets.slice(1),
-          SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
-        );
+      const redeemedGift = boxFactory.createSafePayOutputBox(
+        BigInt(giftBox.value.toString()) - testUtils.TestConstants.FEE,
+        giftBox.assets.slice(1),
+        SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
+      );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([winnerPrizeBox, giftBox])
-          .to([winnerPrizeOutputBox, redeemedGift])
-          .payFee(testUtils.TestConstants.FEE)
-          .withDataFrom([ticketBox])
-          .build();
+      const transaction = new TransactionBuilder(boxFactory.chain.height)
+        .from([winnerPrizeBox, giftBox])
+        .to([winnerPrizeOutputBox, redeemedGift])
+        .payFee(testUtils.TestConstants.FEE)
+        .withDataFrom([ticketBox])
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() => boxFactory.chain.execute(transaction)).toThrowError();
+    });
 
     /**
      * @target should fail if winner index is altered in winner prize output box
@@ -547,41 +568,43 @@ describe('winnerPrize', () => {
      * @expected
      * - transaction result must throw error
      */
-    winnerPrizeTest(
-      'should fail if winner index is altered in winner prize output box',
-      ({ boxFactory, ticketBox, winnerPrizeBox, giftBox }) => {
-        const totalPrize = 20_000_000n;
-        const winnerRewardPercent = 200n;
-        const winnerTicketIndex = 1n;
-        const prizeAmount = (totalPrize * winnerRewardPercent) / 1000n;
-        const winnerGiftTokensAmount = 2n;
+    it<TestInterface>('should fail if winner index is altered in winner prize output box', ({
+      boxFactory,
+      ticketBox,
+      winnerPrizeBox,
+      giftBox,
+    }) => {
+      const totalPrize = 20_000_000n;
+      const winnerRewardPercent = 200n;
+      const winnerTicketIndex = 1n;
+      const prizeAmount = (totalPrize * winnerRewardPercent) / 1000n;
+      const winnerGiftTokensAmount = 2n;
 
-        const winnerPrizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
-          // put invalid winner index
-          2,
-          winnerTicketIndex,
-          1n,
-          1n,
-          winnerGiftTokensAmount,
-        );
+      const winnerPrizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
+        testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
+        // put invalid winner index
+        2,
+        winnerTicketIndex,
+        1n,
+        1n,
+        winnerGiftTokensAmount,
+      );
 
-        const redeemedGift = boxFactory.createSafePayOutputBox(
-          BigInt(giftBox.value.toString()) - testUtils.TestConstants.FEE,
-          giftBox.assets.slice(1),
-          SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
-        );
+      const redeemedGift = boxFactory.createSafePayOutputBox(
+        BigInt(giftBox.value.toString()) - testUtils.TestConstants.FEE,
+        giftBox.assets.slice(1),
+        SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
+      );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([winnerPrizeBox, giftBox])
-          .to([winnerPrizeOutputBox, redeemedGift])
-          .payFee(testUtils.TestConstants.FEE)
-          .withDataFrom([ticketBox])
-          .build();
+      const transaction = new TransactionBuilder(boxFactory.chain.height)
+        .from([winnerPrizeBox, giftBox])
+        .to([winnerPrizeOutputBox, redeemedGift])
+        .payFee(testUtils.TestConstants.FEE)
+        .withDataFrom([ticketBox])
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() => boxFactory.chain.execute(transaction)).toThrowError();
+    });
 
     /**
      * @target should fail if gift count is altered in winner prize output box
@@ -593,41 +616,43 @@ describe('winnerPrize', () => {
      * @expected
      * - transaction result must throw error
      */
-    winnerPrizeTest(
-      'should fail if gift count is altered in winner prize output box',
-      ({ boxFactory, ticketBox, winnerPrizeBox, giftBox }) => {
-        const totalPrize = 20_000_000n;
-        const winnerRewardPercent = 200n;
-        const winnerTicketIndex = 1n;
-        const prizeAmount = (totalPrize * winnerRewardPercent) / 1000n;
-        const winnerGiftTokensAmount = 2n;
+    it<TestInterface>('should fail if gift count is altered in winner prize output box', ({
+      boxFactory,
+      ticketBox,
+      winnerPrizeBox,
+      giftBox,
+    }) => {
+      const totalPrize = 20_000_000n;
+      const winnerRewardPercent = 200n;
+      const winnerTicketIndex = 1n;
+      const prizeAmount = (totalPrize * winnerRewardPercent) / 1000n;
+      const winnerGiftTokensAmount = 2n;
 
-        const winnerPrizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
-          testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
-          1,
-          winnerTicketIndex,
-          // set invalid amount of gift count
-          3n,
-          1n,
-          winnerGiftTokensAmount,
-        );
+      const winnerPrizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
+        testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
+        1,
+        winnerTicketIndex,
+        // set invalid amount of gift count
+        3n,
+        1n,
+        winnerGiftTokensAmount,
+      );
 
-        const redeemedGift = boxFactory.createSafePayOutputBox(
-          BigInt(giftBox.value.toString()) - testUtils.TestConstants.FEE,
-          giftBox.assets.slice(1),
-          SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
-        );
+      const redeemedGift = boxFactory.createSafePayOutputBox(
+        BigInt(giftBox.value.toString()) - testUtils.TestConstants.FEE,
+        giftBox.assets.slice(1),
+        SConstant.from(giftBox.additionalRegisters.R4!).data as Uint8Array,
+      );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([winnerPrizeBox, giftBox])
-          .to([winnerPrizeOutputBox, redeemedGift])
-          .payFee(testUtils.TestConstants.FEE)
-          .withDataFrom([ticketBox])
-          .build();
+      const transaction = new TransactionBuilder(boxFactory.chain.height)
+        .from([winnerPrizeBox, giftBox])
+        .to([winnerPrizeOutputBox, redeemedGift])
+        .payFee(testUtils.TestConstants.FEE)
+        .withDataFrom([ticketBox])
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() => boxFactory.chain.execute(transaction)).toThrowError();
+    });
   });
 
   describe('Winner Reward', () => {
@@ -639,27 +664,24 @@ describe('winnerPrize', () => {
      * @expected
      * - transaction result must be true
      */
-    winnerPrizeTest(
-      'should successfully create the final prize for the winner ticket(erg-goal)',
-      ({
-        boxFactory,
-        finalPrizeBox,
-        ticketBox,
-        winnerPrizeBoxForFinalPrize,
-      }) => {
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([winnerPrizeBoxForFinalPrize])
-          .to([finalPrizeBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .withDataFrom([ticketBox])
-          .burnTokens(winnerPrizeBoxForFinalPrize.assets.slice(0, 2))
-          .build();
+    it<TestInterface>('should successfully create the final prize for the winner ticket(erg-goal)', ({
+      boxFactory,
+      finalPrizeBox,
+      ticketBox,
+      winnerPrizeBoxForFinalPrize,
+    }) => {
+      const transaction = new TransactionBuilder(boxFactory.chain.height)
+        .from([winnerPrizeBoxForFinalPrize])
+        .to([finalPrizeBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .withDataFrom([ticketBox])
+        .burnTokens(winnerPrizeBoxForFinalPrize.assets.slice(0, 2))
+        .build();
 
-        const result = boxFactory.chain.execute(transaction);
+      const result = boxFactory.chain.execute(transaction);
 
-        expect(result).true;
-      },
-    );
+      expect(result).toBeTruthy();
+    });
 
     /**
      * @target should successfully create the final prize for the winner ticket(token-goal)
@@ -669,61 +691,59 @@ describe('winnerPrize', () => {
      * @expected
      * - transaction result must be true
      */
-    winnerPrizeTest(
-      'should successfully create the final prize for the winner ticket(token-goal)',
-      ({ boxFactory, ticketBox, someoneWallet }) => {
-        const totalPrize = 20_000_000n;
-        const winnerRewardPercent = 200n;
-        const winnerTicketIndex = 1n;
-        const prizeAmount = (totalPrize * winnerRewardPercent) / 1000n;
-        const winnerGiftTokensAmount = 2n;
+    it<TestInterface>('should successfully create the final prize for the winner ticket(token-goal)', ({
+      boxFactory,
+      ticketBox,
+      someoneWallet,
+    }) => {
+      const totalPrize = 20_000_000n;
+      const winnerRewardPercent = 200n;
+      const winnerTicketIndex = 1n;
+      const prizeAmount = (totalPrize * winnerRewardPercent) / 1000n;
+      const winnerGiftTokensAmount = 2n;
 
-        const winnerPrizeBoxForFinalPrize = boxFactory.createWinnerPrizeBoxMock(
-          testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
-          1,
-          winnerTicketIndex,
-          1n,
-          1n,
-          winnerGiftTokensAmount,
+      const winnerPrizeBoxForFinalPrize = boxFactory.createWinnerPrizeBoxMock(
+        testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
+        1,
+        winnerTicketIndex,
+        1n,
+        1n,
+        winnerGiftTokensAmount,
+        {
+          tokenId: testUtils.TestConstants.X_TOKEN_ID,
+          amount: 100n,
+        },
+      );
+      winnerPrizeBoxForFinalPrize.setContextExtension({
+        0: SColl(SByte, Array.from(Buffer.from(someoneWallet.ergoTree, 'hex'))),
+      });
+
+      // create final prize box
+      const finalPrizeBox = boxFactory.createSafePayOutputBox(
+        BigInt(winnerPrizeBoxForFinalPrize.value.toString()) -
+          testUtils.TestConstants.FEE,
+        [
           {
             tokenId: testUtils.TestConstants.X_TOKEN_ID,
+            // set incorrect amount of collecting token
             amount: 100n,
           },
-        );
-        winnerPrizeBoxForFinalPrize.setContextExtension({
-          0: SColl(
-            SByte,
-            Array.from(Buffer.from(someoneWallet.ergoTree, 'hex')),
-          ),
-        });
+        ],
+        SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array,
+      );
 
-        // create final prize box
-        const finalPrizeBox = boxFactory.createSafePayOutputBox(
-          BigInt(winnerPrizeBoxForFinalPrize.value.toString()) -
-            testUtils.TestConstants.FEE,
-          [
-            {
-              tokenId: testUtils.TestConstants.X_TOKEN_ID,
-              // set incorrect amount of collecting token
-              amount: 100n,
-            },
-          ],
-          SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array,
-        );
+      const transaction = new TransactionBuilder(boxFactory.chain.height)
+        .from([winnerPrizeBoxForFinalPrize])
+        .to([finalPrizeBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .withDataFrom([ticketBox])
+        .burnTokens(winnerPrizeBoxForFinalPrize.assets.slice(0, 2))
+        .build();
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([winnerPrizeBoxForFinalPrize])
-          .to([finalPrizeBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .withDataFrom([ticketBox])
-          .burnTokens(winnerPrizeBoxForFinalPrize.assets.slice(0, 2))
-          .build();
+      const result = boxFactory.chain.execute(transaction);
 
-        const result = boxFactory.chain.execute(transaction);
-
-        expect(result).true;
-      },
-    );
+      expect(result).toBeTruthy();
+    });
 
     /**
      * @target should fail if ticket box belongs to another raffle
@@ -734,33 +754,30 @@ describe('winnerPrize', () => {
      * @expected
      * - transaction result must throw error
      */
-    winnerPrizeTest(
-      'should fail if ticket box belongs to another raffle',
-      ({
-        boxFactory,
-        someoneWallet,
-        finalPrizeBox,
-        winnerPrizeBoxForFinalPrize,
-      }) => {
-        const ticketBox = boxFactory.createTicketBoxMock(
-          someoneWallet.ergoTree,
-          5n,
-          // set different ticket id
-          testUtils.TestConstants.X_TOKEN_ID,
-          [0n, 5n, 100_000n], // from-ticket-range, to-ticket-range, ticket-price
-        );
+    it<TestInterface>('should fail if ticket box belongs to another raffle', ({
+      boxFactory,
+      someoneWallet,
+      finalPrizeBox,
+      winnerPrizeBoxForFinalPrize,
+    }) => {
+      const ticketBox = boxFactory.createTicketBoxMock(
+        someoneWallet.ergoTree,
+        5n,
+        // set different ticket id
+        testUtils.TestConstants.X_TOKEN_ID,
+        [0n, 5n, 100_000n], // from-ticket-range, to-ticket-range, ticket-price
+      );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([winnerPrizeBoxForFinalPrize])
-          .to([finalPrizeBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .withDataFrom([ticketBox])
-          .burnTokens(winnerPrizeBoxForFinalPrize.assets.slice(0, 2))
-          .build();
+      const transaction = new TransactionBuilder(boxFactory.chain.height)
+        .from([winnerPrizeBoxForFinalPrize])
+        .to([finalPrizeBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .withDataFrom([ticketBox])
+        .burnTokens(winnerPrizeBoxForFinalPrize.assets.slice(0, 2))
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() => boxFactory.chain.execute(transaction)).toThrowError();
+    });
 
     /**
      * @target should fail if ticket box range does not contain the winner ticket index
@@ -771,33 +788,30 @@ describe('winnerPrize', () => {
      * @expected
      * - transaction result must throw error
      */
-    winnerPrizeTest(
-      'should fail if ticket box range does not contain the winner ticket index',
-      ({
-        boxFactory,
-        someoneWallet,
-        finalPrizeBox,
-        winnerPrizeBoxForFinalPrize,
-      }) => {
-        const ticketBox = boxFactory.createTicketBoxMock(
-          someoneWallet.ergoTree,
-          5n,
-          testUtils.TestConstants.TICKET_TOKEN_ID,
-          // set different ticket range
-          [5n, 10n, 100_000n], // from-ticket-range, to-ticket-range, ticket-price
-        );
+    it<TestInterface>('should fail if ticket box range does not contain the winner ticket index', ({
+      boxFactory,
+      someoneWallet,
+      finalPrizeBox,
+      winnerPrizeBoxForFinalPrize,
+    }) => {
+      const ticketBox = boxFactory.createTicketBoxMock(
+        someoneWallet.ergoTree,
+        5n,
+        testUtils.TestConstants.TICKET_TOKEN_ID,
+        // set different ticket range
+        [5n, 10n, 100_000n], // from-ticket-range, to-ticket-range, ticket-price
+      );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([winnerPrizeBoxForFinalPrize])
-          .to([finalPrizeBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .withDataFrom([ticketBox])
-          .burnTokens(winnerPrizeBoxForFinalPrize.assets.slice(0, 2))
-          .build();
+      const transaction = new TransactionBuilder(boxFactory.chain.height)
+        .from([winnerPrizeBoxForFinalPrize])
+        .to([finalPrizeBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .withDataFrom([ticketBox])
+        .burnTokens(winnerPrizeBoxForFinalPrize.assets.slice(0, 2))
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() => boxFactory.chain.execute(transaction)).toThrowError();
+    });
 
     /**
      * @target should fail if winner prize's ticket token is stolen
@@ -808,29 +822,30 @@ describe('winnerPrize', () => {
      * @expected
      * - transaction result must throw error
      */
-    winnerPrizeTest(
-      "should fail if winner prize's ticket token is stolen",
-      ({ boxFactory, ticketBox, winnerPrizeBoxForFinalPrize }) => {
-        const finalPrizeBox = boxFactory.createSafePayOutputBox(
-          BigInt(winnerPrizeBoxForFinalPrize.value.toString()) -
-            testUtils.TestConstants.FEE,
-          // Insert the ticket token into this box to steal
-          [{ tokenId: testUtils.TestConstants.TICKET_TOKEN_ID, amount: 1n }],
-          SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array,
-        );
+    it<TestInterface>("should fail if winner prize's ticket token is stolen", ({
+      boxFactory,
+      ticketBox,
+      winnerPrizeBoxForFinalPrize,
+    }) => {
+      const finalPrizeBox = boxFactory.createSafePayOutputBox(
+        BigInt(winnerPrizeBoxForFinalPrize.value.toString()) -
+          testUtils.TestConstants.FEE,
+        // Insert the ticket token into this box to steal
+        [{ tokenId: testUtils.TestConstants.TICKET_TOKEN_ID, amount: 1n }],
+        SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array,
+      );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([winnerPrizeBoxForFinalPrize])
-          .to([finalPrizeBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .withDataFrom([ticketBox])
-          // prevent the ticket token from burning
-          .burnTokens(winnerPrizeBoxForFinalPrize.assets.slice(1, 2))
-          .build();
+      const transaction = new TransactionBuilder(boxFactory.chain.height)
+        .from([winnerPrizeBoxForFinalPrize])
+        .to([finalPrizeBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .withDataFrom([ticketBox])
+        // prevent the ticket token from burning
+        .burnTokens(winnerPrizeBoxForFinalPrize.assets.slice(1, 2))
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() => boxFactory.chain.execute(transaction)).toThrowError();
+    });
 
     /**
      * @target should fail if one gift token is stolen from winner prize
@@ -841,29 +856,30 @@ describe('winnerPrize', () => {
      * @expected
      * - transaction result must throw error
      */
-    winnerPrizeTest(
-      'should fail if one gift token is stolen from winner prize',
-      ({ boxFactory, ticketBox, winnerPrizeBoxForFinalPrize }) => {
-        const finalPrizeBox = boxFactory.createSafePayOutputBox(
-          BigInt(winnerPrizeBoxForFinalPrize.value.toString()) -
-            testUtils.TestConstants.FEE,
-          // Insert the gift token into this box to steal
-          [{ tokenId: testUtils.TestConstants.GIFT_TOKEN_ID, amount: 1n }],
-          SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array,
-        );
+    it<TestInterface>('should fail if one gift token is stolen from winner prize', ({
+      boxFactory,
+      ticketBox,
+      winnerPrizeBoxForFinalPrize,
+    }) => {
+      const finalPrizeBox = boxFactory.createSafePayOutputBox(
+        BigInt(winnerPrizeBoxForFinalPrize.value.toString()) -
+          testUtils.TestConstants.FEE,
+        // Insert the gift token into this box to steal
+        [{ tokenId: testUtils.TestConstants.GIFT_TOKEN_ID, amount: 1n }],
+        SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array,
+      );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([winnerPrizeBoxForFinalPrize])
-          .to([finalPrizeBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .withDataFrom([ticketBox])
-          // prevent the gift token from burning
-          .burnTokens(winnerPrizeBoxForFinalPrize.assets.slice(0, 1))
-          .build();
+      const transaction = new TransactionBuilder(boxFactory.chain.height)
+        .from([winnerPrizeBoxForFinalPrize])
+        .to([finalPrizeBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .withDataFrom([ticketBox])
+        // prevent the gift token from burning
+        .burnTokens(winnerPrizeBoxForFinalPrize.assets.slice(0, 1))
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() => boxFactory.chain.execute(transaction)).toThrowError();
+    });
 
     /**
      * @target should fail if final prize doesn't contain all collecting tokens
@@ -875,65 +891,63 @@ describe('winnerPrize', () => {
      * @expected
      * - transaction result must throw error
      */
-    winnerPrizeTest(
-      "should fail if final prize doesn't contain all collecting tokens",
-      ({ boxFactory, ticketBox, someoneWallet }) => {
-        const totalPrize = 20_000_000n;
-        const winnerRewardPercent = 200n;
-        const winnerTicketIndex = 1n;
-        const prizeAmount = (totalPrize * winnerRewardPercent) / 1000n;
-        const winnerGiftTokensAmount = 2n;
+    it<TestInterface>("should fail if final prize doesn't contain all collecting tokens", ({
+      boxFactory,
+      ticketBox,
+      someoneWallet,
+    }) => {
+      const totalPrize = 20_000_000n;
+      const winnerRewardPercent = 200n;
+      const winnerTicketIndex = 1n;
+      const prizeAmount = (totalPrize * winnerRewardPercent) / 1000n;
+      const winnerGiftTokensAmount = 2n;
 
-        const winnerPrizeBoxForFinalPrize = boxFactory.createWinnerPrizeBoxMock(
-          testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
-          1,
-          winnerTicketIndex,
-          1n,
-          1n,
-          winnerGiftTokensAmount,
+      const winnerPrizeBoxForFinalPrize = boxFactory.createWinnerPrizeBoxMock(
+        testUtils.TestConstants.FEE * 3n + BigInt(prizeAmount),
+        1,
+        winnerTicketIndex,
+        1n,
+        1n,
+        winnerGiftTokensAmount,
+        {
+          tokenId: testUtils.TestConstants.X_TOKEN_ID,
+          amount: 100n,
+        },
+      );
+
+      // create final prize box
+      const finalPrizeBox = boxFactory.createSafePayOutputBox(
+        BigInt(winnerPrizeBoxForFinalPrize.value.toString()) -
+          testUtils.TestConstants.FEE,
+        [
           {
             tokenId: testUtils.TestConstants.X_TOKEN_ID,
-            amount: 100n,
+            // set incorrect amount of collecting token
+            amount: 99n,
           },
-        );
+        ],
+        SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array,
+      );
+      winnerPrizeBoxForFinalPrize.setContextExtension({
+        0: SColl(SByte, Array.from(Buffer.from(someoneWallet.ergoTree, 'hex'))),
+      });
 
-        // create final prize box
-        const finalPrizeBox = boxFactory.createSafePayOutputBox(
-          BigInt(winnerPrizeBoxForFinalPrize.value.toString()) -
-            testUtils.TestConstants.FEE,
-          [
-            {
-              tokenId: testUtils.TestConstants.X_TOKEN_ID,
-              // set incorrect amount of collecting token
-              amount: 99n,
-            },
-          ],
-          SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array,
-        );
-        winnerPrizeBoxForFinalPrize.setContextExtension({
-          0: SColl(
-            SByte,
-            Array.from(Buffer.from(someoneWallet.ergoTree, 'hex')),
-          ),
-        });
+      const transaction = new TransactionBuilder(boxFactory.chain.height)
+        .from([winnerPrizeBoxForFinalPrize])
+        .to([finalPrizeBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .withDataFrom([ticketBox])
+        .burnTokens([
+          ...winnerPrizeBoxForFinalPrize.assets.slice(0, 2),
+          {
+            tokenId: testUtils.TestConstants.X_TOKEN_ID,
+            amount: 1n,
+          },
+        ])
+        .build();
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([winnerPrizeBoxForFinalPrize])
-          .to([finalPrizeBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .withDataFrom([ticketBox])
-          .burnTokens([
-            ...winnerPrizeBoxForFinalPrize.assets.slice(0, 2),
-            {
-              tokenId: testUtils.TestConstants.X_TOKEN_ID,
-              amount: 1n,
-            },
-          ])
-          .build();
-
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() => boxFactory.chain.execute(transaction)).toThrowError();
+    });
 
     /**
      * @target should fail if final prize safe pay address hash differs from the winner ticket address hash
@@ -944,32 +958,29 @@ describe('winnerPrize', () => {
      * @expected
      * - transaction result must be true
      */
-    winnerPrizeTest(
-      'should fail if final prize safe pay address hash differs from the winner ticket address hash',
-      ({
-        boxFactory,
-        unknownWallet,
-        ticketBox,
-        winnerPrizeBoxForFinalPrize,
-      }) => {
-        // create final prize box with different destination address
-        const finalPrizeBox = boxFactory.createSafePayOutputBox(
-          BigInt(winnerPrizeBoxForFinalPrize.value.toString()) -
-            testUtils.TestConstants.FEE,
-          [],
-          blake2b256(unknownWallet.ergoTree),
-        );
+    it<TestInterface>('should fail if final prize safe pay address hash differs from the winner ticket address hash', ({
+      boxFactory,
+      unknownWallet,
+      ticketBox,
+      winnerPrizeBoxForFinalPrize,
+    }) => {
+      // create final prize box with different destination address
+      const finalPrizeBox = boxFactory.createSafePayOutputBox(
+        BigInt(winnerPrizeBoxForFinalPrize.value.toString()) -
+          testUtils.TestConstants.FEE,
+        [],
+        blake2b256(unknownWallet.ergoTree),
+      );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([winnerPrizeBoxForFinalPrize])
-          .to([finalPrizeBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .withDataFrom([ticketBox])
-          .burnTokens(winnerPrizeBoxForFinalPrize.assets.slice(0, 2))
-          .build();
+      const transaction = new TransactionBuilder(boxFactory.chain.height)
+        .from([winnerPrizeBoxForFinalPrize])
+        .to([finalPrizeBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .withDataFrom([ticketBox])
+        .burnTokens(winnerPrizeBoxForFinalPrize.assets.slice(0, 2))
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() => boxFactory.chain.execute(transaction)).toThrowError();
+    });
   });
 });

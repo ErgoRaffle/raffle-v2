@@ -1,20 +1,21 @@
+import { ErgoBox } from '@fleet-sdk/core';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
-import { OnSufficeCallback, Request } from '../../types';
+
+import { WinnerBuilder } from '@ergo-raffle/boxes';
 import { raffleInfo } from '@ergo-raffle/contracts';
 import { GiftReturnTxBuilder } from '@ergo-raffle/transactions';
-import { ErgoBox } from '@fleet-sdk/core';
-import { WinnerBuilder } from '@ergo-raffle/boxes';
 
-import { BoxLookupService } from '../boxLookup';
-import { DbService } from '../dbService';
+import { configs } from '../../config';
+import { findGiftRedeemBox } from '../../transactions/boxFinder';
 import {
   signAndAddTx,
   convertDbBoxesToErgoBoxes,
 } from '../../transactions/utils';
+import { OnSufficeCallback, Request } from '../../types';
 import { TxType } from '../../types/transaction';
+import { BoxLookupService } from '../boxLookup';
+import { DbService } from '../dbService';
 import { AbstractTxService } from './abstractTxService';
-import { configs } from '../../config';
-import { findGiftRedeemBox } from '../../transactions/boxFinder';
 
 export class GiftReturnService extends AbstractTxService {
   name = 'GiftReturnService';

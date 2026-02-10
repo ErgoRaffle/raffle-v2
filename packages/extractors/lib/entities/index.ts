@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 export { ServiceEntity } from './serviceEntity';
 export { InactiveRaffleEntity } from './inactiveRaffleEntity';
 export { RaffleBoxEntity, RaffleBoxType } from './raffleBoxEntity';

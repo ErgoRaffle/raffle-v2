@@ -8,9 +8,11 @@ import {
   SInt,
   ErgoAddress,
 } from '@fleet-sdk/core';
-import { SConstant } from '@fleet-sdk/serializer';
-import { raffleInfo } from '@ergo-raffle/contracts';
 import { blake2b256 } from '@fleet-sdk/crypto';
+import { SConstant } from '@fleet-sdk/serializer';
+
+import { raffleInfo } from '@ergo-raffle/contracts';
+
 import { ActiveRaffleBuilder } from './activeRaffleBuilder';
 
 /**

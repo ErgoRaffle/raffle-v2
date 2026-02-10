@@ -1,0 +1,11 @@
+{
+  "$schema": "https://unpkg.com/knip/schema.json",
+  "ignore": ["packages/try/*"],
+  "ignoreDependencies": ["@rosen-bridge/changeset-formatter", "pg"],
+  "ignoreBinaries": ["typeorm"],
+  "workspaces": {
+    "packages/**": {
+      "entry": ["{lib,cli}/{index,cli,main}.{js,cjs,mjs,jsx,ts,cts,mts,tsx}"]
+    }
+  }
+}

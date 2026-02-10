@@ -5,11 +5,11 @@ import {
   ErgoUnsignedTransaction,
 } from '@fleet-sdk/core';
 
-import { raffleInfo } from '@ergo-raffle/contracts';
 import { ActiveRaffleBuilder } from '@ergo-raffle/boxes';
 import { RaffleDetailsBuilder } from '@ergo-raffle/boxes';
 import { GiftTokenRepoBuilder } from '@ergo-raffle/boxes';
 import { WinnerBuilder } from '@ergo-raffle/boxes';
+import { raffleInfo } from '@ergo-raffle/contracts';
 
 /**
  * Builder class for creating raffle activation transactions

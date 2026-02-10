@@ -1,13 +1,13 @@
-import { DataSource } from '@rosen-bridge/extended-typeorm';
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { ErgoAddress, Box, Network } from '@fleet-sdk/core';
+import { serializeBox } from '@fleet-sdk/serializer';
 import { AbstractErgoExtractor } from '@rosen-bridge/abstract-extractor';
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { OutputBox } from '@rosen-bridge/scanner-interfaces';
 
 import { DynamicBoxAction } from '../actions/dynamicBoxAction';
-import { DynamicBoxInterface } from '../interfaces/types';
 import { DynamicBoxEntity } from '../entities';
-import { ErgoAddress, Box, Network } from '@fleet-sdk/core';
-import { serializeBox } from '@fleet-sdk/serializer';
+import { DynamicBoxInterface } from '../interfaces/types';
 
 export class DynamicExtractor extends AbstractErgoExtractor<
   DynamicBoxInterface,
@@ -23,7 +23,7 @@ export class DynamicExtractor extends AbstractErgoExtractor<
     private networkType: Network = Network.Mainnet,
   ) {
     super(logger);
-    this.actions = new DynamicBoxAction(dataSource, this.logger);
+    this.actions = new DynamicBoxAction(dataSource, logger);
   }
 
   /**

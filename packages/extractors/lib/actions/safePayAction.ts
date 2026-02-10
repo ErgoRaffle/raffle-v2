@@ -1,10 +1,10 @@
-import { DataSource } from '@rosen-bridge/extended-typeorm';
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { AbstractInitializableErgoExtractorAction } from '@rosen-bridge/abstract-extractor';
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
 
-import { SafePayBoxInterface } from '../interfaces/types';
 import { SafePayEntity } from '../entities';
+import { SafePayBoxInterface } from '../interfaces/types';
 
 export class SafePayAction extends AbstractInitializableErgoExtractorAction<
   SafePayBoxInterface,

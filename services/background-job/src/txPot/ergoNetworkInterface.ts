@@ -1,7 +1,8 @@
+import { deserializeTransaction } from '@fleet-sdk/serializer';
 import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
 import { AbstractPotChainManager } from '@rosen-bridge/tx-pot';
+
 import ErgoNodeNetwork from '../network/ergoNodeNetwork';
-import { deserializeTransaction } from '@fleet-sdk/serializer';
 
 export class ErgoNetworkInterface extends AbstractPotChainManager {
   readonly network: ErgoNodeNetwork;

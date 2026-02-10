@@ -1,4 +1,4 @@
-import * as constants from '../constants';
+import * as constants from './constants';
 
 export type ScriptNamesType = (typeof constants.scriptList)[number];
 export type onlyDefaultsContextVarsType = Map<

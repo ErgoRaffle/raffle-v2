@@ -1,19 +1,20 @@
+import { ErgoBox } from '@fleet-sdk/core';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
-import { OnSufficeCallback, Request } from '../../types';
+
+import { TicketRedeemBuilder } from '@ergo-raffle/boxes';
 import { raffleInfo } from '@ergo-raffle/contracts';
 import { TicketRedeemTxBuilder } from '@ergo-raffle/transactions';
-import { ErgoBox } from '@fleet-sdk/core';
-import { TicketRedeemBuilder } from '@ergo-raffle/boxes';
 
-import { BoxLookupService } from '../boxLookup';
-import { DbService } from '../dbService';
+import { configs } from '../../config';
 import {
   signAndAddTx,
   convertDbBoxesToErgoBoxes,
 } from '../../transactions/utils';
+import { OnSufficeCallback, Request } from '../../types';
 import { TxType } from '../../types/transaction';
+import { BoxLookupService } from '../boxLookup';
+import { DbService } from '../dbService';
 import { AbstractTxService } from './abstractTxService';
-import { configs } from '../../config';
 
 export class TicketRedeemService extends AbstractTxService {
   name = 'TicketRedeemService';

@@ -1,6 +1,7 @@
-import { InputExtension, OutputBox } from '@rosen-bridge/scanner-interfaces';
-import { donatorWallet } from '../../utils.mock';
 import { SByte, SColl } from '@fleet-sdk/serializer';
+import { InputExtension, OutputBox } from '@rosen-bridge/scanner-interfaces';
+
+import { donatorWallet } from '../../utils.mock';
 
 export const sampleTicketBoxes: OutputBox[] = [
   {

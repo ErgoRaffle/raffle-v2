@@ -1,34 +1,34 @@
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { DefaultLogger } from '@rosen-bridge/abstract-logger';
 import {
   AbstractService,
   Dependency,
   ServiceStatus,
   ServiceManager,
 } from '@rosen-bridge/service-manager';
-import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
 
 import { configs } from '../config';
-import { DbService } from './dbService';
 import dataSource from '../dataSource';
-import { ScannerService } from './scannerService';
-import { TxPotService } from './txPotService';
-import { HealthCheckService } from './healthCheckService';
-import { BoxLookupService } from './boxLookup/boxLookupService';
 import { ApiService } from './apiService';
-import { CreationService } from './transactions/creationService';
+import { BoxLookupService } from './boxLookup/boxLookupService';
+import { DbService } from './dbService';
+import { HealthCheckService } from './healthCheckService';
+import { ScannerService } from './scannerService';
 import { ActivationService } from './transactions/activationService';
-import { GiftTokenReceiptService } from './transactions/giftTokenReceiptService';
+import { AddGiftService } from './transactions/addGiftService';
+import { CreationService } from './transactions/creationService';
+import { DonationService } from './transactions/donationService';
 import { FailureService } from './transactions/failureService';
+import { FeePaymentService } from './transactions/feePaymentService';
+import { GiftAndPrizeService } from './transactions/giftAndPrizeService';
 import { GiftReturnService } from './transactions/giftReturnService';
+import { GiftTokenReceiptService } from './transactions/giftTokenReceiptService';
+import { LicenseRedeemService } from './transactions/licenseRedeemService';
+import { PrizeCreationService } from './transactions/prizeCreationService';
+import { SafeWithdrawalService } from './transactions/safeWithdrawalService';
 import { TicketRedeemService } from './transactions/ticketRedeemService';
 import { WinnerRemovalService } from './transactions/winnerRemovalService';
-import { LicenseRedeemService } from './transactions/licenseRedeemService';
-import { DonationService } from './transactions/donationService';
-import { AddGiftService } from './transactions/addGiftService';
-import { FeePaymentService } from './transactions/feePaymentService';
-import { PrizeCreationService } from './transactions/prizeCreationService';
-import { GiftAndPrizeService } from './transactions/giftAndPrizeService';
-import { SafeWithdrawalService } from './transactions/safeWithdrawalService';
+import { TxPotService } from './txPotService';
 
 export class InitializerService extends AbstractService {
   name = 'InitializerService';
@@ -183,51 +183,30 @@ export class InitializerService extends AbstractService {
    */
   private initializeAllServices = async (): Promise<void> => {
     // Create logger instances for each service
-    const dbLogger = CallbackLoggerFactory.getInstance().getLogger('DbService');
-    const scannerLogger =
-      CallbackLoggerFactory.getInstance().getLogger('ScannerService');
-    const txPotLogger =
-      CallbackLoggerFactory.getInstance().getLogger('TxPotService');
-    const healthCheckLogger =
-      CallbackLoggerFactory.getInstance().getLogger('HealthCheckService');
-    const boxLookupLogger =
-      CallbackLoggerFactory.getInstance().getLogger('BoxLookupService');
-    const apiLogger =
-      CallbackLoggerFactory.getInstance().getLogger('ApiService');
-    const creationLogger =
-      CallbackLoggerFactory.getInstance().getLogger('CreationService');
-    const activationLogger =
-      CallbackLoggerFactory.getInstance().getLogger('ActivationService');
-    const giftTokenReceiptLogger =
-      CallbackLoggerFactory.getInstance().getLogger('GiftTokenReceiptService');
-    const donationLogger =
-      CallbackLoggerFactory.getInstance().getLogger('DonationService');
-    const addGiftLogger =
-      CallbackLoggerFactory.getInstance().getLogger('AddGiftService');
-    const feePaymentLogger =
-      CallbackLoggerFactory.getInstance().getLogger('FeePaymentService');
-    const prizeCreationLogger = CallbackLoggerFactory.getInstance().getLogger(
-      'PrizeCreationService',
+    const defaultLogger = DefaultLogger.getInstance();
+
+    const dbLogger = defaultLogger.child('DbService');
+    const scannerLogger = defaultLogger.child('ScannerService');
+    const txPotLogger = defaultLogger.child('TxPotService');
+    const healthCheckLogger = defaultLogger.child('HealthCheckService');
+    const boxLookupLogger = defaultLogger.child('BoxLookupService');
+    const apiLogger = defaultLogger.child('ApiService');
+    const creationLogger = defaultLogger.child('CreationService');
+    const activationLogger = defaultLogger.child('ActivationService');
+    const giftTokenReceiptLogger = defaultLogger.child(
+      'GiftTokenReceiptService',
     );
-    const giftAndPrizeLogger = CallbackLoggerFactory.getInstance().getLogger(
-      'GiftAndPrizeService',
-    );
-    const failureLogger =
-      CallbackLoggerFactory.getInstance().getLogger('FailureService');
-    const giftReturnLogger =
-      CallbackLoggerFactory.getInstance().getLogger('GiftReturnService');
-    const winnerRemovalLogger = CallbackLoggerFactory.getInstance().getLogger(
-      'WinnerRemovalService',
-    );
-    const ticketRedeemLogger = CallbackLoggerFactory.getInstance().getLogger(
-      'TicketRedeemService',
-    );
-    const licenseRedeemLogger = CallbackLoggerFactory.getInstance().getLogger(
-      'LicenseRedeemService',
-    );
-    const safeWithdrawalLogger = CallbackLoggerFactory.getInstance().getLogger(
-      'SafeWithdrawalService',
-    );
+    const donationLogger = defaultLogger.child('DonationService');
+    const addGiftLogger = defaultLogger.child('AddGiftService');
+    const feePaymentLogger = defaultLogger.child('FeePaymentService');
+    const prizeCreationLogger = defaultLogger.child('PrizeCreationService');
+    const giftAndPrizeLogger = defaultLogger.child('GiftAndPrizeService');
+    const failureLogger = defaultLogger.child('FailureService');
+    const giftReturnLogger = defaultLogger.child('GiftReturnService');
+    const winnerRemovalLogger = defaultLogger.child('WinnerRemovalService');
+    const ticketRedeemLogger = defaultLogger.child('TicketRedeemService');
+    const licenseRedeemLogger = defaultLogger.child('LicenseRedeemService');
+    const safeWithdrawalLogger = defaultLogger.child('SafeWithdrawalService');
 
     // Initialize database service
     this.logger.debug('Initializing database service');

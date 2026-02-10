@@ -1,13 +1,13 @@
-import { DataSource } from '@rosen-bridge/extended-typeorm';
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { ErgoAddress, Box } from '@fleet-sdk/core';
+import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 import { AbstractInitializableErgoExtractor } from '@rosen-bridge/abstract-extractor';
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { OutputBox, ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 
 import { WinnerAction } from '../actions/winner';
-import { WinnerBoxInterface } from '../interfaces/types';
 import { WinnerEntity } from '../entities';
-import { ErgoAddress, Box } from '@fleet-sdk/core';
-import { SConstant, serializeBox } from '@fleet-sdk/serializer';
+import { WinnerBoxInterface } from '../interfaces/types';
 
 export class WinnerExtractor extends AbstractInitializableErgoExtractor<
   WinnerBoxInterface,
@@ -29,7 +29,7 @@ export class WinnerExtractor extends AbstractInitializableErgoExtractor<
     super(type, url, address, logger, initialize);
     this.id = id;
     this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
-    this.actions = new WinnerAction(dataSource, this.logger);
+    this.actions = new WinnerAction(dataSource, logger);
   }
 
   /**

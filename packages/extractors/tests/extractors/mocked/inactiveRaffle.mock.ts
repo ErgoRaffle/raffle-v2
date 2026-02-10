@@ -1,6 +1,7 @@
-import { InputExtension, OutputBox } from '@rosen-bridge/scanner-interfaces';
 import { SColl, SByte, SLong, SInt } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
+import { InputExtension, OutputBox } from '@rosen-bridge/scanner-interfaces';
+
 import {
   bigIntToUint8Array,
   creatorWallet,

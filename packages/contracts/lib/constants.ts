@@ -1,10 +1,9 @@
-import * as path from 'node:path';
-
 import { compile } from '@fleet-sdk/compiler';
+import * as path from 'node:path';
 
 export const TRUE_SCRIPT_HEX = compile('{sigmaProp(true);}').toHex().toString();
 export const DEFAULT_FEE = 15_000_000n;
-export const SCRIPT_DIR = path.join(import.meta.dirname, `lib/scripts/`);
+export const SCRIPT_DIR = path.join(import.meta.dirname, `../lib/scripts/`);
 export const scriptList = [
   'service',
   'inactiveRaffle',

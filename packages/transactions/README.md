@@ -18,6 +18,7 @@ Import the transaction builder you need from the package. Each builder allows yo
 
 ```ts
 import { CreationTxBuilder } from '@ergo-raffle/transactions';
+
 // You can also import other builders as needed, e.g. ActivationTxBuilder, DonateTxBuilder, etc.
 
 // Example: Creating a raffle creation transaction

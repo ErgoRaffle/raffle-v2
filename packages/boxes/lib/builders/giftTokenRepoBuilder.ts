@@ -9,6 +9,7 @@ import {
   ErgoAddress,
 } from '@fleet-sdk/core';
 import { SConstant } from '@fleet-sdk/serializer';
+
 import { raffleInfo } from '@ergo-raffle/contracts';
 
 /**

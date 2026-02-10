@@ -1,4 +1,5 @@
 import { OutputBuilder, SColl, SByte, ErgoAddress } from '@fleet-sdk/core';
+
 import { raffleInfo } from '@ergo-raffle/contracts';
 
 /**

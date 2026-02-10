@@ -1,6 +1,8 @@
-import { DataSource } from '@rosen-bridge/extended-typeorm';
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { ErgoAddress, Box } from '@fleet-sdk/core';
+import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 import { AbstractInitializableErgoExtractor } from '@rosen-bridge/abstract-extractor';
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { DataSource } from '@rosen-bridge/extended-typeorm';
 import {
   OutputBox,
   ErgoNetworkType,
@@ -8,10 +10,8 @@ import {
 } from '@rosen-bridge/scanner-interfaces';
 
 import { TicketAction } from '../actions/ticket';
-import { TicketBoxInterface } from '../interfaces/types';
 import { TicketEntity } from '../entities';
-import { ErgoAddress, Box } from '@fleet-sdk/core';
-import { SConstant, serializeBox } from '@fleet-sdk/serializer';
+import { TicketBoxInterface } from '../interfaces/types';
 
 export class TicketExtractor extends AbstractInitializableErgoExtractor<
   TicketBoxInterface,
@@ -33,7 +33,7 @@ export class TicketExtractor extends AbstractInitializableErgoExtractor<
     super(type, url, address, logger, initialize);
     this.id = id;
     this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
-    this.actions = new TicketAction(dataSource, this.logger);
+    this.actions = new TicketAction(dataSource, logger);
   }
 
   /**

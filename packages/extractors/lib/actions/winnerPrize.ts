@@ -1,11 +1,11 @@
-import { DataSource } from '@rosen-bridge/extended-typeorm';
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { AbstractInitializableErgoExtractorAction } from '@rosen-bridge/abstract-extractor';
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
-
-import { WinnerPrizeBoxInterface } from '../interfaces/types';
-import { WinnerPrizeEntity } from '../entities/';
 import { pick } from 'lodash-es';
+
+import { WinnerPrizeEntity } from '../entities/';
+import { WinnerPrizeBoxInterface } from '../interfaces/types';
 
 export class WinnerPrizeAction extends AbstractInitializableErgoExtractorAction<
   WinnerPrizeBoxInterface,

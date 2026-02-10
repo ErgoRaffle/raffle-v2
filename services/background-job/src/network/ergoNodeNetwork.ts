@@ -1,8 +1,9 @@
+import { ErgoBox } from '@fleet-sdk/core';
+import { deserializeTransaction } from '@fleet-sdk/serializer';
 import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
-import ergoNodeClientFactory from '@rosen-clients/ergo-node';
 import JsonBigInt from '@rosen-bridge/json-bigint';
 import { AxiosError } from '@rosen-bridge/rate-limited-axios';
-import { ErgoBox } from '@fleet-sdk/core';
+import ergoNodeClientFactory from '@rosen-clients/ergo-node';
 import {
   BlockchainStateContext,
   Header,
@@ -10,11 +11,10 @@ import {
   GroupElement$,
   BlockchainParameters,
 } from 'sigmastate-js/main';
-import { deserializeTransaction } from '@fleet-sdk/serializer';
 
-import handleApiError from './utils';
-import { FailedError } from './error';
 import { TX_FETCHING_PAGE_SIZE } from '../constants';
+import { FailedError } from './error';
+import handleApiError from './utils';
 
 class ErgoNodeNetwork {
   private client: ReturnType<typeof ergoNodeClientFactory>;
@@ -162,7 +162,7 @@ class ErgoNodeNetwork {
         )}`,
       );
 
-      return !box.spentTransactionId;
+      return !box.transactionId;
     } catch (error) {
       const baseError =
         'Failed to check if box is unspent and valid using Ergo Node:';

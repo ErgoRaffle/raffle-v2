@@ -1,24 +1,13 @@
+import { ErgoBox } from '@fleet-sdk/core';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
-import { OnSufficeCallback, Request } from '../../types';
+
 import {
   ActivationTxBuilder,
   CreationTxBuilder,
   GiftTokenReceiptTxBuilder,
 } from '@ergo-raffle/transactions';
-import { ErgoBox } from '@fleet-sdk/core';
 
-import { CreationParamsEntity } from '../../database/entities';
-import { BoxLookupService } from '../boxLookup';
-import { ScannerService } from '../scannerService';
-import { TxPotService } from '../txPotService';
 import { configs } from '../../config';
-import {
-  signAndAddTx,
-  convertDbBoxesToErgoBoxes,
-} from '../../transactions/utils';
-import { TxType } from '../../types/transaction';
-import { DbService } from '../dbService';
-import { AbstractTxService } from './abstractTxService';
 import {
   GIFT_TOKEN_DESCRIPTION_PREFIX,
   GIFT_TOKEN_NAME_PREFIX,
@@ -26,7 +15,19 @@ import {
   TICKET_TOKEN_NAME_PREFIX,
   TICKET_TOKEN_COUNT,
 } from '../../constants';
+import { CreationParamsEntity } from '../../database/entities';
 import { findServiceBox } from '../../transactions/boxFinder';
+import {
+  signAndAddTx,
+  convertDbBoxesToErgoBoxes,
+} from '../../transactions/utils';
+import { OnSufficeCallback, Request } from '../../types';
+import { TxType } from '../../types/transaction';
+import { BoxLookupService } from '../boxLookup';
+import { DbService } from '../dbService';
+import { ScannerService } from '../scannerService';
+import { TxPotService } from '../txPotService';
+import { AbstractTxService } from './abstractTxService';
 
 export class CreationService extends AbstractTxService {
   name = 'CreationService';

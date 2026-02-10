@@ -1,12 +1,11 @@
-import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { MockChain } from '@fleet-sdk/mock-chain';
+import { DataSource } from '@rosen-bridge/extended-typeorm';
 import {
   BlockEntity,
   ExtractorStatusEntity,
   migrations as scannerMigrations,
 } from '@rosen-bridge/scanner';
 
-import { migrations } from '../lib/migrations';
 import {
   ServiceEntity,
   InactiveRaffleEntity,
@@ -18,6 +17,7 @@ import {
   TicketEntity,
   WinnerPrizeEntity,
 } from '../lib/entities';
+import { migrations } from '../lib/migrations';
 
 const chain = new MockChain(1);
 export const serviceWallet = chain.addParty(

@@ -1,9 +1,10 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
     "outDir": "./dist",
     "composite": true
   },
-  "include": ["tests", "lib", "vitest.config.ts"],
-  "exclude": ["lib/dataSources/"]
+  "include": ["tests", "lib"]
 }

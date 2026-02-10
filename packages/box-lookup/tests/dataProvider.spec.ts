@@ -1,20 +1,20 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { DummyLogger } from '@rosen-bridge/abstract-logger';
 import { TxPot } from '@rosen-bridge/tx-pot';
 import ergoNodeClientFactory from '@rosen-clients/ergo-node';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-import { DataProvider } from '../lib/dataProvider';
 import { OutputBox } from '../lib';
-import {
-  sampleNodeURL,
-  sampleDeserializedTx,
-  sampleUnconfirmedTransactions,
-} from './testData';
+import { DataProvider } from '../lib/dataProvider';
 import {
   sampleTxPot,
   sampleNodeAPI,
   createMockDeserializeTx,
 } from './mocked/dataProvider.mock';
+import {
+  sampleNodeURL,
+  sampleDeserializedTx,
+  sampleUnconfirmedTransactions,
+} from './testData';
 
 vi.mock('@rosen-clients/ergo-node');
 

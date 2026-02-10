@@ -8,9 +8,11 @@ import {
   ErgoAddress,
 } from '@fleet-sdk/core';
 import { SConstant } from '@fleet-sdk/serializer';
+
 import { raffleInfo } from '@ergo-raffle/contracts';
-import { WinnerBuilder } from './winnerBuilder';
+
 import { SuccessRaffleBuilder } from './successRaffleBuilder';
+import { WinnerBuilder } from './winnerBuilder';
 
 /**
  * Builder class for creating Winner Prize boxes in the ErgoRaffle protocol
