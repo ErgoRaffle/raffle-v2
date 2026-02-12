@@ -8,7 +8,7 @@ on:
       - dev
 
 env:
-  IMAGE_NAME: ghcr.io/test-changeit/raffle-background-job
+  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/raffle-background-job
   SERVICE_DIR: ./services/background-job
 
 jobs:
