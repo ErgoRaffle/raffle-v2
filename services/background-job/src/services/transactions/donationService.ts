@@ -140,6 +140,7 @@ export class DonationService extends AbstractTxService {
         : [],
       onSuffice: this.donationCallbackGenerator(donationParams),
       getConfirmedBoxes: async () => {
+        // TODO: Implement a specified donation proxy extractor to find the confirmed boxes
         return [];
       },
     };

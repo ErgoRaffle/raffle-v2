@@ -136,6 +136,7 @@ export class AddGiftService extends AbstractTxService {
       tokens: [], // We'll collect all tokens from the boxes
       onSuffice: this.addGiftCallbackGenerator(addGiftParams),
       getConfirmedBoxes: async () => {
+        // TODO: Implement a specified add gift proxy extractor to find the confirmed boxes
         return [];
       },
     };

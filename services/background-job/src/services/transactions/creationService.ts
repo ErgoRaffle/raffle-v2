@@ -220,6 +220,7 @@ export class CreationService extends AbstractTxService {
         : [],
       onSuffice: this.creationCallbackGenerator(raffleParams),
       getConfirmedBoxes: async () => {
+        // TODO: Implement a specified creation proxy extractor to find the confirmed boxes
         return [];
       },
     };
