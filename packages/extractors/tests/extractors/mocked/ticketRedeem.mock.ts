@@ -29,7 +29,7 @@ export const sampleTicketRedeemBoxes: OutputBox[] = [
 ];
 
 export const sampleTicketRedeemExtractedData = {
-  boxId: sampleTicketRedeemBoxes[0].boxId,
+  identifier: sampleTicketRedeemBoxes[0].boxId,
   txId: sampleTicketRedeemBoxes[0].transactionId,
   raffleId: 'a96f4758c307ead7fbcfd1242827f9efa499c4fa74d37cd966ae54023c3357b5',
   redeemedTickets: 0n,

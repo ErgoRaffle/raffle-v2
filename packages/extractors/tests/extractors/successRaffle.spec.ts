@@ -1,5 +1,6 @@
 import { compile } from '@fleet-sdk/compiler';
 import { ErgoTree, Network } from '@fleet-sdk/core';
+import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 import { describe, it, expect, beforeEach } from 'vitest';
 
 import { SuccessRaffleExtractor } from '../../lib/extractors/successRaffle';
@@ -24,8 +25,11 @@ describe('SuccessRaffleExtractor', () => {
     ctx.extractor = new SuccessRaffleExtractor(
       dataSource,
       'SuccessRaffle',
-      'http://127.0.0.1/',
-      boxErgoTree.toAddress(Network.Testnet).toString(),
+      {
+        type: ErgoNetworkType.Node,
+        url: 'http://127.0.0.1/',
+        address: boxErgoTree.toAddress(Network.Testnet).toString(),
+      },
       '716149d5c68e4ea1ea0529b60c7029797ffb26f3d401d44f9aadd4b090593e4e',
     );
     ctx.boxFalseErgoTree = boxFalseErgoTree;
@@ -110,7 +114,7 @@ describe('SuccessRaffleExtractor', () => {
     it<TestInterface>(`should return true for valid box data`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData(
+      const extractedData = await extractor.hasBoxData(
         sampleSuccessRaffleBoxes[0],
       );
 
@@ -131,7 +135,7 @@ describe('SuccessRaffleExtractor', () => {
       extractor,
       boxFalseErgoTree,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleSuccessRaffleBoxes[0],
         // set invalid ergoTree
         ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
@@ -153,7 +157,7 @@ describe('SuccessRaffleExtractor', () => {
     it<TestInterface>(`should return false for invalid assets length`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleSuccessRaffleBoxes[0],
         assets: [
           {
@@ -179,7 +183,7 @@ describe('SuccessRaffleExtractor', () => {
     it<TestInterface>(`should return false when the asset's licenseTokenId is invalid`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleSuccessRaffleBoxes[0],
         assets: [
           {
@@ -210,7 +214,7 @@ describe('SuccessRaffleExtractor', () => {
     it<TestInterface>(`should return false when additionalRegisters is empty`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleSuccessRaffleBoxes[0],
         additionalRegisters: {},
       });
@@ -231,7 +235,7 @@ describe('SuccessRaffleExtractor', () => {
     it<TestInterface>(`should return false when R8 is empty`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleSuccessRaffleBoxes[0],
         additionalRegisters: {
           ...sampleSuccessRaffleBoxes[0].additionalRegisters,

@@ -21,13 +21,11 @@ describe('WinnerExtractor', () => {
     const boxErgoTree = compile('{sigmaProp(true);}');
     const boxFalseErgoTree = compile('{sigmaProp(false);}');
 
-    ctx.extractor = new WinnerExtractor(
-      dataSource,
-      'Winner',
-      'http://127.0.0.1/',
-      ErgoNetworkType.Node,
-      boxErgoTree.toAddress(Network.Testnet).toString(),
-    );
+    ctx.extractor = new WinnerExtractor(dataSource, 'Winner', {
+      type: ErgoNetworkType.Node,
+      url: 'http://127.0.0.1/',
+      address: boxErgoTree.toAddress(Network.Testnet).toString(),
+    });
     ctx.boxFalseErgoTree = boxFalseErgoTree;
   });
 
@@ -66,7 +64,7 @@ describe('WinnerExtractor', () => {
     it<TestInterface>(`should return true when the box data is valid`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData(sampleWinnerBoxes[0]);
+      const extractedData = await extractor.hasBoxData(sampleWinnerBoxes[0]);
 
       expect(extractedData).toBeTruthy();
     });
@@ -85,7 +83,7 @@ describe('WinnerExtractor', () => {
       extractor,
       boxFalseErgoTree,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleWinnerBoxes[0],
         ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
       });
@@ -106,7 +104,7 @@ describe('WinnerExtractor', () => {
     it<TestInterface>(`should return false when the assets array is empty`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleWinnerBoxes[0],
         assets: [],
       });
@@ -127,7 +125,7 @@ describe('WinnerExtractor', () => {
     it<TestInterface>(`should return false when the assets array length exceeds 2`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleWinnerBoxes[0],
         assets: [
           {
@@ -161,7 +159,7 @@ describe('WinnerExtractor', () => {
     it<TestInterface>(`should return false when the length of R4 is invalid`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleWinnerBoxes[0],
         additionalRegisters: {
           ...sampleWinnerBoxes[0].additionalRegisters,
@@ -185,7 +183,7 @@ describe('WinnerExtractor', () => {
     it<TestInterface>(`should return false when R5 is missing`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleWinnerBoxes[0],
         additionalRegisters: {
           R4: sampleWinnerBoxes[0].additionalRegisters!.R4,

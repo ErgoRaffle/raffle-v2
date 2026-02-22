@@ -1,28 +1,30 @@
-import { ErgoAddress, Box, Network } from '@fleet-sdk/core';
-import { serializeBox } from '@fleet-sdk/serializer';
-import { AbstractErgoExtractor } from '@rosen-bridge/abstract-extractor';
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
-import { DataSource } from '@rosen-bridge/extended-typeorm';
-import { OutputBox } from '@rosen-bridge/scanner-interfaces';
+import { AbstractExtractor } from '@rosen-bridge/abstract-extractor';
+import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
+import { validateAddress } from '@rosen-bridge/address-codec';
+import {
+  BitcoinEsploraTransaction,
+  EsploraTxOutput,
+} from '@rosen-bridge/bitcoin-scanner';
+import { DataSource, SelectQueryBuilder } from '@rosen-bridge/extended-typeorm';
+import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
 
 import { DynamicBoxAction } from '../actions/dynamicBoxAction';
 import { DynamicBoxEntity } from '../entities';
 import { DynamicBoxInterface } from '../interfaces/types';
 
-export class DynamicExtractor extends AbstractErgoExtractor<
-  DynamicBoxInterface,
+export class DynamicExtractor extends AbstractExtractor<
+  BitcoinEsploraTransaction,
   DynamicBoxEntity
 > {
   readonly actions: DynamicBoxAction;
-  private ergoTreeWatchList: Set<string> = new Set();
+  private addressWatchList: Set<string> = new Set();
 
   constructor(
     dataSource: DataSource,
     private readonly id: string,
-    logger?: AbstractLogger,
-    private networkType: Network = Network.Mainnet,
+    private readonly logger: AbstractLogger = new DummyLogger(),
   ) {
-    super(logger);
+    super();
     this.actions = new DynamicBoxAction(dataSource, logger);
   }
 
@@ -32,55 +34,87 @@ export class DynamicExtractor extends AbstractErgoExtractor<
   getId = () => `${this.id}`;
 
   /**
-   * check proper data format in the box
-   * @param box
-   * @return true if the box ergoTree in the watch list
+   * Check if a Bitcoin output is for a watched address.
+   * @param output - Bitcoin tx output with scriptpubkey_address
+   * @return true if the output address is in the watch list
    */
-  hasData = (box: OutputBox): boolean => {
-    return this.ergoTreeWatchList.has(box.ergoTree);
+  hasData = (output: EsploraTxOutput): boolean => {
+    return (
+      Boolean(output.scriptpubkey_address) &&
+      this.addressWatchList.has(output.scriptpubkey_address)
+    );
   };
 
   /**
-   * extract box data to proper format (not including spending information)
-   * @param box
+   * Extract Bitcoin output to DynamicBoxInterface.
+   * @param tx - Bitcoin transaction
+   * @param voutIndex - output index
+   * @param output - tx output
    * @return extracted data in proper format
    */
-  extractBoxData = (box: OutputBox): DynamicBoxInterface | undefined => {
-    const data = {
-      boxId: box.boxId.toString(),
-      txId: box.transactionId,
-      address: ErgoAddress.fromErgoTree(
-        box.ergoTree,
-        this.networkType,
-      ).toString(this.networkType),
-      serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(
-        'base64',
-      ),
+  extractBoxData = (
+    tx: BitcoinEsploraTransaction,
+    voutIndex: number,
+    output: EsploraTxOutput,
+  ): DynamicBoxInterface => {
+    const identifier = `${tx.txid}:${voutIndex}`;
+    return {
+      identifier,
+      txId: tx.txid,
+      address: output.scriptpubkey_address ?? '',
+      serialized: '',
     };
-
-    return data;
   };
 
   /**
-   * add new address to the watch list
-   * @param address
+   * Process a list of Bitcoin transactions in a block and store outputs for watched addresses.
+   * @param txs - list of transactions in the block
+   * @param block - block info
+   * @return true if the process is completed successfully
+   */
+  processTransactions = async (
+    txs: BitcoinEsploraTransaction[],
+    block: BlockInfo,
+  ): Promise<boolean> => {
+    const boxesToInsert: DynamicBoxInterface[] = [];
+    for (const tx of txs) {
+      for (let i = 0; i < tx.vout.length; i++) {
+        const output = tx.vout[i];
+        if (this.hasData(output)) {
+          boxesToInsert.push(this.extractBoxData(tx, i, output));
+        }
+      }
+    }
+    if (boxesToInsert.length === 0) {
+      return true;
+    }
+    return this.actions.storeEntities(boxesToInsert, block, this.id);
+  };
+
+  /**
+   * Fork one block and remove all stored information for this block.
+   * @param hash - block hash
+   */
+  forkBlock = async (hash: string): Promise<void> => {
+    await this.actions.deleteBlockData(hash, this.id);
+  };
+
+  /**
+   * Add a Bitcoin address to the watch list.
+   * @param address - Bitcoin address (legacy, P2SH, or bech32)
    */
   addNewAddress = (address: string) => {
     try {
-      const ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
-      if (
-        ErgoAddress.fromErgoTree(ergoTree, this.networkType).toString() !==
-        address
-      ) {
+      if (!validateAddress('bitcoin', address)) {
         throw new Error(
-          `Invalid address ${address} for network ${this.networkType}, address will be ignored`,
+          `Invalid Bitcoin address ${address}, address will be ignored`,
         );
       }
-      if (this.ergoTreeWatchList.has(ergoTree)) {
+      if (this.addressWatchList.has(address)) {
         this.logger.warn(`Address ${address} already in the watch list`);
         return;
       }
-      this.ergoTreeWatchList.add(ergoTree);
+      this.addressWatchList.add(address);
       this.logger.info(`Added address ${address} to the watch list`);
     } catch (error) {
       throw new Error(
@@ -90,24 +124,17 @@ export class DynamicExtractor extends AbstractErgoExtractor<
   };
 
   /**
-   * remove address from the watch list
-   * @param address
+   * Remove a Bitcoin address from the watch list.
+   * @param address - Bitcoin address to remove
    */
   removeAddress = (address: string) => {
     try {
-      const ergoTreeToRemove =
-        ErgoAddress.fromBase58(address).ergoTree.toString();
-      if (
-        ErgoAddress.fromErgoTree(
-          ergoTreeToRemove,
-          this.networkType,
-        ).toString() !== address
-      ) {
+      if (!validateAddress('bitcoin', address)) {
         throw new Error(
-          `Invalid address ${address} for network ${this.networkType}, address will be ignored`,
+          `Invalid Bitcoin address ${address}, address will be ignored`,
         );
       }
-      this.ergoTreeWatchList.delete(ergoTreeToRemove);
+      this.addressWatchList.delete(address);
       this.logger.info(`Removed address ${address} from the watch list`);
     } catch (error) {
       throw new Error(
@@ -119,10 +146,19 @@ export class DynamicExtractor extends AbstractErgoExtractor<
   /**
    * dynamic box extractor does not need to initialize boxes
    */
-  initializeBoxes = async () => {
+  initializeData = async () => {
     this.logger.info(
       `Initializing boxes for extractor ${this.id} is not enabled`,
     );
     return;
   };
+
+  /**
+   * Builds a query that returns used blocks by selecting the `block` column from the `ExtractorEntity` repository,
+   * filtered by the provided `extractorId`
+   *
+   * @returns A query builder selecting used blocks
+   */
+  createUsedBlocksQuery = (): SelectQueryBuilder<DynamicBoxEntity> =>
+    this.actions.createUsedBlocksQuery(this.getId());
 }

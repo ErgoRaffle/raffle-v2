@@ -30,7 +30,7 @@ export const sampleRaffleDetailsBoxes: OutputBox[] = [
 ];
 
 export const sampleRaffleDetailsExtractedData = {
-  boxId: sampleRaffleDetailsBoxes[0].boxId,
+  identifier: sampleRaffleDetailsBoxes[0].boxId,
   txId: sampleRaffleDetailsBoxes[0].transactionId,
   name: 'Test',
   description: 'Some descriptions...',

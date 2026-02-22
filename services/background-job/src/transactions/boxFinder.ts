@@ -35,11 +35,11 @@ export const findAllWinners = async (
   const winnerBoxEntities = (
     await DbService.getInstance().getWinnerBoxes(raffleId)
   ).filter((dbBox) => {
-    return !winnerBoxes.some((box) => box.boxId === dbBox.boxId);
+    return !winnerBoxes.some((box) => box.boxId === dbBox.identifier);
   });
 
   logger.debug(
-    `Found ${winnerBoxEntities.length} winner boxes in the database for raffle [${raffleId}] with boxIds: ${winnerBoxEntities.map((box) => box.boxId).join(', ')}`,
+    `Found ${winnerBoxEntities.length} winner boxes in the database for raffle [${raffleId}] with boxIds: ${winnerBoxEntities.map((box) => box.identifier).join(', ')}`,
   );
   // Sort the winner boxes by winner index
   return winnerBoxes.concat(convertDbBoxesToErgoBoxes(winnerBoxEntities));

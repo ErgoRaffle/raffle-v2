@@ -21,13 +21,11 @@ describe('GiftTokenRepoExtractor', () => {
     const boxErgoTree = compile('{sigmaProp(true);}');
     const boxFalseErgoTree = compile('{sigmaProp(false);}');
 
-    ctx.extractor = new GiftTokenRepoExtractor(
-      dataSource,
-      'GiftTokenRepo',
-      'http://127.0.0.1/',
-      ErgoNetworkType.Node,
-      boxErgoTree.toAddress(Network.Testnet).toString(),
-    );
+    ctx.extractor = new GiftTokenRepoExtractor(dataSource, 'GiftTokenRepo', {
+      type: ErgoNetworkType.Node,
+      url: 'http://127.0.0.1/',
+      address: boxErgoTree.toAddress(Network.Testnet).toString(),
+    });
     ctx.boxFalseErgoTree = boxFalseErgoTree;
   });
 
@@ -66,7 +64,7 @@ describe('GiftTokenRepoExtractor', () => {
     it<TestInterface>(`should return true when the box contains valid data`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData(sampleGiftTokenRepo[0]);
+      const extractedData = await extractor.hasBoxData(sampleGiftTokenRepo[0]);
 
       expect(extractedData).toBeTruthy();
     });
@@ -85,7 +83,7 @@ describe('GiftTokenRepoExtractor', () => {
       extractor,
       boxFalseErgoTree,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleGiftTokenRepo[0],
         // set invalid ergoTree
         ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
@@ -107,7 +105,7 @@ describe('GiftTokenRepoExtractor', () => {
     it<TestInterface>(`should return false when R8 is empty`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleGiftTokenRepo[0],
         additionalRegisters: {
           ...sampleGiftTokenRepo[0].additionalRegisters,
@@ -131,7 +129,7 @@ describe('GiftTokenRepoExtractor', () => {
     it<TestInterface>(`should return false when R8 length is not valid`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleGiftTokenRepo[0],
         additionalRegisters: {
           ...sampleGiftTokenRepo[0].additionalRegisters,

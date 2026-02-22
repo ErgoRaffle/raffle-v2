@@ -1,14 +1,14 @@
-import { ErgoAddress } from '@fleet-sdk/core';
 import { DataSource } from '@rosen-bridge/extended-typeorm';
-import { describe, it, expect, beforeEach } from 'vitest';
 
 import { DynamicExtractor } from '../../lib/extractors/dynamicExtractor';
 import { createDatabase } from '../utils.mock';
 import {
-  sampleDynamicBoxes,
   sampleDynamicExtractedData,
-  sampleDynamicAddress,
-  sampleInvalidAddress,
+  sampleBitcoinAddress,
+  sampleBitcoinAddressOther,
+  sampleInvalidBitcoinAddress,
+  sampleBitcoinTx,
+  sampleBitcoinTxOutput,
 } from './mocked/dynamic.mock';
 
 describe('DynamicExtractor', () => {
@@ -21,16 +21,20 @@ describe('DynamicExtractor', () => {
 
   describe('extractBoxData', () => {
     /**
-     * @target should successfully extract data from a sample dynamic box
+     * @target should successfully extract data from a Bitcoin tx output
      * @dependencies
      * @scenario
-     * - call the extractBoxData functions
+     * - call the extractBoxData function with tx, vout index, and output
      * - check if Dynamic box data extracted correctly
      * @expected
-     * - Dynamic box should extract successfully
+     * - Extracted data should match expected shape
      */
-    it(`should successfully extract data from a sample dynamic box`, () => {
-      const extractedData = extractor.extractBoxData(sampleDynamicBoxes[0]);
+    it(`should successfully extract data from a Bitcoin tx output`, () => {
+      const extractedData = extractor.extractBoxData(
+        sampleBitcoinTx,
+        0,
+        sampleBitcoinTxOutput,
+      );
 
       expect(extractedData).toEqual(sampleDynamicExtractedData);
     });
@@ -38,79 +42,123 @@ describe('DynamicExtractor', () => {
 
   describe('hasData', () => {
     /**
-     * @target should return true with valid box data matching the watch list
+     * @target should return true when output address is in the watch list
      * @dependencies
      * @scenario
-     * - add the box address to the watch list
-     * - call the hasData functions
-     * - result must be true
+     * - add the output address to the watch list
+     * - call hasData with the output
      * @expected
-     * - Dynamic box checking result must be true
+     * - hasData returns true
      */
-    it(`should return true with valid box data matching the watch list`, () => {
-      extractor.addNewAddress(sampleDynamicAddress);
-      const extractedData = extractor.hasData(sampleDynamicBoxes[0]);
+    it(`should return true with output address in the watch list`, () => {
+      extractor.addNewAddress(sampleBitcoinAddress);
 
-      expect(extractedData).toBeTruthy();
+      expect(extractor.hasData(sampleBitcoinTxOutput)).toBeTruthy();
     });
 
     /**
-     * @target should return false with an invalid box address
+     * @target should return false when output address is not in the watch list
      * @dependencies
      * @scenario
-     * - add the invalid box address to the watch list
-     * - call the hasData functions
-     * - result must be false
+     * - add a different (valid) address to the watch list
+     * - call hasData with the output
      * @expected
-     * - Dynamic box checking result must be false
+     * - hasData returns false
      */
-    it(`should return false with an invalid box address`, () => {
-      extractor.addNewAddress(sampleInvalidAddress);
-      const extractedData = extractor.hasData(sampleDynamicBoxes[0]);
+    it(`should return false when output address is not in the watch list`, () => {
+      extractor.addNewAddress(sampleBitcoinAddressOther);
 
-      expect(extractedData).toBeFalsy();
+      expect(extractor.hasData(sampleBitcoinTxOutput)).toBeFalsy();
     });
   });
 
   describe('addNewAddress', () => {
     /**
-     * @target should add new address to the watch list
+     * @target should add new Bitcoin address to the watch list
      * @dependencies
      * @scenario
-     * - call the addNewAddress function
+     * - call the addNewAddress function with valid Bitcoin address
      * - check if the address is added to the watch list
      * @expected
-     * - Should add the new address to the watch list
+     * - Address should be in addressWatchList
      */
-    it(`should add new address to the watch list`, () => {
-      extractor.addNewAddress(sampleDynamicAddress);
+    it(`should add new Bitcoin address to the watch list`, () => {
+      extractor.addNewAddress(sampleBitcoinAddress);
 
-      expect(extractor['ergoTreeWatchList']).toContain(
-        ErgoAddress.fromBase58(sampleDynamicAddress).ergoTree.toString(),
-      );
+      expect(extractor['addressWatchList']).toContain(sampleBitcoinAddress);
+    });
+
+    /**
+     * @target should throw for invalid Bitcoin address
+     * @dependencies
+     * @scenario
+     * - call addNewAddress with invalid address
+     * @expected
+     * - Error is thrown
+     */
+    it(`should throw when adding invalid Bitcoin address`, () => {
+      expect(() =>
+        extractor.addNewAddress(sampleInvalidBitcoinAddress),
+      ).toThrow();
     });
   });
 
   describe('removeAddress', () => {
     /**
-     * @target should remove address from the watch list
+     * @target should remove Bitcoin address from the watch list
      * @dependencies
      * @scenario
-     * - call the removeAddress function
-     * - check if the address is removed from the watch list
+     * - set addressWatchList with known addresses
+     * - call removeAddress
+     * - check address is removed and others remain
      * @expected
-     * - Should remove the address from the watch list
+     * - Address is removed from watch list
      */
     it(`should remove address from the watch list`, () => {
-      const addressToRemove =
-        ErgoAddress.fromBase58(sampleDynamicAddress).ergoTree.toString();
-      extractor['ergoTreeWatchList'] = new Set([
-        addressToRemove,
-        'anotherAddress',
+      extractor['addressWatchList'] = new Set([
+        sampleBitcoinAddress,
+        'bc1qanothertestaddress1234567890abcdefghjk',
       ]);
-      extractor.removeAddress(sampleDynamicAddress);
-      expect(extractor['ergoTreeWatchList']).not.toContain(addressToRemove);
-      expect(extractor['ergoTreeWatchList']).toContain('anotherAddress');
+      extractor.removeAddress(sampleBitcoinAddress);
+      expect(extractor['addressWatchList']).not.toContain(sampleBitcoinAddress);
+      expect(extractor['addressWatchList']).toContain(
+        'bc1qanothertestaddress1234567890abcdefghjk',
+      );
+    });
+  });
+
+  describe('processTransactions', () => {
+    /**
+     * @target should store boxes for watched addresses in block
+     * @dependencies
+     * @scenario
+     * - add address to watch list
+     * - call processTransactions with tx that has output to that address
+     * @expected
+     * - processTransactions returns true and boxes are stored
+     */
+    it(`should process transactions and store boxes for watched addresses`, async () => {
+      const storeEntitiesSpy = vi
+        .spyOn(extractor.actions, 'storeEntities')
+        .mockResolvedValue(true);
+
+      extractor['addressWatchList'] = new Set([sampleBitcoinAddress]);
+      const block = {
+        hash: '0000000000000000000123456789abcdef',
+        height: 800000,
+      };
+      const result = await extractor.processTransactions(
+        [sampleBitcoinTx],
+        block,
+      );
+
+      expect(result).toBe(true);
+      expect(storeEntitiesSpy).toHaveBeenCalledTimes(1);
+      expect(storeEntitiesSpy).toHaveBeenCalledWith(
+        [sampleDynamicExtractedData],
+        block,
+        'Dynamic',
+      );
     });
   });
 });

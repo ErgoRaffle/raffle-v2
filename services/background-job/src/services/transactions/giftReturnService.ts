@@ -105,7 +105,7 @@ export class GiftReturnService extends AbstractTxService {
     // Process each gift box
     for (const giftEntity of giftEntities) {
       this.logger.debug(
-        `Creating gift return transaction for winner [${winnerBox.boxId}] and gift box [${giftEntity.boxId}]`,
+        `Creating gift return transaction for winner [${winnerBox.boxId}] and gift box [${giftEntity.identifier}]`,
       );
       const donatorAddress = giftEntity.donatorErgoTree;
 
@@ -127,7 +127,7 @@ export class GiftReturnService extends AbstractTxService {
       );
 
       this.logger.info(
-        `Gift return transaction for gift box [${giftEntity.boxId}] has been added (txId: [${giftReturnTx.id}])`,
+        `Gift return transaction for gift box [${giftEntity.identifier}] has been added (txId: [${giftReturnTx.id}])`,
       );
       currentWinnerBox = new ErgoBox(signedGiftReturnTx.outputs[0]);
     }

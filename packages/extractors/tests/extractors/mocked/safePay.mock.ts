@@ -2,7 +2,8 @@ import { Transaction } from '@rosen-bridge/scanner-interfaces';
 
 export const feePaymentSafePayExtractedData = [
   {
-    boxId: '7ef8a29ed512e74be874a584cf8109446d9938e7738403a130a16747a86a06d5',
+    identifier:
+      '7ef8a29ed512e74be874a584cf8109446d9938e7738403a130a16747a86a06d5',
     txId: '52b06d144cd7f4a5169c3a84fe43c151c7626f76d89d73586f99cc0d9508a401',
     recipient:
       '0008cd0329deeedf0e44a4564d3d7552b230e66463591371fc44d5bfcb1c16a0fd69f60f',
@@ -10,7 +11,8 @@ export const feePaymentSafePayExtractedData = [
       'gMn+PRk8AgQABADYAdYBsqVzAADRloMEAZPLwnIB5ManBA6SwXIBmcGn5ManBQWT22MIcgHbYwink8WnxbKkcwEAzLxnAAIOIO22YtAJsWgSor0v/RuSa5ZdYgQK3pJB/cS4gjepnf6+BYCHpw5SsG0UTNf0pRacOoT+Q8FRx2Jvdtidc1hvmcwNlQikAQE=',
   },
   {
-    boxId: '589833f28d5d48c800ab8875dadd0d9b73e8de428083766d16393417047b0699',
+    identifier:
+      '589833f28d5d48c800ab8875dadd0d9b73e8de428083766d16393417047b0699',
     txId: '52b06d144cd7f4a5169c3a84fe43c151c7626f76d89d73586f99cc0d9508a401',
     recipient:
       '0008cd03b8b4b552caf9dbd5173eb5b1e441dc8f47630abe01105009f2716fee8e834506',
@@ -115,7 +117,8 @@ export const feePaymentTx = {
 };
 
 export const finalPrizeExtractedData = {
-  boxId: '8a0160409c949952f4b1d7d5771c9e6d4167ef81be33dbb71ead2ff21b27f04e',
+  identifier:
+    '8a0160409c949952f4b1d7d5771c9e6d4167ef81be33dbb71ead2ff21b27f04e',
   txId: '01b5b7af3e49077f1861c5b2511295a6d992aa480af087ca0c19088657bc7b16',
   recipient:
     '0008cd036540c579e977b8d827dd04240d4893e136de7b466f5e2cca730c3faf6a479fa7',
@@ -170,7 +173,8 @@ export const finalPrizeTx: Transaction = {
 };
 
 export const sampleSafePayExtractedData = {
-  boxId: '85f8510acc8a2c0e1b8c5c8c810621a60ddd43b6dca1f41decc77d72d33d1d70',
+  identifier:
+    '85f8510acc8a2c0e1b8c5c8c810621a60ddd43b6dca1f41decc77d72d33d1d70',
   txId: 'cbd6926047761879423ae7b2c2d31725243a2b081d6019acce5ed402e5e351eb',
   recipient:
     '0008cd036540c579e977b8d827dd04240d4893e136de7b466f5e2cca730c3faf6a479fa7',

@@ -24,13 +24,11 @@ describe('TicketExtractor', () => {
     const boxErgoTree = compile('{sigmaProp(true);}');
     const boxFalseErgoTree = compile('{sigmaProp(false);}');
 
-    ctx.extractor = new TicketExtractor(
-      dataSource,
-      'Ticket',
-      'http://127.0.0.1/',
-      ErgoNetworkType.Node,
-      boxErgoTree.toAddress(Network.Testnet).toString(),
-    );
+    ctx.extractor = new TicketExtractor(dataSource, 'Ticket', {
+      type: ErgoNetworkType.Node,
+      url: 'http://127.0.0.1/',
+      address: boxErgoTree.toAddress(Network.Testnet).toString(),
+    });
     ctx.dataSource = dataSource;
     ctx.boxFalseErgoTree = boxFalseErgoTree;
   });
@@ -91,7 +89,7 @@ describe('TicketExtractor', () => {
     it<TestInterface>(`should return true when valid box data is provided`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData(sampleTicketBoxes[0]);
+      const extractedData = await extractor.hasBoxData(sampleTicketBoxes[0]);
 
       expect(extractedData).toBeTruthy();
     });
@@ -110,7 +108,7 @@ describe('TicketExtractor', () => {
       extractor,
       boxFalseErgoTree,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleTicketBoxes[0],
         ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
       });
@@ -131,7 +129,7 @@ describe('TicketExtractor', () => {
     it<TestInterface>(`should return false when an invalid R5 length is provided`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleTicketBoxes[0],
         additionalRegisters: {
           ...sampleTicketBoxes[0].additionalRegisters,

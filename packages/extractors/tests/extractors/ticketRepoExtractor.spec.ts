@@ -20,13 +20,11 @@ beforeEach<TestInterface>(async (ctx) => {
   const boxErgoTree = compile('{sigmaProp(true);}');
   const boxFalseErgoTree = compile('{sigmaProp(false);}');
 
-  ctx.extractor = new TicketRepoExtractor(
-    dataSource,
-    'TicketRepo',
-    'http://127.0.0.1/',
-    ErgoNetworkType.Node,
-    boxErgoTree.toAddress(Network.Testnet).toString(),
-  );
+  ctx.extractor = new TicketRepoExtractor(dataSource, 'TicketRepo', {
+    type: ErgoNetworkType.Node,
+    url: 'http://127.0.0.1/',
+    address: boxErgoTree.toAddress(Network.Testnet).toString(),
+  });
   ctx.boxFalseErgoTree = boxFalseErgoTree;
 });
 
@@ -64,7 +62,7 @@ describe('TicketRepoExtractor', () => {
     it<TestInterface>(`should return true for hasData method when the box contains valid data`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData(sampleTicketRepo[0]);
+      const extractedData = await extractor.hasBoxData(sampleTicketRepo[0]);
 
       expect(extractedData).toBeTruthy();
     });
@@ -83,7 +81,7 @@ describe('TicketRepoExtractor', () => {
       extractor,
       boxFalseErgoTree,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleTicketRepo[0],
         // set invalid ergoTree
         ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
@@ -105,7 +103,7 @@ describe('TicketRepoExtractor', () => {
     it<TestInterface>(`should return false for hasData method when the assets list is empty`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleTicketRepo[0],
         assets: [],
       });
@@ -126,7 +124,7 @@ describe('TicketRepoExtractor', () => {
     it<TestInterface>(`should return false for hasData method when the assets list contains more than one item`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleTicketRepo[0],
         assets: [
           {

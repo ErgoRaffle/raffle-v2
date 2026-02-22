@@ -30,7 +30,7 @@ export const sampleGiftTokenRepo: OutputBox[] = [
 ];
 
 export const sampleGiftTokenRepoExtractedData = {
-  boxId: sampleGiftTokenRepo[0].boxId,
+  identifier: sampleGiftTokenRepo[0].boxId,
   txId: sampleGiftTokenRepo[0].transactionId,
   raffleId: 'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
   serialized:

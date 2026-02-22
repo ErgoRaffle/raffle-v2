@@ -1,7 +1,7 @@
 import { ErgoAddress, Box } from '@fleet-sdk/core';
 import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 import {
-  AbstractInitializableErgoExtractor,
+  AbstractErgoBoxExtractor,
   TxExtra,
 } from '@rosen-bridge/abstract-extractor';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
@@ -9,15 +9,14 @@ import { DataSource } from '@rosen-bridge/extended-typeorm';
 import {
   Transaction,
   OutputBox,
-  ErgoNetworkType,
   InputExtension,
 } from '@rosen-bridge/scanner-interfaces';
 
 import { SafePayAction } from '../actions/safePayAction';
 import { SafePayEntity } from '../entities';
-import { SafePayBoxInterface } from '../interfaces/types';
+import { ExtractorInitOptions, SafePayBoxInterface } from '../interfaces/types';
 
-export class SafePayExtractor extends AbstractInitializableErgoExtractor<
+export class SafePayExtractor extends AbstractErgoBoxExtractor<
   SafePayBoxInterface,
   SafePayEntity
 > {
@@ -29,16 +28,15 @@ export class SafePayExtractor extends AbstractInitializableErgoExtractor<
   constructor(
     dataSource: DataSource,
     id: string,
-    url: string,
-    type: ErgoNetworkType,
-    address: string,
+    initializeOptions: ExtractorInitOptions,
     successAddress: string,
     logger?: AbstractLogger,
-    initialize = true,
   ) {
-    super(type, url, address, logger, initialize);
+    super({ active: true, ...initializeOptions }, logger);
     this.id = id;
-    this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
+    this.ergoTree = ErgoAddress.fromBase58(
+      initializeOptions.address,
+    ).ergoTree.toString();
     this.actions = new SafePayAction(dataSource, logger);
 
     this.successRaffleErgoTree =
@@ -66,7 +64,7 @@ export class SafePayExtractor extends AbstractInitializableErgoExtractor<
    * @param box
    * @return true if the box has the required data and false otherwise
    */
-  hasData = (box: OutputBox): boolean => {
+  hasBoxData = (box: OutputBox): boolean => {
     return box.ergoTree == this.ergoTree;
   };
 
@@ -116,7 +114,7 @@ export class SafePayExtractor extends AbstractInitializableErgoExtractor<
       );
     }
     const data = {
-      boxId: box.boxId.toString(),
+      identifier: box.boxId.toString(),
       txId: box.transactionId,
       recipient,
       serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(

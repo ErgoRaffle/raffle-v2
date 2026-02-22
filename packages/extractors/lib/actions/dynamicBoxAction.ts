@@ -1,4 +1,4 @@
-import { AbstractInitializableErgoExtractorAction } from '@rosen-bridge/abstract-extractor';
+import { AbstractErgoAction } from '@rosen-bridge/abstract-extractor';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
@@ -7,7 +7,7 @@ import { pick } from 'lodash-es';
 import { DynamicBoxEntity } from '../entities';
 import { DynamicBoxInterface } from '../interfaces/types';
 
-export class DynamicBoxAction extends AbstractInitializableErgoExtractorAction<
+export class DynamicBoxAction extends AbstractErgoAction<
   DynamicBoxInterface,
   DynamicBoxEntity
 > {
@@ -28,7 +28,7 @@ export class DynamicBoxAction extends AbstractInitializableErgoExtractorAction<
   ): Omit<DynamicBoxEntity, 'id'>[] => {
     return boxes.map((box) => {
       return {
-        boxId: box.boxId,
+        identifier: box.identifier,
         block: block.hash,
         height: block.height,
         serialized: box.serialized,
@@ -47,7 +47,7 @@ export class DynamicBoxAction extends AbstractInitializableErgoExtractorAction<
     entities: DynamicBoxEntity[],
   ): DynamicBoxInterface[] => {
     return entities.map((data) =>
-      pick(data, ['boxId', 'txId', 'address', 'extractor', 'serialized']),
+      pick(data, ['identifier', 'txId', 'address', 'extractor', 'serialized']),
     );
   };
 }

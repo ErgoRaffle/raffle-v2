@@ -1,18 +1,18 @@
 import { ErgoAddress, Box } from '@fleet-sdk/core';
 import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 import {
-  AbstractInitializableErgoExtractor,
+  AbstractErgoBoxExtractor,
   boxHasToken,
 } from '@rosen-bridge/abstract-extractor';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { DataSource } from '@rosen-bridge/extended-typeorm';
-import { OutputBox, ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
+import { OutputBox } from '@rosen-bridge/scanner-interfaces';
 
 import { ServiceAction } from '../actions/serviceAction';
 import { ServiceEntity } from '../entities';
-import { ServiceBoxInterface } from '../interfaces/types';
+import { ExtractorInitOptions, ServiceBoxInterface } from '../interfaces/types';
 
-export class ServiceExtractor extends AbstractInitializableErgoExtractor<
+export class ServiceExtractor extends AbstractErgoBoxExtractor<
   ServiceBoxInterface,
   ServiceEntity
 > {
@@ -24,16 +24,15 @@ export class ServiceExtractor extends AbstractInitializableErgoExtractor<
   constructor(
     dataSource: DataSource,
     id: string,
-    url: string,
-    type: ErgoNetworkType,
-    address: string,
+    initializeOptions: ExtractorInitOptions,
     serviceNFTId: string,
     logger?: AbstractLogger,
-    initialize = true,
   ) {
-    super(type, url, address, logger, initialize);
+    super({ active: true, ...initializeOptions }, logger);
     this.id = id;
-    this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
+    this.ergoTree = ErgoAddress.fromBase58(
+      initializeOptions.address,
+    ).ergoTree.toString();
     this.serviceNFTId = serviceNFTId;
     this.actions = new ServiceAction(dataSource, logger);
   }
@@ -48,7 +47,7 @@ export class ServiceExtractor extends AbstractInitializableErgoExtractor<
    * @param box
    * @return true if the box has the required data and false otherwise
    */
-  hasData = (box: OutputBox): boolean => {
+  hasBoxData = (box: OutputBox): boolean => {
     try {
       return (
         box.ergoTree == this.ergoTree &&
@@ -73,7 +72,7 @@ export class ServiceExtractor extends AbstractInitializableErgoExtractor<
     const R4Serialized = SConstant.from(box.additionalRegisters!.R4!)
       .data as bigint[];
     const data = {
-      boxId: box.boxId.toString(),
+      identifier: box.boxId.toString(),
       txId: box.transactionId,
       serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(
         'base64',

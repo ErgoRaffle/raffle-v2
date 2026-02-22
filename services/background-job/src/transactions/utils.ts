@@ -8,7 +8,7 @@ import {
 import { bigintBE, hex } from '@fleet-sdk/crypto';
 import { deserializeBox } from '@fleet-sdk/serializer';
 import { ErgoHDKey } from '@fleet-sdk/wallet';
-import { AbstractErgoExtractorEntity } from '@rosen-bridge/abstract-extractor';
+import { AbstractErgoEntity } from '@rosen-bridge/abstract-extractor';
 import { DefaultLogger } from '@rosen-bridge/abstract-logger';
 import JsonBigInt from '@rosen-bridge/json-bigint';
 import { ProverBuilder$ } from 'sigmastate-js/main';
@@ -107,7 +107,7 @@ export const signAndAddTx = async (
  * @returns The list of ErgoBox objects
  */
 export const convertDbBoxesToErgoBoxes = (
-  dbBoxes: AbstractErgoExtractorEntity[],
+  dbBoxes: AbstractErgoEntity[],
 ): ErgoBox[] => {
   return dbBoxes.map((dbBox) => {
     /**

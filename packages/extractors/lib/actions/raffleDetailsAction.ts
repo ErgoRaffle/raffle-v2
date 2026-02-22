@@ -1,4 +1,4 @@
-import { AbstractInitializableErgoExtractorAction } from '@rosen-bridge/abstract-extractor';
+import { AbstractErgoBoxAction } from '@rosen-bridge/abstract-extractor';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { DataSource, In, QueryRunner } from '@rosen-bridge/extended-typeorm';
 import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
@@ -6,7 +6,7 @@ import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
 import { PictureEntity, RaffleDetailsEntity } from '../entities';
 import { RaffleDetailsBoxInterface } from '../interfaces/types';
 
-export class RaffleDetailsAction extends AbstractInitializableErgoExtractorAction<
+export class RaffleDetailsAction extends AbstractErgoBoxAction<
   RaffleDetailsBoxInterface,
   RaffleDetailsEntity
 > {
@@ -70,7 +70,7 @@ export class RaffleDetailsAction extends AbstractInitializableErgoExtractorActio
     const box = this.createEntity([updateBox], block, extractor)[0];
     await repository.update(
       {
-        boxId: box.boxId,
+        identifier: box.identifier,
         extractor: extractor,
       },
       box,
@@ -101,7 +101,7 @@ export class RaffleDetailsAction extends AbstractInitializableErgoExtractorActio
   ): Omit<RaffleDetailsEntity, 'id'>[] => {
     return boxes.map((box) => {
       return {
-        boxId: box.boxId,
+        identifier: box.identifier,
         block: block.hash,
         height: block.height,
         serialized: box.serialized,
@@ -121,7 +121,7 @@ export class RaffleDetailsAction extends AbstractInitializableErgoExtractorActio
    * @param block
    * @returns
    */
-  protected deleteBlockEntities = async (
+  protected deleteBlockRecords = async (
     queryRunner: QueryRunner,
     extractor: string,
     block: string,
@@ -158,7 +158,7 @@ export class RaffleDetailsAction extends AbstractInitializableErgoExtractorActio
   ): RaffleDetailsBoxInterface[] => {
     return entities.map((data, index) => {
       const details = {
-        boxId: data.boxId,
+        identifier: data.identifier,
         txId: data.txId,
         raffleId: data.raffleId,
         extractor: data.extractor,

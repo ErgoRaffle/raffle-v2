@@ -241,7 +241,7 @@ describe('RaffleDetailsAction', () => {
         }),
       );
 
-      await action.deleteBlockBoxes(
+      await action.deleteBlockData(
         raffleDetailsObject.block,
         raffleDetailsObject.extractor,
       );
@@ -281,7 +281,7 @@ describe('RaffleDetailsAction', () => {
         }),
       );
 
-      await action.deleteBlockBoxes(
+      await action.deleteBlockData(
         raffleDetailsObject1.block,
         raffleDetailsObject1.extractor,
       );
@@ -307,7 +307,7 @@ describe('RaffleDetailsAction', () => {
         sampleDBData,
       );
 
-      await action.deleteBlockBoxes(
+      await action.deleteBlockData(
         raffleDetailsObject.block,
         raffleDetailsObject.extractor,
       );
