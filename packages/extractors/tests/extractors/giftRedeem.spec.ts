@@ -26,9 +26,11 @@ describe('GiftRedeemExtractor', () => {
     ctx.extractor = new GiftRedeemExtractor(
       dataSource,
       'GiftRedeem',
-      'http://127.0.0.1/',
-      ErgoNetworkType.Node,
-      boxErgoTree.toAddress(Network.Testnet).toString(),
+      {
+        type: ErgoNetworkType.Node,
+        url: 'http://127.0.0.1/',
+        address: boxErgoTree.toAddress(Network.Testnet).toString(),
+      },
       '716149d5c68e4ea1ea0529b60c7029797ffb26f3d401d44f9aadd4b090593e4e',
     );
     ctx.dataSource = dataSource;
@@ -70,7 +72,9 @@ describe('GiftRedeemExtractor', () => {
     it<TestInterface>(`should return true when valid box data is provided`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData(sampleGiftRedeemBoxes[0]);
+      const extractedData = await extractor.hasBoxData(
+        sampleGiftRedeemBoxes[0],
+      );
 
       expect(extractedData).toBeTruthy();
     });
@@ -89,7 +93,7 @@ describe('GiftRedeemExtractor', () => {
       extractor,
       boxFalseErgoTree,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleGiftRedeemBoxes[0],
         ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
       });
@@ -110,7 +114,7 @@ describe('GiftRedeemExtractor', () => {
     it<TestInterface>(`should return false when R6 is empty`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleGiftRedeemBoxes[0],
         additionalRegisters: {
           ...sampleGiftRedeemBoxes[0].additionalRegisters,
@@ -134,7 +138,7 @@ describe('GiftRedeemExtractor', () => {
     it<TestInterface>(`should return false when the asset's licenseTokenId is invalid`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleGiftRedeemBoxes[0],
         assets: [
           {
@@ -165,7 +169,7 @@ describe('GiftRedeemExtractor', () => {
     it<TestInterface>(`should return false when assets are empty`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleGiftRedeemBoxes[0],
         assets: [],
       });

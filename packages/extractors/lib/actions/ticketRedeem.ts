@@ -1,4 +1,4 @@
-import { AbstractInitializableErgoExtractorAction } from '@rosen-bridge/abstract-extractor';
+import { AbstractErgoBoxAction } from '@rosen-bridge/abstract-extractor';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
@@ -7,7 +7,7 @@ import { pick } from 'lodash-es';
 import { TicketRedeemEntity } from '../entities/ticketRedeem';
 import { TicketRedeemBoxInterface } from '../interfaces/types';
 
-export class TicketRedeemAction extends AbstractInitializableErgoExtractorAction<
+export class TicketRedeemAction extends AbstractErgoBoxAction<
   TicketRedeemBoxInterface,
   TicketRedeemEntity
 > {
@@ -28,7 +28,7 @@ export class TicketRedeemAction extends AbstractInitializableErgoExtractorAction
   ): Omit<TicketRedeemEntity, 'id'>[] => {
     return boxes.map((box) => {
       return {
-        boxId: box.boxId,
+        identifier: box.identifier,
         block: block.hash,
         height: block.height,
         serialized: box.serialized,
@@ -50,7 +50,7 @@ export class TicketRedeemAction extends AbstractInitializableErgoExtractorAction
   ): TicketRedeemBoxInterface[] => {
     return entities.map((data) =>
       pick(data, [
-        'boxId',
+        'identifier',
         'txId',
         'raffleId',
         'extractor',

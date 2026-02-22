@@ -1,11 +1,11 @@
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { BlockEntity } from '@rosen-bridge/abstract-scanner';
 import {
   IsNull,
   DataSource,
   LessThanOrEqual,
   MoreThan,
 } from '@rosen-bridge/extended-typeorm';
-import { BlockEntity } from '@rosen-bridge/scanner';
 import {
   AbstractService,
   Dependency,
@@ -16,7 +16,6 @@ import { pick } from 'lodash-es';
 import {
   RaffleBoxEntity,
   InactiveRaffleEntity,
-  DynamicBoxEntity,
   WinnerEntity,
   RaffleBoxType,
   RaffleDetailsEntity,
@@ -160,17 +159,6 @@ export class DbService extends AbstractService {
   };
 
   /**
-   * Get the dynamic boxes by address
-   * @param address - The address
-   * @returns The dynamic boxes
-   */
-  getDynamicBoxes = (address: string): Promise<DynamicBoxEntity[]> => {
-    return this.dataSource
-      .getRepository(DynamicBoxEntity)
-      .find({ where: { address: address, spendBlock: IsNull() } });
-  };
-
-  /**
    * Get the winner box by raffle id and index
    * @param raffleId - The raffle id
    * @param index - The index of the winner
@@ -304,13 +292,13 @@ export class DbService extends AbstractService {
 
   /**
    * Get the unspent safe pay boxes
-   * @param boxId - The box id
+   * @param identifier - The box identifier
    * @returns The safe pay boxes
    */
-  getSafePayBoxes = (boxId?: string): Promise<SafePayEntity[]> => {
+  getSafePayBoxes = (identifier?: string): Promise<SafePayEntity[]> => {
     return this.dataSource.getRepository(SafePayEntity).find({
       where: {
-        ...(boxId ? { boxId: boxId } : {}),
+        ...(identifier ? { identifier } : {}),
         spendBlock: IsNull(),
       },
     });

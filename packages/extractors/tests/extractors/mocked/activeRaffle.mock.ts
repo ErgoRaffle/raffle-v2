@@ -33,7 +33,7 @@ export const sampleActiveRaffleBoxes: OutputBox[] = [
 ];
 
 export const sampleActiveRaffleExtractedData = {
-  boxId: sampleActiveRaffleBoxes[0].boxId,
+  identifier: sampleActiveRaffleBoxes[0].boxId,
   txId: sampleActiveRaffleBoxes[0].transactionId,
   serialized:
     'wOzzjgQZBgEBAdFzAK7QYgJxYUnVxo5OoeoFKbYMcCl5f/sm89QB1E+ardSwkFk+' +

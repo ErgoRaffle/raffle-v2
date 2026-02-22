@@ -24,9 +24,11 @@ describe('TicketRedeemExtractor', () => {
     ctx.extractor = new TicketRedeemExtractor(
       dataSource,
       'TicketRedeem',
-      'http://127.0.0.1/',
-      ErgoNetworkType.Node,
-      boxErgoTree.toAddress(Network.Testnet).toString(),
+      {
+        type: ErgoNetworkType.Node,
+        url: 'http://127.0.0.1/',
+        address: boxErgoTree.toAddress(Network.Testnet).toString(),
+      },
       '716149d5c68e4ea1ea0529b60c7029797ffb26f3d401d44f9aadd4b090593e4e',
     );
     ctx.boxFalseErgoTree = boxFalseErgoTree;
@@ -67,7 +69,9 @@ describe('TicketRedeemExtractor', () => {
     it<TestInterface>(`should return true for valid box data`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData(sampleTicketRedeemBoxes[0]);
+      const extractedData = await extractor.hasBoxData(
+        sampleTicketRedeemBoxes[0],
+      );
 
       expect(extractedData).toBeTruthy();
     });
@@ -86,7 +90,7 @@ describe('TicketRedeemExtractor', () => {
       extractor,
       boxFalseErgoTree,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleTicketRedeemBoxes[0],
         ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
       });
@@ -107,7 +111,7 @@ describe('TicketRedeemExtractor', () => {
     it<TestInterface>(`should return false when assets is empty`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleTicketRedeemBoxes[0],
         assets: [],
       });
@@ -128,7 +132,7 @@ describe('TicketRedeemExtractor', () => {
     it<TestInterface>(`should return false when R4 length is invalid`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleTicketRedeemBoxes[0],
         additionalRegisters: {
           ...sampleTicketRedeemBoxes[0].additionalRegisters,
@@ -152,7 +156,7 @@ describe('TicketRedeemExtractor', () => {
     it<TestInterface>(`should return false when the asset's licenseTokenId is invalid`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleTicketRedeemBoxes[0],
         assets: [
           {
@@ -183,7 +187,7 @@ describe('TicketRedeemExtractor', () => {
     it<TestInterface>(`should return false when R5 is missing`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleTicketRedeemBoxes[0],
         additionalRegisters: {
           R4: sampleTicketRedeemBoxes[0].additionalRegisters!.R4,

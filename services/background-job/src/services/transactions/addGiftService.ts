@@ -6,15 +6,10 @@ import { AddGiftTxBuilder } from '@ergo-raffle/transactions';
 import { configs } from '../../config';
 import { AddGiftParamsEntity } from '../../database/entities';
 import { findWinner } from '../../transactions/boxFinder';
-import {
-  signAndAddTx,
-  convertDbBoxesToErgoBoxes,
-  calculateBoxesAssetSum,
-} from '../../transactions/utils';
+import { signAndAddTx, calculateBoxesAssetSum } from '../../transactions/utils';
 import { OnSufficeCallback, Request } from '../../types';
 import { TxType } from '../../types/transaction';
 import { BoxLookupService } from '../boxLookup';
-import { DbService } from '../dbService';
 import { ScannerService } from '../scannerService';
 import { TxPotService } from '../txPotService';
 import { AbstractTxService } from './abstractTxService';
@@ -141,11 +136,8 @@ export class AddGiftService extends AbstractTxService {
       tokens: [], // We'll collect all tokens from the boxes
       onSuffice: this.addGiftCallbackGenerator(addGiftParams),
       getConfirmedBoxes: async () => {
-        return convertDbBoxesToErgoBoxes(
-          await DbService.getInstance().getDynamicBoxes(
-            addGiftParams.proxyAddress,
-          ),
-        );
+        // TODO: Implement a specified add gift proxy extractor to find the confirmed boxes
+        return [];
       },
     };
 

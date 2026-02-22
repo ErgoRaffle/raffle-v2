@@ -1,15 +1,15 @@
 import { ErgoAddress, Box } from '@fleet-sdk/core';
 import { SConstant, serializeBox } from '@fleet-sdk/serializer';
-import { AbstractInitializableErgoExtractor } from '@rosen-bridge/abstract-extractor';
+import { AbstractErgoBoxExtractor } from '@rosen-bridge/abstract-extractor';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { DataSource } from '@rosen-bridge/extended-typeorm';
-import { OutputBox, ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
+import { OutputBox } from '@rosen-bridge/scanner-interfaces';
 
 import { WinnerAction } from '../actions/winner';
 import { WinnerEntity } from '../entities';
-import { WinnerBoxInterface } from '../interfaces/types';
+import { ExtractorInitOptions, WinnerBoxInterface } from '../interfaces/types';
 
-export class WinnerExtractor extends AbstractInitializableErgoExtractor<
+export class WinnerExtractor extends AbstractErgoBoxExtractor<
   WinnerBoxInterface,
   WinnerEntity
 > {
@@ -20,15 +20,14 @@ export class WinnerExtractor extends AbstractInitializableErgoExtractor<
   constructor(
     dataSource: DataSource,
     id: string,
-    url: string,
-    type: ErgoNetworkType,
-    address: string,
+    initializeOptions: ExtractorInitOptions,
     logger?: AbstractLogger,
-    initialize = true,
   ) {
-    super(type, url, address, logger, initialize);
+    super({ active: true, ...initializeOptions }, logger);
     this.id = id;
-    this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
+    this.ergoTree = ErgoAddress.fromBase58(
+      initializeOptions.address,
+    ).ergoTree.toString();
     this.actions = new WinnerAction(dataSource, logger);
   }
 
@@ -42,7 +41,7 @@ export class WinnerExtractor extends AbstractInitializableErgoExtractor<
    * @param box
    * @return true if the box has the required data and false otherwise
    */
-  hasData = (box: OutputBox): boolean => {
+  hasBoxData = (box: OutputBox): boolean => {
     try {
       return (
         box.ergoTree == this.ergoTree &&
@@ -71,7 +70,7 @@ export class WinnerExtractor extends AbstractInitializableErgoExtractor<
       .data as bigint[];
     const index = SConstant.from(box.additionalRegisters!.R5!).data as number;
     const data = {
-      boxId: box.boxId.toString(),
+      identifier: box.boxId.toString(),
       txId: box.transactionId,
       raffleId: box.assets![0].tokenId,
       index: index,

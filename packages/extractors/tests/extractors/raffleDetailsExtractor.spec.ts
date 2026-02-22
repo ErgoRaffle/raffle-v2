@@ -24,13 +24,11 @@ describe('RaffleDetailsExtractor', () => {
     const boxErgoTree = compile('{sigmaProp(true);}');
     const boxFalseErgoTree = compile('{sigmaProp(false);}');
 
-    ctx.extractor = new RaffleDetailsExtractor(
-      dataSource,
-      'RaffleDetails',
-      'http://127.0.0.1/',
-      ErgoNetworkType.Node,
-      boxErgoTree.toAddress(Network.Testnet).toString(),
-    );
+    ctx.extractor = new RaffleDetailsExtractor(dataSource, 'RaffleDetails', {
+      type: ErgoNetworkType.Node,
+      url: 'http://127.0.0.1/',
+      address: boxErgoTree.toAddress(Network.Testnet).toString(),
+    });
     ctx.dataSource = dataSource;
     ctx.boxFalseErgoTree = boxFalseErgoTree;
   });
@@ -55,7 +53,7 @@ describe('RaffleDetailsExtractor', () => {
 
       expect(extractedData).toEqual(sampleRaffleDetailsExtractedData);
 
-      await extractor.actions.storeBoxes(
+      await extractor.actions.storeEntities(
         [extractedData!],
         { height: 1, hash: '0' },
         'RaffleDetails',
@@ -76,7 +74,7 @@ describe('RaffleDetailsExtractor', () => {
           ]).toHex(),
         },
       });
-      await extractor.actions.storeBoxes(
+      await extractor.actions.storeEntities(
         [extractedData!],
         { height: 1, hash: '0' },
         'RaffleDetails',
@@ -106,7 +104,7 @@ describe('RaffleDetailsExtractor', () => {
     it<TestInterface>(`should return true when the box data is valid`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData(
+      const extractedData = await extractor.hasBoxData(
         sampleRaffleDetailsBoxes[0],
       );
 
@@ -127,7 +125,7 @@ describe('RaffleDetailsExtractor', () => {
       extractor,
       boxFalseErgoTree,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleRaffleDetailsBoxes[0],
         ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
       });
@@ -148,7 +146,7 @@ describe('RaffleDetailsExtractor', () => {
     it<TestInterface>(`should return false when the length of R4 is less than 2`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleRaffleDetailsBoxes[0],
         additionalRegisters: {
           ...sampleRaffleDetailsBoxes[0].additionalRegisters,
@@ -172,7 +170,7 @@ describe('RaffleDetailsExtractor', () => {
     it<TestInterface>(`should return false when the assets array length is greater than 1`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleRaffleDetailsBoxes[0],
         assets: [
           {

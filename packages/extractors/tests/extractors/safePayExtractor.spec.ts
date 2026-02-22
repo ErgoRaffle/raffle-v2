@@ -33,9 +33,11 @@ describe('SafePayExtractor', () => {
     ctx.extractor = new SafePayExtractor(
       dataSource,
       'SafePay',
-      'http://127.0.0.1/',
-      ErgoNetworkType.Node,
-      safePayAddress,
+      {
+        type: ErgoNetworkType.Node,
+        url: 'http://127.0.0.1/',
+        address: safePayAddress,
+      },
       successRaffleAddress,
     );
     ctx.successRaffleErgoTree = successRaffleErgoTree;
@@ -176,7 +178,7 @@ describe('SafePayExtractor', () => {
     it<TestInterface>(`should return true for valid box data`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData(
+      const extractedData = await extractor.hasBoxData(
         safePayMocks.sampleSafePayTx.outputs[1],
       );
 
@@ -197,7 +199,7 @@ describe('SafePayExtractor', () => {
       extractor,
       boxErgoTree,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...safePayMocks.sampleSafePayTx.outputs[1],
         // set invalid ergoTree
         ergoTree: boxErgoTree,

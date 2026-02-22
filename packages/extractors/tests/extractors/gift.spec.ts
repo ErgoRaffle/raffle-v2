@@ -1,8 +1,8 @@
 import { compile } from '@fleet-sdk/compiler';
 import { ErgoTree, Network } from '@fleet-sdk/core';
+import { DummyLogger } from '@rosen-bridge/abstract-logger';
 import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
-import WinstonLogger from '@rosen-bridge/winston-logger';
 import { describe, it, expect, beforeEach } from 'vitest';
 
 import { GiftExtractor } from '../../lib/extractors/gift';
@@ -25,18 +25,15 @@ describe('GiftExtractor', () => {
     const boxErgoTree = compile('{sigmaProp(true);}');
     const boxFalseErgoTree = compile('{sigmaProp(false);}');
 
-    const winstonLogger = WinstonLogger.createLogger([
-      { type: 'console', level: 'debug' },
-    ]);
-    const logger = winstonLogger.child(import.meta.url);
-
     ctx.extractor = new GiftExtractor(
       dataSource,
       'Gift',
-      'http://127.0.0.1/',
-      ErgoNetworkType.Node,
-      boxErgoTree.toAddress(Network.Testnet).toString(),
-      logger,
+      {
+        type: ErgoNetworkType.Node,
+        url: 'http://127.0.0.1/',
+        address: boxErgoTree.toAddress(Network.Testnet).toString(),
+      },
+      new DummyLogger(),
     );
     ctx.dataSource = dataSource;
     ctx.boxFalseErgoTree = boxFalseErgoTree;
@@ -106,7 +103,7 @@ describe('GiftExtractor', () => {
     it<TestInterface>(`should return true with valid box data`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData(sampleGiftBoxes[0]);
+      const extractedData = await extractor.hasBoxData(sampleGiftBoxes[0]);
 
       expect(extractedData).toBeTruthy();
     });
@@ -125,7 +122,7 @@ describe('GiftExtractor', () => {
       extractor,
       boxFalseErgoTree,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleGiftBoxes[0],
         ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
       });
@@ -146,7 +143,7 @@ describe('GiftExtractor', () => {
     it<TestInterface>(`should return false with an empty R5 value`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleGiftBoxes[0],
         additionalRegisters: {
           ...sampleGiftBoxes[0].additionalRegisters,

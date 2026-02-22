@@ -1,4 +1,4 @@
-import { AbstractInitializableErgoExtractorAction } from '@rosen-bridge/abstract-extractor';
+import { AbstractErgoBoxAction } from '@rosen-bridge/abstract-extractor';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
@@ -7,7 +7,7 @@ import { pick } from 'lodash-es';
 import { WinnerEntity } from '../entities/winner';
 import { WinnerBoxInterface } from '../interfaces/types';
 
-export class WinnerAction extends AbstractInitializableErgoExtractorAction<
+export class WinnerAction extends AbstractErgoBoxAction<
   WinnerBoxInterface,
   WinnerEntity
 > {
@@ -28,7 +28,7 @@ export class WinnerAction extends AbstractInitializableErgoExtractorAction<
   ): Omit<WinnerEntity, 'id'>[] => {
     return boxes.map((box) => {
       return {
-        boxId: box.boxId,
+        identifier: box.identifier,
         block: block.hash,
         height: block.height,
         serialized: box.serialized,
@@ -48,7 +48,7 @@ export class WinnerAction extends AbstractInitializableErgoExtractorAction<
   convertEntityToData = (entities: WinnerEntity[]): WinnerBoxInterface[] => {
     return entities.map((data) =>
       pick(data, [
-        'boxId',
+        'identifier',
         'txId',
         'raffleId',
         'extractor',

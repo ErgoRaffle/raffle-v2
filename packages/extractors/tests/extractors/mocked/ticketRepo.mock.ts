@@ -27,7 +27,7 @@ export const sampleTicketRepo: OutputBox[] = [
 ];
 
 export const sampleTicketRepoExtractedData = {
-  boxId: sampleTicketRepo[0].boxId,
+  identifier: sampleTicketRepo[0].boxId,
   txId: sampleTicketRepo[0].transactionId,
   raffleId: 'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
   serialized:

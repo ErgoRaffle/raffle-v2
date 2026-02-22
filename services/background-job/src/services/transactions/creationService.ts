@@ -17,14 +17,10 @@ import {
 } from '../../constants';
 import { CreationParamsEntity } from '../../database/entities';
 import { findServiceBox } from '../../transactions/boxFinder';
-import {
-  signAndAddTx,
-  convertDbBoxesToErgoBoxes,
-} from '../../transactions/utils';
+import { signAndAddTx } from '../../transactions/utils';
 import { OnSufficeCallback, Request } from '../../types';
 import { TxType } from '../../types/transaction';
 import { BoxLookupService } from '../boxLookup';
-import { DbService } from '../dbService';
 import { ScannerService } from '../scannerService';
 import { TxPotService } from '../txPotService';
 import { AbstractTxService } from './abstractTxService';
@@ -224,11 +220,8 @@ export class CreationService extends AbstractTxService {
         : [],
       onSuffice: this.creationCallbackGenerator(raffleParams),
       getConfirmedBoxes: async () => {
-        return convertDbBoxesToErgoBoxes(
-          await DbService.getInstance().getDynamicBoxes(
-            raffleParams.proxyAddress,
-          ),
-        );
+        // TODO: Implement a specified creation proxy extractor to find the confirmed boxes
+        return [];
       },
     };
     // Register the request with the box lookup service
