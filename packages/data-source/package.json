@@ -1,0 +1,35 @@
+{
+  "name": "@ergo-raffle/data-source",
+  "version": "0.0.0",
+  "description": "Implements the shared data-source",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rosen-bridge/data-source.git"
+  },
+  "license": "MIT",
+  "author": "ErgoRaffle Team",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsc --build tsconfig.build.json",
+    "clean": "rimraf dist && rimraf tsconfig.build.tsbuildinfo",
+    "lint": "eslint --fix . && npm run prettify",
+    "lint:check": "eslint . && npm run prettify:check",
+    "prettify": "prettier --write . --ignore-path ../../.gitignore",
+    "prettify:check": "prettier --check . --ignore-path ../../.gitignore",
+    "release": "npm run clean && npm run build && npm publish --access public",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@rosen-bridge/extended-typeorm": "^1.0.1"
+  },
+  "engines": {
+    "node": ">=22.18.0",
+    "npm": "11.6.2"
+  }
+}
