@@ -1,5 +1,5 @@
 import { raffleInfo } from '@ergo-raffle/contracts';
-import { Network, TokenAmount } from '@fleet-sdk/core';
+import { Network, OutputBuilder, TokenAmount } from '@fleet-sdk/core';
 
 import { AddGiftProxyParams, ProxyGenerationResult } from '../types';
 import { hashAndSerializeToBase64, hexToBase64 } from '../utils';
@@ -13,7 +13,7 @@ export class AddGiftProxyGenerator extends BaseProxyGenerator<AddGiftProxyParams
   protected scriptName = 'addGiftProxy';
 
   constructor(networkType: Network = Network.Mainnet) {
-    super(networkType);
+    super(networkType, 'addGiftProxy');
   }
   /**
    * Generate proxy for add gift transaction
@@ -82,6 +82,21 @@ export class AddGiftProxyGenerator extends BaseProxyGenerator<AddGiftProxyParams
       filledScript = filledScript.replace(key, value);
     }
     return filledScript;
+  };
+
+  /**
+   * Fill box registers with contract parameters
+   * @param outputBuilder - OutputBuilder instance
+   * @param params - Contract parameters
+   * @returns Updated OutputBuilder
+   */
+  protected fillRegisters = (
+    outputBuilder: OutputBuilder,
+    params: AddGiftProxyParams,
+  ): OutputBuilder => {
+    // in case to ignore eslint error, must be removed later
+    console.log('Filling registers for add gift proxy with params:', params);
+    return outputBuilder;
   };
 
   /**

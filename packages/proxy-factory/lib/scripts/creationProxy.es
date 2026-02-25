@@ -14,28 +14,38 @@
   //      [Proxy] --> [UserAddress]
   // 
 
-  // Contract parameters (to be filled by generator)
+  // Contract parameters (to be filled from INPUTS(0) registers)
+  // Correct SELF format
+  // R4: Coll[Long] = [expirationHeight, winnersPercent, ticketPrice, goal, raffleDeadline, txFee, isErgGoal( 0 or 1 )]
+  // R5: Coll[Coll[Byte]] = [serviceNft, raffleLicense, implementorErgoTreeHash, creatorErgoTreeHash, winnersPercentListHash, collectingTokenId (empty if ERG goal)]
+  // R6: Coll[Coll[Byte]] = [name, description, Pictures(optional)]
+  // R7: Int = winnerCount
+
   // Setup parameters
-  val serviceNft = fromBase64("SERVICE_NFT_B64")
-  val raffleLicense = fromBase64("RAFFLE_LICENSE_B64")
-  val expirationHeight = EXPIRATION_HEIGHT
-  
+  val serviceNft = SELF.R5[Coll[Coll[Byte]]].get(0)
+  val raffleLicense = SELF.R5[Coll[Coll[Byte]]].get(1)
+  val expirationHeight = SELF.R4[Coll[Long]].get(0)
+
   // User parameters
-  val name = fromBase64("NAME_B64")
-  val description = fromBase64("DESCRIPTION_B64")
+  val winnersPercent = SELF.R4[Coll[Long]].get(1)
+  val ticketPrice = SELF.R4[Coll[Long]].get(2)
+  val goal = SELF.R4[Coll[Long]].get(3)
+  val raffleDeadline = SELF.R4[Coll[Long]].get(4)
+  val txFee = SELF.R4[Coll[Long]].get(5)
+  val isErgGoal = SELF.R4[Coll[Long]].get(6) == 1
+
+  val implementorErgoTreeHash = SELF.R5[Coll[Coll[Byte]]].get(2)
+  val creatorErgoTreeHash = SELF.R5[Coll[Coll[Byte]]].get(3)
+  val winnersPercentListHash = SELF.R5[Coll[Coll[Byte]]].get(4)
+  val collectingTokenId = SELF.R5[Coll[Coll[Byte]]].get(5)
+
+  val name = SELF.R6[Coll[Coll[Byte]]].get(0)
+  val description = SELF.R6[Coll[Coll[Byte]]].get(1)
   // TODO: Fix pictures serialization and constraints
-  // val pictures = fromBase64("PICTURES_B64")
-  val ticketPrice = TICKET_PRICE
-  val goal = GOAL
-  val raffleDeadline = DEADLINE
-  val winnerCount = WINNER_COUNT
-  val winnersPercent = WINNERS_PERCENT
-  val txFee = TX_FEE
-  val creatorErgoTreeHash = fromBase64("CREATOR_ERGO_TREE_HASH_B64")
-  val implementorErgoTreeHash = fromBase64("IMPLEMENTOR_ERGO_TREE_HASH_B64")
-  val winnersPercentListHash = fromBase64("WINNERS_PERCENT_LIST_HASH_B64")
-  val isErgGoal = IS_ERG_GOAL
-  val collectingTokenId = fromBase64("COLLECTING_TOKEN_ID_B64") // Optional
+  // val pictures = SELF.R6[Coll[Coll[Byte]]].get(2)
+
+  val winnerCount = SELF.R7[Int].get
+
 
   if(HEIGHT < expirationHeight && HEIGHT < raffleDeadline) {  
     // New raffle creation

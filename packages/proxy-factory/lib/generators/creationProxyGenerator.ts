@@ -1,5 +1,13 @@
 import { raffleInfo } from '@ergo-raffle/contracts';
-import { Network, TokenAmount } from '@fleet-sdk/core';
+import {
+  Network,
+  OutputBuilder,
+  SByte,
+  SColl,
+  SInt,
+  SLong,
+  TokenAmount,
+} from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
 
 import { CreationProxyParams } from '../types';
@@ -14,7 +22,7 @@ export class CreationProxyGenerator extends BaseProxyGenerator<CreationProxyPara
   protected scriptName = 'creationProxy';
 
   constructor(networkType: Network = Network.Mainnet) {
-    super(networkType);
+    super(networkType, 'creationProxy');
   }
 
   /**
@@ -136,6 +144,82 @@ export class CreationProxyGenerator extends BaseProxyGenerator<CreationProxyPara
     }
 
     return filledScript;
+  };
+
+  /**
+   * Fill output registers with contract parameters
+   * @param outputBuilder - OutputBuilder instance
+   * @param params - Contract parameters
+   * @returns Updated OutputBuilder
+   */
+  protected fillRegisters = (
+    outputBuilder: OutputBuilder,
+    params: CreationProxyParams,
+  ): OutputBuilder => {
+    /**
+     * Correct output registers with contract parameters
+     * R4: SColl(SLong, [expirationHeight, winnersPercent, ticketPrice, goal, raffleDeadline, txFee, isErgGoal])
+     * R5: SColl(SColl(SByte), [serviceNft, raffleLicense, implementorErgoTreeHash, creatorErgoTreeHash, winnersPercentListHash, collectingTokenId])
+     * R6: SColl(SColl(SByte), [name, description, pictures])
+     * R7: SInt(winnerCount)
+     */
+
+    let isErgGoal: number;
+    let collectingTokenId: string;
+
+    if (params.collectingTokenId) {
+      collectingTokenId = params.collectingTokenId;
+      isErgGoal = 0;
+    } else {
+      collectingTokenId = hexToBase64('0'.repeat(64));
+      isErgGoal = 1;
+    }
+
+    const winnersPercentListHash = Buffer.from(
+      blake2b256(
+        Buffer.concat(
+          params.winnersPercentList.map((n) => bigIntToUint8Array(n)),
+        ),
+      ),
+    ).toString('base64');
+
+    // TODO: Fix pictures serialization and constraints
+    // if (params.pictures) {
+    //   const pictures = params.pictures.map((picture) =>
+    //     Buffer.from(stringToBase64(picture)),
+    //   );
+    //   const x = SColl(SColl(SByte), [
+    //     ...pictures.map((picture) => Array.from(picture)),
+    //   ]).toHex();
+    // }
+
+    outputBuilder.setAdditionalRegisters({
+      R4: SColl(SLong, [
+        BigInt(params.expirationHeight),
+        BigInt(params.winnersPercent),
+        BigInt(params.ticketPrice),
+        BigInt(params.goal),
+        BigInt(params.raffleDeadline),
+        BigInt(params.txFee),
+        BigInt(isErgGoal),
+      ]).toHex(),
+      R5: SColl(SColl(SByte), [
+        Array.from(Uint8Array.from(raffleInfo.tokens.serviceNft)),
+        Array.from(Uint8Array.from(raffleInfo.tokens.raffleLicense)),
+        Array.from(Uint8Array.from(params.implementorErgoTreeHash)),
+        Array.from(Uint8Array.from(params.creatorErgoTreeHash)),
+        Array.from(Uint8Array.from(winnersPercentListHash)),
+        Array.from(Uint8Array.from(collectingTokenId)),
+      ]).toHex(),
+      R6: SColl(SColl(SByte), [
+        Array.from(Buffer.from(params.name)),
+        Array.from(Buffer.from(params.description)),
+        //x,
+      ]).toHex(),
+      R7: SInt(params.winnerCount).toHex(),
+    });
+
+    return outputBuilder;
   };
 
   /**

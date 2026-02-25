@@ -1,5 +1,10 @@
 import { compile } from '@fleet-sdk/compiler';
-import { Network, TokenAmount } from '@fleet-sdk/core';
+import {
+  ErgoAddress,
+  Network,
+  OutputBuilder,
+  TokenAmount,
+} from '@fleet-sdk/core';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
@@ -15,10 +20,15 @@ export abstract class BaseProxyGenerator<
   protected readonly networkType: Network;
   protected readonly scriptsDir: string;
   protected abstract scriptName: string;
+  protected readonly scriptAddress: string;
 
-  constructor(networkType: Network = Network.Mainnet) {
+  constructor(networkType: Network = Network.Mainnet, scriptName: string) {
     this.networkType = networkType;
     this.scriptsDir = join(__dirname, '../scripts');
+    const contractScript = this.loadScript(scriptName);
+    this.scriptAddress = compile(contractScript, {})
+      .toAddress(this.networkType)
+      .toString();
   }
 
   /**
@@ -55,6 +65,38 @@ export abstract class BaseProxyGenerator<
       requiredTokens: this.calculateRequiredTokens(params),
     };
   };
+
+  /**
+   * Generate proxy box for the transaction
+   * @param params - Parameters to fill in the contract
+   * @returns OutputBuilder instance
+   */
+  generateProxyBox = (params: ErgoScriptParams): OutputBuilder => {
+    this.validateParams(params);
+
+    const requiredNanoErgs = this.calculateRequiredNanoErgs(params);
+    const requiredTokens = this.calculateRequiredTokens(params);
+
+    let outputBuilder = new OutputBuilder(
+      requiredNanoErgs,
+      ErgoAddress.fromBase58(this.scriptAddress),
+    ).addTokens(requiredTokens);
+
+    outputBuilder = this.fillRegisters(outputBuilder, params);
+
+    return outputBuilder;
+  };
+
+  /**
+   * Fill box registers with contract parameters
+   * @param outputBuilder - OutputBuilder instance
+   * @param params - Contract parameters
+   * @returns Updated OutputBuilder
+   */
+  protected abstract fillRegisters: (
+    outputBuilder: OutputBuilder,
+    params: ErgoScriptParams,
+  ) => OutputBuilder;
 
   /**
    * Fill contract parameters into ErgoScript template
