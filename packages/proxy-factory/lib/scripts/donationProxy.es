@@ -3,6 +3,20 @@
   //
   // Tokens:
   //   0: RequiredToken (optional)
+  //
+  // SELF Registers:
+  //   R4: Coll[Long] = [
+  //         expirationHeight,
+  //         raffleDeadline,
+  //         ticketCount,
+  //         txFee
+  //       ]
+  //
+  //   R5: Coll[Coll[Byte]] = [
+  //         raffleId,
+  //         donatorErgoTreeHash
+  //       ]
+  //
   // Context:
   //   C0: Coll[Long]: [TicketCount, RequiredTokenCount]
   //   C1: Coll[Coll[Byte]]: [RaffleId, DonatorAddress]
@@ -13,16 +27,19 @@
   //   - Proxy redeem
   //      [Proxy] --> [DonatorAddress]
 
-  // Contract parameters (to be filled by generator)
-  // User parameters
-  val ticketCount = TICKET_COUNT
+  // Setup parameters
   val raffleLicense = fromBase64("RAFFLE_LICENSE_B64")
-  val raffleId = fromBase64("RAFFLE_ID_B64")
-  val donatorErgoTreeHash = fromBase64("DONATOR_ERGO_TREE_HASH_B64")
   val ticketScriptHash = fromBase64("TICKET_SCRIPT_HASH_B64")
-  val raffleDeadline = DEADLINE
-  val txFee = TX_FEE
-  val expirationHeight = EXPIRATION_HEIGHT
+
+  // User parameters
+  val expirationHeight = SELF.R4[Coll[Long]].get(0)
+  val raffleDeadline = SELF.R4[Coll[Long]].get(1)
+  val ticketCount = SELF.R4[Coll[Long]].get(2)
+  val txFee = SELF.R4[Coll[Long]].get(3)
+
+  val raffleId = SELF.R5[Coll[Coll[Byte]]].get(0)
+  val donatorErgoTreeHash = SELF.R5[Coll[Coll[Byte]]].get(1)
+
 
   if(HEIGHT < expirationHeight && HEIGHT < raffleDeadline) {
     // Donation
@@ -32,14 +49,14 @@
     sigmaProp(allOf(Coll(
       // Correct active raffle format
       activeRaffle.tokens(0)._1 == raffleLicense,
-      activeRaffle.tokens(1)._1 == raffleId,
+      activeRaffle.tokens(1)._1 == raffleId, 
 
       // Correct ticket format
       // R4: [DonatorErgoTreeHash]
-      ticket.tokens(0)._1 == raffleId,
+      ticket.tokens(0)._1 == raffleId, 
       ticket.tokens(0)._2 == ticketCount,
       blake2b256(ticket.propositionBytes) == ticketScriptHash,
-      ticket.R4[Coll[Byte]].get == donatorErgoTreeHash,
+      ticket.R4[Coll[Byte]].get == donatorErgoTreeHash,  
     )))
   } else {
     // Proxy redeem

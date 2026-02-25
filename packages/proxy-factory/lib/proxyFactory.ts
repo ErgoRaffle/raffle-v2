@@ -16,8 +16,8 @@ export class ProxyFactory {
 
   constructor(networkType: Network = Network.Mainnet) {
     this.creationGenerator = new CreationProxyGenerator(networkType);
-    //this.donationGenerator = new DonationProxyGenerator(networkType);
-    //this.addGiftGenerator = new AddGiftProxyGenerator(networkType);
+    this.donationGenerator = new DonationProxyGenerator(networkType);
+    this.addGiftGenerator = new AddGiftProxyGenerator(networkType);
   }
 
   static init = (networkType: Network = Network.Mainnet): void => {

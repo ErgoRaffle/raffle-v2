@@ -3,7 +3,6 @@ import { DonateTxBuilder } from '@ergo-raffle/transactions';
 import { Amount, Network } from '@fleet-sdk/common';
 import {
   ErgoUnsignedInput,
-  ErgoAddress,
   Box,
   TransactionBuilder,
   OutputBuilder,
@@ -12,8 +11,7 @@ import { blake2b256 } from '@fleet-sdk/crypto';
 import { KeyedMockChainParty, mockUTxO } from '@fleet-sdk/mock-chain';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-import { ProxyFactory } from '../lib/proxyFactory';
-import { DonationProxyParams, ProxyGenerationResult } from '../lib/types';
+import { DonationProxyParams, ProxyFactory } from '../lib';
 import { createMockUtxo, CustomMockChain } from './testUtils';
 
 describe('DonationProxy', () => {
@@ -25,7 +23,6 @@ describe('DonationProxy', () => {
   let activeRaffleBuilder: ActiveRaffleBuilder;
   let activeRaffleBox: Box<Amount>;
   let proxyParams: DonationProxyParams;
-  let proxyResult: ProxyGenerationResult;
   let raffleId: string;
 
   beforeAll(() => {
@@ -56,15 +53,19 @@ describe('DonationProxy', () => {
       txFee: 1_000_000n,
     };
 
-    proxyResult = proxyGenerator.generateProxy(proxyParams);
-
     // Create donation proxy input box
+    const proxyOutput = proxyGenerator
+      .generateProxyBox(proxyParams)
+      .setCreationHeight(5)
+      .build();
+
     proxyBox = new ErgoUnsignedInput(
       mockUTxO({
-        ergoTree: ErgoAddress.fromBase58(proxyResult.proxyAddress).ergoTree,
-        value: proxyResult.requiredNanoErgs,
-        creationHeight: 5,
-        assets: [],
+        ergoTree: proxyOutput.ergoTree,
+        value: proxyOutput.value,
+        creationHeight: proxyOutput.creationHeight,
+        assets: proxyOutput.assets,
+        additionalRegisters: proxyOutput.additionalRegisters,
       }),
     );
 
@@ -137,20 +138,24 @@ describe('DonationProxy', () => {
      */
     it('should create a token-goal donation via donation proxy successfully', () => {
       const collectingTokenId = '0'.repeat(64);
-      const proxyResult = new ProxyFactory(Network.Mainnet)
-        .getDonationGenerator()
-        .generateProxy({
-          ...proxyParams,
-          requiredTokenId: collectingTokenId,
-        });
 
       // Create donation proxy input box including collecting token
+      const proxyOutput = new ProxyFactory(Network.Mainnet)
+        .getDonationGenerator()
+        .generateProxyBox({
+          ...proxyParams,
+          requiredTokenId: collectingTokenId,
+        })
+        .setCreationHeight(5)
+        .build();
+
       const proxyBox = new ErgoUnsignedInput(
         mockUTxO({
-          ergoTree: ErgoAddress.fromBase58(proxyResult.proxyAddress).ergoTree,
-          value: proxyResult.requiredNanoErgs,
-          creationHeight: 5,
-          assets: proxyResult.requiredTokens,
+          ergoTree: proxyOutput.ergoTree,
+          value: proxyOutput.value,
+          creationHeight: proxyOutput.creationHeight,
+          assets: proxyOutput.assets,
+          additionalRegisters: proxyOutput.additionalRegisters,
         }),
       );
 
@@ -355,16 +360,21 @@ describe('DonationProxy', () => {
 
       // Create donation proxy input box including collecting token
       proxyParams.requiredTokenId = '0'.repeat(64);
-      proxyResult = new ProxyFactory(Network.Mainnet)
+
+      // Create donation proxy input box
+      const proxyOutput = new ProxyFactory(Network.Mainnet)
         .getDonationGenerator()
-        .generateProxy(proxyParams);
+        .generateProxyBox(proxyParams)
+        .setCreationHeight(5)
+        .build();
 
       proxyBox = new ErgoUnsignedInput(
         mockUTxO({
-          ergoTree: ErgoAddress.fromBase58(proxyResult.proxyAddress).ergoTree,
+          ergoTree: proxyOutput.ergoTree,
           value: 100000000000n,
-          creationHeight: 5,
-          assets: proxyResult.requiredTokens,
+          creationHeight: proxyOutput.creationHeight,
+          assets: proxyOutput.assets,
+          additionalRegisters: proxyOutput.additionalRegisters,
         }),
       );
 

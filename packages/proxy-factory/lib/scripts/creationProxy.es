@@ -3,6 +3,33 @@
   //
   // Tokens:
   //   0: CollectingToken (optional)
+  //
+  // SELF Registers:
+  //   R4: Coll[Long] = [
+  //         expirationHeight,
+  //         raffleDeadline,
+  //         winnersPercent,
+  //         ticketPrice,
+  //         goal,
+  //         txFee,
+  //         isErgGoal (0 or 1)
+  //       ]
+  //
+  //   R5: Coll[Coll[Byte]] = [
+  //         implementorErgoTreeHash,
+  //         creatorErgoTreeHash,
+  //         winnersPercentListHash,
+  //         collectingTokenId (empty if ERG goal)
+  //       ]
+  //
+  //   R6: Coll[Coll[Byte]] = [
+  //         name,
+  //         description,
+  //         pictures (optional, from index 2 onward)
+  //       ]
+  //
+  //   R7: Int = winnerCount
+  //
   // Context:
   //   C0: Coll[Long]: WinnersPercentList (in raffle creation tx)
   //   C1: Coll[Coll[Byte]]: [ImplementerErgoTree, CreatorErgoTree]
@@ -12,37 +39,28 @@
   //      [Service, Proxy] --> [Service, TicketRepo, InactiveRaffle, Change]
   //   - Proxy redeem
   //      [Proxy] --> [UserAddress]
-  // 
-
-  // Contract parameters (to be filled from INPUTS(0) registers)
-  // Correct SELF format
-  // R4: Coll[Long] = [expirationHeight, winnersPercent, ticketPrice, goal, raffleDeadline, txFee, isErgGoal( 0 or 1 )]
-  // R5: Coll[Coll[Byte]] = [serviceNft, raffleLicense, implementorErgoTreeHash, creatorErgoTreeHash, winnersPercentListHash, collectingTokenId (empty if ERG goal)]
-  // R6: Coll[Coll[Byte]] = [name, description, Pictures(optional)]
-  // R7: Int = winnerCount
 
   // Setup parameters
-  val serviceNft = SELF.R5[Coll[Coll[Byte]]].get(0)
-  val raffleLicense = SELF.R5[Coll[Coll[Byte]]].get(1)
+  val serviceNft = fromBase64("SERVICE_NFT_B64")
+  val raffleLicense = fromBase64("RAFFLE_LICENSE_B64")
   val expirationHeight = SELF.R4[Coll[Long]].get(0)
 
   // User parameters
-  val winnersPercent = SELF.R4[Coll[Long]].get(1)
-  val ticketPrice = SELF.R4[Coll[Long]].get(2)
-  val goal = SELF.R4[Coll[Long]].get(3)
-  val raffleDeadline = SELF.R4[Coll[Long]].get(4)
+  val raffleDeadline = SELF.R4[Coll[Long]].get(1)
+  val winnersPercent = SELF.R4[Coll[Long]].get(2)
+  val ticketPrice = SELF.R4[Coll[Long]].get(3)
+  val goal = SELF.R4[Coll[Long]].get(4)
   val txFee = SELF.R4[Coll[Long]].get(5)
   val isErgGoal = SELF.R4[Coll[Long]].get(6) == 1
 
-  val implementorErgoTreeHash = SELF.R5[Coll[Coll[Byte]]].get(2)
-  val creatorErgoTreeHash = SELF.R5[Coll[Coll[Byte]]].get(3)
-  val winnersPercentListHash = SELF.R5[Coll[Coll[Byte]]].get(4)
-  val collectingTokenId = SELF.R5[Coll[Coll[Byte]]].get(5)
+  val implementorErgoTreeHash = SELF.R5[Coll[Coll[Byte]]].get(0)
+  val creatorErgoTreeHash = SELF.R5[Coll[Coll[Byte]]].get(1)
+  val winnersPercentListHash = SELF.R5[Coll[Coll[Byte]]].get(2)
+  val collectingTokenId = SELF.R5[Coll[Coll[Byte]]].get(3)
 
   val name = SELF.R6[Coll[Coll[Byte]]].get(0)
   val description = SELF.R6[Coll[Coll[Byte]]].get(1)
-  // TODO: Fix pictures serialization and constraints
-  // val pictures = SELF.R6[Coll[Coll[Byte]]].get(2)
+  val pictures = SELF.R6[Coll[Coll[Byte]]].get.slice(2, SELF.R6[Coll[Coll[Byte]]].get.size) 
 
   val winnerCount = SELF.R7[Int].get
 
@@ -72,8 +90,7 @@
       inactiveRaffle.R5[Coll[Coll[Byte]]].get(2) == creatorErgoTreeHash,
       inactiveRaffle.R6[Coll[Coll[Byte]]].get(0) == name,
       inactiveRaffle.R6[Coll[Coll[Byte]]].get(1) == description,
-      // TODO: Fix pictures serialization and constraints
-      // inactiveRaffle.R6[Coll[Coll[Byte]]].get.slice(2, inactiveRaffle.R6[Coll[Coll[Byte]]].get.size) == pictures,
+      inactiveRaffle.R6[Coll[Coll[Byte]]].get.slice(2, inactiveRaffle.R6[Coll[Coll[Byte]]].get.size) == pictures,
       inactiveRaffle.R7[Coll[Coll[Byte]]].get(1) == winnersPercentListHash,
       inactiveRaffle.R8[Int].get == winnerCount,
       if(!isErgGoal){

@@ -1,5 +1,12 @@
 import { raffleInfo } from '@ergo-raffle/contracts';
-import { Network, OutputBuilder, TokenAmount } from '@fleet-sdk/core';
+import {
+  Network,
+  OutputBuilder,
+  SByte,
+  SColl,
+  SLong,
+  TokenAmount,
+} from '@fleet-sdk/core';
 
 import { DonationProxyParams } from '../types';
 import { hashAndSerializeToBase64, hexToBase64 } from '../utils';
@@ -13,7 +20,8 @@ export class DonationProxyGenerator extends BaseProxyGenerator<DonationProxyPara
   protected scriptName = 'donationProxy';
 
   constructor(networkType: Network = Network.Mainnet) {
-    super(networkType, 'donationProxy');
+    super(networkType);
+    this.scriptAddress = this.buildScriptAddress(this.scriptName);
   }
 
   /**
@@ -47,31 +55,18 @@ export class DonationProxyGenerator extends BaseProxyGenerator<DonationProxyPara
    * @param params - Parameters to fill
    * @returns Filled ErgoScript
    */
-  protected fillContractParameters = (
-    script: string,
-    params: DonationProxyParams,
-  ): string => {
+  protected fillContractParameters = (script: string): string => {
     const scriptParameters: Map<string, string> = new Map();
-    scriptParameters.set(
-      'EXPIRATION_HEIGHT',
-      params.expirationHeight.toString(),
-    );
-    scriptParameters.set('TICKET_COUNT', params.ticketCount.toString());
-    scriptParameters.set('DEADLINE', params.raffleDeadline.toString());
-    scriptParameters.set('RAFFLE_ID_B64', hexToBase64(params.raffleId));
     scriptParameters.set(
       'RAFFLE_LICENSE_B64',
       hexToBase64(raffleInfo.tokens.raffleLicense),
     );
-    scriptParameters.set(
-      'DONATOR_ERGO_TREE_HASH_B64',
-      hexToBase64(params.donatorErgoTreeHash),
-    );
+
     scriptParameters.set(
       'TICKET_SCRIPT_HASH_B64',
       hashAndSerializeToBase64(raffleInfo.addresses.ticket),
     );
-    scriptParameters.set('TX_FEE', params.txFee.toString());
+
     // Setup parameter replacements from scriptParameters
     let filledScript = script;
     for (const [key, value] of scriptParameters) {
@@ -91,8 +86,19 @@ export class DonationProxyGenerator extends BaseProxyGenerator<DonationProxyPara
     outputBuilder: OutputBuilder,
     params: DonationProxyParams,
   ): OutputBuilder => {
-    // in case to ignore eslint error, must be removed later
-    console.log('Filling registers for donation proxy with params:', params);
+    outputBuilder.setAdditionalRegisters({
+      R4: SColl(SLong, [
+        BigInt(params.expirationHeight),
+        BigInt(params.raffleDeadline),
+        BigInt(params.ticketCount),
+        BigInt(params.txFee),
+      ]).toHex(),
+      R5: SColl(SColl(SByte), [
+        Array.from(Buffer.from(params.raffleId, 'hex')),
+        Array.from(Buffer.from(params.donatorErgoTreeHash, 'hex')),
+      ]).toHex(),
+    });
+
     return outputBuilder;
   };
 

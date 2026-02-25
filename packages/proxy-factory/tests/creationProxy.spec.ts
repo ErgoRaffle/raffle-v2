@@ -4,7 +4,6 @@ import { CreationTxBuilder } from '@ergo-raffle/transactions';
 import { Amount, Network } from '@fleet-sdk/common';
 import {
   ErgoUnsignedInput,
-  ErgoAddress,
   Box,
   TransactionBuilder,
   OutputBuilder,
@@ -14,8 +13,7 @@ import { KeyedMockChainParty, mockUTxO } from '@fleet-sdk/mock-chain';
 import { Buffer } from 'buffer';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-import { ProxyFactory } from '../lib/proxyFactory';
-import { CreationProxyParams } from '../lib/types';
+import { CreationProxyParams, ProxyFactory } from '../lib';
 import { createMockUtxo, CustomMockChain } from './testUtils';
 
 describe('CreationProxy', () => {
@@ -154,19 +152,23 @@ describe('CreationProxy', () => {
        */
       it('should create a token-goal raffle via creation proxy successfully', () => {
         proxyParams.collectingTokenId = '0'.repeat(64);
-        const proxyResult = new ProxyFactory(Network.Mainnet)
-          .getCreationGenerator()
-          .generateProxy(proxyParams);
 
         // Create creation proxy input box including collecting token
+        const proxyOutput = proxyGenerator
+          .generateProxyBox(proxyParams)
+          .setCreationHeight(5)
+          .build();
+
         const proxyBox = new ErgoUnsignedInput(
           mockUTxO({
-            ergoTree: ErgoAddress.fromBase58(proxyResult.proxyAddress).ergoTree,
+            ergoTree: proxyOutput.ergoTree,
             value: 100000000000n,
-            creationHeight: 5,
-            assets: proxyResult.requiredTokens || [],
+            creationHeight: proxyOutput.creationHeight,
+            assets: proxyOutput.assets || [],
+            additionalRegisters: proxyOutput.additionalRegisters,
           }),
         );
+
         createRaffleBuilder.setCollectingTokenId(proxyParams.collectingTokenId);
 
         // Execute transaction
