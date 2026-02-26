@@ -33,7 +33,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@ergo-raffle/box-lookup": "0.0.0",
+    "@ergo-raffle/box-lookup": "0.1.0",
     "@ergo-raffle/boxes": "0.0.0",
     "@ergo-raffle/contracts": "0.0.0",
     "@ergo-raffle/extractors": "0.0.0",
