@@ -1,9 +1,9 @@
-import { DataSource } from '@rosen-bridge/extended-typeorm';
 import {
   BlockEntity,
   ExtractorStatusEntity,
   migrations as scannerMigrations,
-} from '@rosen-bridge/scanner';
+} from '@rosen-bridge/abstract-scanner';
+import { DataSource } from '@rosen-bridge/extended-typeorm';
 import {
   TransactionEntity,
   migrations as txpotMigrations,

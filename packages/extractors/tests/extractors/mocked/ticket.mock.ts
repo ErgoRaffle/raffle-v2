@@ -27,7 +27,7 @@ export const sampleTicketBoxes: OutputBox[] = [
 ];
 
 export const sampleTicketExtractedData = {
-  boxId: sampleTicketBoxes[0].boxId,
+  identifier: sampleTicketBoxes[0].boxId,
   txId: sampleTicketBoxes[0].transactionId,
   rangeStart: 0n,
   rangeEnd: 100n,

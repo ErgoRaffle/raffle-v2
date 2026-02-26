@@ -1,20 +1,21 @@
+import { AbstractEntityData } from '@rosen-bridge/abstract-extractor';
+import { InitializeOptions } from '@rosen-bridge/abstract-extractor';
+
 import { RaffleBoxType } from '../entities/raffleBoxEntity';
 
-export { SpendInfo } from '@rosen-bridge/abstract-extractor';
-
-export interface ExtractedBox {
-  boxId: string;
+export interface AbstractRaffleBoxInterface extends AbstractEntityData {
   txId: string;
-  serialized: string;
+  raffleId: string;
 }
 
-export interface ServiceBoxInterface extends ExtractedBox {
+export interface ServiceBoxInterface extends AbstractEntityData {
+  txId: string;
   serviceFeePercent: number;
   implementerFeePercent: number;
   creationFee: bigint;
 }
 
-export interface InactiveRaffleBoxInterface extends ExtractedBox {
+export interface InactiveRaffleBoxInterface extends AbstractRaffleBoxInterface {
   serviceErgoTree: string;
   implementorErgoTree: string;
   creatorErgoTree: string;
@@ -26,21 +27,19 @@ export interface InactiveRaffleBoxInterface extends ExtractedBox {
   deadline: number;
   winnersPercentList: string;
   txFee: bigint;
-  raffleId: string;
   collectingTokenId?: string;
 }
 
-export interface RaffleBoxInterface extends ExtractedBox {
-  raffleId: string;
+export interface RaffleBoxInterface extends AbstractRaffleBoxInterface {
   type: RaffleBoxType;
 }
 
-export interface DynamicBoxInterface extends ExtractedBox {
+export interface DynamicBoxInterface extends AbstractEntityData {
+  txId: string;
   address: string;
 }
 
-export interface WinnerBoxInterface extends ExtractedBox {
-  raffleId: string;
+export interface WinnerBoxInterface extends AbstractRaffleBoxInterface {
   index: number;
   rewardPercent: number;
 }
@@ -51,52 +50,51 @@ export interface PictureInterface {
   content: string;
 }
 
-export interface RaffleDetailsBoxInterface extends ExtractedBox {
+export interface RaffleDetailsBoxInterface extends AbstractRaffleBoxInterface {
   id?: number;
-  raffleId: string;
   name: string;
   description: string;
   pictures?: PictureInterface[];
 }
 
-export interface GiftBoxInterface extends ExtractedBox {
-  raffleId: string;
+export interface GiftBoxInterface extends AbstractRaffleBoxInterface {
   donatorErgoTree: string;
   winnerIndex: number;
 }
 
-export interface TicketBoxInterface extends ExtractedBox {
-  raffleId: string;
+export interface TicketBoxInterface extends AbstractRaffleBoxInterface {
   donatorErgoTree: string;
   rangeStart: bigint;
   rangeEnd: bigint;
 }
 
-export interface WinnerPrizeBoxInterface extends ExtractedBox {
-  raffleId: string;
+export interface WinnerPrizeBoxInterface extends AbstractRaffleBoxInterface {
   winnerTicketIndex: number;
   giftCount: number;
   winnerIndex: number;
   unwrappedGiftCount: number;
 }
 
-export interface GiftRedeemBoxInterface extends ExtractedBox {
-  raffleId: string;
+export interface GiftRedeemBoxInterface extends AbstractRaffleBoxInterface {
   step: number;
 }
 
-export interface SuccessRaffleBoxInterface extends ExtractedBox {
-  raffleId: string;
+export interface SuccessRaffleBoxInterface extends AbstractRaffleBoxInterface {
   selectedWinnersList: string;
   step: number;
 }
 
-export interface TicketRedeemBoxInterface extends ExtractedBox {
-  raffleId: string;
+export interface TicketRedeemBoxInterface extends AbstractRaffleBoxInterface {
   totalSoldTicket: bigint;
   redeemedTickets: bigint;
 }
 
-export interface SafePayBoxInterface extends ExtractedBox {
+export interface SafePayBoxInterface extends AbstractEntityData {
+  txId: string;
   recipient: string;
 }
+
+/** InitializeOptions with active defaulting to true when omitted */
+export type ExtractorInitOptions = Omit<InitializeOptions, 'active'> & {
+  active?: boolean;
+};

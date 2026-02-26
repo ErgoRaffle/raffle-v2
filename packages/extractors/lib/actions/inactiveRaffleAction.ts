@@ -1,4 +1,4 @@
-import { AbstractInitializableErgoExtractorAction } from '@rosen-bridge/abstract-extractor';
+import { AbstractErgoBoxAction } from '@rosen-bridge/abstract-extractor';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
@@ -7,7 +7,7 @@ import { pick } from 'lodash-es';
 import { InactiveRaffleEntity } from '../entities';
 import { InactiveRaffleBoxInterface } from '../interfaces/types';
 
-export class InactiveRaffleAction extends AbstractInitializableErgoExtractorAction<
+export class InactiveRaffleAction extends AbstractErgoBoxAction<
   InactiveRaffleBoxInterface,
   InactiveRaffleEntity
 > {
@@ -28,7 +28,7 @@ export class InactiveRaffleAction extends AbstractInitializableErgoExtractorActi
   ): Omit<InactiveRaffleEntity, 'id'>[] => {
     return boxes.map((box) => {
       return {
-        boxId: box.boxId,
+        identifier: box.identifier,
         block: block.hash,
         height: block.height,
         serialized: box.serialized,
@@ -60,7 +60,7 @@ export class InactiveRaffleAction extends AbstractInitializableErgoExtractorActi
   ): InactiveRaffleBoxInterface[] => {
     return entities.map((data) =>
       pick(data, [
-        'boxId',
+        'identifier',
         'block',
         'height',
         'serialized',

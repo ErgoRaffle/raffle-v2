@@ -26,7 +26,7 @@ export const sampleWinnerBoxes: OutputBox[] = [
 ];
 
 export const sampleWinnerExtractedData = {
-  boxId: sampleWinnerBoxes[0].boxId,
+  identifier: sampleWinnerBoxes[0].boxId,
   txId: sampleWinnerBoxes[0].transactionId,
   index: 1,
   raffleId: 'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',

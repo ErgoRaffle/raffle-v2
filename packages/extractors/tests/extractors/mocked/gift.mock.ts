@@ -33,7 +33,7 @@ export const sampleGiftBoxes: OutputBox[] = [
 ];
 
 export const sampleGiftExtractedData = {
-  boxId: sampleGiftBoxes[0].boxId,
+  identifier: sampleGiftBoxes[0].boxId,
   txId: sampleGiftBoxes[0].transactionId,
   winnerIndex: 1,
   donatorErgoTree: donatorWallet.ergoTree.toString(),

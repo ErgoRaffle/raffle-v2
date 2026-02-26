@@ -1,6 +1,7 @@
 export const sampleBoxesData = [
   {
-    boxId: '4f444639b431ec30f6a4b96d6a42bb3489f422c98043c47670a84b0a3a495edd',
+    identifier:
+      '4f444639b431ec30f6a4b96d6a42bb3489f422c98043c47670a84b0a3a495edd',
     txId: '36dbda203d2143a51957941d7a3fa588795921c866ff4075e3ee6e991f0c62d5',
     raffleId:
       'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
@@ -33,7 +34,8 @@ export const sampleBoxesData = [
 
 export const sampleDBData = {
   block: '0',
-  boxId: '4f444639b431ec30f6a4b96d6a42bb3489f422c98043c47670a84b0a3a495edd',
+  identifier:
+    '4f444639b431ec30f6a4b96d6a42bb3489f422c98043c47670a84b0a3a495edd',
   description: 'Some descriptions...',
   extractor: 'RaffleDetails',
   height: 1,

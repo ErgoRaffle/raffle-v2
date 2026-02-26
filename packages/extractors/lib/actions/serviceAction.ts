@@ -1,4 +1,4 @@
-import { AbstractInitializableErgoExtractorAction } from '@rosen-bridge/abstract-extractor';
+import { AbstractErgoBoxAction } from '@rosen-bridge/abstract-extractor';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
@@ -7,7 +7,7 @@ import { pick } from 'lodash-es';
 import { ServiceEntity } from '../entities';
 import { ServiceBoxInterface } from '../interfaces/types';
 
-export class ServiceAction extends AbstractInitializableErgoExtractorAction<
+export class ServiceAction extends AbstractErgoBoxAction<
   ServiceBoxInterface,
   ServiceEntity
 > {
@@ -28,7 +28,7 @@ export class ServiceAction extends AbstractInitializableErgoExtractorAction<
   ): Omit<ServiceEntity, 'id'>[] => {
     return boxes.map((box) => {
       return {
-        boxId: box.boxId,
+        identifier: box.identifier,
         block: block.hash,
         height: block.height,
         serialized: box.serialized,
@@ -48,7 +48,7 @@ export class ServiceAction extends AbstractInitializableErgoExtractorAction<
   convertEntityToData = (entities: ServiceEntity[]): ServiceBoxInterface[] => {
     return entities.map((data) =>
       pick(data, [
-        'boxId',
+        'identifier',
         'txId',
         'serviceFeePercent',
         'implementerFeePercent',

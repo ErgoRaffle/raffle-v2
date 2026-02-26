@@ -24,9 +24,11 @@ describe('ActiveRaffleExtractor', () => {
     ctx.extractor = new ActiveRaffleExtractor(
       dataSource,
       'ActiveRaffle',
-      'http://127.0.0.1/',
-      ErgoNetworkType.Node,
-      boxErgoTree.toAddress(Network.Testnet).toString(),
+      {
+        type: ErgoNetworkType.Node,
+        url: 'http://127.0.0.1/',
+        address: boxErgoTree.toAddress(Network.Testnet).toString(),
+      },
       '716149d5c68e4ea1ea0529b60c7029797ffb26f3d401d44f9aadd4b090593e4e',
     );
     ctx.boxFalseErgoTree = boxFalseErgoTree;
@@ -67,7 +69,9 @@ describe('ActiveRaffleExtractor', () => {
     it<TestInterface>(`should return true when the box contains valid data`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData(sampleActiveRaffleBoxes[0]);
+      const extractedData = await extractor.hasBoxData(
+        sampleActiveRaffleBoxes[0],
+      );
 
       expect(extractedData).toBeTruthy();
     });
@@ -86,7 +90,7 @@ describe('ActiveRaffleExtractor', () => {
       extractor,
       boxFalseErgoTree,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleActiveRaffleBoxes[0],
         // set invalid ergoTree
         ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
@@ -108,7 +112,7 @@ describe('ActiveRaffleExtractor', () => {
     it<TestInterface>(`should return false when the asset's licenseTokenId is invalid`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleActiveRaffleBoxes[0],
         assets: [
           {
@@ -139,7 +143,7 @@ describe('ActiveRaffleExtractor', () => {
     it<TestInterface>(`should return false when the assets list contains fewer than 2 item`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleActiveRaffleBoxes[0],
         assets: [
           {
@@ -165,7 +169,7 @@ describe('ActiveRaffleExtractor', () => {
     it<TestInterface>(`should return false when the assets list contains more than 3 items`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleActiveRaffleBoxes[0],
         assets: [
           {

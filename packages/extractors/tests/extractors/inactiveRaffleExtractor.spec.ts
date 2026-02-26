@@ -1,5 +1,6 @@
 import { compile } from '@fleet-sdk/compiler';
 import { ErgoTree, Network, SByte, SColl, SLong } from '@fleet-sdk/core';
+import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 import { describe, it, expect, beforeEach } from 'vitest';
 
 import { InactiveRaffleExtractor } from '../../lib/extractors/inactiveRaffleExtractor';
@@ -25,8 +26,11 @@ describe('InactiveRaffleExtractor', () => {
     ctx.extractor = new InactiveRaffleExtractor(
       dataSource,
       'InactiveRaffle',
-      'http://127.0.0.1/',
-      boxErgoTree.toAddress(Network.Testnet).toString(),
+      {
+        type: ErgoNetworkType.Node,
+        url: 'http://127.0.0.1/',
+        address: boxErgoTree.toAddress(Network.Testnet).toString(),
+      },
       serviceWallet.address.toString(),
       '2'.repeat(64),
     );
@@ -89,7 +93,7 @@ describe('InactiveRaffleExtractor', () => {
     it<TestInterface>(`should returns true with valid box data`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData(
+      const extractedData = await extractor.hasBoxData(
         sampleInactiveRaffleBoxes[0],
       );
 
@@ -110,7 +114,7 @@ describe('InactiveRaffleExtractor', () => {
       extractor,
       boxFalseErgoTree,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleInactiveRaffleBoxes[0],
         // set invalid ergoTree
         ergoTree: boxFalseErgoTree.toAddress(Network.Testnet).toString(),
@@ -132,7 +136,7 @@ describe('InactiveRaffleExtractor', () => {
     it<TestInterface>(`should returns false when license token-id is invalid`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleInactiveRaffleBoxes[0],
         assets: [
           {
@@ -159,7 +163,7 @@ describe('InactiveRaffleExtractor', () => {
     it<TestInterface>(`should returns false when additionalRegisters is empty`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleInactiveRaffleBoxes[0],
         additionalRegisters: {},
       });
@@ -180,7 +184,7 @@ describe('InactiveRaffleExtractor', () => {
     it<TestInterface>(`should returns false when R4 length is not valid`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleInactiveRaffleBoxes[0],
         additionalRegisters: {
           ...sampleInactiveRaffleBoxes[0].additionalRegisters,
@@ -204,7 +208,7 @@ describe('InactiveRaffleExtractor', () => {
     it<TestInterface>(`should returns false when R7 length is not valid`, async ({
       extractor,
     }) => {
-      const extractedData = await extractor.hasData({
+      const extractedData = await extractor.hasBoxData({
         ...sampleInactiveRaffleBoxes[0],
         additionalRegisters: {
           ...sampleInactiveRaffleBoxes[0].additionalRegisters,

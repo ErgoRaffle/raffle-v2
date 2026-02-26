@@ -1,8 +1,8 @@
-import { AbstractErgoExtractorEntity } from '@rosen-bridge/abstract-extractor';
+import { AbstractErgoEntity } from '@rosen-bridge/abstract-extractor';
 import { Entity, Column } from '@rosen-bridge/extended-typeorm';
 
 @Entity('dynamic_box')
-export class DynamicBoxEntity extends AbstractErgoExtractorEntity {
+export class DynamicBoxEntity extends AbstractErgoEntity {
   @Column({ type: 'varchar' })
   txId: string;
 
