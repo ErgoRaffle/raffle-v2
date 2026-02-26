@@ -20,7 +20,7 @@
     "release": "npm run release --workspaces",
     "test": "npm run test --workspaces",
     "type-check": "npm run type-check --workspaces",
-    "version": "npx changeset version && npm i"
+    "version": "npx changeset version && npm i && npx changeset add --empty"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.8",
