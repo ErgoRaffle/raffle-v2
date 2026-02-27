@@ -2,14 +2,9 @@ import { ServiceBuilder } from '@ergo-raffle/boxes';
 import { raffleInfo } from '@ergo-raffle/contracts';
 import { CreationTxBuilder } from '@ergo-raffle/transactions';
 import { Amount, Network } from '@fleet-sdk/common';
-import {
-  ErgoUnsignedInput,
-  Box,
-  TransactionBuilder,
-  OutputBuilder,
-} from '@fleet-sdk/core';
+import { Box, TransactionBuilder, OutputBuilder } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
-import { KeyedMockChainParty, mockUTxO } from '@fleet-sdk/mock-chain';
+import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
 import { Buffer } from 'buffer';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
@@ -67,18 +62,9 @@ describe('CreationProxy', () => {
     // Create creation proxy input box
     const proxyOutput = proxyGenerator
       .generateProxyBox(proxyParams)
-      .setCreationHeight(5)
-      .build();
+      .setCreationHeight(5);
 
-    proxyBox = new ErgoUnsignedInput(
-      mockUTxO({
-        ergoTree: proxyOutput.ergoTree,
-        value: proxyOutput.value,
-        creationHeight: proxyOutput.creationHeight,
-        assets: proxyOutput.assets,
-        additionalRegisters: proxyOutput.additionalRegisters,
-      }),
-    );
+    proxyBox = createMockUtxo(proxyOutput);
 
     describe('raffle creation transaction', () => {
       let createRaffleBuilder: CreationTxBuilder;
@@ -157,17 +143,9 @@ describe('CreationProxy', () => {
         const proxyOutput = proxyGenerator
           .generateProxyBox(proxyParams)
           .setCreationHeight(5)
-          .build();
+          .setValue(100000000000n);
 
-        const proxyBox = new ErgoUnsignedInput(
-          mockUTxO({
-            ergoTree: proxyOutput.ergoTree,
-            value: 100000000000n,
-            creationHeight: proxyOutput.creationHeight,
-            assets: proxyOutput.assets || [],
-            additionalRegisters: proxyOutput.additionalRegisters,
-          }),
-        );
+        const proxyBox = createMockUtxo(proxyOutput);
 
         createRaffleBuilder.setCollectingTokenId(proxyParams.collectingTokenId);
 
@@ -384,18 +362,9 @@ describe('CreationProxy', () => {
 
         const proxyOutput = proxyGenerator
           .generateProxyBox(proxyParams)
-          .setCreationHeight(5)
-          .build();
+          .setCreationHeight(5);
 
-        proxyBox = new ErgoUnsignedInput(
-          mockUTxO({
-            ergoTree: proxyOutput.ergoTree,
-            value: proxyOutput.value,
-            creationHeight: proxyOutput.creationHeight,
-            assets: proxyOutput.assets,
-            additionalRegisters: proxyOutput.additionalRegisters,
-          }),
-        );
+        proxyBox = createMockUtxo(proxyOutput);
 
         // Create refund box with missing tokens (simulating burnt tokens)
         const refundBoxWithBurntTokens = new OutputBuilder(

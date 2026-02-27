@@ -1,7 +1,8 @@
 import { raffleInfo } from '@ergo-raffle/contracts';
+import { NonMandatoryRegisters } from '@fleet-sdk/common';
 import {
+  ConstantInput,
   Network,
-  OutputBuilder,
   SByte,
   SColl,
   SInt,
@@ -86,15 +87,13 @@ export class CreationProxyGenerator extends BaseProxyGenerator<CreationProxyPara
   };
 
   /**
-   * Fill output registers with contract parameters
-   * @param outputBuilder - OutputBuilder instance
+   * Set registers with contract parameters
    * @param params - Contract parameters
-   * @returns Updated OutputBuilder
+   * @returns Filled registers
    */
   protected fillRegisters = (
-    outputBuilder: OutputBuilder,
     params: CreationProxyParams,
-  ): OutputBuilder => {
+  ): NonMandatoryRegisters<ConstantInput> => {
     /**
      * Correct output registers with contract parameters
      * R4: SColl(SLong, [expirationHeight, winnersPercent, ticketPrice, goal, raffleDeadline, txFee, isErgGoal])
@@ -122,7 +121,7 @@ export class CreationProxyGenerator extends BaseProxyGenerator<CreationProxyPara
       ),
     ).toString('base64');
 
-    outputBuilder.setAdditionalRegisters({
+    return {
       R4: SColl(SLong, [
         BigInt(params.expirationHeight),
         BigInt(params.raffleDeadline),
@@ -146,9 +145,7 @@ export class CreationProxyGenerator extends BaseProxyGenerator<CreationProxyPara
           : []),
       ]).toHex(),
       R7: SInt(params.winnerCount).toHex(),
-    });
-
-    return outputBuilder;
+    };
   };
 
   /**

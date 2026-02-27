@@ -58,10 +58,6 @@
   val winnersPercentListHash = SELF.R5[Coll[Coll[Byte]]].get(2)
   val collectingTokenId = SELF.R5[Coll[Coll[Byte]]].get(3)
 
-  val name = SELF.R6[Coll[Coll[Byte]]].get(0)
-  val description = SELF.R6[Coll[Coll[Byte]]].get(1)
-  val pictures = SELF.R6[Coll[Coll[Byte]]].get.slice(2, SELF.R6[Coll[Coll[Byte]]].get.size) 
-
   val winnerCount = SELF.R7[Int].get
 
 
@@ -88,9 +84,7 @@
       inactiveRaffle.R4[Coll[Long]].get(5) == raffleDeadline,
       inactiveRaffle.R5[Coll[Coll[Byte]]].get(1) == implementorErgoTreeHash,
       inactiveRaffle.R5[Coll[Coll[Byte]]].get(2) == creatorErgoTreeHash,
-      inactiveRaffle.R6[Coll[Coll[Byte]]].get(0) == name,
-      inactiveRaffle.R6[Coll[Coll[Byte]]].get(1) == description,
-      inactiveRaffle.R6[Coll[Coll[Byte]]].get.slice(2, inactiveRaffle.R6[Coll[Coll[Byte]]].get.size) == pictures,
+      inactiveRaffle.R6[Coll[Coll[Byte]]].get == SELF.R6[Coll[Coll[Byte]]].get,
       inactiveRaffle.R7[Coll[Coll[Byte]]].get(1) == winnersPercentListHash,
       inactiveRaffle.R8[Int].get == winnerCount,
       if(!isErgGoal){

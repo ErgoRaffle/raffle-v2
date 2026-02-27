@@ -1,7 +1,8 @@
 import { raffleInfo } from '@ergo-raffle/contracts';
+import { NonMandatoryRegisters } from '@fleet-sdk/common';
 import {
+  ConstantInput,
   Network,
-  OutputBuilder,
   SByte,
   SColl,
   SLong,
@@ -68,16 +69,14 @@ export class AddGiftProxyGenerator extends BaseProxyGenerator<AddGiftProxyParams
   };
 
   /**
-   * Fill box registers with contract parameters
-   * @param outputBuilder - OutputBuilder instance
+   * Set registers with contract parameters
    * @param params - Contract parameters
-   * @returns Updated OutputBuilder
+   * @returns Filled registers
    */
   protected fillRegisters = (
-    outputBuilder: OutputBuilder,
     params: AddGiftProxyParams,
-  ): OutputBuilder => {
-    outputBuilder.setAdditionalRegisters({
+  ): NonMandatoryRegisters<ConstantInput> => {
+    return {
       R4: SColl(SLong, [
         BigInt(params.expirationHeight),
         BigInt(params.raffleDeadline),
@@ -88,9 +87,7 @@ export class AddGiftProxyGenerator extends BaseProxyGenerator<AddGiftProxyParams
         Array.from(Buffer.from(params.raffleId, 'hex')),
         Array.from(Buffer.from(params.giftGiverErgoTreeHash, 'hex')),
       ]).toHex(),
-    });
-
-    return outputBuilder;
+    };
   };
 
   /**

@@ -1,5 +1,7 @@
+import { NonMandatoryRegisters } from '@fleet-sdk/common';
 import { compile } from '@fleet-sdk/compiler';
 import {
+  ConstantInput,
   ErgoAddress,
   Network,
   OutputBuilder,
@@ -63,27 +65,23 @@ export abstract class BaseProxyGenerator<
 
     const requiredNanoErgs = this.calculateRequiredNanoErgs(params);
     const requiredTokens = this.calculateRequiredTokens(params);
+    const registers = this.fillRegisters(params);
 
-    let outputBuilder = new OutputBuilder(
-      requiredNanoErgs,
-      this.scriptAddress,
-    ).addTokens(requiredTokens);
-
-    outputBuilder = this.fillRegisters(outputBuilder, params);
+    let outputBuilder = new OutputBuilder(requiredNanoErgs, this.scriptAddress)
+      .addTokens(requiredTokens)
+      .setAdditionalRegisters(registers);
 
     return outputBuilder;
   };
 
   /**
-   * Fill box registers with contract parameters
-   * @param outputBuilder - OutputBuilder instance
+   * Set registers with contract parameters
    * @param params - Contract parameters
-   * @returns Updated OutputBuilder
+   * @returns Filled registers
    */
   protected abstract fillRegisters: (
-    outputBuilder: OutputBuilder,
     params: ErgoScriptParams,
-  ) => OutputBuilder;
+  ) => NonMandatoryRegisters<ConstantInput>;
 
   /**
    * Fill contract parameters into ErgoScript template
