@@ -3,7 +3,8 @@
   "compilerOptions": {
     "outDir": "./dist",
     "emitDecoratorMetadata": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "composite": true
   },
   "include": ["lib"]
 }

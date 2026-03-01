@@ -2,5 +2,9 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "rootDir": "./lib"
-  }
+  },
+  "references": [
+    { "path": "../../packages/extractors/tsconfig.build.json" },
+    { "path": "../../packages/request-params/tsconfig.build.json" }
+  ]
 }

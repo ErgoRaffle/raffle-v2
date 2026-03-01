@@ -30,7 +30,6 @@
   },
   "dependencies": {
     "@ergo-raffle/data-source": "0.0.0",
-    "@ergo-raffle/request-params": "0.0.0",
     "@ergo-raffle/box-lookup": "0.1.0",
     "@ergo-raffle/boxes": "0.0.0",
     "@ergo-raffle/contracts": "0.0.0",

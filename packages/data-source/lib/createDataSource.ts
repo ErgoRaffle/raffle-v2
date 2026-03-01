@@ -71,7 +71,7 @@ const MIGRATIONS = {
 
 /**
  * Creates a DataSource from database configuration.
- * Entities and migrations are fixed for the raffle background-job.
+ * Including all entities and migrations for raffle services
  */
 export function createDataSource(config: DatabaseConfig): DataSource {
   const common = {
