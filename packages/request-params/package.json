@@ -28,5 +28,8 @@
   "engines": {
     "node": ">=22.18.0",
     "npm": "11.6.2"
+  },
+  "dependencies": {
+    "@rosen-bridge/extended-typeorm": "^1.0.1"
   }
 }

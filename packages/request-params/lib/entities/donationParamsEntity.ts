@@ -5,6 +5,12 @@ import {
   BigIntValueTransformer,
 } from '@rosen-bridge/extended-typeorm';
 
+export enum DonationStatus {
+  Pending = 'pending',
+  Completed = 'completed',
+  Timedout = 'timedout',
+}
+
 @Entity('donation_params')
 export class DonationParamsEntity {
   @PrimaryGeneratedColumn()
@@ -33,8 +39,11 @@ export class DonationParamsEntity {
   donatorAddress: string;
 
   @Column({ type: 'varchar' })
-  proxyAddress: string;
+  bitcoinAddress: string;
 
   @Column({ type: 'integer' })
   timestamp: number;
+
+  @Column({ type: 'varchar', enum: DonationStatus })
+  status: DonationStatus;
 }

@@ -28,12 +28,14 @@ import {
   SafePayEntity,
   ServiceEntity,
 } from '@ergo-raffle/extractors';
+import {
+  AddGiftParamsEntity,
+  CreationParamsEntity,
+  CreationPictureEntity,
+  DonationParamsEntity,
+} from '@ergo-raffle/request-params';
 
 import { configs } from '../config';
-import { AddGiftParamsEntity } from '../database/entities/addGiftParamsEntity';
-import { CreationParamsEntity } from '../database/entities/creationParamsEntity';
-import { CreationPictureEntity } from '../database/entities/creationPictureEntity';
-import { DonationParamsEntity } from '../database/entities/donationParamsEntity';
 
 export class DbService extends AbstractService {
   name = 'DbService';
