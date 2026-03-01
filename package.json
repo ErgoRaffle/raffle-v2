@@ -9,18 +9,19 @@
     ]
   },
   "scripts": {
+    "prebuild": "npm run build --workspace packages/contracts",
     "build": "npm run build --workspaces",
     "clean": "npm run clean --workspaces",
     "coverage": "npm run coverage --workspaces",
     "lint": "npm run lint --workspaces",
     "lint:check": "npm run lint:check --workspaces",
-    "prepare": "husky install && npm run build --workspace packages/contracts",
+    "prepare": "husky install",
     "prettify": "npm run prettify --workspaces",
     "prettify:check": "npm run prettify:check --workspaces",
     "release": "npm run release --workspaces",
     "test": "npm run test --workspaces",
     "type-check": "npm run type-check --workspaces",
-    "version": "npx changeset version && npm i"
+    "version": "npx changeset version && npm i && npx changeset add --empty"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.8",
