@@ -44,6 +44,6 @@ export class DonationParamsEntity {
   @Column({ type: 'integer' })
   timestamp: number;
 
-  @Column({ type: 'varchar', enum: DonationStatus })
+  @Column({ type: 'simple-enum', enum: DonationStatus })
   status: DonationStatus;
 }
