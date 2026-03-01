@@ -1,6 +1,7 @@
 {
   "name": "@ergo-raffle/background-job",
   "version": "0.0.0",
+  "private": true,
   "license": "MIT",
   "author": "Ergo Raffle Team",
   "description": "Ergo-Raffle background jobs",

@@ -9,12 +9,13 @@
     ]
   },
   "scripts": {
+    "prebuild": "npm run build --workspace packages/contracts",
     "build": "npm run build --workspaces",
     "clean": "npm run clean --workspaces",
     "coverage": "npm run coverage --workspaces",
     "lint": "npm run lint --workspaces",
     "lint:check": "npm run lint:check --workspaces",
-    "prepare": "husky install && npm run build --workspace packages/contracts",
+    "prepare": "husky install",
     "prettify": "npm run prettify --workspaces",
     "prettify:check": "npm run prettify:check --workspaces",
     "release": "npm run release --workspaces",
