@@ -1,5 +1,4 @@
 export interface BackgroundJobConfig {
-  api: Api;
   addresses: Addresses;
   boxLookup: BoxLookup;
   notification: Notification;
@@ -72,9 +71,4 @@ export interface BoxLookup {
 
 export interface Addresses {
   serviceFeeAddress: string;
-}
-
-export interface Api {
-  host: string;
-  port: number;
 }
