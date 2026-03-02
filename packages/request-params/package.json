@@ -25,11 +25,11 @@
     "release": "npm run clean && npm run build && npm publish --access public",
     "type-check": "tsc --noEmit"
   },
+  "dependencies": {
+    "@rosen-bridge/extended-typeorm": "^1.0.1"
+  },
   "engines": {
     "node": ">=22.18.0",
     "npm": "11.6.2"
-  },
-  "dependencies": {
-    "@rosen-bridge/extended-typeorm": "^1.0.1"
   }
 }
