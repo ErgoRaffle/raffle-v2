@@ -4,5 +4,6 @@
     "outDir": "./dist",
     "baseUrl": "."
   },
-  "include": ["src"]
+  "include": ["src"],
+  "references": [{ "path": "../../packages/data-source/tsconfig.build.json" }]
 }

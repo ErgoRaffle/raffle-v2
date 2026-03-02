@@ -1,6 +1,5 @@
-import config from 'config';
+import { validateConfigs } from './utils';
 
-export const maxLogSize = config.get<string>('logs.maxSize');
-export const maxLogFilesCount = config.get<string>('logs.maxFilesCount');
-export const logsPath = config.get<string>('logs.path');
-export const logLevel = config.get<string>('logs.level');
+export { getLogOptions } from './utils';
+
+export const configs = validateConfigs();

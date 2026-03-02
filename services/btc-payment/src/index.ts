@@ -1,5 +1,23 @@
 import './bootstrap';
 
-const main = async () => {};
+import { DefaultLogger } from '@rosen-bridge/abstract-logger';
+import { ServiceManager } from '@rosen-bridge/service-manager';
+
+import { InitializerService } from './services/initializerService';
+
+const logger = DefaultLogger.getInstance().child(import.meta.url);
+
+const main = async () => {
+  const serviceManager = ServiceManager.setup();
+
+  logger.debug('Initializing services');
+  await InitializerService.init(serviceManager, logger.child('Initializer'));
+  serviceManager.register(InitializerService.getInstance());
+  logger.debug('Initializer service registered to the service manager');
+
+  logger.debug('Starting service manager...');
+  await serviceManager.start(InitializerService.getInstance().getName());
+  logger.info('All services started successfully');
+};
 
 main();
