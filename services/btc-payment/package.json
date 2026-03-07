@@ -30,6 +30,8 @@
   },
   "dependencies": {
     "@ergo-raffle/data-source": "^0.0.0",
+    "@ergo-raffle/extractors": "^0.0.0",
+    "@ergo-raffle/request-params": "^0.0.0",
     "@rosen-bridge/abstract-logger": "^4.0.0",
     "@rosen-bridge/callback-logger": "^2.0.0",
     "@rosen-bridge/config": "^1.2.0",
@@ -37,7 +39,12 @@
     "@rosen-bridge/fastify-enhanced": "^2.0.1",
     "@rosen-bridge/service-manager": "^1.0.2",
     "@rosen-bridge/winston-logger": "^3.0.0",
-    "config": "^3.3.7"
+    "bip32": "^5.0.1",
+    "bip39": "^3.1.0",
+    "bitcoinjs-lib": "^6.1.7",
+    "config": "^3.3.7",
+    "tiny-secp256k1": "^2.2.4",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/config": "^0.0.41"

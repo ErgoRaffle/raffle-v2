@@ -186,5 +186,48 @@
         ]
       }
     }
+  },
+  "ergo": {
+    "type": "object",
+    "children": {
+      "fee": {
+        "type": "bigint",
+        "default": 1500000,
+        "description": "ergo transaction fee in nano erg",
+        "validations": [
+          {
+            "required": true,
+            "error": "ergo transaction fee must be specified"
+          }
+        ]
+      }
+    }
+  },
+  "bitcoin": {
+    "type": "object",
+    "children": {
+      "mnemonic": {
+        "type": "string",
+        "description": "Bitcoin wallet mnemonic",
+        "validations": [
+          {
+            "required": true,
+            "error": "Bitcoin mnemonic must be specified"
+          }
+        ]
+      },
+      "network": {
+        "type": "string",
+        "description": "Bitcoin network type",
+        "default": "mainnet",
+        "validations": [
+          {
+            "required": true,
+            "error": "Bitcoin network type must be specified"
+          },
+          { "choices": ["mainnet", "testnet"] }
+        ]
+      }
+    }
   }
 }

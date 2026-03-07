@@ -6,20 +6,25 @@ import {
   ServiceStatus,
 } from '@rosen-bridge/service-manager';
 
-import packageJson from '../../package.json' with { type: 'json' };
-import * as ConfigTypes from '../types/configs';
-import { DbService } from './dbService';
+import packageJson from '../../../package.json' with { type: 'json' };
+import { AddressDeriver } from '../../bitcoin/addressDeriver';
+import { configs } from '../../configs';
+import * as ConfigTypes from '../../types/configs';
+import { DbService } from '../dbService';
+import { registerDonationRoute } from './donationRoute';
 
 export class ApiService extends AbstractService {
   name = 'ApiService';
   private static instance?: ApiService;
   private fastify?: FastifyWithZod;
+  private addressDeriver: AddressDeriver;
 
   private constructor(
     private apiConfig: ConfigTypes.Api,
     logger?: AbstractLogger,
   ) {
     super(logger);
+    this.addressDeriver = new AddressDeriver(configs.bitcoin);
   }
 
   /**
@@ -105,6 +110,10 @@ export class ApiService extends AbstractService {
    */
   private registerRoutes = async (): Promise<void> => {
     if (!this.fastify) return;
-    // TODO: register routes here
+    registerDonationRoute(
+      this.fastify,
+      this.logger.child('donationRoute'),
+      this.addressDeriver,
+    );
   };
 }

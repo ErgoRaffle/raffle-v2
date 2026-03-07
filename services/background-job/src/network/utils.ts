@@ -1,5 +1,6 @@
 import JsonBigint from '@rosen-bridge/json-bigint';
-import { AxiosError } from '@rosen-bridge/rate-limited-axios';
+// TODO: Import from @rosen-clients/rate-limited-axios
+import { AxiosError } from 'axios';
 
 import {
   FailedError,
