@@ -6,29 +6,36 @@ import {
   ServiceStatus,
 } from '@rosen-bridge/service-manager';
 
+import { createDataSource } from '@ergo-raffle/data-source';
+
+import * as ConfigTypes from '../types/configs';
+
 export class DbService extends AbstractService {
   name = 'DbService';
   private static instance: DbService;
   readonly dataSource: DataSource;
 
-  private constructor(dataSource: DataSource, logger?: AbstractLogger) {
+  private constructor(
+    dbConfigs: ConfigTypes.Database,
+    logger?: AbstractLogger,
+  ) {
     super(logger);
-    this.dataSource = dataSource;
+    this.dataSource = createDataSource(dbConfigs);
   }
 
   /**
    * initializes the singleton instance of DbService
    *
    * @static
-   * @param {DataSource} dataSource
+   * @param {ConfigTypes.Database} dbConfigs
    * @param {AbstractLogger} [logger]
    * @memberof DbService
    */
-  static init = (dataSource: DataSource, logger?: AbstractLogger) => {
+  static init = (dbConfigs: ConfigTypes.Database, logger?: AbstractLogger) => {
     if (this.instance != undefined) {
       return;
     }
-    this.instance = new DbService(dataSource, logger);
+    this.instance = new DbService(dbConfigs, logger);
   };
 
   /**
@@ -70,6 +77,7 @@ export class DbService extends AbstractService {
   };
 
   protected stop = async (): Promise<boolean> => {
+    this.dataSource.destroy();
     this.setStatus(ServiceStatus.dormant);
     return true;
   };

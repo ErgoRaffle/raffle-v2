@@ -8,7 +8,6 @@ import {
 } from '@rosen-bridge/service-manager';
 
 import { configs } from '../configs';
-import dataSource from '../dataSource';
 import { ApiService } from './apiService';
 import { DbService } from './dbService';
 
@@ -100,7 +99,7 @@ export class InitializerService extends AbstractService {
 
     // Initialize database service
     this.logger.debug('Initializing database service');
-    DbService.init(dataSource, dbLogger);
+    DbService.init(configs.database, dbLogger);
     this.logger.debug('Database service initialized');
 
     // Initialize api service
@@ -123,5 +122,6 @@ export class InitializerService extends AbstractService {
     this.logger.debug('Registering all services with ServiceManager...');
     // Register all services
     this.serviceManager.register(DbService.getInstance());
+    this.serviceManager.register(ApiService.getInstance());
   };
 }
