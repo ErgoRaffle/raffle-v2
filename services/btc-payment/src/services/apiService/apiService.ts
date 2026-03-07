@@ -59,6 +59,7 @@ export class ApiService extends AbstractService {
    */
   protected start = async (): Promise<boolean> => {
     try {
+      this.setStatus(ServiceStatus.started);
       this.fastify = await makeFastify(
         {
           path: '/swagger',
