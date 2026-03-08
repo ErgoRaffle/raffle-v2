@@ -77,7 +77,7 @@ export class DbService extends AbstractService {
   };
 
   protected stop = async (): Promise<boolean> => {
-    this.dataSource.destroy();
+    await this.dataSource.destroy();
     this.setStatus(ServiceStatus.dormant);
     return true;
   };
