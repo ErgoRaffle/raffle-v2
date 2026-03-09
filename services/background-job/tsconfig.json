@@ -9,6 +9,7 @@
     { "path": "../../packages/extractors/tsconfig.build.json" },
     { "path": "../../packages/boxes/tsconfig.build.json" },
     { "path": "../../packages/transactions/tsconfig.build.json" },
-    { "path": "../../packages/box-lookup/tsconfig.build.json" }
+    { "path": "../../packages/box-lookup/tsconfig.build.json" },
+    { "path": "../../packages/data-source/tsconfig.build.json" }
   ]
 }

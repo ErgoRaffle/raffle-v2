@@ -1,0 +1,18 @@
+logs:
+  - type: console
+    level: info
+  - type: file
+    level: info
+    path: ./logs/
+    maxSize: 20m
+    maxFiles: 14d
+database:
+  type: postgres
+  host: localhost
+  port: 5432
+  username: postgres
+  password: ''
+  name: raffle_v2
+api:
+  host: localhost
+  port: 3000
