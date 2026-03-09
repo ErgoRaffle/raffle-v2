@@ -35,7 +35,10 @@ export class AddressDeriver {
     );
 
     // Convert to x-only pubkey for Taproot
-    const xOnlyPubkey = child.publicKey.slice(1, 33);
+    const xOnlyPubkey =
+      child.publicKey.length === 32
+        ? child.publicKey
+        : child.publicKey.subarray(1, 33);
 
     const { address } = bitcoin.payments.p2tr({
       internalPubkey: Buffer.from(xOnlyPubkey),

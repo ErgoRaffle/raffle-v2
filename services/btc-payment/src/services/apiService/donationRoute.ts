@@ -5,6 +5,8 @@ import { AddressDeriver } from '../../bitcoin/addressDeriver';
 import { donationRequestSchema, donationResponseSchema } from '../../types/api';
 import { DbService } from '../dbService';
 
+// TODO: Add captcha verification
+// local/ergo/ergoraffle/raffle-v2/-/issues/125
 export const registerDonationRoute = (
   fastify: FastifyWithZod,
   logger: AbstractLogger,
