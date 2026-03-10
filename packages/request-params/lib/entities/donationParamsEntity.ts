@@ -22,18 +22,14 @@ export class DonationParamsEntity {
   @Column({ type: 'integer' })
   ticketCount: number;
 
-  @Column({ type: 'bigint', transformer: new BigIntValueTransformer() })
-  requiredValue: bigint;
-
-  @Column({ type: 'varchar', nullable: true })
-  collectingTokenId?: string;
+  @Column({ type: 'varchar' })
+  tokenId?: string;
 
   @Column({
     type: 'bigint',
     transformer: new BigIntValueTransformer(),
-    nullable: true,
   })
-  collectingTokenAmount?: bigint;
+  tokenAmount?: bigint;
 
   @Column({ type: 'varchar' })
   donatorAddress: string;

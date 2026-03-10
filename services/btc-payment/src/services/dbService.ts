@@ -7,6 +7,11 @@ import {
 } from '@rosen-bridge/service-manager';
 
 import { createDataSource } from '@ergo-raffle/data-source';
+import { InactiveRaffleEntity } from '@ergo-raffle/extractors';
+import {
+  DonationParamsEntity,
+  DonationStatus,
+} from '@ergo-raffle/request-params';
 
 import * as ConfigTypes from '../types/configs';
 
@@ -80,5 +85,83 @@ export class DbService extends AbstractService {
     await this.dataSource.destroy();
     this.setStatus(ServiceStatus.dormant);
     return true;
+  };
+
+  /**
+   * Get the raffle entity by raffle id
+   * @param raffleId - The raffle id
+   * @returns The raffle entity
+   */
+  getRaffleData = (raffleId: string): Promise<InactiveRaffleEntity | null> => {
+    return this.dataSource.getRepository(InactiveRaffleEntity).findOne({
+      where: {
+        raffleId: raffleId,
+      },
+    });
+  };
+
+  /**
+   * Get the last donation params id
+   * @returns The last donation params id
+   */
+  getLastDonationParamsId = async (): Promise<number> => {
+    const data = await this.dataSource
+      .getRepository(DonationParamsEntity)
+      .findOne({
+        order: { id: 'DESC' },
+      });
+    return data?.id || 0;
+  };
+
+  /**
+   * Save the donation params
+   * @param donationParams - The donation params
+   */
+  saveDonationParams = async (
+    donationParams: Omit<
+      DonationParamsEntity,
+      | 'id'
+      | 'timestamp'
+      | 'tokenId'
+      | 'tokenAmount'
+      | 'requiredValue'
+      | 'status'
+    >,
+  ): Promise<DonationParamsEntity> => {
+    const raffleData = await this.getRaffleData(donationParams.raffleId);
+    if (!raffleData) {
+      throw new Error('Raffle not found');
+    }
+    // TODO: Consider a fee for the transaction fees
+    const donationAmount =
+      BigInt(donationParams.ticketCount) * raffleData.ticketPrice;
+
+    // Insert the donation params to get the generated ID
+    const savedParams = await this.dataSource
+      .getRepository(DonationParamsEntity)
+      .insert({
+        ...donationParams,
+        // TODO: Use the btc-side token id using the token map data
+        tokenId: raffleData.collectingTokenId || 'erg',
+        tokenAmount: donationAmount,
+        timestamp: Date.now(),
+        status: DonationStatus.Pending,
+      });
+
+    // Get the generated ID
+    const generatedId = savedParams.identifiers[0].id;
+
+    // Fetch the complete entity
+    const savedEntity = await this.dataSource
+      .getRepository(DonationParamsEntity)
+      .findOne({
+        where: { id: generatedId },
+      });
+
+    if (!savedEntity) {
+      throw new Error('Failed to retrieve saved donation params');
+    }
+
+    return savedEntity;
   };
 }

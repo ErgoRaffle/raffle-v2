@@ -1,4 +1,6 @@
 export interface BtcPaymentConfig {
+  bitcoin: Bitcoin;
+  ergo: Ergo;
   api: Api;
   database: Database;
   logs: Logs[];
@@ -28,4 +30,13 @@ export interface Database {
 export interface Api {
   host: string;
   port: number;
+}
+
+export interface Ergo {
+  fee: bigint;
+}
+
+export interface Bitcoin {
+  mnemonic: string;
+  network: 'mainnet' | 'testnet';
 }
