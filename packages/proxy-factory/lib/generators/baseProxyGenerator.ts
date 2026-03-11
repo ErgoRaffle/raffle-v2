@@ -1,9 +1,16 @@
+import { NonMandatoryRegisters } from '@fleet-sdk/common';
 import { compile } from '@fleet-sdk/compiler';
-import { Network, TokenAmount } from '@fleet-sdk/core';
+import {
+  ConstantInput,
+  ErgoAddress,
+  Network,
+  OutputBuilder,
+  TokenAmount,
+} from '@fleet-sdk/core';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-import { BaseProxyParams, ProxyGenerationResult } from '../types';
+import { BaseProxyParams } from '../types';
 
 /**
  * Abstract base class for all proxy generators
@@ -15,11 +22,24 @@ export abstract class BaseProxyGenerator<
   protected readonly networkType: Network;
   protected readonly scriptsDir: string;
   protected abstract scriptName: string;
+  protected scriptAddress: ErgoAddress;
 
   constructor(networkType: Network = Network.Mainnet) {
     this.networkType = networkType;
     this.scriptsDir = join(__dirname, '../scripts');
   }
+
+  /**
+   * Build and compile ErgoScript, then generate its address
+   * @param scriptName - Name of the script file
+   * @returns Compiled contract address as string
+   */
+  protected buildScriptAddress = (scriptName: string) => {
+    const contractScript = this.loadScript(scriptName);
+    const filledScript = this.fillContractParameters(contractScript);
+
+    return compile(filledScript, {}).toAddress(this.networkType);
+  };
 
   /**
    * Load ErgoScript contract from scripts directory
@@ -36,36 +56,39 @@ export abstract class BaseProxyGenerator<
   };
 
   /**
-   * Generate proxy address and compute required assets
+   * Generate proxy box for the transaction
    * @param params - Parameters to fill in the contract
-   * @returns ProxyGenerationResult
+   * @returns OutputBuilder instance
    */
-  generateProxy = (params: ErgoScriptParams): ProxyGenerationResult => {
+  generateProxyBox = (params: ErgoScriptParams): OutputBuilder => {
     this.validateParams(params);
-    const contractScript = this.loadScript(this.scriptName);
 
-    const filledScript = this.fillContractParameters(contractScript, params);
-    const proxyAddress = compile(filledScript, {})
-      .toAddress(this.networkType)
-      .toString();
+    const requiredNanoErgs = this.calculateRequiredNanoErgs(params);
+    const requiredTokens = this.calculateRequiredTokens(params);
+    const registers = this.getRegisters(params);
 
-    return {
-      proxyAddress,
-      requiredNanoErgs: this.calculateRequiredNanoErgs(params),
-      requiredTokens: this.calculateRequiredTokens(params),
-    };
+    let outputBuilder = new OutputBuilder(requiredNanoErgs, this.scriptAddress)
+      .addTokens(requiredTokens)
+      .setAdditionalRegisters(registers);
+
+    return outputBuilder;
   };
+
+  /**
+   * Return registers with contract parameters
+   * @param params - Contract parameters
+   * @returns Registers with contract parameters
+   */
+  protected abstract getRegisters: (
+    params: ErgoScriptParams,
+  ) => NonMandatoryRegisters<ConstantInput>;
 
   /**
    * Fill contract parameters into ErgoScript template
    * @param script - ErgoScript template
-   * @param params - Parameters to fill
    * @returns Filled ErgoScript
    */
-  protected abstract fillContractParameters: (
-    script: string,
-    params: ErgoScriptParams,
-  ) => string;
+  protected abstract fillContractParameters: (script: string) => string;
 
   /**
    * Validate base proxy parameters (common to all proxy types)

@@ -1,19 +1,12 @@
 import { ActiveRaffleBuilder } from '@ergo-raffle/boxes';
 import { DonateTxBuilder } from '@ergo-raffle/transactions';
 import { Amount, Network } from '@fleet-sdk/common';
-import {
-  ErgoUnsignedInput,
-  ErgoAddress,
-  Box,
-  TransactionBuilder,
-  OutputBuilder,
-} from '@fleet-sdk/core';
+import { Box, TransactionBuilder, OutputBuilder } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
-import { KeyedMockChainParty, mockUTxO } from '@fleet-sdk/mock-chain';
+import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-import { ProxyFactory } from '../lib/proxyFactory';
-import { DonationProxyParams, ProxyGenerationResult } from '../lib/types';
+import { DonationProxyParams, ProxyFactory } from '../lib';
 import { createMockUtxo, CustomMockChain } from './testUtils';
 
 describe('DonationProxy', () => {
@@ -25,7 +18,6 @@ describe('DonationProxy', () => {
   let activeRaffleBuilder: ActiveRaffleBuilder;
   let activeRaffleBox: Box<Amount>;
   let proxyParams: DonationProxyParams;
-  let proxyResult: ProxyGenerationResult;
   let raffleId: string;
 
   beforeAll(() => {
@@ -56,17 +48,12 @@ describe('DonationProxy', () => {
       txFee: 1_000_000n,
     };
 
-    proxyResult = proxyGenerator.generateProxy(proxyParams);
-
     // Create donation proxy input box
-    proxyBox = new ErgoUnsignedInput(
-      mockUTxO({
-        ergoTree: ErgoAddress.fromBase58(proxyResult.proxyAddress).ergoTree,
-        value: proxyResult.requiredNanoErgs,
-        creationHeight: 5,
-        assets: [],
-      }),
-    );
+    const proxyOutput = proxyGenerator
+      .generateProxyBox(proxyParams)
+      .setCreationHeight(5);
+
+    proxyBox = createMockUtxo(proxyOutput);
 
     // Create active raffle box
     activeRaffleBuilder = new ActiveRaffleBuilder()
@@ -137,22 +124,17 @@ describe('DonationProxy', () => {
      */
     it('should create a token-goal donation via donation proxy successfully', () => {
       const collectingTokenId = '0'.repeat(64);
-      const proxyResult = new ProxyFactory(Network.Mainnet)
-        .getDonationGenerator()
-        .generateProxy({
-          ...proxyParams,
-          requiredTokenId: collectingTokenId,
-        });
 
       // Create donation proxy input box including collecting token
-      const proxyBox = new ErgoUnsignedInput(
-        mockUTxO({
-          ergoTree: ErgoAddress.fromBase58(proxyResult.proxyAddress).ergoTree,
-          value: proxyResult.requiredNanoErgs,
-          creationHeight: 5,
-          assets: proxyResult.requiredTokens,
-        }),
-      );
+      const proxyOutput = new ProxyFactory(Network.Mainnet)
+        .getDonationGenerator()
+        .generateProxyBox({
+          ...proxyParams,
+          requiredTokenId: collectingTokenId,
+        })
+        .setCreationHeight(5);
+
+      const proxyBox = createMockUtxo(proxyOutput);
 
       // Change active raffle to have collecting token
       activeRaffleBuilder = activeRaffleBuilder
@@ -355,18 +337,15 @@ describe('DonationProxy', () => {
 
       // Create donation proxy input box including collecting token
       proxyParams.requiredTokenId = '0'.repeat(64);
-      proxyResult = new ProxyFactory(Network.Mainnet)
-        .getDonationGenerator()
-        .generateProxy(proxyParams);
 
-      proxyBox = new ErgoUnsignedInput(
-        mockUTxO({
-          ergoTree: ErgoAddress.fromBase58(proxyResult.proxyAddress).ergoTree,
-          value: 100000000000n,
-          creationHeight: 5,
-          assets: proxyResult.requiredTokens,
-        }),
-      );
+      // Create donation proxy input box
+      const proxyOutput = new ProxyFactory(Network.Mainnet)
+        .getDonationGenerator()
+        .generateProxyBox(proxyParams)
+        .setCreationHeight(5)
+        .setValue(100000000000n);
+
+      proxyBox = createMockUtxo(proxyOutput);
 
       // Create refund box with missing tokens (simulating burnt tokens)
       const refundBoxWithBurntTokens = new OutputBuilder(

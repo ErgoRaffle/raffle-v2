@@ -3,9 +3,22 @@
   //
   // Tokens:
   //   0: GiftToken (optional)
+  //
+  // SELF Registers:
+  //   R4: Coll[Long] = [
+  //         expirationHeight,
+  //         raffleDeadline,
+  //         winnerIndex,
+  //         txFee
+  //       ]
+  //
+  //   R5: Coll[Coll[Byte]] = [
+  //         raffleId,
+  //         giftGiverErgoTreeHash
+  //       ]
+  //
   // Context:
-  //   C0: Coll[Long]: [WinnerIndex]
-  //   C1: Coll[Coll[Byte]]: [RaffleId, GiftGiverAddress]
+  //   C0: Coll[Byte]: [GiftGiverErgoTree]
   //
   // Spent in 2 transactions:
   //   - New gift creation
@@ -13,15 +26,18 @@
   //   - Proxy redeem
   //      [Proxy] --> [GiftGiverAddress]
 
-  // Contract parameters (to be filled by generator)
-  // User parameters
-  val raffleId = fromBase64("RAFFLE_ID_B64")
-  val winnerIndex = WINNER_INDEX
-  val giftGiverErgoTreeHash = fromBase64("GIFT_GIVER_ERGO_TREE_HASH_B64")
+  // Contract parameters (to be filled from SELF registers)
   val giftScriptHash = fromBase64("GIFT_SCRIPT_HASH_B64")
-  val txFee = TX_FEE
-  val raffleDeadline = DEADLINE
-  val expirationHeight = EXPIRATION_HEIGHT
+
+  // User parameters
+  val expirationHeight = SELF.R4[Coll[Long]].get(0)
+  val raffleDeadline = SELF.R4[Coll[Long]].get(1)
+  val winnerIndex = SELF.R4[Coll[Long]].get(2)
+  val txFee =  SELF.R4[Coll[Long]].get(3)
+
+  val raffleId = SELF.R5[Coll[Coll[Byte]]].get(0)
+  val giftGiverErgoTreeHash = SELF.R5[Coll[Coll[Byte]]].get(1)
+
 
   if(HEIGHT < expirationHeight && HEIGHT < raffleDeadline) {
     // Gift addition transaction

@@ -1,9 +1,18 @@
 import { raffleInfo } from '@ergo-raffle/contracts';
-import { Network, TokenAmount } from '@fleet-sdk/core';
+import { NonMandatoryRegisters } from '@fleet-sdk/common';
+import {
+  ConstantInput,
+  Network,
+  SByte,
+  SColl,
+  SInt,
+  SLong,
+  TokenAmount,
+} from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
 
 import { CreationProxyParams } from '../types';
-import { bigIntToUint8Array, hexToBase64, stringToBase64 } from '../utils';
+import { bigIntToUint8Array, hexToBase64 } from '../utils';
 import { BaseProxyGenerator } from './baseProxyGenerator';
 
 /**
@@ -15,6 +24,7 @@ export class CreationProxyGenerator extends BaseProxyGenerator<CreationProxyPara
 
   constructor(networkType: Network = Network.Mainnet) {
     super(networkType);
+    this.scriptAddress = this.buildScriptAddress(this.scriptName);
   }
 
   /**
@@ -54,19 +64,11 @@ export class CreationProxyGenerator extends BaseProxyGenerator<CreationProxyPara
   /**
    * Fill contract parameters into ErgoScript template
    * @param script - ErgoScript template
-   * @param params - Parameters to fill
    * @returns Filled ErgoScript
    */
-  protected fillContractParameters = (
-    script: string,
-    params: CreationProxyParams,
-  ): string => {
+  protected fillContractParameters = (script: string): string => {
     let filledScript = script;
     const scriptParameters: Map<string, string> = new Map();
-    scriptParameters.set(
-      'INACTIVE_RAFFLE_SCRIPT_HASH',
-      raffleInfo.addresses.inactiveRaffle,
-    );
     scriptParameters.set(
       'SERVICE_NFT_B64',
       hexToBase64(raffleInfo.tokens.serviceNft),
@@ -75,60 +77,6 @@ export class CreationProxyGenerator extends BaseProxyGenerator<CreationProxyPara
       'RAFFLE_LICENSE_B64',
       hexToBase64(raffleInfo.tokens.raffleLicense),
     );
-    scriptParameters.set(
-      'EXPIRATION_HEIGHT',
-      params.expirationHeight.toString(),
-    );
-    scriptParameters.set('TICKET_PRICE', params.ticketPrice.toString());
-    scriptParameters.set('GOAL', params.goal.toString());
-    scriptParameters.set('DEADLINE', params.raffleDeadline.toString());
-    scriptParameters.set('WINNER_COUNT', params.winnerCount.toString());
-    scriptParameters.set('WINNERS_PERCENT', params.winnersPercent.toString());
-    scriptParameters.set('TX_FEE', params.txFee.toString());
-    scriptParameters.set(
-      'CREATOR_ERGO_TREE_HASH_B64',
-      hexToBase64(params.creatorErgoTreeHash),
-    );
-    scriptParameters.set(
-      'IMPLEMENTOR_ERGO_TREE_HASH_B64',
-      hexToBase64(params.implementorErgoTreeHash),
-    );
-    const winnersPercentListHash = Buffer.from(
-      blake2b256(
-        Buffer.concat(
-          params.winnersPercentList.map((n) => bigIntToUint8Array(n)),
-        ),
-      ),
-    ).toString('base64');
-    scriptParameters.set(
-      'WINNERS_PERCENT_LIST_HASH_B64',
-      winnersPercentListHash,
-    );
-    scriptParameters.set('NAME_B64', stringToBase64(params.name));
-    scriptParameters.set('DESCRIPTION_B64', stringToBase64(params.description));
-
-    // TODO: Fix pictures serialization and constraints
-    // if(params.pictures) {
-    //   const pictures = params.pictures.map((picture) => Buffer.from(stringToBase64(picture)));
-    //   const x = SColl(SColl(SByte), [
-    //     ...pictures.map((picture) => Array.from(picture)),
-    //   ]).toHex();
-    //   scriptParameters.set('PICTURES_B64', x);
-    // }
-
-    if (params.collectingTokenId) {
-      scriptParameters.set(
-        'COLLECTING_TOKEN_ID_B64',
-        hexToBase64(params.collectingTokenId),
-      );
-      scriptParameters.set('IS_ERG_GOAL', 'false');
-    } else {
-      scriptParameters.set(
-        'COLLECTING_TOKEN_ID_B64',
-        hexToBase64('0'.repeat(64)),
-      );
-      scriptParameters.set('IS_ERG_GOAL', 'true');
-    }
 
     // Setup parameter replacements from scriptParameters
     for (const [key, value] of scriptParameters) {
@@ -136,6 +84,67 @@ export class CreationProxyGenerator extends BaseProxyGenerator<CreationProxyPara
     }
 
     return filledScript;
+  };
+
+  /**
+   * Return registers with contract parameters
+   * @param params - Contract parameters
+   * @returns Registers with contract parameters
+   */
+  protected getRegisters = (
+    params: CreationProxyParams,
+  ): NonMandatoryRegisters<ConstantInput> => {
+    /**
+     * Correct output registers with contract parameters
+     * R4: SColl(SLong, [expirationHeight, winnersPercent, ticketPrice, goal, raffleDeadline, txFee])
+     * R5: SColl(SColl(SByte), [serviceNft, raffleLicense, implementorErgoTreeHash, creatorErgoTreeHash, winnersPercentListHash, collectingTokenId])
+     * R6: SColl(SColl(SByte), [name, description, pictures])
+     * R7: SColl(SInt, [winnersCount, isErgGoal])
+     */
+
+    let isErgGoal: number;
+    let collectingTokenId: string;
+
+    if (params.collectingTokenId) {
+      collectingTokenId = params.collectingTokenId;
+      isErgGoal = 0;
+    } else {
+      collectingTokenId = hexToBase64('0'.repeat(64));
+      isErgGoal = 1;
+    }
+
+    const winnersPercentListHash = Buffer.from(
+      blake2b256(
+        Buffer.concat(
+          params.winnersPercentList.map((n) => bigIntToUint8Array(n)),
+        ),
+      ),
+    ).toString('base64');
+
+    return {
+      R4: SColl(SLong, [
+        BigInt(params.expirationHeight),
+        BigInt(params.raffleDeadline),
+        BigInt(params.winnersPercent),
+        BigInt(params.ticketPrice),
+        BigInt(params.goal),
+        BigInt(params.txFee),
+      ]).toHex(),
+      R5: SColl(SColl(SByte), [
+        Array.from(Buffer.from(params.implementorErgoTreeHash, 'hex')),
+        Array.from(Buffer.from(params.creatorErgoTreeHash, 'hex')),
+        Array.from(Buffer.from(winnersPercentListHash, 'base64')),
+        Array.from(Buffer.from(collectingTokenId, 'hex')),
+      ]).toHex(),
+      R6: SColl(SColl(SByte), [
+        Array.from(Buffer.from(params.name)),
+        Array.from(Buffer.from(params.description)),
+        ...(params.pictures
+          ? params.pictures.map((pic) => Array.from(Buffer.from(pic)))
+          : []),
+      ]).toHex(),
+      R7: SColl(SInt, [params.winnerCount, isErgGoal]).toHex(),
+    };
   };
 
   /**

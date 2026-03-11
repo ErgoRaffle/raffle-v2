@@ -1,8 +1,16 @@
 import { raffleInfo } from '@ergo-raffle/contracts';
-import { Network, TokenAmount } from '@fleet-sdk/core';
+import { NonMandatoryRegisters } from '@fleet-sdk/common';
+import {
+  ConstantInput,
+  Network,
+  SByte,
+  SColl,
+  SLong,
+  TokenAmount,
+} from '@fleet-sdk/core';
 
-import { AddGiftProxyParams, ProxyGenerationResult } from '../types';
-import { hashAndSerializeToBase64, hexToBase64 } from '../utils';
+import { AddGiftProxyParams } from '../types';
+import { hashAndSerializeToBase64 } from '../utils';
 import { BaseProxyGenerator } from './baseProxyGenerator';
 
 /**
@@ -14,17 +22,8 @@ export class AddGiftProxyGenerator extends BaseProxyGenerator<AddGiftProxyParams
 
   constructor(networkType: Network = Network.Mainnet) {
     super(networkType);
+    this.scriptAddress = this.buildScriptAddress(this.scriptName);
   }
-  /**
-   * Generate proxy for add gift transaction
-   * @param params - Add gift parameters from API
-   * @returns ProxyGenerationResult with generated address and requirements
-   */
-  generateAddGiftProxy = (
-    params: AddGiftProxyParams,
-  ): ProxyGenerationResult => {
-    return this.generateProxy(params);
-  };
 
   /**
    * Validate add gift-specific parameters
@@ -51,37 +50,44 @@ export class AddGiftProxyGenerator extends BaseProxyGenerator<AddGiftProxyParams
   /**
    * Fill contract parameters into ErgoScript template
    * @param script - ErgoScript template
-   * @param params - Parameters to fill
    * @returns Filled ErgoScript
    */
-  protected fillContractParameters = (
-    script: string,
-    params: AddGiftProxyParams,
-  ): string => {
+  protected fillContractParameters = (script: string): string => {
     const scriptParameters: Map<string, string> = new Map();
-    scriptParameters.set('RAFFLE_ID_B64', hexToBase64(params.raffleId));
-    scriptParameters.set('DEADLINE', params.raffleDeadline.toString());
-    scriptParameters.set('WINNER_INDEX', params.winnerIndex.toString());
-    scriptParameters.set(
-      'GIFT_GIVER_ERGO_TREE_HASH_B64',
-      hexToBase64(params.giftGiverErgoTreeHash),
-    );
+
     scriptParameters.set(
       'GIFT_SCRIPT_HASH_B64',
       hashAndSerializeToBase64(raffleInfo.addresses.gift),
     );
-    scriptParameters.set(
-      'EXPIRATION_HEIGHT',
-      params.expirationHeight.toString(),
-    );
-    scriptParameters.set('TX_FEE', params.txFee.toString());
 
-    // Setup parameter replacements from scriptParameters
+    // Setup parameter replacements
     let filledScript = script;
     for (const [key, value] of scriptParameters) {
       filledScript = filledScript.replace(key, value);
     }
     return filledScript;
+  };
+
+  /**
+   * Return registers with contract parameters
+   * @param params - Contract parameters
+   * @returns Registers with contract parameters
+   */
+  protected getRegisters = (
+    params: AddGiftProxyParams,
+  ): NonMandatoryRegisters<ConstantInput> => {
+    return {
+      R4: SColl(SLong, [
+        BigInt(params.expirationHeight),
+        BigInt(params.raffleDeadline),
+        BigInt(params.winnerIndex),
+        BigInt(params.txFee),
+      ]).toHex(),
+      R5: SColl(SColl(SByte), [
+        Array.from(Buffer.from(params.raffleId, 'hex')),
+        Array.from(Buffer.from(params.giftGiverErgoTreeHash, 'hex')),
+      ]).toHex(),
+    };
   };
 
   /**

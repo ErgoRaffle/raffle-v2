@@ -1,30 +1,22 @@
 import { ServiceBuilder } from '@ergo-raffle/boxes';
-import { raffleInfo } from '@ergo-raffle/contracts';
 import { CreationTxBuilder } from '@ergo-raffle/transactions';
 import { Amount, Network } from '@fleet-sdk/common';
-import {
-  ErgoUnsignedInput,
-  ErgoAddress,
-  Box,
-  TransactionBuilder,
-  OutputBuilder,
-} from '@fleet-sdk/core';
+import { Box, TransactionBuilder, OutputBuilder } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
-import { KeyedMockChainParty, mockUTxO } from '@fleet-sdk/mock-chain';
+import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
 import { Buffer } from 'buffer';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-import { ProxyFactory } from '../lib/proxyFactory';
-import { CreationProxyParams, ProxyGenerationResult } from '../lib/types';
+import { CreationProxyParams, ProxyFactory } from '../lib';
 import { createMockUtxo, CustomMockChain } from './testUtils';
 
 describe('CreationProxy', () => {
   let chain: CustomMockChain;
   let creator: KeyedMockChainParty;
+  let service: KeyedMockChainParty;
   let implementer: KeyedMockChainParty;
   let proxyBox: Box<Amount>;
   let proxyParams: CreationProxyParams;
-  let proxyResult: ProxyGenerationResult;
 
   beforeAll(() => {
     // Set up mock chain
@@ -32,6 +24,7 @@ describe('CreationProxy', () => {
     chain.setTip(100);
 
     // Create parties
+    service = chain.newParty('service');
     creator = chain.newParty('creator');
     implementer = chain.newParty('implementer');
 
@@ -39,9 +32,9 @@ describe('CreationProxy', () => {
     const proxyFactory = new ProxyFactory(Network.Mainnet);
     const proxyGenerator = proxyFactory.getCreationGenerator();
 
-    const winnerCount = 1;
+    const winnerCount = 2;
     const winnersPercent = 200n; // 20%
-    const winnersPercentList = [1000n]; // [1000] for 1 winner
+    const winnersPercentList = [600n, 400n]; // [1000] for 1 winner
 
     proxyParams = {
       creationFee: 1_000_000_000n,
@@ -67,17 +60,12 @@ describe('CreationProxy', () => {
       expirationHeight: chain.height + 100,
     };
 
-    proxyResult = proxyGenerator.generateProxy(proxyParams);
-
     // Create creation proxy input box
-    proxyBox = new ErgoUnsignedInput(
-      mockUTxO({
-        ergoTree: ErgoAddress.fromBase58(proxyResult.proxyAddress).ergoTree,
-        value: proxyResult.requiredNanoErgs,
-        creationHeight: 5,
-        assets: [],
-      }),
-    );
+    const proxyOutput = proxyGenerator
+      .generateProxyBox(proxyParams)
+      .setCreationHeight(5);
+
+    proxyBox = createMockUtxo(proxyOutput);
   });
 
   describe('raffle creation transaction', () => {
@@ -85,7 +73,7 @@ describe('CreationProxy', () => {
     beforeEach(() => {
       // Create service input box using service builder
       const serviceOutputBox = new ServiceBuilder()
-        .setOwnerAddress(raffleInfo.addresses.service)
+        .setOwnerAddress(service.address.toString())
         .setValue(1_000_000_000n)
         .setCreationHeight(4)
         .setServiceFeePercent(100n)
@@ -109,7 +97,7 @@ describe('CreationProxy', () => {
         .setWinnersSharePercent(BigInt(proxyParams.winnersPercent))
         .setGoal(proxyParams.goal)
         .setInactiveRaffleValue(
-          proxyResult.requiredNanoErgs - proxyParams.txFee * BigInt(2),
+          BigInt(proxyBox.value.toString()) - proxyParams.txFee * BigInt(2),
         )
         .setRaffleName(proxyParams.name)
         .setRaffleDescription(proxyParams.description)
@@ -152,19 +140,16 @@ describe('CreationProxy', () => {
      */
     it('should create a token-goal raffle via creation proxy successfully', () => {
       proxyParams.collectingTokenId = '0'.repeat(64);
-      const proxyResult = new ProxyFactory(Network.Mainnet)
-        .getCreationGenerator()
-        .generateProxy(proxyParams);
 
       // Create creation proxy input box including collecting token
-      const proxyBox = new ErgoUnsignedInput(
-        mockUTxO({
-          ergoTree: ErgoAddress.fromBase58(proxyResult.proxyAddress).ergoTree,
-          value: 100000000000n,
-          creationHeight: 5,
-          assets: proxyResult.requiredTokens || [],
-        }),
-      );
+      const proxyOutput = new ProxyFactory(Network.Mainnet)
+        .getCreationGenerator()
+        .generateProxyBox(proxyParams)
+        .setCreationHeight(5)
+        .setValue(100000000000n);
+
+      const proxyBox = createMockUtxo(proxyOutput);
+
       createRaffleBuilder.setCollectingTokenId(proxyParams.collectingTokenId);
 
       // Execute transaction
@@ -223,11 +208,14 @@ describe('CreationProxy', () => {
       ],
       [
         'winnersPercentList',
-        (builder) => builder.setWinnersPercent([2000n]), // Wrong winners percent list
+        (builder) => builder.setWinnersPercent([500n, 500n]),
       ],
       [
         'winnerCount',
-        (builder) => builder.setWinnersCount(proxyParams.winnerCount + 1),
+        (builder) =>
+          builder
+            .setWinnersCount(proxyParams.winnerCount + 1)
+            .setWinnersPercent([500n, 500n, 0n]),
       ],
     ];
     it.each(testCases)(
@@ -243,6 +231,34 @@ describe('CreationProxy', () => {
         }).toThrow();
       },
     );
+
+    /**
+     * @target should fail creation transaction with incorrect token for a token-goal raffle
+     * @scenario
+     * - create proxy input box with a collecting token
+     * - use a different token to construct the creation transaction
+     * - execute transaction
+     * - check execution throws error
+     * @expected
+     * - transaction execution should throw an error
+     */
+    it('should fail creation transaction with incorrect token for a token-goal raffle', () => {
+      proxyParams.collectingTokenId = '0'.repeat(64);
+
+      // Create creation proxy input box including collecting token
+      const proxyOutput = new ProxyFactory(Network.Mainnet)
+        .getCreationGenerator()
+        .generateProxyBox(proxyParams)
+        .setCreationHeight(5)
+        .setValue(100000000000n);
+
+      const proxyBox = createMockUtxo(proxyOutput);
+      const transaction = createRaffleBuilder.setFeeBoxes([proxyBox]).build();
+
+      expect(() => {
+        chain.executeTx(transaction, []);
+      }).toThrow();
+    });
   });
 
   describe('refund transaction', () => {
@@ -376,18 +392,13 @@ describe('CreationProxy', () => {
 
       // Create creation proxy input box including collecting token
       proxyParams.collectingTokenId = '0'.repeat(64);
-      proxyResult = new ProxyFactory(Network.Mainnet)
-        .getCreationGenerator()
-        .generateProxy(proxyParams);
 
-      proxyBox = new ErgoUnsignedInput(
-        mockUTxO({
-          ergoTree: ErgoAddress.fromBase58(proxyResult.proxyAddress).ergoTree,
-          value: 100000000000n,
-          creationHeight: 5,
-          assets: proxyResult.requiredTokens || [],
-        }),
-      );
+      const proxyOutput = new ProxyFactory(Network.Mainnet)
+        .getCreationGenerator()
+        .generateProxyBox(proxyParams)
+        .setCreationHeight(5);
+
+      proxyBox = createMockUtxo(proxyOutput);
 
       // Create refund box with missing tokens (simulating burnt tokens)
       const refundBoxWithBurntTokens = new OutputBuilder(

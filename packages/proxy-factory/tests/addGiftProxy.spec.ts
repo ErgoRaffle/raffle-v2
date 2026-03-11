@@ -1,20 +1,13 @@
 import { WinnerBuilder } from '@ergo-raffle/boxes';
 import { AddGiftTxBuilder } from '@ergo-raffle/transactions';
 import { Amount, Network } from '@fleet-sdk/common';
-import {
-  ErgoUnsignedInput,
-  ErgoAddress,
-  Box,
-  TransactionBuilder,
-  OutputBuilder,
-} from '@fleet-sdk/core';
+import { Box, TransactionBuilder, OutputBuilder } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
-import { KeyedMockChainParty, mockUTxO } from '@fleet-sdk/mock-chain';
+import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
 import { Buffer } from 'buffer';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-import { ProxyFactory } from '../lib/proxyFactory';
-import { AddGiftProxyParams, ProxyGenerationResult } from '../lib/types';
+import { AddGiftProxyParams, ProxyFactory } from '../lib';
 import { createMockUtxo, CustomMockChain } from './testUtils';
 
 describe('AddGiftProxy', () => {
@@ -25,7 +18,6 @@ describe('AddGiftProxy', () => {
   let winnerBox: Box<Amount>;
   let winnerBuilder: WinnerBuilder;
   let proxyParams: AddGiftProxyParams;
-  let proxyResult: ProxyGenerationResult;
   let raffleId: string;
   let winnerIndex: number;
 
@@ -56,17 +48,12 @@ describe('AddGiftProxy', () => {
       txFee: 1_000_000n,
     };
 
-    proxyResult = proxyGenerator.generateProxy(proxyParams);
-
     // Create add gift proxy input box
-    proxyBox = new ErgoUnsignedInput(
-      mockUTxO({
-        ergoTree: ErgoAddress.fromBase58(proxyResult.proxyAddress).ergoTree,
-        value: proxyResult.requiredNanoErgs,
-        creationHeight: 5,
-        assets: [],
-      }),
-    );
+    const proxyOutput = proxyGenerator
+      .generateProxyBox(proxyParams)
+      .setCreationHeight(5);
+
+    proxyBox = createMockUtxo(proxyOutput);
 
     // Create winner box
     winnerBuilder = new WinnerBuilder()
@@ -132,19 +119,22 @@ describe('AddGiftProxy', () => {
     it('should create a gift with tokens via add gift proxy successfully', () => {
       const giftTokenId = '4'.repeat(64);
       const giftTokenAmount = 10n;
-      const proxyBox = new ErgoUnsignedInput(
-        mockUTxO({
-          ergoTree: ErgoAddress.fromBase58(proxyResult.proxyAddress).ergoTree,
-          value: proxyResult.requiredNanoErgs,
-          creationHeight: 5,
-          assets: [
-            {
-              tokenId: giftTokenId,
-              amount: giftTokenAmount,
-            },
-          ],
-        }),
-      );
+
+      const proxyGenerator = new ProxyFactory(
+        Network.Mainnet,
+      ).getAddGiftGenerator();
+
+      const proxyOutput = proxyGenerator
+        .generateProxyBox(proxyParams)
+        .setCreationHeight(5)
+        .addTokens([
+          {
+            tokenId: giftTokenId,
+            amount: giftTokenAmount,
+          },
+        ]);
+
+      const proxyBox = createMockUtxo(proxyOutput);
 
       // Add gift tokens to the builder
       addGiftTxBuilder
@@ -350,19 +340,23 @@ describe('AddGiftProxy', () => {
 
       // Create add gift proxy input box including gift token
       const giftTokenId = '0'.repeat(64);
-      proxyBox = new ErgoUnsignedInput(
-        mockUTxO({
-          ergoTree: ErgoAddress.fromBase58(proxyResult.proxyAddress).ergoTree,
-          value: 100000000000n,
-          creationHeight: 5,
-          assets: [
-            {
-              tokenId: giftTokenId,
-              amount: 10n,
-            },
-          ],
-        }),
-      );
+
+      const proxyGenerator = new ProxyFactory(
+        Network.Mainnet,
+      ).getAddGiftGenerator();
+
+      const proxyOutput = proxyGenerator
+        .generateProxyBox(proxyParams)
+        .setCreationHeight(5)
+        .setValue(100000000000n)
+        .addTokens([
+          {
+            tokenId: giftTokenId,
+            amount: 10n,
+          },
+        ]);
+
+      const proxyBox = createMockUtxo(proxyOutput);
 
       // Create refund box with missing tokens (simulating burnt tokens)
       const refundBoxWithBurntTokens = new OutputBuilder(

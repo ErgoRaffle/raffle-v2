@@ -46,7 +46,6 @@ export class ServiceBuilder {
    */
   setOwnerAddress = (ownerAddress: string): this => {
     const ownerErgoAddress = ErgoAddress.fromBase58(ownerAddress);
-    this.ergoTree = ownerErgoAddress.ergoTree;
     this.ownerErgoTreeHash = blake2b256(
       Buffer.from(ownerErgoAddress.ergoTree, 'hex'),
     );
@@ -185,7 +184,6 @@ export class ServiceBuilder {
    * @throws Error if any required parameter is missing
    */
   private validate = (): void => {
-    if (!this.ergoTree) throw new Error('ErgoTree not set');
     if (!this.ownerErgoTreeHash) throw new Error('Owner ErgoTree hash not set');
     if (!this.value) throw new Error('Value not set');
     if (!this.creationHeight) throw new Error('Creation height not set');
@@ -207,7 +205,11 @@ export class ServiceBuilder {
   build = (): OutputBuilder => {
     this.validate();
 
-    return new OutputBuilder(this.value!, this.ergoTree!, this.creationHeight!)
+    return new OutputBuilder(
+      this.value!,
+      this.ergoTree || raffleInfo.addresses.service,
+      this.creationHeight!,
+    )
       .addTokens([
         {
           tokenId: this.serviceNftId || raffleInfo.tokens.serviceNft,
