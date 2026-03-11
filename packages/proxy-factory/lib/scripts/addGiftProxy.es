@@ -18,8 +18,7 @@
   //       ]
   //
   // Context:
-  //   C0: Coll[Long]: [WinnerIndex]
-  //   C1: Coll[Coll[Byte]]: [RaffleId, GiftGiverAddress]
+  //   C0: Coll[Byte]: [GiftGiverErgoTree]
   //
   // Spent in 2 transactions:
   //   - New gift creation

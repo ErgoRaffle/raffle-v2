@@ -69,11 +69,11 @@ export class AddGiftProxyGenerator extends BaseProxyGenerator<AddGiftProxyParams
   };
 
   /**
-   * Set registers with contract parameters
+   * Return registers with contract parameters
    * @param params - Contract parameters
-   * @returns Filled registers
+   * @returns Registers with contract parameters
    */
-  protected fillRegisters = (
+  protected getRegisters = (
     params: AddGiftProxyParams,
   ): NonMandatoryRegisters<ConstantInput> => {
     return {

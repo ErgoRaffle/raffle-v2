@@ -82,7 +82,7 @@ export class DonationProxyGenerator extends BaseProxyGenerator<DonationProxyPara
    * @param params - Contract parameters
    * @returns Filled registers
    */
-  protected fillRegisters = (
+  protected getRegisters = (
     params: DonationProxyParams,
   ): NonMandatoryRegisters<ConstantInput> => {
     return {

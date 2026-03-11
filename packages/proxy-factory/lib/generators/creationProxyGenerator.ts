@@ -87,19 +87,19 @@ export class CreationProxyGenerator extends BaseProxyGenerator<CreationProxyPara
   };
 
   /**
-   * Set registers with contract parameters
+   * Return registers with contract parameters
    * @param params - Contract parameters
-   * @returns Filled registers
+   * @returns Registers with contract parameters
    */
-  protected fillRegisters = (
+  protected getRegisters = (
     params: CreationProxyParams,
   ): NonMandatoryRegisters<ConstantInput> => {
     /**
      * Correct output registers with contract parameters
-     * R4: SColl(SLong, [expirationHeight, winnersPercent, ticketPrice, goal, raffleDeadline, txFee, isErgGoal])
+     * R4: SColl(SLong, [expirationHeight, winnersPercent, ticketPrice, goal, raffleDeadline, txFee])
      * R5: SColl(SColl(SByte), [serviceNft, raffleLicense, implementorErgoTreeHash, creatorErgoTreeHash, winnersPercentListHash, collectingTokenId])
      * R6: SColl(SColl(SByte), [name, description, pictures])
-     * R7: SInt(winnerCount)
+     * R7: SColl(SInt, [winnersCount, isErgGoal])
      */
 
     let isErgGoal: number;
@@ -129,13 +129,12 @@ export class CreationProxyGenerator extends BaseProxyGenerator<CreationProxyPara
         BigInt(params.ticketPrice),
         BigInt(params.goal),
         BigInt(params.txFee),
-        BigInt(isErgGoal),
       ]).toHex(),
       R5: SColl(SColl(SByte), [
-        Array.from(Uint8Array.from(params.implementorErgoTreeHash)),
-        Array.from(Uint8Array.from(params.creatorErgoTreeHash)),
-        Array.from(Uint8Array.from(winnersPercentListHash)),
-        Array.from(Uint8Array.from(collectingTokenId)),
+        Array.from(Buffer.from(params.implementorErgoTreeHash, 'hex')),
+        Array.from(Buffer.from(params.creatorErgoTreeHash, 'hex')),
+        Array.from(Buffer.from(winnersPercentListHash, 'base64')),
+        Array.from(Buffer.from(collectingTokenId, 'hex')),
       ]).toHex(),
       R6: SColl(SColl(SByte), [
         Array.from(Buffer.from(params.name)),
@@ -144,7 +143,7 @@ export class CreationProxyGenerator extends BaseProxyGenerator<CreationProxyPara
           ? params.pictures.map((pic) => Array.from(Buffer.from(pic)))
           : []),
       ]).toHex(),
-      R7: SInt(params.winnerCount).toHex(),
+      R7: SColl(SInt, [params.winnerCount, isErgGoal]).toHex(),
     };
   };
 

@@ -4,7 +4,7 @@
   // Tokens:
   //   0: CollectingToken (optional)
   //
-  // SELF Registers:
+  // Registers:
   //   R4: Coll[Long] = [
   //         expirationHeight,
   //         raffleDeadline,
@@ -12,7 +12,6 @@
   //         ticketPrice,
   //         goal,
   //         txFee,
-  //         isErgGoal (0 or 1)
   //       ]
   //
   //   R5: Coll[Coll[Byte]] = [
@@ -28,7 +27,10 @@
   //         pictures (optional, from index 2 onward)
   //       ]
   //
-  //   R7: Int = winnerCount
+  //   R7: Coll[Int] = [
+  //         winnersCount,
+  //         isErgGoal
+  //       ]
   //
   // Context:
   //   C0: Coll[Long]: WinnersPercentList (in raffle creation tx)
@@ -51,14 +53,14 @@
   val ticketPrice = SELF.R4[Coll[Long]].get(3)
   val goal = SELF.R4[Coll[Long]].get(4)
   val txFee = SELF.R4[Coll[Long]].get(5)
-  val isErgGoal = SELF.R4[Coll[Long]].get(6) == 1
 
   val implementorErgoTreeHash = SELF.R5[Coll[Coll[Byte]]].get(0)
   val creatorErgoTreeHash = SELF.R5[Coll[Coll[Byte]]].get(1)
   val winnersPercentListHash = SELF.R5[Coll[Coll[Byte]]].get(2)
   val collectingTokenId = SELF.R5[Coll[Coll[Byte]]].get(3)
 
-  val winnerCount = SELF.R7[Int].get
+  val winnersCount = SELF.R7[Coll[Int]].get(0)
+  val isErgGoal = SELF.R7[Coll[Int]].get(1) == 1
 
 
   if(HEIGHT < expirationHeight && HEIGHT < raffleDeadline) {  
@@ -86,7 +88,7 @@
       inactiveRaffle.R5[Coll[Coll[Byte]]].get(2) == creatorErgoTreeHash,
       inactiveRaffle.R6[Coll[Coll[Byte]]].get == SELF.R6[Coll[Coll[Byte]]].get,
       inactiveRaffle.R7[Coll[Coll[Byte]]].get(1) == winnersPercentListHash,
-      inactiveRaffle.R8[Int].get == winnerCount,
+      inactiveRaffle.R8[Int].get == winnersCount,
       if(!isErgGoal){
         inactiveRaffle.tokens(1)._1 == collectingTokenId
       } else { true },

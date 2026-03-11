@@ -4,7 +4,7 @@
   // Tokens:
   //   0: RequiredToken (optional)
   //
-  // SELF Registers:
+  // Registers:
   //   R4: Coll[Long] = [
   //         expirationHeight,
   //         raffleDeadline,
@@ -18,8 +18,7 @@
   //       ]
   //
   // Context:
-  //   C0: Coll[Long]: [TicketCount, RequiredTokenCount]
-  //   C1: Coll[Coll[Byte]]: [RaffleId, DonatorAddress]
+  //   C0: Coll[Coll[Byte]]: [DonatorErgoTree]
   //
   // Spent in 2 transactions:
   //   - Donation

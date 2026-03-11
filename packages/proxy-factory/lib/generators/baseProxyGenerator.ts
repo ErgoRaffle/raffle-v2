@@ -65,7 +65,7 @@ export abstract class BaseProxyGenerator<
 
     const requiredNanoErgs = this.calculateRequiredNanoErgs(params);
     const requiredTokens = this.calculateRequiredTokens(params);
-    const registers = this.fillRegisters(params);
+    const registers = this.getRegisters(params);
 
     let outputBuilder = new OutputBuilder(requiredNanoErgs, this.scriptAddress)
       .addTokens(requiredTokens)
@@ -75,11 +75,11 @@ export abstract class BaseProxyGenerator<
   };
 
   /**
-   * Set registers with contract parameters
+   * Return registers with contract parameters
    * @param params - Contract parameters
-   * @returns Filled registers
+   * @returns Registers with contract parameters
    */
-  protected abstract fillRegisters: (
+  protected abstract getRegisters: (
     params: ErgoScriptParams,
   ) => NonMandatoryRegisters<ConstantInput>;
 
