@@ -1,9 +1,10 @@
-import { SuccessRaffleBuilder, TicketRedeemBuilder } from '@ergo-raffle/boxes';
-import { raffleInfo } from '@ergo-raffle/contracts';
-import { ReturnRaffleLicenseTxBuilder } from '@ergo-raffle/transactions';
 import { ErgoBox } from '@fleet-sdk/core';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import JsonBigInt from '@rosen-bridge/json-bigint';
+
+import { SuccessRaffleBuilder, TicketRedeemBuilder } from '@ergo-raffle/boxes';
+import { raffleInfo } from '@ergo-raffle/contracts';
+import { ReturnRaffleLicenseTxBuilder } from '@ergo-raffle/transactions';
 
 import { configs } from '../../config';
 import { findServiceBox } from '../../transactions/boxFinder';

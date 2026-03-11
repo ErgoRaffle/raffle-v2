@@ -1,5 +1,5 @@
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
-import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
+import { DefaultLogger } from '@rosen-bridge/abstract-logger';
 import {
   AbstractService,
   Dependency,
@@ -9,15 +9,15 @@ import {
 
 import { configs } from '../config';
 import dataSource from '../dataSource';
-import { ApiService } from './apiService';
 import { BoxLookupService } from './boxLookup/boxLookupService';
 import { DbService } from './dbService';
 import { HealthCheckService } from './healthCheckService';
 import { ScannerService } from './scannerService';
 import { ActivationService } from './transactions/activationService';
-import { AddGiftService } from './transactions/addGiftService';
-import { CreationService } from './transactions/creationService';
-import { DonationService } from './transactions/donationService';
+// TODO: Fix Action Services
+// import { AddGiftService } from './transactions/addGiftService';
+// import { CreationService } from './transactions/creationService';
+// import { DonationService } from './transactions/donationService';
 import { FailureService } from './transactions/failureService';
 import { FeePaymentService } from './transactions/feePaymentService';
 import { GiftAndPrizeService } from './transactions/giftAndPrizeService';
@@ -91,14 +91,6 @@ export class InitializerService extends AbstractService {
       allowedStatuses: [ServiceStatus.running],
     },
     {
-      serviceName: ApiService.name,
-      allowedStatuses: [ServiceStatus.running],
-    },
-    {
-      serviceName: CreationService.name,
-      allowedStatuses: [ServiceStatus.running],
-    },
-    {
       serviceName: ActivationService.name,
       allowedStatuses: [ServiceStatus.running],
     },
@@ -106,14 +98,19 @@ export class InitializerService extends AbstractService {
       serviceName: GiftTokenReceiptService.name,
       allowedStatuses: [ServiceStatus.running],
     },
-    {
-      serviceName: DonationService.name,
-      allowedStatuses: [ServiceStatus.running],
-    },
-    {
-      serviceName: AddGiftService.name,
-      allowedStatuses: [ServiceStatus.running],
-    },
+    // TODO: Fix Action Services
+    // {
+    //   serviceName: CreationService.name,
+    //   allowedStatuses: [ServiceStatus.running],
+    // },
+    // {
+    //   serviceName: DonationService.name,
+    //   allowedStatuses: [ServiceStatus.running],
+    // },
+    // {
+    //   serviceName: AddGiftService.name,
+    //   allowedStatuses: [ServiceStatus.running],
+    // },
     {
       serviceName: FeePaymentService.name,
       allowedStatuses: [ServiceStatus.running],
@@ -183,51 +180,30 @@ export class InitializerService extends AbstractService {
    */
   private initializeAllServices = async (): Promise<void> => {
     // Create logger instances for each service
-    const dbLogger = CallbackLoggerFactory.getInstance().getLogger('DbService');
-    const scannerLogger =
-      CallbackLoggerFactory.getInstance().getLogger('ScannerService');
-    const txPotLogger =
-      CallbackLoggerFactory.getInstance().getLogger('TxPotService');
-    const healthCheckLogger =
-      CallbackLoggerFactory.getInstance().getLogger('HealthCheckService');
-    const boxLookupLogger =
-      CallbackLoggerFactory.getInstance().getLogger('BoxLookupService');
-    const apiLogger =
-      CallbackLoggerFactory.getInstance().getLogger('ApiService');
-    const creationLogger =
-      CallbackLoggerFactory.getInstance().getLogger('CreationService');
-    const activationLogger =
-      CallbackLoggerFactory.getInstance().getLogger('ActivationService');
-    const giftTokenReceiptLogger =
-      CallbackLoggerFactory.getInstance().getLogger('GiftTokenReceiptService');
-    const donationLogger =
-      CallbackLoggerFactory.getInstance().getLogger('DonationService');
-    const addGiftLogger =
-      CallbackLoggerFactory.getInstance().getLogger('AddGiftService');
-    const feePaymentLogger =
-      CallbackLoggerFactory.getInstance().getLogger('FeePaymentService');
-    const prizeCreationLogger = CallbackLoggerFactory.getInstance().getLogger(
-      'PrizeCreationService',
+    const defaultLogger = DefaultLogger.getInstance();
+
+    const dbLogger = defaultLogger.child('DbService');
+    const scannerLogger = defaultLogger.child('ScannerService');
+    const txPotLogger = defaultLogger.child('TxPotService');
+    const healthCheckLogger = defaultLogger.child('HealthCheckService');
+    const boxLookupLogger = defaultLogger.child('BoxLookupService');
+    const activationLogger = defaultLogger.child('ActivationService');
+    const giftTokenReceiptLogger = defaultLogger.child(
+      'GiftTokenReceiptService',
     );
-    const giftAndPrizeLogger = CallbackLoggerFactory.getInstance().getLogger(
-      'GiftAndPrizeService',
-    );
-    const failureLogger =
-      CallbackLoggerFactory.getInstance().getLogger('FailureService');
-    const giftReturnLogger =
-      CallbackLoggerFactory.getInstance().getLogger('GiftReturnService');
-    const winnerRemovalLogger = CallbackLoggerFactory.getInstance().getLogger(
-      'WinnerRemovalService',
-    );
-    const ticketRedeemLogger = CallbackLoggerFactory.getInstance().getLogger(
-      'TicketRedeemService',
-    );
-    const licenseRedeemLogger = CallbackLoggerFactory.getInstance().getLogger(
-      'LicenseRedeemService',
-    );
-    const safeWithdrawalLogger = CallbackLoggerFactory.getInstance().getLogger(
-      'SafeWithdrawalService',
-    );
+    // TODO: Fix Action Services
+    // const creationLogger = defaultLogger.child('CreationService');
+    // const donationLogger = defaultLogger.child('DonationService');
+    // const addGiftLogger = defaultLogger.child('AddGiftService');
+    const feePaymentLogger = defaultLogger.child('FeePaymentService');
+    const prizeCreationLogger = defaultLogger.child('PrizeCreationService');
+    const giftAndPrizeLogger = defaultLogger.child('GiftAndPrizeService');
+    const failureLogger = defaultLogger.child('FailureService');
+    const giftReturnLogger = defaultLogger.child('GiftReturnService');
+    const winnerRemovalLogger = defaultLogger.child('WinnerRemovalService');
+    const ticketRedeemLogger = defaultLogger.child('TicketRedeemService');
+    const licenseRedeemLogger = defaultLogger.child('LicenseRedeemService');
+    const safeWithdrawalLogger = defaultLogger.child('SafeWithdrawalService');
 
     // Initialize database service
     this.logger.debug('Initializing database service');
@@ -268,22 +244,21 @@ export class InitializerService extends AbstractService {
     this.logger.debug('Box lookup service initialized');
 
     // Initialize API service
-    this.logger.debug('Initializing API service');
-    ApiService.init(configs.api, apiLogger);
     this.logger.debug('API service initialized');
 
     // Initialize all transaction services
     this.logger.debug('Initializing transaction services');
 
     // Core transaction services
-    CreationService.init(configs.scanner.node.url, creationLogger);
     ActivationService.init(configs.scanner.node.url, activationLogger);
     GiftTokenReceiptService.init(
       configs.scanner.node.url,
       giftTokenReceiptLogger,
     );
-    DonationService.init(configs.scanner.node.url, donationLogger);
-    AddGiftService.init(configs.scanner.node.url, addGiftLogger);
+    // TODO: Fix Action Services
+    // CreationService.init(configs.scanner.node.url, creationLogger);
+    // DonationService.init(configs.scanner.node.url, donationLogger);
+    // AddGiftService.init(configs.scanner.node.url, addGiftLogger);
     LicenseRedeemService.init(configs.scanner.node.url, licenseRedeemLogger);
     SafeWithdrawalService.init(configs.scanner.node.url, safeWithdrawalLogger);
 
@@ -313,12 +288,12 @@ export class InitializerService extends AbstractService {
     this.serviceManager.register(TxPotService.getInstance());
     this.serviceManager.register(HealthCheckService.getInstance());
     this.serviceManager.register(BoxLookupService.getInstance());
-    this.serviceManager.register(ApiService.getInstance());
-    this.serviceManager.register(CreationService.getInstance());
     this.serviceManager.register(ActivationService.getInstance());
     this.serviceManager.register(GiftTokenReceiptService.getInstance());
-    this.serviceManager.register(DonationService.getInstance());
-    this.serviceManager.register(AddGiftService.getInstance());
+    // TODO: Fix Action Services
+    // this.serviceManager.register(CreationService.getInstance());
+    // this.serviceManager.register(DonationService.getInstance());
+    // this.serviceManager.register(AddGiftService.getInstance());
     this.serviceManager.register(FeePaymentService.getInstance());
     this.serviceManager.register(PrizeCreationService.getInstance());
     this.serviceManager.register(GiftAndPrizeService.getInstance());

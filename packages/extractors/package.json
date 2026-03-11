@@ -1,6 +1,7 @@
 {
   "name": "@ergo-raffle/extractors",
   "version": "0.0.0",
+  "private": true,
   "description": "Raffle v2 related extractors",
   "repository": {
     "type": "git",
@@ -30,14 +31,14 @@
   "dependencies": {
     "@fleet-sdk/core": "^0.12.0",
     "@fleet-sdk/serializer": "^0.11.0",
-    "@rosen-bridge/abstract-extractor": "^2.0.2",
-    "@rosen-bridge/abstract-logger": "^2.0.1",
+    "@rosen-bridge/abstract-extractor": "^3.0.1",
+    "@rosen-bridge/abstract-logger": "^4.0.0",
+    "@rosen-bridge/abstract-scanner": "^1.0.1",
+    "@rosen-bridge/address-codec": "^1.2.0",
+    "@rosen-bridge/bitcoin-scanner": "^1.0.1",
     "@rosen-bridge/extended-typeorm": "^1.0.1",
-    "@rosen-bridge/scanner": "^8.0.0",
-    "@rosen-bridge/scanner-interfaces": "^0.1.0",
-    "@rosen-bridge/winston-logger": "^1.0.2",
-    "lodash-es": "^4.17.21",
-    "sqlite3": "^5.1.7"
+    "@rosen-bridge/scanner-interfaces": "^0.2.2",
+    "lodash-es": "^4.17.21"
   },
   "devDependencies": {
     "@fleet-sdk/compiler": "^0.12.0",

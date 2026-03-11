@@ -1,8 +1,9 @@
+import { ErgoBox } from '@fleet-sdk/core';
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+
 import { TicketRedeemBuilder } from '@ergo-raffle/boxes';
 import { raffleInfo } from '@ergo-raffle/contracts';
 import { TicketRedeemTxBuilder } from '@ergo-raffle/transactions';
-import { ErgoBox } from '@fleet-sdk/core';
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 
 import { configs } from '../../config';
 import {
@@ -78,7 +79,7 @@ export class TicketRedeemService extends AbstractTxService {
 
     for (const ticketEntity of ticketEntities) {
       this.logger.debug(
-        `Creating ticket redeem transaction for ticket box [${ticketEntity.boxId}] on raffle [${raffleId}]`,
+        `Creating ticket redeem transaction for ticket box [${ticketEntity.identifier}] on raffle [${raffleId}]`,
       );
 
       const donatorAddress = ticketEntity.donatorErgoTree;
@@ -100,7 +101,7 @@ export class TicketRedeemService extends AbstractTxService {
       );
 
       this.logger.info(
-        `Ticket redeem transaction for ticket box [${ticketEntity.boxId}] has been added (txId: [${ticketRedeemTx.id}])`,
+        `Ticket redeem transaction for ticket box [${ticketEntity.identifier}] has been added (txId: [${ticketRedeemTx.id}])`,
       );
       currentTicketRedeemBox = new ErgoBox(signedTicketRedeemTx.outputs[0]);
     }

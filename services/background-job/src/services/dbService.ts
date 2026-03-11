@@ -1,7 +1,21 @@
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { BlockEntity } from '@rosen-bridge/abstract-scanner';
+import {
+  IsNull,
+  DataSource,
+  LessThanOrEqual,
+  MoreThan,
+} from '@rosen-bridge/extended-typeorm';
+import {
+  AbstractService,
+  Dependency,
+  ServiceStatus,
+} from '@rosen-bridge/service-manager';
+import { pick } from 'lodash-es';
+
 import {
   RaffleBoxEntity,
   InactiveRaffleEntity,
-  DynamicBoxEntity,
   WinnerEntity,
   RaffleBoxType,
   RaffleDetailsEntity,
@@ -14,26 +28,6 @@ import {
   SafePayEntity,
   ServiceEntity,
 } from '@ergo-raffle/extractors';
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
-import {
-  IsNull,
-  DataSource,
-  LessThanOrEqual,
-  MoreThan,
-} from '@rosen-bridge/extended-typeorm';
-import { BlockEntity } from '@rosen-bridge/scanner';
-import {
-  AbstractService,
-  Dependency,
-  ServiceStatus,
-} from '@rosen-bridge/service-manager';
-import { pick } from 'lodash-es';
-
-import { configs } from '../config';
-import { AddGiftParamsEntity } from '../database/entities/addGiftParamsEntity';
-import { CreationParamsEntity } from '../database/entities/creationParamsEntity';
-import { CreationPictureEntity } from '../database/entities/creationPictureEntity';
-import { DonationParamsEntity } from '../database/entities/donationParamsEntity';
 
 export class DbService extends AbstractService {
   name = 'DbService';
@@ -156,17 +150,6 @@ export class DbService extends AbstractService {
         spendBlock: IsNull(),
       },
     });
-  };
-
-  /**
-   * Get the dynamic boxes by address
-   * @param address - The address
-   * @returns The dynamic boxes
-   */
-  getDynamicBoxes = (address: string): Promise<DynamicBoxEntity[]> => {
-    return this.dataSource
-      .getRepository(DynamicBoxEntity)
-      .find({ where: { address: address, spendBlock: IsNull() } });
   };
 
   /**
@@ -303,13 +286,13 @@ export class DbService extends AbstractService {
 
   /**
    * Get the unspent safe pay boxes
-   * @param boxId - The box id
+   * @param identifier - The box identifier
    * @returns The safe pay boxes
    */
-  getSafePayBoxes = (boxId?: string): Promise<SafePayEntity[]> => {
+  getSafePayBoxes = (identifier?: string): Promise<SafePayEntity[]> => {
     return this.dataSource.getRepository(SafePayEntity).find({
       where: {
-        ...(boxId ? { boxId: boxId } : {}),
+        ...(identifier ? { identifier } : {}),
         spendBlock: IsNull(),
       },
     });
@@ -333,154 +316,5 @@ export class DbService extends AbstractService {
       throw new Error(`No block found for scanner ${scanner}`);
     }
     return pick(block, ['height', 'timestamp']);
-  };
-
-  /**
-   * Save the creation params
-   * @param creationParams - The creation params
-   */
-  saveCreationParams = async (
-    creationParams: Omit<
-      CreationParamsEntity,
-      | 'id'
-      | 'timestamp'
-      | 'isDeleted'
-      | 'serviceAddress'
-      | 'serviceFeePercent'
-      | 'implementerFeePercent'
-      | 'pictures'
-    >,
-    pictures: { content: string; orderIndex: number }[],
-  ): Promise<CreationParamsEntity> => {
-    const serviceSettings = await DbService.getInstance().getServiceBox();
-    if (!serviceSettings) {
-      throw new Error('Service settings not found');
-    }
-
-    // First, insert the creation params to get the generated ID
-    const savedParams = await this.dataSource
-      .getRepository(CreationParamsEntity)
-      .insert({
-        ...creationParams,
-        timestamp: Date.now(),
-        isDeleted: false,
-        serviceAddress: configs.addresses.serviceFeeAddress,
-        serviceFeePercent: serviceSettings.serviceFeePercent,
-        implementerFeePercent: serviceSettings.implementerFeePercent,
-      });
-
-    // Get the generated ID
-    const generatedId = savedParams.identifiers[0].id;
-
-    // Then insert the pictures with the correct foreign key reference
-    await this.dataSource.getRepository(CreationPictureEntity).insert(
-      pictures.map((picture) => ({
-        content: picture.content,
-        orderIndex: picture.orderIndex,
-        params: { id: generatedId }, // Reference the newly created entity
-      })),
-    );
-
-    // Finally, fetch the complete entity with pictures
-    const savedEntity = await this.dataSource
-      .getRepository(CreationParamsEntity)
-      .findOne({
-        where: { id: generatedId },
-        relations: ['pictures'],
-      });
-
-    if (!savedEntity) {
-      throw new Error('Failed to retrieve saved creation params');
-    }
-
-    return savedEntity;
-  };
-
-  /**
-   * Save the donation params
-   * @param donationParams - The donation params
-   */
-  saveDonationParams = async (
-    donationParams: Omit<
-      DonationParamsEntity,
-      | 'id'
-      | 'timestamp'
-      | 'collectingTokenId'
-      | 'collectingTokenAmount'
-      | 'requiredValue'
-    >,
-  ): Promise<DonationParamsEntity> => {
-    const raffleData = await this.getRaffleData(donationParams.raffleId);
-    if (!raffleData) {
-      throw new Error('Raffle not found');
-    }
-    const donationAmount =
-      BigInt(donationParams.ticketCount) * raffleData.ticketPrice;
-    let requiredValue = 0n;
-    let collectingTokenAmount = 0n;
-    if (raffleData.collectingTokenId) {
-      requiredValue = configs.ergo.fee * 4n;
-      collectingTokenAmount = donationAmount;
-    } else {
-      requiredValue = donationAmount + configs.ergo.fee * 4n;
-    }
-    // Insert the donation params to get the generated ID
-    const savedParams = await this.dataSource
-      .getRepository(DonationParamsEntity)
-      .insert({
-        ...donationParams,
-        requiredValue,
-        collectingTokenId: raffleData.collectingTokenId,
-        collectingTokenAmount,
-        timestamp: Date.now(),
-      });
-
-    // Get the generated ID
-    const generatedId = savedParams.identifiers[0].id;
-
-    // Fetch the complete entity
-    const savedEntity = await this.dataSource
-      .getRepository(DonationParamsEntity)
-      .findOne({
-        where: { id: generatedId },
-      });
-
-    if (!savedEntity) {
-      throw new Error('Failed to retrieve saved donation params');
-    }
-
-    return savedEntity;
-  };
-
-  /**
-   * Save the add gift params
-   * @param addGiftParams - The add gift params
-   */
-  saveAddGiftParams = async (
-    addGiftParams: Omit<AddGiftParamsEntity, 'id' | 'timestamp'>,
-  ): Promise<AddGiftParamsEntity> => {
-    // Insert the add gift params to get the generated ID
-    const savedParams = await this.dataSource
-      .getRepository(AddGiftParamsEntity)
-      .insert({
-        ...addGiftParams,
-        timestamp: Date.now(),
-      });
-
-    // Get the generated ID
-    const generatedId = savedParams.identifiers[0].id;
-
-    // Fetch the complete entity
-    const savedEntity = await this.dataSource
-      .getRepository(AddGiftParamsEntity)
-      .findOne({
-        where: { id: generatedId },
-      });
-
-    if (!savedEntity) {
-      throw new Error('Failed to retrieve saved add gift params');
-    }
-
-    return savedEntity;
   };
 }

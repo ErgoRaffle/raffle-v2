@@ -1,19 +1,18 @@
 import { ErgoAddress, Box } from '@fleet-sdk/core';
 import { SConstant, serializeBox } from '@fleet-sdk/serializer';
-import { AbstractInitializableErgoExtractor } from '@rosen-bridge/abstract-extractor';
+import { AbstractErgoBoxExtractor } from '@rosen-bridge/abstract-extractor';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { DataSource } from '@rosen-bridge/extended-typeorm';
-import {
-  OutputBox,
-  ErgoNetworkType,
-  InputExtension,
-} from '@rosen-bridge/scanner-interfaces';
+import { OutputBox, InputExtension } from '@rosen-bridge/scanner-interfaces';
 
 import { SuccessRaffleAction } from '../actions/successRaffle';
 import { SuccessRaffleEntity } from '../entities';
-import { SuccessRaffleBoxInterface } from '../interfaces/types';
+import {
+  ExtractorInitOptions,
+  SuccessRaffleBoxInterface,
+} from '../interfaces/types';
 
-export class SuccessRaffleExtractor extends AbstractInitializableErgoExtractor<
+export class SuccessRaffleExtractor extends AbstractErgoBoxExtractor<
   SuccessRaffleBoxInterface,
   SuccessRaffleEntity
 > {
@@ -25,17 +24,17 @@ export class SuccessRaffleExtractor extends AbstractInitializableErgoExtractor<
   constructor(
     dataSource: DataSource,
     id: string,
-    url: string,
-    address: string,
+    initializeOptions: ExtractorInitOptions,
     raffleLicenseId: string,
     logger?: AbstractLogger,
-    initialize = true,
   ) {
-    super(ErgoNetworkType.Node, url, address, logger, initialize);
+    super({ active: true, ...initializeOptions }, logger);
     this.id = id;
-    this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
+    this.ergoTree = ErgoAddress.fromBase58(
+      initializeOptions.address,
+    ).ergoTree.toString();
     this.raffleLicenseId = raffleLicenseId;
-    this.actions = new SuccessRaffleAction(dataSource, this.logger);
+    this.actions = new SuccessRaffleAction(dataSource, logger);
   }
 
   /**
@@ -48,7 +47,7 @@ export class SuccessRaffleExtractor extends AbstractInitializableErgoExtractor<
    * @param box
    * @return true if the box has the required data and false otherwise
    */
-  hasData = (box: OutputBox): boolean => {
+  hasBoxData = (box: OutputBox): boolean => {
     try {
       return (
         box.ergoTree == this.ergoTree &&
@@ -93,7 +92,7 @@ export class SuccessRaffleExtractor extends AbstractInitializableErgoExtractor<
     }
 
     const data = {
-      boxId: box.boxId.toString(),
+      identifier: box.boxId.toString(),
       txId: box.transactionId,
       raffleId: box.assets[1].tokenId,
       serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(

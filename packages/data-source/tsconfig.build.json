@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "./lib",
+    "composite": true
+  },
+  "references": [
+    { "path": "../../packages/extractors/tsconfig.build.json" },
+    { "path": "../../packages/request-params/tsconfig.build.json" }
+  ]
+}

@@ -42,46 +42,6 @@ export default [
       ],
     }
   },
-  {
-    files: ['**/*.spec.{js,mjs,jsx,ts,tsx}'],
-    rules: {
-      'vitest/no-standalone-expect': [
-        'error',
-        {
-          additionalTestBlockFunctions: [
-            'raffleTest',
-            'activeRaffleTest',
-            'activeRaffleTokenGoalTest',
-            'raffleGiftErgTest',
-            'raffleGiftTokenTest',
-            'giftRedeemTest',
-            'giftRedeemTokenGoalTest',
-            'giftTokenRepoBy1WinnerTest',
-            'giftTokenRepoBy5WinnerTest',
-            'inactiveRaffleBy1WinnerTest',
-            'inactiveRaffleBy5WinnersTest',
-            'raffleDetailsTest',
-            'raffleSafePayTestTest',
-            'raffleServiceTest',
-            'raffleServiceBy10WinnersTest',
-            'successRaffleTest',
-            'successRaffleTokenGoalTest',
-            'ticketTest',
-            'ticketTokenGoalTest',
-            'ticketRedeemTest',
-            'ticketRedeemTokenGoalTest',
-            'ticketRepoBy1WinnerTest',
-            'ticketRepoBy5WinnerTest',
-            'winnerTest',
-            'winnerPrizeTest',
-            'extractorTest',
-            'raffleServiceExtractorTest',
-          ],
-        },
-      ],
-    },
-  },
-
   // Integrate Prettier for Formatting
   prettier,
 ];

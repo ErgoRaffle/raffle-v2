@@ -1,4 +1,3 @@
-import { SafePayBuilder } from '@ergo-raffle/boxes';
 import {
   TransactionBuilder,
   Box,
@@ -8,6 +7,8 @@ import {
   SColl,
   SByte,
 } from '@fleet-sdk/core';
+
+import { SafePayBuilder } from '@ergo-raffle/boxes';
 
 /**
  * Builder class for creating final prize transactions

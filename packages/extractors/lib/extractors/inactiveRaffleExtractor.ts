@@ -1,22 +1,21 @@
 import { Box, ErgoAddress } from '@fleet-sdk/core';
 import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 import {
-  AbstractInitializableErgoExtractor,
+  AbstractErgoBoxExtractor,
   boxHasToken,
 } from '@rosen-bridge/abstract-extractor';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { DataSource } from '@rosen-bridge/extended-typeorm';
-import {
-  OutputBox,
-  ErgoNetworkType,
-  InputExtension,
-} from '@rosen-bridge/scanner-interfaces';
+import { OutputBox, InputExtension } from '@rosen-bridge/scanner-interfaces';
 
 import { InactiveRaffleAction } from '../actions/inactiveRaffleAction';
 import { InactiveRaffleEntity } from '../entities';
-import { InactiveRaffleBoxInterface } from '../interfaces/types';
+import {
+  ExtractorInitOptions,
+  InactiveRaffleBoxInterface,
+} from '../interfaces/types';
 
-export class InactiveRaffleExtractor extends AbstractInitializableErgoExtractor<
+export class InactiveRaffleExtractor extends AbstractErgoBoxExtractor<
   InactiveRaffleBoxInterface,
   InactiveRaffleEntity
 > {
@@ -29,17 +28,17 @@ export class InactiveRaffleExtractor extends AbstractInitializableErgoExtractor<
   constructor(
     dataSource: DataSource,
     id: string,
-    url: string,
-    address: string,
+    initializeOptions: ExtractorInitOptions,
     serviceAddress: string,
     licenseTokenId: string,
     logger?: AbstractLogger,
-    initialize = true,
   ) {
-    super(ErgoNetworkType.Node, url, address, logger, initialize);
+    super({ active: true, ...initializeOptions }, logger);
     this.id = id;
-    this.ergoTree = ErgoAddress.fromBase58(address).ergoTree.toString();
-    this.actions = new InactiveRaffleAction(dataSource, this.logger);
+    this.ergoTree = ErgoAddress.fromBase58(
+      initializeOptions.address,
+    ).ergoTree.toString();
+    this.actions = new InactiveRaffleAction(dataSource, logger);
     this.serviceErgoTree =
       ErgoAddress.fromBase58(serviceAddress).ergoTree.toString();
     this.licenseTokenId = licenseTokenId;
@@ -55,7 +54,7 @@ export class InactiveRaffleExtractor extends AbstractInitializableErgoExtractor<
    * @param box
    * @return true if the box has the required data and false otherwise
    */
-  hasData = (box: OutputBox): boolean => {
+  hasBoxData = (box: OutputBox): boolean => {
     try {
       return (
         box.ergoTree == this.ergoTree &&
@@ -79,7 +78,7 @@ export class InactiveRaffleExtractor extends AbstractInitializableErgoExtractor<
    */
   extractBoxData = (
     box: OutputBox,
-    inputExtensions?: InputExtension[],
+    inputExtensions: InputExtension[],
   ): InactiveRaffleBoxInterface | undefined => {
     const R4Serialized = SConstant.from(box.additionalRegisters!.R4!)
       .data as bigint[];
@@ -107,7 +106,7 @@ export class InactiveRaffleExtractor extends AbstractInitializableErgoExtractor<
     }
 
     const data = {
-      boxId: box.boxId.toString(),
+      identifier: box.boxId.toString(),
       txId: box.transactionId,
       raffleId: Buffer.from(R7Serialized[0]).toString('hex'),
       serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(

@@ -1,8 +1,9 @@
+import { ErgoBox } from '@fleet-sdk/core';
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+
 import { WinnerBuilder } from '@ergo-raffle/boxes';
 import { raffleInfo } from '@ergo-raffle/contracts';
 import { GiftReturnTxBuilder } from '@ergo-raffle/transactions';
-import { ErgoBox } from '@fleet-sdk/core';
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 
 import { configs } from '../../config';
 import { findGiftRedeemBox } from '../../transactions/boxFinder';
@@ -104,7 +105,7 @@ export class GiftReturnService extends AbstractTxService {
     // Process each gift box
     for (const giftEntity of giftEntities) {
       this.logger.debug(
-        `Creating gift return transaction for winner [${winnerBox.boxId}] and gift box [${giftEntity.boxId}]`,
+        `Creating gift return transaction for winner [${winnerBox.boxId}] and gift box [${giftEntity.identifier}]`,
       );
       const donatorAddress = giftEntity.donatorErgoTree;
 
@@ -126,7 +127,7 @@ export class GiftReturnService extends AbstractTxService {
       );
 
       this.logger.info(
-        `Gift return transaction for gift box [${giftEntity.boxId}] has been added (txId: [${giftReturnTx.id}])`,
+        `Gift return transaction for gift box [${giftEntity.identifier}] has been added (txId: [${giftReturnTx.id}])`,
       );
       currentWinnerBox = new ErgoBox(signedGiftReturnTx.outputs[0]);
     }

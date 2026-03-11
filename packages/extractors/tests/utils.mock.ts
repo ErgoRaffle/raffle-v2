@@ -1,10 +1,10 @@
 import { MockChain } from '@fleet-sdk/mock-chain';
-import { DataSource } from '@rosen-bridge/extended-typeorm';
 import {
   BlockEntity,
   ExtractorStatusEntity,
   migrations as scannerMigrations,
-} from '@rosen-bridge/scanner';
+} from '@rosen-bridge/abstract-scanner';
+import { DataSource } from '@rosen-bridge/extended-typeorm';
 
 import {
   ServiceEntity,
@@ -16,6 +16,7 @@ import {
   GiftEntity,
   TicketEntity,
   WinnerPrizeEntity,
+  DynamicBoxEntity,
 } from '../lib/entities';
 import { migrations } from '../lib/migrations';
 
@@ -59,6 +60,7 @@ export const createDatabase = async (): Promise<DataSource> => {
       GiftEntity,
       TicketEntity,
       WinnerPrizeEntity,
+      DynamicBoxEntity,
     ],
     migrations: [...migrations.sqlite, ...scannerMigrations.sqlite],
     synchronize: false,

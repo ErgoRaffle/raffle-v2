@@ -1,4 +1,4 @@
-import { AbstractInitializableErgoExtractorAction } from '@rosen-bridge/abstract-extractor';
+import { AbstractErgoBoxAction } from '@rosen-bridge/abstract-extractor';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
@@ -6,7 +6,7 @@ import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
 import { GiftEntity } from '../entities/gift';
 import { GiftBoxInterface } from '../interfaces/types';
 
-export class GiftAction extends AbstractInitializableErgoExtractorAction<
+export class GiftAction extends AbstractErgoBoxAction<
   GiftBoxInterface,
   GiftEntity
 > {
@@ -24,7 +24,7 @@ export class GiftAction extends AbstractInitializableErgoExtractorAction<
   ): Omit<GiftEntity, 'id'>[] => {
     return boxes.map((box) => {
       return {
-        boxId: box.boxId,
+        identifier: box.identifier,
         block: block.hash,
         height: block.height,
         serialized: box.serialized,
@@ -42,7 +42,7 @@ export class GiftAction extends AbstractInitializableErgoExtractorAction<
    */
   convertEntityToData = (entities: GiftEntity[]): GiftBoxInterface[] => {
     return entities.map((data) => ({
-      boxId: data.boxId,
+      identifier: data.identifier,
       txId: data.txId,
       raffleId: data.raffleId,
       extractor: data.extractor,

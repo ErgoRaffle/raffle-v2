@@ -1,6 +1,3 @@
-import { ServiceBuilder } from '@ergo-raffle/boxes';
-import { InactiveRaffleBuilder } from '@ergo-raffle/boxes';
-import { TicketRepoBuilder } from '@ergo-raffle/boxes';
 import {
   TransactionBuilder,
   ErgoUnsignedInput,
@@ -12,6 +9,10 @@ import {
   ErgoAddress,
   ErgoUnsignedTransaction,
 } from '@fleet-sdk/core';
+
+import { ServiceBuilder } from '@ergo-raffle/boxes';
+import { InactiveRaffleBuilder } from '@ergo-raffle/boxes';
+import { TicketRepoBuilder } from '@ergo-raffle/boxes';
 
 /**
  * Builder class for raffle creation transaction

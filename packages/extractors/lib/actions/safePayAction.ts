@@ -1,4 +1,4 @@
-import { AbstractInitializableErgoExtractorAction } from '@rosen-bridge/abstract-extractor';
+import { AbstractErgoBoxAction } from '@rosen-bridge/abstract-extractor';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
@@ -6,7 +6,7 @@ import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
 import { SafePayEntity } from '../entities';
 import { SafePayBoxInterface } from '../interfaces/types';
 
-export class SafePayAction extends AbstractInitializableErgoExtractorAction<
+export class SafePayAction extends AbstractErgoBoxAction<
   SafePayBoxInterface,
   SafePayEntity
 > {
@@ -24,7 +24,7 @@ export class SafePayAction extends AbstractInitializableErgoExtractorAction<
   ): Omit<SafePayEntity, 'id'>[] => {
     return boxes.map((box) => {
       return {
-        boxId: box.boxId,
+        identifier: box.identifier,
         block: block.hash,
         height: block.height,
         serialized: box.serialized,
@@ -40,7 +40,7 @@ export class SafePayAction extends AbstractInitializableErgoExtractorAction<
    */
   convertEntityToData = (entities: SafePayEntity[]): SafePayBoxInterface[] => {
     return entities.map((data) => ({
-      boxId: data.boxId,
+      identifier: data.identifier,
       txId: data.txId,
       recipient: data.recipient,
       extractor: data.extractor,

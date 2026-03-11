@@ -136,7 +136,7 @@ describe('BoxSelector', () => {
 
       boxSelector.addBox(box);
 
-      const boxes = boxSelector.getBoxes();
+      const boxes = boxSelector['boxes'];
       expect(boxes).toHaveLength(1);
       expect(boxes[0]).toBe(box);
     });
@@ -160,7 +160,7 @@ describe('BoxSelector', () => {
 
       // The sum should reflect accumulated values
       // This test verifies the internal accumulation logic works
-      expect(boxSelector.getBoxes()).toHaveLength(2);
+      expect(boxSelector['boxes']).toHaveLength(2);
       expect(boxSelector['sumValue'].tokens).toEqual(
         [sampleToken1, sampleToken2].map((token) => ({
           ...token,
@@ -256,43 +256,51 @@ describe('BoxSelector', () => {
     });
   });
 
-  describe('getBoxes', () => {
+  describe('flushCoveringBoxes', () => {
     /**
-     * @target should return empty array when no boxes are added
+     * @target should return empty array and clear state when no boxes are added
      * @dependencies
      * @scenario
      * - create a new BoxSelector without adding any boxes
-     * - call getBoxes function
+     * - call flushCoveringBoxes function
      * @expected
      * - should return empty array
+     * - selector state should be cleared
      */
-    it('should return empty array when no boxes are added', () => {
-      const boxes = boxSelector.getBoxes();
+    it('should return empty array and clear state when no boxes are added', () => {
+      const boxes = boxSelector.flushCoveringBoxes();
 
       expect(boxes).toEqual([]);
+      expect(boxSelector['boxes']).toHaveLength(0);
+      expect(boxSelector['sumValue'].value).toBe(0n);
+      expect(boxSelector['sumValue'].tokens).toEqual([]);
     });
 
     /**
-     * @target should return all added boxes in order
+     * @target should return all added boxes in order and clear selector state
      * @dependencies
      * @scenario
      * - add multiple boxes to the selector
-     * - call getBoxes function
+     * - call flushCoveringBoxes function
      * @expected
      * - should return all added boxes in the order they were added
+     * - selector state should be cleared after flushing
      */
-    it('should return all added boxes in order', () => {
+    it('should return all added boxes in order and clear selector state', () => {
       const box1 = sampleErgoBoxes.validBoxWithTokens;
       const box2 = sampleErgoBoxes.validBoxWithErgs;
 
       boxSelector.addBox(box1);
       boxSelector.addBox(box2);
 
-      const boxes = boxSelector.getBoxes();
+      const boxes = boxSelector.flushCoveringBoxes();
 
       expect(boxes).toHaveLength(2);
       expect(boxes[0]).toBe(box1);
       expect(boxes[1]).toBe(box2);
+      expect(boxSelector['boxes']).toHaveLength(0);
+      expect(boxSelector['sumValue'].value).toBe(0n);
+      expect(boxSelector['sumValue'].tokens).toEqual([]);
     });
   });
 });

@@ -1,7 +1,8 @@
 import { ErgoUnsignedInput, TransactionBuilder } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
+import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
 import { SColl, SLong, SConstant, SByte } from '@fleet-sdk/serializer';
-import { it, describe, expect } from 'vitest';
+import { it, describe, expect, beforeEach } from 'vitest';
 
 import * as constants from '../../lib/constants';
 import { ScriptNamesType } from '../../lib/types';
@@ -9,15 +10,33 @@ import * as testUtils from '../testUtils';
 
 const TEST_INITIAL_SEED = '0123456789012345';
 
+interface SuccessRaffleTestInterface {
+  boxFactory: testUtils.RaffleBoxFactory;
+  ownerWallet: KeyedMockChainParty;
+  someoneWallet: KeyedMockChainParty;
+  creator: KeyedMockChainParty;
+  newWinnerTicketIndex: bigint;
+  nextSeed: string;
+  serviceBox: ErgoUnsignedInput;
+  successRaffleBox: ErgoUnsignedInput;
+  successRaffleForLicenseRedeemBox: ErgoUnsignedInput;
+  winnerBox: ErgoUnsignedInput;
+}
+
+interface TestInterface {
+  successRaffleTestRequirements: SuccessRaffleTestInterface;
+  successRaffleTokenGoalTestRequirements: SuccessRaffleTestInterface;
+}
+
 /*
- * create fixtures that contains below steps data:
- *   - mock boxFactory.chain and partners
+ * provide test requirements that contains below data:
+ *   - mock successRaffleTestRequirements.boxFactory.chain and partners
  *   - compile contracts
  *   - create successRaffle input box
  *   - create winners input boxes
- * @returns vitest customized "it" object
+ * @returns object
  */
-const createSuccessRaffleTest = (collectingTokenId?: string) => {
+const provideSuccessRaffleTestRequirements = (collectingTokenId?: string) => {
   const winnersCount = 5;
   const totalPrize = 1_000_000n;
   const totalRaised = 20_000_000n;
@@ -116,7 +135,7 @@ const createSuccessRaffleTest = (collectingTokenId?: string) => {
 
   const nextSeed = Buffer.from(blake2b256(TEST_INITIAL_SEED)).toString('hex');
 
-  return it.extend({
+  return {
     boxFactory: boxFactory,
     someoneWallet: someone,
     ownerWallet: owner,
@@ -127,14 +146,15 @@ const createSuccessRaffleTest = (collectingTokenId?: string) => {
     successRaffleBox: successRaffleBox,
     successRaffleForLicenseRedeemBox: successRaffleForLicenseRedeemBox,
     winnerBox: winnerBox,
-  });
+  };
 };
 
 describe('successRaffle', () => {
-  const successRaffleTest = createSuccessRaffleTest();
-  const successRaffleTokenGoalTest = createSuccessRaffleTest(
-    testUtils.TestConstants.X_TOKEN_ID,
-  );
+  beforeEach<TestInterface>(async (ctx) => {
+    ctx.successRaffleTestRequirements = provideSuccessRaffleTestRequirements();
+    ctx.successRaffleTokenGoalTestRequirements =
+      provideSuccessRaffleTestRequirements(testUtils.TestConstants.X_TOKEN_ID);
+  });
 
   describe('winner prize creation', () => {
     /**
@@ -146,43 +166,40 @@ describe('successRaffle', () => {
      * @expected
      * - transaction result must be true
      */
-    successRaffleTest(
-      'should successfully create winner prize for an erg-goal raffle',
-      ({
-        boxFactory,
-        creator,
-        newWinnerTicketIndex,
-        nextSeed,
-        winnerBox,
-        successRaffleBox,
-      }) => {
-        boxFactory.chain.setTip(2000);
+    it<TestInterface>('should successfully create winner prize for an erg-goal raffle', ({
+      successRaffleTestRequirements,
+    }) => {
+      successRaffleTestRequirements.boxFactory.chain.setTip(2000);
 
-        const winnersCount = 5;
-        const totalPrize = 1_000_000n;
-        const rewardPercent = 200n;
-        const totalSoldTickets = 5n;
+      const winnersCount = 5;
+      const totalPrize = 1_000_000n;
+      const rewardPercent = 200n;
+      const totalSoldTickets = 5n;
 
-        const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
+      const prizeOutputBox =
+        successRaffleTestRequirements.boxFactory.createWinnerPrizeOutputBox(
           testUtils.TestConstants.FEE * 3n +
             (totalPrize * rewardPercent) / 1000n,
           1,
-          newWinnerTicketIndex,
+          successRaffleTestRequirements.newWinnerTicketIndex,
           1n,
           0n,
-          winnerBox.assets[1].amount,
+          successRaffleTestRequirements.winnerBox.assets[1].amount,
         );
-        const successRaffleOutputValue =
-          BigInt(winnerBox.value) +
-          successRaffleBox.value -
-          prizeOutputBox.value -
-          testUtils.TestConstants.FEE;
-        const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
+      const successRaffleOutputValue =
+        BigInt(successRaffleTestRequirements.winnerBox.value) +
+        successRaffleTestRequirements.successRaffleBox.value -
+        prizeOutputBox.value -
+        testUtils.TestConstants.FEE;
+      const successRaffleOutputBox =
+        successRaffleTestRequirements.boxFactory.createSuccessRaffleBox(
           successRaffleOutputValue,
           testUtils.TestConstants.LICENSE_TOKEN_ID,
-          nextSeed,
-          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
-          [newWinnerTicketIndex],
+          successRaffleTestRequirements.nextSeed,
+          blake2b256(
+            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+          ),
+          [successRaffleTestRequirements.newWinnerTicketIndex],
           totalSoldTickets,
           winnersCount,
           totalPrize,
@@ -190,17 +207,22 @@ describe('successRaffle', () => {
           2,
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([successRaffleBox, winnerBox])
-          .to([successRaffleOutputBox, prizeOutputBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        successRaffleTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          successRaffleTestRequirements.successRaffleBox,
+          successRaffleTestRequirements.winnerBox,
+        ])
+        .to([successRaffleOutputBox, prizeOutputBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        const res = boxFactory.chain.execute(transaction);
+      const res =
+        successRaffleTestRequirements.boxFactory.chain.execute(transaction);
 
-        expect(res).toBeTruthy();
-      },
-    );
+      expect(res).toBeTruthy();
+    });
 
     /**
      * @target should successfully create winner prize for a token-goal raffle
@@ -211,42 +233,43 @@ describe('successRaffle', () => {
      * @expected
      * - transaction result must throw error
      */
-    successRaffleTokenGoalTest(
-      'should successfully create winner prize for a token-goal raffle',
-      ({
-        boxFactory,
-        creator,
-        newWinnerTicketIndex,
-        nextSeed,
-        winnerBox,
-        successRaffleBox,
-      }) => {
-        const winnersCount = 5;
-        const totalPrize = 1_000_000n;
-        const rewardPercent = 200n;
-        const totalSoldTickets = 5n;
-        const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
+    it<TestInterface>('should successfully create winner prize for a token-goal raffle', ({
+      successRaffleTokenGoalTestRequirements,
+    }) => {
+      const winnersCount = 5;
+      const totalPrize = 1_000_000n;
+      const rewardPercent = 200n;
+      const totalSoldTickets = 5n;
+      const prizeOutputBox =
+        successRaffleTokenGoalTestRequirements.boxFactory.createWinnerPrizeOutputBox(
           testUtils.TestConstants.FEE * 3n,
           1,
-          newWinnerTicketIndex,
+          successRaffleTokenGoalTestRequirements.newWinnerTicketIndex,
           1n,
           0n,
-          winnerBox.assets[1].amount,
+          successRaffleTokenGoalTestRequirements.winnerBox.assets[1].amount,
           {
             tokenId: testUtils.TestConstants.X_TOKEN_ID,
             amount: (totalPrize * rewardPercent) / 1000n,
           },
         );
-        const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-          successRaffleBox.value,
+      const successRaffleOutputBox =
+        successRaffleTokenGoalTestRequirements.boxFactory.createSuccessRaffleBox(
+          successRaffleTokenGoalTestRequirements.successRaffleBox.value,
           testUtils.TestConstants.LICENSE_TOKEN_ID,
-          nextSeed,
-          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
-          [newWinnerTicketIndex],
+          successRaffleTokenGoalTestRequirements.nextSeed,
+          blake2b256(
+            Buffer.from(
+              successRaffleTokenGoalTestRequirements.creator.ergoTree,
+              'hex',
+            ),
+          ),
+          [successRaffleTokenGoalTestRequirements.newWinnerTicketIndex],
           totalSoldTickets,
           winnersCount,
           totalPrize,
-          successRaffleBox.assets[2].amount -
+          successRaffleTokenGoalTestRequirements.successRaffleBox.assets[2]
+            .amount -
             (totalPrize * rewardPercent) / 1000n,
           2,
           undefined,
@@ -254,17 +277,24 @@ describe('successRaffle', () => {
           testUtils.TestConstants.X_TOKEN_ID,
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([successRaffleBox, winnerBox])
-          .to([successRaffleOutputBox, prizeOutputBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        successRaffleTokenGoalTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          successRaffleTokenGoalTestRequirements.successRaffleBox,
+          successRaffleTokenGoalTestRequirements.winnerBox,
+        ])
+        .to([successRaffleOutputBox, prizeOutputBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        const res = boxFactory.chain.execute(transaction);
+      const res =
+        successRaffleTokenGoalTestRequirements.boxFactory.chain.execute(
+          transaction,
+        );
 
-        expect(res).toBeTruthy();
-      },
-    );
+      expect(res).toBeTruthy();
+    });
 
     /**
      * @target should successfully create winner prize for a token-goal raffle by zero reward percent
@@ -275,21 +305,16 @@ describe('successRaffle', () => {
      * @expected
      * - transaction result must throw error
      */
-    successRaffleTokenGoalTest(
-      'should successfully create winner prize for a token-goal raffle by zero reward percent',
-      ({
-        boxFactory,
-        creator,
-        newWinnerTicketIndex,
-        nextSeed,
-        successRaffleBox,
-      }) => {
-        const winnersCount = 5;
-        const totalPrize = 1_000_000n;
-        const rewardPercent = 0n;
-        const totalSoldTickets = 5n;
+    it<TestInterface>('should successfully create winner prize for a token-goal raffle by zero reward percent', ({
+      successRaffleTokenGoalTestRequirements,
+    }) => {
+      const winnersCount = 5;
+      const totalPrize = 1_000_000n;
+      const rewardPercent = 0n;
+      const totalSoldTickets = 5n;
 
-        const winnerBox = boxFactory.createWinnerSingleBoxMock(
+      const winnerBox =
+        successRaffleTokenGoalTestRequirements.boxFactory.createWinnerSingleBoxMock(
           1,
           winnersCount,
           testUtils.TestConstants.TICKET_TOKEN_ID,
@@ -305,24 +330,32 @@ describe('successRaffle', () => {
           ],
         );
 
-        const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
+      const prizeOutputBox =
+        successRaffleTokenGoalTestRequirements.boxFactory.createWinnerPrizeOutputBox(
           testUtils.TestConstants.FEE * 3n,
           1,
-          newWinnerTicketIndex,
+          successRaffleTokenGoalTestRequirements.newWinnerTicketIndex,
           1n,
           0n,
-          winnerBox.assets[1].amount,
+          successRaffleTokenGoalTestRequirements.winnerBox.assets[1].amount,
         );
-        const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-          successRaffleBox.value,
+      const successRaffleOutputBox =
+        successRaffleTokenGoalTestRequirements.boxFactory.createSuccessRaffleBox(
+          successRaffleTokenGoalTestRequirements.successRaffleBox.value,
           testUtils.TestConstants.LICENSE_TOKEN_ID,
-          nextSeed,
-          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
-          [newWinnerTicketIndex],
+          successRaffleTokenGoalTestRequirements.nextSeed,
+          blake2b256(
+            Buffer.from(
+              successRaffleTokenGoalTestRequirements.creator.ergoTree,
+              'hex',
+            ),
+          ),
+          [successRaffleTokenGoalTestRequirements.newWinnerTicketIndex],
           totalSoldTickets,
           winnersCount,
           totalPrize,
-          successRaffleBox.assets[2].amount -
+          successRaffleTokenGoalTestRequirements.successRaffleBox.assets[2]
+            .amount -
             (totalPrize * rewardPercent) / 1000n,
           2,
           undefined,
@@ -330,17 +363,24 @@ describe('successRaffle', () => {
           testUtils.TestConstants.X_TOKEN_ID,
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([successRaffleBox, winnerBox])
-          .to([successRaffleOutputBox, prizeOutputBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        successRaffleTokenGoalTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          successRaffleTokenGoalTestRequirements.successRaffleBox,
+          winnerBox,
+        ])
+        .to([successRaffleOutputBox, prizeOutputBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        const res = boxFactory.chain.execute(transaction);
+      const res =
+        successRaffleTokenGoalTestRequirements.boxFactory.chain.execute(
+          transaction,
+        );
 
-        expect(res).toBeTruthy();
-      },
-    );
+      expect(res).toBeTruthy();
+    });
 
     /**
      * @target should fail with wrong calculated winner ticket index
@@ -351,33 +391,34 @@ describe('successRaffle', () => {
      * @expected
      * - transaction result must throw error
      */
-    successRaffleTest(
-      'should fail with wrong calculated winner ticket index',
-      ({ boxFactory, creator, nextSeed, winnerBox, successRaffleBox }) => {
-        boxFactory.chain.setTip(2000);
+    it<TestInterface>('should fail with wrong calculated winner ticket index', ({
+      successRaffleTestRequirements,
+    }) => {
+      successRaffleTestRequirements.boxFactory.chain.setTip(2000);
 
-        const winnersCount = 5;
-        const totalPrize = 1_000_000n;
-        const rewardPercent = 200n;
-        const totalSoldTickets = 5n;
-        // calculate invalid ticket-index
-        const invalidWinnerTicketIndex =
-          (testUtils.generateNextWinnerIndex(
-            [],
-            1,
-            Uint8Array.from(Array.from(Buffer.from(TEST_INITIAL_SEED, 'hex'))),
-            totalSoldTickets,
-          ) +
-            1n) %
-          BigInt(winnersCount);
+      const winnersCount = 5;
+      const totalPrize = 1_000_000n;
+      const rewardPercent = 200n;
+      const totalSoldTickets = 5n;
+      // calculate invalid ticket-index
+      const invalidWinnerTicketIndex =
+        (testUtils.generateNextWinnerIndex(
+          [],
+          1,
+          Uint8Array.from(Array.from(Buffer.from(TEST_INITIAL_SEED, 'hex'))),
+          totalSoldTickets,
+        ) +
+          1n) %
+        BigInt(winnersCount);
 
-        successRaffleBox.setContextExtension({
-          0: SColl(SLong, []),
-          // put invalid ticket index to the context vars
-          1: SLong(invalidWinnerTicketIndex),
-        });
+      successRaffleTestRequirements.successRaffleBox.setContextExtension({
+        0: SColl(SLong, []),
+        // put invalid ticket index to the context vars
+        1: SLong(invalidWinnerTicketIndex),
+      });
 
-        const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
+      const prizeOutputBox =
+        successRaffleTestRequirements.boxFactory.createWinnerPrizeOutputBox(
           testUtils.TestConstants.FEE * 3n +
             (totalPrize * rewardPercent) / 1000n,
           1,
@@ -385,18 +426,21 @@ describe('successRaffle', () => {
           invalidWinnerTicketIndex,
           1n,
           0n,
-          winnerBox.assets[1].amount,
+          successRaffleTestRequirements.winnerBox.assets[1].amount,
         );
-        const successRaffleOutputValue =
-          BigInt(winnerBox.value) +
-          successRaffleBox.value -
-          prizeOutputBox.value -
-          testUtils.TestConstants.FEE;
-        const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
+      const successRaffleOutputValue =
+        BigInt(successRaffleTestRequirements.winnerBox.value) +
+        successRaffleTestRequirements.successRaffleBox.value -
+        prizeOutputBox.value -
+        testUtils.TestConstants.FEE;
+      const successRaffleOutputBox =
+        successRaffleTestRequirements.boxFactory.createSuccessRaffleBox(
           successRaffleOutputValue,
           testUtils.TestConstants.LICENSE_TOKEN_ID,
-          nextSeed,
-          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+          successRaffleTestRequirements.nextSeed,
+          blake2b256(
+            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+          ),
           // put invalid ticket index to the successRaffle box
           [invalidWinnerTicketIndex],
           totalSoldTickets,
@@ -406,15 +450,21 @@ describe('successRaffle', () => {
           2,
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([successRaffleBox, winnerBox])
-          .to([successRaffleOutputBox, prizeOutputBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        successRaffleTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          successRaffleTestRequirements.successRaffleBox,
+          successRaffleTestRequirements.winnerBox,
+        ])
+        .to([successRaffleOutputBox, prizeOutputBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() =>
+        successRaffleTestRequirements.boxFactory.chain.execute(transaction),
+      ).toThrowError();
+    });
 
     /**
      * @target should fail with wrong selected winner list in transaction context
@@ -426,23 +476,26 @@ describe('successRaffle', () => {
      * @expected
      * - transaction result must throw error
      */
-    successRaffleTest(
-      'should fail with wrong selected winner list in transaction context',
-      ({ boxFactory, creator, newWinnerTicketIndex, nextSeed, winnerBox }) => {
-        boxFactory.chain.setTip(2000);
+    it<TestInterface>('should fail with wrong selected winner list in transaction context', ({
+      successRaffleTestRequirements,
+    }) => {
+      successRaffleTestRequirements.boxFactory.chain.setTip(2000);
 
-        const winnersCount = 5;
-        const totalPrize = 1_000_000n;
-        const totalRaised = 20_000_000n;
-        const rewardPercent = 200n;
-        const totalSoldTickets = 5n;
+      const winnersCount = 5;
+      const totalPrize = 1_000_000n;
+      const totalRaised = 20_000_000n;
+      const rewardPercent = 200n;
+      const totalSoldTickets = 5n;
 
-        // Created input successRaffle-box
-        const successRaffleBox = boxFactory.createSuccessRaffleBoxMock(
+      // Created input successRaffle-box
+      const successRaffleBox =
+        successRaffleTestRequirements.boxFactory.createSuccessRaffleBoxMock(
           testUtils.TestConstants.FEE * 3n +
             testUtils.TestConstants.CREATION_FEE,
           testUtils.TestConstants.LICENSE_TOKEN_ID,
-          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+          blake2b256(
+            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+          ),
           TEST_INITIAL_SEED,
           // set invalid ticket-index list
           [0n],
@@ -453,31 +506,35 @@ describe('successRaffle', () => {
           1,
         ) as ErgoUnsignedInput;
 
-        successRaffleBox.setContextExtension({
-          0: SColl(SLong, []),
-          1: SLong(newWinnerTicketIndex),
-        });
+      successRaffleBox.setContextExtension({
+        0: SColl(SLong, []),
+        1: SLong(successRaffleTestRequirements.newWinnerTicketIndex),
+      });
 
-        const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
+      const prizeOutputBox =
+        successRaffleTestRequirements.boxFactory.createWinnerPrizeOutputBox(
           testUtils.TestConstants.FEE * 3n +
             (totalPrize * rewardPercent) / 1000n,
           1,
-          newWinnerTicketIndex,
+          successRaffleTestRequirements.newWinnerTicketIndex,
           1n,
           0n,
-          winnerBox.assets[1].amount,
+          successRaffleTestRequirements.winnerBox.assets[1].amount,
         );
-        const successRaffleOutputValue =
-          BigInt(winnerBox.value) +
-          successRaffleBox.value -
-          prizeOutputBox.value -
-          testUtils.TestConstants.FEE;
-        const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
+      const successRaffleOutputValue =
+        BigInt(successRaffleTestRequirements.winnerBox.value) +
+        successRaffleBox.value -
+        prizeOutputBox.value -
+        testUtils.TestConstants.FEE;
+      const successRaffleOutputBox =
+        successRaffleTestRequirements.boxFactory.createSuccessRaffleBox(
           successRaffleOutputValue,
           testUtils.TestConstants.LICENSE_TOKEN_ID,
-          nextSeed,
-          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
-          [newWinnerTicketIndex],
+          successRaffleTestRequirements.nextSeed,
+          blake2b256(
+            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+          ),
+          [successRaffleTestRequirements.newWinnerTicketIndex],
           totalSoldTickets,
           winnersCount,
           totalPrize,
@@ -485,15 +542,18 @@ describe('successRaffle', () => {
           2,
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([successRaffleBox, winnerBox])
-          .to([successRaffleOutputBox, prizeOutputBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        successRaffleTestRequirements.boxFactory.chain.height,
+      )
+        .from([successRaffleBox, successRaffleTestRequirements.winnerBox])
+        .to([successRaffleOutputBox, prizeOutputBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() =>
+        successRaffleTestRequirements.boxFactory.chain.execute(transaction),
+      ).toThrowError();
+    });
 
     /**
      * @target should fail with duplicated winner ticket index
@@ -506,24 +566,27 @@ describe('successRaffle', () => {
      * @expected
      * - transaction result must throw error
      */
-    successRaffleTest(
-      'should fail with duplicated winner ticket index',
-      ({ boxFactory, creator, nextSeed }) => {
-        const winnersCount = 5;
-        const rewardPercent = 200n;
-        const totalSoldTickets = 5n;
-        const totalPrize = 1_000_000n;
-        const prizeValue = totalPrize;
-        // set invalid special value that make the sameSelectedWinners size
-        // more than zero on the contract
-        const newWinnerTicketIndex = 1n;
+    it<TestInterface>('should fail with duplicated winner ticket index', ({
+      successRaffleTestRequirements,
+    }) => {
+      const winnersCount = 5;
+      const rewardPercent = 200n;
+      const totalSoldTickets = 5n;
+      const totalPrize = 1_000_000n;
+      const prizeValue = totalPrize;
+      // set invalid special value that make the sameSelectedWinners size
+      // more than zero on the contract
+      const newWinnerTicketIndex = 1n;
 
-        const successRaffleBox = boxFactory.createSuccessRaffleBoxMock(
+      const successRaffleBox =
+        successRaffleTestRequirements.boxFactory.createSuccessRaffleBoxMock(
           testUtils.TestConstants.FEE,
           testUtils.TestConstants.LICENSE_TOKEN_ID,
-          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+          blake2b256(
+            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+          ),
           TEST_INITIAL_SEED,
-          [newWinnerTicketIndex],
+          [successRaffleTestRequirements.newWinnerTicketIndex],
           5n,
           winnersCount,
           totalPrize,
@@ -531,12 +594,13 @@ describe('successRaffle', () => {
           2,
         ) as ErgoUnsignedInput;
 
-        successRaffleBox.setContextExtension({
-          0: SColl(SLong, [newWinnerTicketIndex]),
-          1: SLong(newWinnerTicketIndex),
-        });
+      successRaffleBox.setContextExtension({
+        0: SColl(SLong, [successRaffleTestRequirements.newWinnerTicketIndex]),
+        1: SLong(newWinnerTicketIndex),
+      });
 
-        const winnerBox = boxFactory.createWinnerSingleBoxMock(
+      const winnerBox =
+        successRaffleTestRequirements.boxFactory.createWinnerSingleBoxMock(
           2,
           winnersCount,
           testUtils.TestConstants.TICKET_TOKEN_ID,
@@ -552,26 +616,33 @@ describe('successRaffle', () => {
           ],
         );
 
-        const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
+      const prizeOutputBox =
+        successRaffleTestRequirements.boxFactory.createWinnerPrizeOutputBox(
           testUtils.TestConstants.FEE * 3n +
             (totalPrize * rewardPercent) / 1000n,
           2,
-          newWinnerTicketIndex,
+          successRaffleTestRequirements.newWinnerTicketIndex,
           1n,
           0n,
-          winnerBox.assets[1].amount,
+          successRaffleTestRequirements.winnerBox.assets[1].amount,
         );
-        const successRaffleOutputValue =
-          BigInt(winnerBox.value) +
-          successRaffleBox.value -
-          prizeOutputBox.value -
-          testUtils.TestConstants.FEE;
-        const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
+      const successRaffleOutputValue =
+        BigInt(successRaffleTestRequirements.winnerBox.value) +
+        successRaffleBox.value -
+        prizeOutputBox.value -
+        testUtils.TestConstants.FEE;
+      const successRaffleOutputBox =
+        successRaffleTestRequirements.boxFactory.createSuccessRaffleBox(
           successRaffleOutputValue,
           testUtils.TestConstants.LICENSE_TOKEN_ID,
-          nextSeed,
-          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
-          [newWinnerTicketIndex, newWinnerTicketIndex],
+          successRaffleTestRequirements.nextSeed,
+          blake2b256(
+            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+          ),
+          [
+            successRaffleTestRequirements.newWinnerTicketIndex,
+            newWinnerTicketIndex,
+          ],
           totalSoldTickets,
           winnersCount,
           totalPrize,
@@ -579,15 +650,18 @@ describe('successRaffle', () => {
           3,
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([successRaffleBox, winnerBox])
-          .to([successRaffleOutputBox, prizeOutputBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        successRaffleTestRequirements.boxFactory.chain.height,
+      )
+        .from([successRaffleBox, winnerBox])
+        .to([successRaffleOutputBox, prizeOutputBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() =>
+        successRaffleTestRequirements.boxFactory.chain.execute(transaction),
+      ).toThrowError();
+    });
 
     /**
      * @target should fail if wrong winner ticket index is set on winner prize box
@@ -599,42 +673,39 @@ describe('successRaffle', () => {
      * @expected
      * - transaction result must throw error
      */
-    successRaffleTest(
-      'should fail if wrong winner ticket index is set on winner prize box',
-      ({
-        boxFactory,
-        creator,
-        newWinnerTicketIndex,
-        nextSeed,
-        winnerBox,
-        successRaffleBox,
-      }) => {
-        const winnersCount = 5;
-        const totalPrize = 1_000_000n;
-        const rewardPercent = 200n;
-        const totalSoldTickets = 5n;
+    it<TestInterface>('should fail if wrong winner ticket index is set on winner prize box', ({
+      successRaffleTestRequirements,
+    }) => {
+      const winnersCount = 5;
+      const totalPrize = 1_000_000n;
+      const rewardPercent = 200n;
+      const totalSoldTickets = 5n;
 
-        const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
+      const prizeOutputBox =
+        successRaffleTestRequirements.boxFactory.createWinnerPrizeOutputBox(
           testUtils.TestConstants.FEE * 3n +
             (totalPrize * rewardPercent) / 1000n,
           1,
           // set invalid winner ticket index
-          newWinnerTicketIndex + 1n,
+          successRaffleTestRequirements.newWinnerTicketIndex + 1n,
           1n,
           0n,
-          winnerBox.assets[1].amount,
+          successRaffleTestRequirements.winnerBox.assets[1].amount,
         );
-        const successRaffleOutputValue =
-          BigInt(winnerBox.value) +
-          successRaffleBox.value -
-          prizeOutputBox.value -
-          testUtils.TestConstants.FEE;
-        const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
+      const successRaffleOutputValue =
+        BigInt(successRaffleTestRequirements.winnerBox.value) +
+        successRaffleTestRequirements.successRaffleBox.value -
+        prizeOutputBox.value -
+        testUtils.TestConstants.FEE;
+      const successRaffleOutputBox =
+        successRaffleTestRequirements.boxFactory.createSuccessRaffleBox(
           successRaffleOutputValue,
           testUtils.TestConstants.LICENSE_TOKEN_ID,
-          nextSeed,
-          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
-          [newWinnerTicketIndex],
+          successRaffleTestRequirements.nextSeed,
+          blake2b256(
+            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+          ),
+          [successRaffleTestRequirements.newWinnerTicketIndex],
           totalSoldTickets,
           winnersCount,
           totalPrize,
@@ -642,15 +713,21 @@ describe('successRaffle', () => {
           2,
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([successRaffleBox, winnerBox])
-          .to([successRaffleOutputBox, prizeOutputBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        successRaffleTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          successRaffleTestRequirements.successRaffleBox,
+          successRaffleTestRequirements.winnerBox,
+        ])
+        .to([successRaffleOutputBox, prizeOutputBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() =>
+        successRaffleTestRequirements.boxFactory.chain.execute(transaction),
+      ).toThrowError();
+    });
 
     /**
      * @target should fail if input winner box belongs to another raffle
@@ -662,22 +739,17 @@ describe('successRaffle', () => {
      * @expected
      * - transaction result must throw error
      */
-    successRaffleTest(
-      'should fail if input winner box belongs to another raffle',
-      ({
-        boxFactory,
-        creator,
-        newWinnerTicketIndex,
-        nextSeed,
-        successRaffleBox,
-      }) => {
-        const winnersCount = 5;
-        const totalPrize = 1_000_000n;
-        const anotherRaffleTicketId = '0'.repeat(64);
-        const rewardPercent = 200n;
-        const totalSoldTickets = 5n;
+    it<TestInterface>('should fail if input winner box belongs to another raffle', ({
+      successRaffleTestRequirements,
+    }) => {
+      const winnersCount = 5;
+      const totalPrize = 1_000_000n;
+      const anotherRaffleTicketId = '0'.repeat(64);
+      const rewardPercent = 200n;
+      const totalSoldTickets = 5n;
 
-        const winnerBox = boxFactory.createWinnerSingleBoxMock(
+      const winnerBox =
+        successRaffleTestRequirements.boxFactory.createWinnerSingleBoxMock(
           1,
           winnersCount,
           // Set another raffle ticket-id
@@ -694,28 +766,32 @@ describe('successRaffle', () => {
           ],
         );
 
-        const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
+      const prizeOutputBox =
+        successRaffleTestRequirements.boxFactory.createWinnerPrizeOutputBox(
           testUtils.TestConstants.FEE * 3n +
             (totalPrize * rewardPercent) / 1000n,
           1,
-          newWinnerTicketIndex,
+          successRaffleTestRequirements.newWinnerTicketIndex,
           1n,
           0n,
-          winnerBox.assets[1].amount,
+          successRaffleTestRequirements.winnerBox.assets[1].amount,
           undefined,
           anotherRaffleTicketId,
         );
-        const successRaffleOutputValue =
-          BigInt(winnerBox.value) +
-          successRaffleBox.value -
-          prizeOutputBox.value -
-          testUtils.TestConstants.FEE;
-        const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
+      const successRaffleOutputValue =
+        BigInt(successRaffleTestRequirements.winnerBox.value) +
+        successRaffleTestRequirements.successRaffleBox.value -
+        prizeOutputBox.value -
+        testUtils.TestConstants.FEE;
+      const successRaffleOutputBox =
+        successRaffleTestRequirements.boxFactory.createSuccessRaffleBox(
           successRaffleOutputValue,
           testUtils.TestConstants.LICENSE_TOKEN_ID,
-          nextSeed,
-          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
-          [newWinnerTicketIndex],
+          successRaffleTestRequirements.nextSeed,
+          blake2b256(
+            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+          ),
+          [successRaffleTestRequirements.newWinnerTicketIndex],
           totalSoldTickets,
           winnersCount,
           totalPrize,
@@ -723,15 +799,18 @@ describe('successRaffle', () => {
           2,
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([successRaffleBox, winnerBox])
-          .to([successRaffleOutputBox, prizeOutputBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        successRaffleTestRequirements.boxFactory.chain.height,
+      )
+        .from([successRaffleTestRequirements.successRaffleBox, winnerBox])
+        .to([successRaffleOutputBox, prizeOutputBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() =>
+        successRaffleTestRequirements.boxFactory.chain.execute(transaction),
+      ).toThrowError();
+    });
 
     /**
      * @target should fail if input winner box does not match with step on success raffle
@@ -742,21 +821,16 @@ describe('successRaffle', () => {
      * @expected
      * - transaction result must throw error
      */
-    successRaffleTest(
-      'should fail if input winner box does not match with step on success raffle',
-      ({
-        boxFactory,
-        creator,
-        newWinnerTicketIndex,
-        nextSeed,
-        successRaffleBox,
-      }) => {
-        const winnersCount = 5;
-        const totalPrize = 1_000_000n;
-        const rewardPercent = 200n;
-        const totalSoldTickets = 5n;
+    it<TestInterface>('should fail if input winner box does not match with step on success raffle', ({
+      successRaffleTestRequirements,
+    }) => {
+      const winnersCount = 5;
+      const totalPrize = 1_000_000n;
+      const rewardPercent = 200n;
+      const totalSoldTickets = 5n;
 
-        const winnerBox = boxFactory.createWinnerSingleBoxMock(
+      const winnerBox =
+        successRaffleTestRequirements.boxFactory.createWinnerSingleBoxMock(
           2,
           winnersCount,
           testUtils.TestConstants.TICKET_TOKEN_ID,
@@ -772,26 +846,30 @@ describe('successRaffle', () => {
           ],
         );
 
-        const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
+      const prizeOutputBox =
+        successRaffleTestRequirements.boxFactory.createWinnerPrizeOutputBox(
           testUtils.TestConstants.FEE * 3n +
             (totalPrize * rewardPercent) / 1000n,
           2,
-          newWinnerTicketIndex,
+          successRaffleTestRequirements.newWinnerTicketIndex,
           1n,
           0n,
-          winnerBox.assets[1].amount,
+          successRaffleTestRequirements.winnerBox.assets[1].amount,
         );
-        const successRaffleOutputValue =
-          BigInt(winnerBox.value) +
-          successRaffleBox.value -
-          prizeOutputBox.value -
-          testUtils.TestConstants.FEE;
-        const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
+      const successRaffleOutputValue =
+        BigInt(successRaffleTestRequirements.winnerBox.value) +
+        successRaffleTestRequirements.successRaffleBox.value -
+        prizeOutputBox.value -
+        testUtils.TestConstants.FEE;
+      const successRaffleOutputBox =
+        successRaffleTestRequirements.boxFactory.createSuccessRaffleBox(
           successRaffleOutputValue,
           testUtils.TestConstants.LICENSE_TOKEN_ID,
-          nextSeed,
-          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
-          [newWinnerTicketIndex],
+          successRaffleTestRequirements.nextSeed,
+          blake2b256(
+            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+          ),
+          [successRaffleTestRequirements.newWinnerTicketIndex],
           totalSoldTickets,
           winnersCount,
           totalPrize,
@@ -799,16 +877,19 @@ describe('successRaffle', () => {
           2,
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          // use invalid winner box
-          .from([successRaffleBox, winnerBox])
-          .to([successRaffleOutputBox, prizeOutputBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        successRaffleTestRequirements.boxFactory.chain.height,
+      )
+        // use invalid winner box
+        .from([successRaffleTestRequirements.successRaffleBox, winnerBox])
+        .to([successRaffleOutputBox, prizeOutputBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() =>
+        successRaffleTestRequirements.boxFactory.chain.execute(transaction),
+      ).toThrowError();
+    });
 
     /**
      * @target should fail with wrong selected winner list in success raffle output box
@@ -820,42 +901,39 @@ describe('successRaffle', () => {
      * @expected
      * - transaction result must throw error
      */
-    successRaffleTest(
-      'should fail with wrong selected winner list in success raffle output box',
-      ({
-        boxFactory,
-        creator,
-        newWinnerTicketIndex,
-        nextSeed,
-        winnerBox,
-        successRaffleBox,
-      }) => {
-        const winnersCount = 5;
-        const totalPrize = 1_000_000n;
-        const rewardPercent = 200n;
-        const totalSoldTickets = 5n;
+    it<TestInterface>('should fail with wrong selected winner list in success raffle output box', ({
+      successRaffleTestRequirements,
+    }) => {
+      const winnersCount = 5;
+      const totalPrize = 1_000_000n;
+      const rewardPercent = 200n;
+      const totalSoldTickets = 5n;
 
-        const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
+      const prizeOutputBox =
+        successRaffleTestRequirements.boxFactory.createWinnerPrizeOutputBox(
           testUtils.TestConstants.FEE * 3n +
             (totalPrize * rewardPercent) / 1000n,
           1,
-          newWinnerTicketIndex,
+          successRaffleTestRequirements.newWinnerTicketIndex,
           1n,
           0n,
-          winnerBox.assets[1].amount,
+          successRaffleTestRequirements.winnerBox.assets[1].amount,
         );
-        const successRaffleOutputValue =
-          BigInt(winnerBox.value) +
-          successRaffleBox.value -
-          prizeOutputBox.value -
-          testUtils.TestConstants.FEE;
-        const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
+      const successRaffleOutputValue =
+        BigInt(successRaffleTestRequirements.winnerBox.value) +
+        successRaffleTestRequirements.successRaffleBox.value -
+        prizeOutputBox.value -
+        testUtils.TestConstants.FEE;
+      const successRaffleOutputBox =
+        successRaffleTestRequirements.boxFactory.createSuccessRaffleBox(
           successRaffleOutputValue,
           testUtils.TestConstants.LICENSE_TOKEN_ID,
-          nextSeed,
-          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+          successRaffleTestRequirements.nextSeed,
+          blake2b256(
+            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+          ),
           // set invalid selectedWinnersList
-          [newWinnerTicketIndex + 1n],
+          [successRaffleTestRequirements.newWinnerTicketIndex + 1n],
           totalSoldTickets,
           winnersCount,
           totalPrize,
@@ -863,15 +941,21 @@ describe('successRaffle', () => {
           2,
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([successRaffleBox, winnerBox])
-          .to([successRaffleOutputBox, prizeOutputBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        successRaffleTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          successRaffleTestRequirements.successRaffleBox,
+          successRaffleTestRequirements.winnerBox,
+        ])
+        .to([successRaffleOutputBox, prizeOutputBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() =>
+        successRaffleTestRequirements.boxFactory.chain.execute(transaction),
+      ).toThrowError();
+    });
 
     /**
      * @target should fail with wrong seed in success raffle output box
@@ -883,41 +967,39 @@ describe('successRaffle', () => {
      * @expected
      * - transaction result must throw error
      */
-    successRaffleTest(
-      'should fail with wrong seed in success raffle output box',
-      ({
-        boxFactory,
-        creator,
-        newWinnerTicketIndex,
-        winnerBox,
-        successRaffleBox,
-      }) => {
-        const winnersCount = 5;
-        const totalPrize = 1_000_000n;
-        const rewardPercent = 200n;
-        const totalSoldTickets = 5n;
+    it<TestInterface>('should fail with wrong seed in success raffle output box', ({
+      successRaffleTestRequirements,
+    }) => {
+      const winnersCount = 5;
+      const totalPrize = 1_000_000n;
+      const rewardPercent = 200n;
+      const totalSoldTickets = 5n;
 
-        const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
+      const prizeOutputBox =
+        successRaffleTestRequirements.boxFactory.createWinnerPrizeOutputBox(
           testUtils.TestConstants.FEE * 3n +
             (totalPrize * rewardPercent) / 1000n,
           1,
-          newWinnerTicketIndex,
+          successRaffleTestRequirements.newWinnerTicketIndex,
           1n,
           0n,
-          winnerBox.assets[1].amount,
+          successRaffleTestRequirements.winnerBox.assets[1].amount,
         );
-        const successRaffleOutputValue =
-          BigInt(winnerBox.value) +
-          successRaffleBox.value -
-          prizeOutputBox.value -
-          testUtils.TestConstants.FEE;
-        const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
+      const successRaffleOutputValue =
+        BigInt(successRaffleTestRequirements.winnerBox.value) +
+        successRaffleTestRequirements.successRaffleBox.value -
+        prizeOutputBox.value -
+        testUtils.TestConstants.FEE;
+      const successRaffleOutputBox =
+        successRaffleTestRequirements.boxFactory.createSuccessRaffleBox(
           successRaffleOutputValue,
           testUtils.TestConstants.LICENSE_TOKEN_ID,
           // set invalid seed
           'invalid seed',
-          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
-          [newWinnerTicketIndex],
+          blake2b256(
+            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+          ),
+          [successRaffleTestRequirements.newWinnerTicketIndex],
           totalSoldTickets,
           winnersCount,
           totalPrize,
@@ -925,15 +1007,21 @@ describe('successRaffle', () => {
           2,
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([successRaffleBox, winnerBox])
-          .to([successRaffleOutputBox, prizeOutputBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        successRaffleTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          successRaffleTestRequirements.successRaffleBox,
+          successRaffleTestRequirements.winnerBox,
+        ])
+        .to([successRaffleOutputBox, prizeOutputBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() =>
+        successRaffleTestRequirements.boxFactory.chain.execute(transaction),
+      ).toThrowError();
+    });
 
     /**
      * @target should fail if in a erg-goal raffle funds are deducted more than required prize of the selected winner
@@ -945,43 +1033,40 @@ describe('successRaffle', () => {
      * @expected
      * - transaction result must throw error
      */
-    successRaffleTest(
-      'should fail if in a erg-goal raffle funds are deducted more than required prize of the selected winner',
-      ({
-        boxFactory,
-        creator,
-        newWinnerTicketIndex,
-        nextSeed,
-        winnerBox,
-        successRaffleBox,
-      }) => {
-        const winnersCount = 5;
-        const totalPrize = 1_000_000n;
-        const rewardPercent = 200n;
-        const totalSoldTickets = 5n;
+    it<TestInterface>('should fail if in a erg-goal raffle funds are deducted more than required prize of the selected winner', ({
+      successRaffleTestRequirements,
+    }) => {
+      const winnersCount = 5;
+      const totalPrize = 1_000_000n;
+      const rewardPercent = 200n;
+      const totalSoldTickets = 5n;
 
-        const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
+      const prizeOutputBox =
+        successRaffleTestRequirements.boxFactory.createWinnerPrizeOutputBox(
           // put 100 more nano-ergs to this box
           testUtils.TestConstants.FEE * 3n +
             (totalPrize * rewardPercent) / 1000n +
             100n,
           1,
-          newWinnerTicketIndex,
+          successRaffleTestRequirements.newWinnerTicketIndex,
           1n,
           0n,
-          winnerBox.assets[1].amount,
+          successRaffleTestRequirements.winnerBox.assets[1].amount,
         );
-        const successRaffleOutputValue =
-          BigInt(winnerBox.value) +
-          successRaffleBox.value -
-          prizeOutputBox.value -
-          testUtils.TestConstants.FEE;
-        const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
+      const successRaffleOutputValue =
+        BigInt(successRaffleTestRequirements.winnerBox.value) +
+        successRaffleTestRequirements.successRaffleBox.value -
+        prizeOutputBox.value -
+        testUtils.TestConstants.FEE;
+      const successRaffleOutputBox =
+        successRaffleTestRequirements.boxFactory.createSuccessRaffleBox(
           successRaffleOutputValue,
           testUtils.TestConstants.LICENSE_TOKEN_ID,
-          nextSeed,
-          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
-          [newWinnerTicketIndex],
+          successRaffleTestRequirements.nextSeed,
+          blake2b256(
+            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+          ),
+          [successRaffleTestRequirements.newWinnerTicketIndex],
           totalSoldTickets,
           winnersCount,
           totalPrize,
@@ -989,15 +1074,21 @@ describe('successRaffle', () => {
           2,
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([successRaffleBox, winnerBox])
-          .to([successRaffleOutputBox, prizeOutputBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        successRaffleTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          successRaffleTestRequirements.successRaffleBox,
+          successRaffleTestRequirements.winnerBox,
+        ])
+        .to([successRaffleOutputBox, prizeOutputBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() =>
+        successRaffleTestRequirements.boxFactory.chain.execute(transaction),
+      ).toThrowError();
+    });
 
     /**
      * @target should fail if in a token-goal raffle funds are deducted more than required prize of the selected winner
@@ -1009,44 +1100,45 @@ describe('successRaffle', () => {
      * @expected
      * - transaction result must throw error
      */
-    successRaffleTokenGoalTest(
-      'should fail if in a token-goal raffle funds are deducted more than required prize of the selected winner',
-      ({
-        boxFactory,
-        creator,
-        newWinnerTicketIndex,
-        nextSeed,
-        winnerBox,
-        successRaffleBox,
-      }) => {
-        const winnersCount = 5;
-        const totalPrize = 1_000_000n;
-        const rewardPercent = 200n;
-        const totalSoldTickets = 5n;
+    it<TestInterface>('should fail if in a token-goal raffle funds are deducted more than required prize of the selected winner', ({
+      successRaffleTokenGoalTestRequirements,
+    }) => {
+      const winnersCount = 5;
+      const totalPrize = 1_000_000n;
+      const rewardPercent = 200n;
+      const totalSoldTickets = 5n;
 
-        const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
+      const prizeOutputBox =
+        successRaffleTokenGoalTestRequirements.boxFactory.createWinnerPrizeOutputBox(
           testUtils.TestConstants.FEE * 3n,
           1,
-          newWinnerTicketIndex,
+          successRaffleTokenGoalTestRequirements.newWinnerTicketIndex,
           1n,
           0n,
-          winnerBox.assets[1].amount,
+          successRaffleTokenGoalTestRequirements.winnerBox.assets[1].amount,
           {
             tokenId: testUtils.TestConstants.X_TOKEN_ID,
             // put 1 more token to this box
             amount: (totalPrize * rewardPercent) / 1000n + 1n,
           },
         );
-        const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
-          successRaffleBox.value,
+      const successRaffleOutputBox =
+        successRaffleTokenGoalTestRequirements.boxFactory.createSuccessRaffleBox(
+          successRaffleTokenGoalTestRequirements.successRaffleBox.value,
           testUtils.TestConstants.LICENSE_TOKEN_ID,
-          nextSeed,
-          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
-          [newWinnerTicketIndex],
+          successRaffleTokenGoalTestRequirements.nextSeed,
+          blake2b256(
+            Buffer.from(
+              successRaffleTokenGoalTestRequirements.creator.ergoTree,
+              'hex',
+            ),
+          ),
+          [successRaffleTokenGoalTestRequirements.newWinnerTicketIndex],
           totalSoldTickets,
           winnersCount,
           totalPrize,
-          successRaffleBox.assets[2].amount -
+          successRaffleTokenGoalTestRequirements.successRaffleBox.assets[2]
+            .amount -
             (totalPrize * rewardPercent) / 1000n -
             1n,
           2,
@@ -1055,15 +1147,23 @@ describe('successRaffle', () => {
           testUtils.TestConstants.X_TOKEN_ID,
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([successRaffleBox, winnerBox])
-          .to([successRaffleOutputBox, prizeOutputBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        successRaffleTokenGoalTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          successRaffleTokenGoalTestRequirements.successRaffleBox,
+          successRaffleTokenGoalTestRequirements.winnerBox,
+        ])
+        .to([successRaffleOutputBox, prizeOutputBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() =>
+        successRaffleTokenGoalTestRequirements.boxFactory.chain.execute(
+          transaction,
+        ),
+      ).toThrowError();
+    });
 
     /**
      * @target should fail if an arbitrary token is added to erg-goal success raffle
@@ -1075,42 +1175,38 @@ describe('successRaffle', () => {
      * @expected
      * - transaction result must throw error
      */
-    successRaffleTest(
-      'should fail if an arbitrary token is added to erg-goal success raffle',
-      ({
-        boxFactory,
-        creator,
-        newWinnerTicketIndex,
-        nextSeed,
-        someoneWallet,
-        winnerBox,
-        successRaffleBox,
-      }) => {
-        const winnersCount = 5;
-        const totalPrize = 1_000_000n;
-        const rewardPercent = 200n;
-        const totalSoldTickets = 5n;
+    it<TestInterface>('should fail if an arbitrary token is added to erg-goal success raffle', ({
+      successRaffleTestRequirements,
+    }) => {
+      const winnersCount = 5;
+      const totalPrize = 1_000_000n;
+      const rewardPercent = 200n;
+      const totalSoldTickets = 5n;
 
-        const prizeOutputBox = boxFactory.createWinnerPrizeOutputBox(
+      const prizeOutputBox =
+        successRaffleTestRequirements.boxFactory.createWinnerPrizeOutputBox(
           testUtils.TestConstants.FEE * 3n +
             (totalPrize * rewardPercent) / 1000n,
           1,
-          newWinnerTicketIndex,
+          successRaffleTestRequirements.newWinnerTicketIndex,
           1n,
           0n,
-          winnerBox.assets[1].amount,
+          successRaffleTestRequirements.winnerBox.assets[1].amount,
         );
-        const successRaffleOutputValue =
-          BigInt(winnerBox.value) +
-          successRaffleBox.value -
-          prizeOutputBox.value -
-          testUtils.TestConstants.FEE;
-        const successRaffleOutputBox = boxFactory.createSuccessRaffleBox(
+      const successRaffleOutputValue =
+        BigInt(successRaffleTestRequirements.winnerBox.value) +
+        successRaffleTestRequirements.successRaffleBox.value -
+        prizeOutputBox.value -
+        testUtils.TestConstants.FEE;
+      const successRaffleOutputBox =
+        successRaffleTestRequirements.boxFactory.createSuccessRaffleBox(
           successRaffleOutputValue,
           testUtils.TestConstants.LICENSE_TOKEN_ID,
-          nextSeed,
-          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
-          [newWinnerTicketIndex],
+          successRaffleTestRequirements.nextSeed,
+          blake2b256(
+            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+          ),
+          [successRaffleTestRequirements.newWinnerTicketIndex],
           totalSoldTickets,
           winnersCount,
           totalPrize,
@@ -1128,16 +1224,23 @@ describe('successRaffle', () => {
           ],
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([winnerBox, successRaffleBox, ...someoneWallet.utxos])
-          .to([successRaffleOutputBox, prizeOutputBox])
-          .payFee(testUtils.TestConstants.FEE)
-          .sendChangeTo(someoneWallet.address)
-          .build();
+      const transaction = new TransactionBuilder(
+        successRaffleTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          successRaffleTestRequirements.winnerBox,
+          successRaffleTestRequirements.successRaffleBox,
+          ...successRaffleTestRequirements.someoneWallet.utxos,
+        ])
+        .to([successRaffleOutputBox, prizeOutputBox])
+        .payFee(testUtils.TestConstants.FEE)
+        .sendChangeTo(successRaffleTestRequirements.someoneWallet.address)
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() =>
+        successRaffleTestRequirements.boxFactory.chain.execute(transaction),
+      ).toThrowError();
+    });
   });
 
   describe('license redeem', () => {
@@ -1150,51 +1253,62 @@ describe('successRaffle', () => {
      * @expected
      * - transaction result must be true
      */
-    successRaffleTest(
-      'should successfully return license token and pay the project fund for an erg-goal raffle',
-      ({
-        boxFactory,
-        creator,
-        serviceBox,
-        successRaffleForLicenseRedeemBox,
-      }) => {
-        const serviceR4 = SConstant.from(serviceBox.additionalRegisters.R4!)
-          .data as bigint[];
-        const serviceFeePercent = serviceR4[0];
-        const implementerFeePercent = serviceR4[1];
-        const serviceOutputBox = boxFactory.createServiceOutputBox(
-          serviceBox.ergoTree,
-          serviceBox.assets[1].amount + 1n,
+    it<TestInterface>('should successfully return license token and pay the project fund for an erg-goal raffle', ({
+      successRaffleTestRequirements,
+    }) => {
+      const serviceR4 = SConstant.from(
+        successRaffleTestRequirements.serviceBox.additionalRegisters.R4!,
+      ).data as bigint[];
+      const serviceFeePercent = serviceR4[0];
+      const implementerFeePercent = serviceR4[1];
+      const serviceOutputBox =
+        successRaffleTestRequirements.boxFactory.createServiceOutputBox(
+          successRaffleTestRequirements.serviceBox.ergoTree,
+          successRaffleTestRequirements.serviceBox.assets[1].amount + 1n,
           serviceFeePercent,
           implementerFeePercent,
           serviceR4[2],
         );
-        successRaffleForLicenseRedeemBox.setContextExtension({
-          0: SColl(SByte, creator.ergoTree),
-        });
+      successRaffleTestRequirements.successRaffleForLicenseRedeemBox.setContextExtension(
+        {
+          0: SColl(SByte, successRaffleTestRequirements.creator.ergoTree),
+        },
+      );
 
-        const creatorFund = boxFactory.createSafePayOutputBox(
-          successRaffleForLicenseRedeemBox.value - testUtils.TestConstants.FEE,
+      const creatorFund =
+        successRaffleTestRequirements.boxFactory.createSafePayOutputBox(
+          successRaffleTestRequirements.successRaffleForLicenseRedeemBox.value -
+            testUtils.TestConstants.FEE,
           [],
-          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+          blake2b256(
+            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+          ),
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([serviceBox, successRaffleForLicenseRedeemBox])
-          .to([serviceOutputBox, creatorFund])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          // burn ticket tokens
-          .burnTokens(successRaffleForLicenseRedeemBox.assets[1])
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        successRaffleTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          successRaffleTestRequirements.serviceBox,
+          successRaffleTestRequirements.successRaffleForLicenseRedeemBox,
+        ])
+        .to([serviceOutputBox, creatorFund])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        // burn ticket tokens
+        .burnTokens(
+          successRaffleTestRequirements.successRaffleForLicenseRedeemBox
+            .assets[1],
+        )
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        const res = boxFactory.chain.execute(transaction);
+      const res =
+        successRaffleTestRequirements.boxFactory.chain.execute(transaction);
 
-        expect(res).toBeTruthy();
-      },
-    );
+      expect(res).toBeTruthy();
+    });
 
     /**
      * @target should successfully return license token and pay the project fund for a token-goal raffle
@@ -1205,51 +1319,76 @@ describe('successRaffle', () => {
      * @expected
      * - transaction result must be true
      */
-    successRaffleTokenGoalTest(
-      'should successfully return license token and pay the project fund for a token-goal raffle',
-      ({
-        boxFactory,
-        creator,
-        serviceBox,
-        successRaffleForLicenseRedeemBox,
-      }) => {
-        const serviceR4 = SConstant.from(serviceBox.additionalRegisters.R4!)
-          .data as bigint[];
-        const serviceFeePercent = serviceR4[0];
-        const implementerFeePercent = serviceR4[1];
-        const serviceOutputBox = boxFactory.createServiceOutputBox(
-          serviceBox.ergoTree,
-          serviceBox.assets[1].amount + 1n,
+    it<TestInterface>('should successfully return license token and pay the project fund for a token-goal raffle', ({
+      successRaffleTokenGoalTestRequirements,
+    }) => {
+      const serviceR4 = SConstant.from(
+        successRaffleTokenGoalTestRequirements.serviceBox.additionalRegisters
+          .R4!,
+      ).data as bigint[];
+      const serviceFeePercent = serviceR4[0];
+      const implementerFeePercent = serviceR4[1];
+      const serviceOutputBox =
+        successRaffleTokenGoalTestRequirements.boxFactory.createServiceOutputBox(
+          successRaffleTokenGoalTestRequirements.serviceBox.ergoTree,
+          successRaffleTokenGoalTestRequirements.serviceBox.assets[1].amount +
+            1n,
           serviceFeePercent,
           implementerFeePercent,
           serviceR4[2],
         );
-        successRaffleForLicenseRedeemBox.setContextExtension({
-          0: SColl(SByte, creator.ergoTree),
-        });
+      successRaffleTokenGoalTestRequirements.successRaffleForLicenseRedeemBox.setContextExtension(
+        {
+          0: SColl(
+            SByte,
+            successRaffleTokenGoalTestRequirements.creator.ergoTree,
+          ),
+        },
+      );
 
-        const creatorFund = boxFactory.createSafePayOutputBox(
-          successRaffleForLicenseRedeemBox.value - testUtils.TestConstants.FEE,
-          [successRaffleForLicenseRedeemBox.assets[2]],
-          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+      const creatorFund =
+        successRaffleTokenGoalTestRequirements.boxFactory.createSafePayOutputBox(
+          successRaffleTokenGoalTestRequirements
+            .successRaffleForLicenseRedeemBox.value -
+            testUtils.TestConstants.FEE,
+          [
+            successRaffleTokenGoalTestRequirements
+              .successRaffleForLicenseRedeemBox.assets[2],
+          ],
+          blake2b256(
+            Buffer.from(
+              successRaffleTokenGoalTestRequirements.creator.ergoTree,
+              'hex',
+            ),
+          ),
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([serviceBox, successRaffleForLicenseRedeemBox])
-          .to([serviceOutputBox, creatorFund])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          // burn ticket tokens
-          .burnTokens(successRaffleForLicenseRedeemBox.assets[1])
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        successRaffleTokenGoalTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          successRaffleTokenGoalTestRequirements.serviceBox,
+          successRaffleTokenGoalTestRequirements.successRaffleForLicenseRedeemBox,
+        ])
+        .to([serviceOutputBox, creatorFund])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        // burn ticket tokens
+        .burnTokens(
+          successRaffleTokenGoalTestRequirements
+            .successRaffleForLicenseRedeemBox.assets[1],
+        )
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        const res = boxFactory.chain.execute(transaction);
+      const res =
+        successRaffleTokenGoalTestRequirements.boxFactory.chain.execute(
+          transaction,
+        );
 
-        expect(res).toBeTruthy();
-      },
-    );
+      expect(res).toBeTruthy();
+    });
 
     /**
      * @target should fail if service box has a different service nft
@@ -1261,17 +1400,12 @@ describe('successRaffle', () => {
      * @expected
      * - transaction result must throw error
      */
-    successRaffleTest(
-      'should fail if service box has a different service nft',
-      ({
-        boxFactory,
-        creator,
-        someoneWallet,
-        ownerWallet,
-        successRaffleForLicenseRedeemBox,
-      }) => {
-        const serviceBox = boxFactory.createServiceBoxMock(
-          ownerWallet.ergoTree,
+    it<TestInterface>('should fail if service box has a different service nft', ({
+      successRaffleTestRequirements,
+    }) => {
+      const serviceBox =
+        successRaffleTestRequirements.boxFactory.createServiceBoxMock(
+          successRaffleTestRequirements.ownerWallet.ergoTree,
           testUtils.TestConstants.LICENSE_TOKEN_COUNT,
           100n,
           100n,
@@ -1280,11 +1414,12 @@ describe('successRaffle', () => {
           testUtils.TestConstants.X_TOKEN_ID,
         );
 
-        const serviceR4 = SConstant.from(serviceBox.additionalRegisters.R4!)
-          .data as bigint[];
-        const serviceFeePercent = serviceR4[0];
-        const implementerFeePercent = serviceR4[1];
-        const serviceOutputBox = boxFactory.createServiceOutputBox(
+      const serviceR4 = SConstant.from(serviceBox.additionalRegisters.R4!)
+        .data as bigint[];
+      const serviceFeePercent = serviceR4[0];
+      const implementerFeePercent = serviceR4[1];
+      const serviceOutputBox =
+        successRaffleTestRequirements.boxFactory.createServiceOutputBox(
           serviceBox.ergoTree,
           serviceBox.assets[1].amount + 1n,
           serviceFeePercent,
@@ -1295,27 +1430,40 @@ describe('successRaffle', () => {
           testUtils.TestConstants.X_TOKEN_ID,
         );
 
-        const creatorFund = boxFactory.createSafePayOutputBox(
-          successRaffleForLicenseRedeemBox.value - testUtils.TestConstants.FEE,
+      const creatorFund =
+        successRaffleTestRequirements.boxFactory.createSafePayOutputBox(
+          successRaffleTestRequirements.successRaffleForLicenseRedeemBox.value -
+            testUtils.TestConstants.FEE,
           [],
-          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+          blake2b256(
+            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+          ),
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([serviceBox, successRaffleForLicenseRedeemBox])
-          .to([serviceOutputBox, creatorFund])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          // burn ticket tokens
-          .burnTokens(successRaffleForLicenseRedeemBox.assets[1])
-          .payFee(testUtils.TestConstants.FEE)
-          .sendChangeTo(someoneWallet.address)
-          .build();
+      const transaction = new TransactionBuilder(
+        successRaffleTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          serviceBox,
+          successRaffleTestRequirements.successRaffleForLicenseRedeemBox,
+        ])
+        .to([serviceOutputBox, creatorFund])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        // burn ticket tokens
+        .burnTokens(
+          successRaffleTestRequirements.successRaffleForLicenseRedeemBox
+            .assets[1],
+        )
+        .payFee(testUtils.TestConstants.FEE)
+        .sendChangeTo(successRaffleTestRequirements.someoneWallet.address)
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() =>
+        successRaffleTestRequirements.boxFactory.chain.execute(transaction),
+      ).toThrowError();
+    });
 
     /**
      * @target should fail if project fund withdrawal is incorrect for an erg-goal raffle
@@ -1327,51 +1475,60 @@ describe('successRaffle', () => {
      * @expected
      * - transaction result must throw error
      */
-    successRaffleTest(
-      'should fail if project fund withdrawal is incorrect for an erg-goal raffle',
-      ({
-        boxFactory,
-        creator,
-        serviceBox,
-        successRaffleForLicenseRedeemBox,
-      }) => {
-        const serviceR4 = SConstant.from(serviceBox.additionalRegisters.R4!)
-          .data as bigint[];
-        const serviceFeePercent = serviceR4[0];
-        const implementerFeePercent = serviceR4[1];
+    it<TestInterface>('should fail if project fund withdrawal is incorrect for an erg-goal raffle', ({
+      successRaffleTestRequirements,
+    }) => {
+      const serviceR4 = SConstant.from(
+        successRaffleTestRequirements.serviceBox.additionalRegisters.R4!,
+      ).data as bigint[];
+      const serviceFeePercent = serviceR4[0];
+      const implementerFeePercent = serviceR4[1];
 
-        const serviceOutputBox = boxFactory.createServiceOutputBox(
-          serviceBox.ergoTree,
-          serviceBox.assets[1].amount + 1n,
+      const serviceOutputBox =
+        successRaffleTestRequirements.boxFactory.createServiceOutputBox(
+          successRaffleTestRequirements.serviceBox.ergoTree,
+          successRaffleTestRequirements.serviceBox.assets[1].amount + 1n,
           serviceFeePercent,
           implementerFeePercent,
           serviceR4[2],
         );
 
-        const creatorFund = boxFactory.createSafePayOutputBox(
+      const creatorFund =
+        successRaffleTestRequirements.boxFactory.createSafePayOutputBox(
           // invalid value: minus one extra fee value
-          successRaffleForLicenseRedeemBox.value -
+          successRaffleTestRequirements.successRaffleForLicenseRedeemBox.value -
             testUtils.TestConstants.FEE -
             testUtils.TestConstants.FEE,
           [],
-          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+          blake2b256(
+            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+          ),
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([serviceBox, successRaffleForLicenseRedeemBox])
-          .to([serviceOutputBox, creatorFund])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          // burn ticket tokens
-          .burnTokens(successRaffleForLicenseRedeemBox.assets[1])
-          .payFee(testUtils.TestConstants.FEE)
-          .sendChangeTo(creator.address)
-          .build();
+      const transaction = new TransactionBuilder(
+        successRaffleTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          successRaffleTestRequirements.serviceBox,
+          successRaffleTestRequirements.successRaffleForLicenseRedeemBox,
+        ])
+        .to([serviceOutputBox, creatorFund])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        // burn ticket tokens
+        .burnTokens(
+          successRaffleTestRequirements.successRaffleForLicenseRedeemBox
+            .assets[1],
+        )
+        .payFee(testUtils.TestConstants.FEE)
+        .sendChangeTo(successRaffleTestRequirements.creator.address)
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() =>
+        successRaffleTestRequirements.boxFactory.chain.execute(transaction),
+      ).toThrowError();
+    });
 
     /**
      * @target should fail if project fund withdrawal is incorrect for a token-goal raffle
@@ -1383,59 +1540,82 @@ describe('successRaffle', () => {
      * @expected
      * - transaction result must throw error
      */
-    successRaffleTokenGoalTest(
-      'should fail if project fund withdrawal is incorrect for a token-goal raffle',
-      ({
-        boxFactory,
-        creator,
-        serviceBox,
-        successRaffleForLicenseRedeemBox,
-      }) => {
-        const serviceR4 = SConstant.from(serviceBox.additionalRegisters.R4!)
-          .data as bigint[];
-        const serviceFeePercent = serviceR4[0];
-        const implementerFeePercent = serviceR4[1];
-        const serviceOutputBox = boxFactory.createServiceOutputBox(
-          serviceBox.ergoTree,
-          serviceBox.assets[1].amount + 1n,
+    it<TestInterface>('should fail if project fund withdrawal is incorrect for a token-goal raffle', ({
+      successRaffleTokenGoalTestRequirements,
+    }) => {
+      const serviceR4 = SConstant.from(
+        successRaffleTokenGoalTestRequirements.serviceBox.additionalRegisters
+          .R4!,
+      ).data as bigint[];
+      const serviceFeePercent = serviceR4[0];
+      const implementerFeePercent = serviceR4[1];
+      const serviceOutputBox =
+        successRaffleTokenGoalTestRequirements.boxFactory.createServiceOutputBox(
+          successRaffleTokenGoalTestRequirements.serviceBox.ergoTree,
+          successRaffleTokenGoalTestRequirements.serviceBox.assets[1].amount +
+            1n,
           serviceFeePercent,
           implementerFeePercent,
           serviceR4[2],
         );
 
-        const creatorFund = boxFactory.createSafePayOutputBox(
-          successRaffleForLicenseRedeemBox.value - testUtils.TestConstants.FEE,
+      const creatorFund =
+        successRaffleTokenGoalTestRequirements.boxFactory.createSafePayOutputBox(
+          successRaffleTokenGoalTestRequirements
+            .successRaffleForLicenseRedeemBox.value -
+            testUtils.TestConstants.FEE,
           [
             {
-              tokenId: successRaffleForLicenseRedeemBox.assets[2].tokenId,
+              tokenId:
+                successRaffleTokenGoalTestRequirements
+                  .successRaffleForLicenseRedeemBox.assets[2].tokenId,
               // invalid value: minus one extra collecting token
               amount:
-                BigInt(successRaffleForLicenseRedeemBox.assets[2].amount) - 1n,
+                BigInt(
+                  successRaffleTokenGoalTestRequirements
+                    .successRaffleForLicenseRedeemBox.assets[2].amount,
+                ) - 1n,
             },
           ],
-          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+          blake2b256(
+            Buffer.from(
+              successRaffleTokenGoalTestRequirements.creator.ergoTree,
+              'hex',
+            ),
+          ),
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([serviceBox, successRaffleForLicenseRedeemBox])
-          .to([serviceOutputBox, creatorFund])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          // burn ticket tokens
-          .burnTokens([
-            successRaffleForLicenseRedeemBox.assets[1],
-            {
-              tokenId: successRaffleForLicenseRedeemBox.assets[2].tokenId,
-              amount: 1n,
-            },
-          ])
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        successRaffleTokenGoalTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          successRaffleTokenGoalTestRequirements.serviceBox,
+          successRaffleTokenGoalTestRequirements.successRaffleForLicenseRedeemBox,
+        ])
+        .to([serviceOutputBox, creatorFund])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        // burn ticket tokens
+        .burnTokens([
+          successRaffleTokenGoalTestRequirements
+            .successRaffleForLicenseRedeemBox.assets[1],
+          {
+            tokenId:
+              successRaffleTokenGoalTestRequirements
+                .successRaffleForLicenseRedeemBox.assets[2].tokenId,
+            amount: 1n,
+          },
+        ])
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() =>
+        successRaffleTokenGoalTestRequirements.boxFactory.chain.execute(
+          transaction,
+        ),
+      ).toThrowError();
+    });
 
     /**
      * @target should fail if a ticket token is stolen
@@ -1447,59 +1627,73 @@ describe('successRaffle', () => {
      * @expected
      * - transaction result must throw error
      */
-    successRaffleTest(
-      'should fail if a ticket token is stolen',
-      ({
-        boxFactory,
-        creator,
-        serviceBox,
-        successRaffleForLicenseRedeemBox,
-      }) => {
-        const serviceR4 = SConstant.from(serviceBox.additionalRegisters.R4!)
-          .data as bigint[];
-        const serviceFeePercent = serviceR4[0];
-        const implementerFeePercent = serviceR4[1];
+    it<TestInterface>('should fail if a ticket token is stolen', ({
+      successRaffleTestRequirements,
+    }) => {
+      const serviceR4 = SConstant.from(
+        successRaffleTestRequirements.serviceBox.additionalRegisters.R4!,
+      ).data as bigint[];
+      const serviceFeePercent = serviceR4[0];
+      const implementerFeePercent = serviceR4[1];
 
-        const serviceOutputBox = boxFactory.createServiceOutputBox(
-          serviceBox.ergoTree,
-          serviceBox.assets[1].amount + 1n,
+      const serviceOutputBox =
+        successRaffleTestRequirements.boxFactory.createServiceOutputBox(
+          successRaffleTestRequirements.serviceBox.ergoTree,
+          successRaffleTestRequirements.serviceBox.assets[1].amount + 1n,
           serviceFeePercent,
           implementerFeePercent,
           serviceR4[2],
         );
 
-        const creatorFund = boxFactory.createSafePayOutputBox(
-          successRaffleForLicenseRedeemBox.value - testUtils.TestConstants.FEE,
+      const creatorFund =
+        successRaffleTestRequirements.boxFactory.createSafePayOutputBox(
+          successRaffleTestRequirements.successRaffleForLicenseRedeemBox.value -
+            testUtils.TestConstants.FEE,
           [
             // stole one ticket token
             {
-              tokenId: successRaffleForLicenseRedeemBox.assets[1].tokenId,
+              tokenId:
+                successRaffleTestRequirements.successRaffleForLicenseRedeemBox
+                  .assets[1].tokenId,
               amount: 1n,
             },
           ],
-          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+          blake2b256(
+            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+          ),
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([serviceBox, successRaffleForLicenseRedeemBox])
-          .to([serviceOutputBox, creatorFund])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          // burn ticket tokens
-          .burnTokens([
-            {
-              tokenId: successRaffleForLicenseRedeemBox.assets[1].tokenId,
-              amount:
-                BigInt(successRaffleForLicenseRedeemBox.assets[1].amount) - 1n,
-            },
-          ])
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        successRaffleTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          successRaffleTestRequirements.serviceBox,
+          successRaffleTestRequirements.successRaffleForLicenseRedeemBox,
+        ])
+        .to([serviceOutputBox, creatorFund])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        // burn ticket tokens
+        .burnTokens([
+          {
+            tokenId:
+              successRaffleTestRequirements.successRaffleForLicenseRedeemBox
+                .assets[1].tokenId,
+            amount:
+              BigInt(
+                successRaffleTestRequirements.successRaffleForLicenseRedeemBox
+                  .assets[1].amount,
+              ) - 1n,
+          },
+        ])
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() =>
+        successRaffleTestRequirements.boxFactory.chain.execute(transaction),
+      ).toThrowError();
+    });
 
     /**
      * @target should fail if a raffle license is stolen with spending two similar success raffles
@@ -1510,69 +1704,77 @@ describe('successRaffle', () => {
      * @expected
      * - transaction result must throw error
      */
-    successRaffleTest(
-      'should fail if a raffle license is stolen with spending two similar success raffles',
-      ({
-        boxFactory,
-        creator,
-        someoneWallet,
-        serviceBox,
-        successRaffleForLicenseRedeemBox,
-      }) => {
-        const serviceR4 = SConstant.from(serviceBox.additionalRegisters.R4!)
-          .data as bigint[];
-        const serviceFeePercent = serviceR4[0];
-        const implementerFeePercent = serviceR4[1];
+    it<TestInterface>('should fail if a raffle license is stolen with spending two similar success raffles', ({
+      successRaffleTestRequirements,
+    }) => {
+      const serviceR4 = SConstant.from(
+        successRaffleTestRequirements.serviceBox.additionalRegisters.R4!,
+      ).data as bigint[];
+      const serviceFeePercent = serviceR4[0];
+      const implementerFeePercent = serviceR4[1];
 
-        const successRaffleForLicenseRedeemBox2 =
-          boxFactory.createSuccessRaffleBoxMock(
-            testUtils.TestConstants.FEE * 3n +
-              testUtils.TestConstants.CREATION_FEE,
-            testUtils.TestConstants.LICENSE_TOKEN_ID,
-            blake2b256(Buffer.from(creator.ergoTree, 'hex')),
-            TEST_INITIAL_SEED,
-            [],
-            5n,
-            5,
-            5n,
-            50n,
-            6,
-            testUtils.TestConstants.X_TOKEN_ID,
-          ) as ErgoUnsignedInput;
+      const successRaffleForLicenseRedeemBox2 =
+        successRaffleTestRequirements.boxFactory.createSuccessRaffleBoxMock(
+          testUtils.TestConstants.FEE * 3n +
+            testUtils.TestConstants.CREATION_FEE,
+          testUtils.TestConstants.LICENSE_TOKEN_ID,
+          blake2b256(
+            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+          ),
+          TEST_INITIAL_SEED,
+          [],
+          5n,
+          5,
+          5n,
+          50n,
+          6,
+          testUtils.TestConstants.X_TOKEN_ID,
+        ) as ErgoUnsignedInput;
 
-        const serviceOutputBox = boxFactory.createServiceOutputBox(
-          serviceBox.ergoTree,
-          serviceBox.assets[1].amount + 1n,
+      const serviceOutputBox =
+        successRaffleTestRequirements.boxFactory.createServiceOutputBox(
+          successRaffleTestRequirements.serviceBox.ergoTree,
+          successRaffleTestRequirements.serviceBox.assets[1].amount + 1n,
           serviceFeePercent,
           implementerFeePercent,
           serviceR4[2],
         );
 
-        const creatorFund = boxFactory.createSafePayOutputBox(
-          successRaffleForLicenseRedeemBox.value - testUtils.TestConstants.FEE,
+      const creatorFund =
+        successRaffleTestRequirements.boxFactory.createSafePayOutputBox(
+          successRaffleTestRequirements.successRaffleForLicenseRedeemBox.value -
+            testUtils.TestConstants.FEE,
           [],
-          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+          blake2b256(
+            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+          ),
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([
-            serviceBox,
-            successRaffleForLicenseRedeemBox,
-            successRaffleForLicenseRedeemBox2,
-            ...someoneWallet.utxos,
-          ])
-          .to([serviceOutputBox, creatorFund])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          // burn ticket tokens
-          .burnTokens(successRaffleForLicenseRedeemBox.assets[1])
-          .sendChangeTo(someoneWallet.address)
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        successRaffleTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          successRaffleTestRequirements.serviceBox,
+          successRaffleTestRequirements.successRaffleForLicenseRedeemBox,
+          successRaffleForLicenseRedeemBox2,
+          ...successRaffleTestRequirements.someoneWallet.utxos,
+        ])
+        .to([serviceOutputBox, creatorFund])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        // burn ticket tokens
+        .burnTokens(
+          successRaffleTestRequirements.successRaffleForLicenseRedeemBox
+            .assets[1],
+        )
+        .sendChangeTo(successRaffleTestRequirements.someoneWallet.address)
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => boxFactory.chain.execute(transaction)).toThrowError();
-      },
-    );
+      expect(() =>
+        successRaffleTestRequirements.boxFactory.chain.execute(transaction),
+      ).toThrowError();
+    });
   });
 });

@@ -1,5 +1,3 @@
-import { WinnerBuilder } from '@ergo-raffle/boxes';
-import { GiftBuilder } from '@ergo-raffle/boxes';
 import {
   TransactionBuilder,
   Box,
@@ -11,6 +9,9 @@ import {
   TokenAmount,
   ErgoAddress,
 } from '@fleet-sdk/core';
+
+import { WinnerBuilder } from '@ergo-raffle/boxes';
+import { GiftBuilder } from '@ergo-raffle/boxes';
 
 /**
  * Builder class for creating add gift transactions

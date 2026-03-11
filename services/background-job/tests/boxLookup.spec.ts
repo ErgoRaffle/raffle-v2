@@ -1,9 +1,10 @@
-import { OutputBox } from '@ergo-raffle/box-lookup';
 import { Amount, BoxCandidate, NonMandatoryRegisters } from '@fleet-sdk/common';
 import { ErgoAddress, ErgoBox, Network } from '@fleet-sdk/core';
 import { deserializeTransaction } from '@fleet-sdk/serializer';
 import { TransactionEntity, TransactionStatus } from '@rosen-bridge/tx-pot';
 import { describe, expect, it, vi } from 'vitest';
+
+import { OutputBox } from '@ergo-raffle/box-lookup';
 
 import {
   deserializeTxForBoxLookup,

@@ -12,7 +12,7 @@ database:
   port: 5432
   username: postgres
   password: ''
-  name: raffle_v2_background_job
+  name: raffle_v2
 scanner:
   node:
     url: http://127.0.0.1:9052/
@@ -30,6 +30,3 @@ healthCheck:
   criticalBlockGap: 10
 boxLookup:
   updateInterval: 60
-api:
-  host: localhost
-  port: 3000

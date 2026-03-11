@@ -1,4 +1,4 @@
-import { AbstractInitializableErgoExtractorAction } from '@rosen-bridge/abstract-extractor';
+import { AbstractErgoBoxAction } from '@rosen-bridge/abstract-extractor';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
@@ -7,7 +7,7 @@ import { pick } from 'lodash-es';
 import { GiftRedeemEntity } from '../entities';
 import { GiftRedeemBoxInterface } from '../interfaces/types';
 
-export class GiftRedeemAction extends AbstractInitializableErgoExtractorAction<
+export class GiftRedeemAction extends AbstractErgoBoxAction<
   GiftRedeemBoxInterface,
   GiftRedeemEntity
 > {
@@ -28,7 +28,7 @@ export class GiftRedeemAction extends AbstractInitializableErgoExtractorAction<
   ): Omit<GiftRedeemEntity, 'id'>[] => {
     return boxes.map((box) => {
       return {
-        boxId: box.boxId,
+        identifier: box.identifier,
         block: block.hash,
         height: block.height,
         serialized: box.serialized,
@@ -49,7 +49,7 @@ export class GiftRedeemAction extends AbstractInitializableErgoExtractorAction<
   ): GiftRedeemBoxInterface[] => {
     return entities.map((data) =>
       pick(data, [
-        'boxId',
+        'identifier',
         'txId',
         'raffleId',
         'extractor',

@@ -139,7 +139,7 @@
       },
       "name": {
         "type": "string",
-        "default": "raffle_v2_background_job",
+        "default": "raffle_v2",
         "validations": [
           {
             "required": true,
@@ -353,33 +353,6 @@
           {
             "required": true,
             "error": "service fee address must be specified"
-          }
-        ]
-      }
-    }
-  },
-  "api": {
-    "type": "object",
-    "children": {
-      "host": {
-        "type": "string",
-        "default": "localhost",
-        "description": "API server host",
-        "validations": [
-          {
-            "required": true,
-            "error": "API host must be specified"
-          }
-        ]
-      },
-      "port": {
-        "type": "number",
-        "default": 3000,
-        "description": "API server port",
-        "validations": [
-          {
-            "required": true,
-            "error": "API port must be specified"
           }
         ]
       }

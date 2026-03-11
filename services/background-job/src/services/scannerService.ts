@@ -1,3 +1,13 @@
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { DefaultLogger } from '@rosen-bridge/abstract-logger';
+import { ErgoScanner, ErgoNodeNetwork } from '@rosen-bridge/ergo-scanner';
+import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
+import {
+  AbstractService,
+  Dependency,
+  ServiceStatus,
+} from '@rosen-bridge/service-manager';
+
 import { raffleInfo } from '@ergo-raffle/contracts';
 import {
   ServiceExtractor,
@@ -16,16 +26,6 @@ import {
   SafePayExtractor,
   DynamicExtractor,
 } from '@ergo-raffle/extractors';
-import { Network } from '@fleet-sdk/core';
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
-import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
-import { ErgoScanner, ErgoNodeNetwork } from '@rosen-bridge/scanner';
-import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
-import {
-  AbstractService,
-  Dependency,
-  ServiceStatus,
-} from '@rosen-bridge/service-manager';
 
 import { configs } from '../config';
 import { Scanner as ScannerBaseOption } from '../types';
@@ -59,7 +59,7 @@ export class ScannerService extends AbstractService {
       network: new ErgoNodeNetwork(this.scannerConfig.node.url),
       initialHeight: this.scannerConfig.node.initialHeight,
       dataSource: DbService.getInstance().dataSource,
-      logger: CallbackLoggerFactory.getInstance().getLogger('raffle-scanner'),
+      logger: DefaultLogger.getInstance().child('raffle-scanner'),
     });
   }
 
@@ -72,186 +72,192 @@ export class ScannerService extends AbstractService {
     const raffleServiceExtractor = new ServiceExtractor(
       DbService.getInstance().dataSource,
       'RaffleService',
-      this.scannerConfig.node.url,
-      ErgoNetworkType.Node,
-      raffleInfo.addresses.service,
+      {
+        type: ErgoNetworkType.Node,
+        url: this.scannerConfig.node.url,
+        address: raffleInfo.addresses.service,
+        active: false,
+      },
       raffleInfo.tokens.serviceNft,
-      CallbackLoggerFactory.getInstance().getLogger('raffle-service-extractor'),
-      false,
+      DefaultLogger.getInstance().child('raffle-service-extractor'),
     );
     await this.ergoScanner.registerExtractor(raffleServiceExtractor);
 
     const inactiveRaffleExtractor = new InactiveRaffleExtractor(
       DbService.getInstance().dataSource,
       'InactiveRaffle',
-      this.scannerConfig.node.url,
-      raffleInfo.addresses.inactiveRaffle,
+      {
+        type: ErgoNetworkType.Node,
+        url: this.scannerConfig.node.url,
+        address: raffleInfo.addresses.inactiveRaffle,
+        active: false,
+      },
       configs.addresses.serviceFeeAddress,
       raffleInfo.tokens.raffleLicense,
-      CallbackLoggerFactory.getInstance().getLogger(
-        'raffle-inactiveRaffle-extractor',
-      ),
-      false,
+      DefaultLogger.getInstance().child('raffle-inactiveRaffle-extractor'),
     );
     await this.ergoScanner.registerExtractor(inactiveRaffleExtractor);
 
     const ticketRepoExtractor = new TicketRepoExtractor(
       DbService.getInstance().dataSource,
       'TicketRepo',
-      this.scannerConfig.node.url,
-      ErgoNetworkType.Node,
-      raffleInfo.addresses.ticketRepo,
-      CallbackLoggerFactory.getInstance().getLogger(
-        'raffle-ticketRepo-extractor',
-      ),
-      false,
+      {
+        type: ErgoNetworkType.Node,
+        url: this.scannerConfig.node.url,
+        address: raffleInfo.addresses.ticketRepo,
+        active: false,
+      },
+      DefaultLogger.getInstance().child('raffle-ticketRepo-extractor'),
     );
     await this.ergoScanner.registerExtractor(ticketRepoExtractor);
 
     const activeRaffleExtractor = new ActiveRaffleExtractor(
       DbService.getInstance().dataSource,
       'ActiveRaffle',
-      this.scannerConfig.node.url,
-      ErgoNetworkType.Node,
-      raffleInfo.addresses.activeRaffle,
+      {
+        type: ErgoNetworkType.Node,
+        url: this.scannerConfig.node.url,
+        address: raffleInfo.addresses.activeRaffle,
+        active: false,
+      },
       raffleInfo.tokens.raffleLicense,
-      CallbackLoggerFactory.getInstance().getLogger(
-        'raffle-activeRaffle-extractor',
-      ),
-      false,
+      DefaultLogger.getInstance().child('raffle-activeRaffle-extractor'),
     );
     await this.ergoScanner.registerExtractor(activeRaffleExtractor);
 
     const giftTokenRepoExtractor = new GiftTokenRepoExtractor(
       DbService.getInstance().dataSource,
       'GiftTokenRepo',
-      this.scannerConfig.node.url,
-      ErgoNetworkType.Node,
-      raffleInfo.addresses.giftTokenRepo,
-      CallbackLoggerFactory.getInstance().getLogger(
-        'raffle-giftTokenRepo-extractor',
-      ),
-      false,
+      {
+        type: ErgoNetworkType.Node,
+        url: this.scannerConfig.node.url,
+        address: raffleInfo.addresses.giftTokenRepo,
+        active: false,
+      },
+      DefaultLogger.getInstance().child('raffle-giftTokenRepo-extractor'),
     );
     await this.ergoScanner.registerExtractor(giftTokenRepoExtractor);
 
     const winnerExtractor = new WinnerExtractor(
       DbService.getInstance().dataSource,
       'Winner',
-      this.scannerConfig.node.url,
-      ErgoNetworkType.Node,
-      raffleInfo.addresses.winner,
-      CallbackLoggerFactory.getInstance().getLogger('raffle-winner-extractor'),
-      false,
+      {
+        type: ErgoNetworkType.Node,
+        url: this.scannerConfig.node.url,
+        address: raffleInfo.addresses.winner,
+        active: false,
+      },
+      DefaultLogger.getInstance().child('raffle-winner-extractor'),
     );
     await this.ergoScanner.registerExtractor(winnerExtractor);
 
     const raffleDetailsExtractor = new RaffleDetailsExtractor(
       DbService.getInstance().dataSource,
       'RaffleDetails',
-      this.scannerConfig.node.url,
-      ErgoNetworkType.Node,
-      raffleInfo.addresses.raffleDetails,
-      CallbackLoggerFactory.getInstance().getLogger('raffle-details-extractor'),
-      false,
+      {
+        type: ErgoNetworkType.Node,
+        url: this.scannerConfig.node.url,
+        address: raffleInfo.addresses.raffleDetails,
+        active: false,
+      },
+      DefaultLogger.getInstance().child('raffle-details-extractor'),
     );
     await this.ergoScanner.registerExtractor(raffleDetailsExtractor);
 
     const giftExtractor = new GiftExtractor(
       DbService.getInstance().dataSource,
       'Gift',
-      this.scannerConfig.node.url,
-      ErgoNetworkType.Node,
-      raffleInfo.addresses.gift,
-      CallbackLoggerFactory.getInstance().getLogger('raffle-gift-extractor'),
-      false,
+      {
+        type: ErgoNetworkType.Node,
+        url: this.scannerConfig.node.url,
+        address: raffleInfo.addresses.gift,
+        active: false,
+      },
+      DefaultLogger.getInstance().child('raffle-gift-extractor'),
     );
     await this.ergoScanner.registerExtractor(giftExtractor);
 
     const ticketExtractor = new TicketExtractor(
       DbService.getInstance().dataSource,
       'Ticket',
-      this.scannerConfig.node.url,
-      ErgoNetworkType.Node,
-      raffleInfo.addresses.ticket,
-      CallbackLoggerFactory.getInstance().getLogger('raffle-ticket-extractor'),
-      false,
+      {
+        type: ErgoNetworkType.Node,
+        url: this.scannerConfig.node.url,
+        address: raffleInfo.addresses.ticket,
+        active: false,
+      },
+      DefaultLogger.getInstance().child('raffle-ticket-extractor'),
     );
     await this.ergoScanner.registerExtractor(ticketExtractor);
 
     const winnerPrize = new WinnerPrizeExtractor(
       DbService.getInstance().dataSource,
       'WinnerPrize',
-      this.scannerConfig.node.url,
-      ErgoNetworkType.Node,
-      raffleInfo.addresses.winnerPrize,
-      CallbackLoggerFactory.getInstance().getLogger(
-        'raffle-winnerPrize-extractor',
-      ),
-      false,
+      {
+        type: ErgoNetworkType.Node,
+        url: this.scannerConfig.node.url,
+        address: raffleInfo.addresses.winnerPrize,
+        active: false,
+      },
+      DefaultLogger.getInstance().child('raffle-winnerPrize-extractor'),
     );
     await this.ergoScanner.registerExtractor(winnerPrize);
 
     const giftRedeem = new GiftRedeemExtractor(
       DbService.getInstance().dataSource,
       'GiftRedeem',
-      this.scannerConfig.node.url,
-      ErgoNetworkType.Node,
-      raffleInfo.addresses.giftRedeem,
+      {
+        type: ErgoNetworkType.Node,
+        url: this.scannerConfig.node.url,
+        address: raffleInfo.addresses.giftRedeem,
+        active: false,
+      },
       raffleInfo.tokens.raffleLicense,
-      CallbackLoggerFactory.getInstance().getLogger(
-        'raffle-giftRedeem-extractor',
-      ),
-      false,
+      DefaultLogger.getInstance().child('raffle-giftRedeem-extractor'),
     );
     await this.ergoScanner.registerExtractor(giftRedeem);
 
     const successRaffle = new SuccessRaffleExtractor(
       DbService.getInstance().dataSource,
       'SuccessRaffle',
-      this.scannerConfig.node.url,
-      raffleInfo.addresses.successRaffle,
+      {
+        type: ErgoNetworkType.Node,
+        url: this.scannerConfig.node.url,
+        address: raffleInfo.addresses.successRaffle,
+        active: false,
+      },
       raffleInfo.tokens.raffleLicense,
-      CallbackLoggerFactory.getInstance().getLogger(
-        'raffle-successRaffle-extractor',
-      ),
-      false,
+      DefaultLogger.getInstance().child('raffle-successRaffle-extractor'),
     );
     await this.ergoScanner.registerExtractor(successRaffle);
 
     const ticketRedeem = new TicketRedeemExtractor(
       DbService.getInstance().dataSource,
       'TicketRedeem',
-      this.scannerConfig.node.url,
-      ErgoNetworkType.Node,
-      raffleInfo.addresses.ticketRedeem,
+      {
+        type: ErgoNetworkType.Node,
+        url: this.scannerConfig.node.url,
+        address: raffleInfo.addresses.ticketRedeem,
+        active: false,
+      },
       raffleInfo.tokens.raffleLicense,
-      CallbackLoggerFactory.getInstance().getLogger(
-        'raffle-ticketRedeem-extractor',
-      ),
-      false,
+      DefaultLogger.getInstance().child('raffle-ticketRedeem-extractor'),
     );
     await this.ergoScanner.registerExtractor(ticketRedeem);
 
     const safePayExtractor = new SafePayExtractor(
       DbService.getInstance().dataSource,
       'SafePay',
-      this.scannerConfig.node.url,
-      ErgoNetworkType.Node,
-      raffleInfo.addresses.safePay,
+      {
+        type: ErgoNetworkType.Node,
+        url: this.scannerConfig.node.url,
+        address: raffleInfo.addresses.safePay,
+        active: false,
+      },
       raffleInfo.addresses.successRaffle,
-      CallbackLoggerFactory.getInstance().getLogger('raffle-safePay-extractor'),
-      false,
+      DefaultLogger.getInstance().child('raffle-safePay-extractor'),
     );
     await this.ergoScanner.registerExtractor(safePayExtractor);
-
-    this.dynamicExtractor = new DynamicExtractor(
-      DbService.getInstance().dataSource,
-      'Dynamic',
-      CallbackLoggerFactory.getInstance().getLogger('dynamic-extractor'),
-      configs.ergo.network === 'mainnet' ? Network.Mainnet : Network.Testnet,
-    );
-    await this.ergoScanner.registerExtractor(this.dynamicExtractor);
   };
 
   /**

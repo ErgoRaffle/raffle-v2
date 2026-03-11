@@ -1,13 +1,14 @@
+import { ErgoBox, ErgoAddress } from '@fleet-sdk/core';
+import { DefaultLogger } from '@rosen-bridge/abstract-logger';
+
 import { WinnerBuilder } from '@ergo-raffle/boxes';
 import { raffleInfo } from '@ergo-raffle/contracts';
 import { RaffleBoxType } from '@ergo-raffle/extractors';
-import { ErgoBox, ErgoAddress } from '@fleet-sdk/core';
-import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
 
 import { DbService } from '../services/dbService';
 import { convertDbBoxesToErgoBoxes } from './utils';
 
-const logger = CallbackLoggerFactory.getInstance().getLogger(import.meta.url);
+const logger = DefaultLogger.getInstance().child(import.meta.url);
 
 /**
  * Find all winner boxes for a raffle
@@ -34,11 +35,11 @@ export const findAllWinners = async (
   const winnerBoxEntities = (
     await DbService.getInstance().getWinnerBoxes(raffleId)
   ).filter((dbBox) => {
-    return !winnerBoxes.some((box) => box.boxId === dbBox.boxId);
+    return !winnerBoxes.some((box) => box.boxId === dbBox.identifier);
   });
 
   logger.debug(
-    `Found ${winnerBoxEntities.length} winner boxes in the database for raffle [${raffleId}] with boxIds: ${winnerBoxEntities.map((box) => box.boxId).join(', ')}`,
+    `Found ${winnerBoxEntities.length} winner boxes in the database for raffle [${raffleId}] with boxIds: ${winnerBoxEntities.map((box) => box.identifier).join(', ')}`,
   );
   // Sort the winner boxes by winner index
   return winnerBoxes.concat(convertDbBoxesToErgoBoxes(winnerBoxEntities));

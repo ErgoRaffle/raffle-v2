@@ -65,7 +65,7 @@ export const sampleInactiveRaffleBoxes: OutputBox[] = [
 ];
 
 export const sampleInactiveRaffleExtractedData = {
-  boxId: sampleInactiveRaffleBoxes[0].boxId,
+  identifier: sampleInactiveRaffleBoxes[0].boxId,
   txId: sampleInactiveRaffleBoxes[0].transactionId,
   serialized:
     'wIQ9GQYBAQHRcwBkASIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIi' +

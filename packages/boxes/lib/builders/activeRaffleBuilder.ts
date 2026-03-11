@@ -1,4 +1,3 @@
-import { raffleInfo } from '@ergo-raffle/contracts';
 import {
   Box,
   OutputBuilder,
@@ -11,6 +10,8 @@ import {
 } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
 import { SConstant } from '@fleet-sdk/serializer';
+
+import { raffleInfo } from '@ergo-raffle/contracts';
 
 import { RaffleStatus } from '../types';
 import { InactiveRaffleBuilder } from './inactiveRaffleBuilder';

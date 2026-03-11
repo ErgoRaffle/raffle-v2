@@ -1,21 +1,48 @@
-import { TransactionBuilder, TokenAmount } from '@fleet-sdk/core';
+import {
+  TransactionBuilder,
+  TokenAmount,
+  ErgoUnsignedInput,
+  OutputBuilder,
+} from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
-import { mockUTxO } from '@fleet-sdk/mock-chain';
+import { KeyedMockChainParty, mockUTxO } from '@fleet-sdk/mock-chain';
 import { SByte, SColl, SConstant } from '@fleet-sdk/serializer';
-import { it, describe, expect } from 'vitest';
+import { it, describe, expect, beforeEach } from 'vitest';
 
 import * as constants from '../../lib/constants';
 import { ScriptNamesType } from '../../lib/types';
 import * as testUtils from '../testUtils';
 
+interface TicketRedeemTestInterface {
+  boxFactory: testUtils.RaffleBoxFactory;
+  someoneWallet: KeyedMockChainParty;
+  anotherOne: KeyedMockChainParty;
+  creator: KeyedMockChainParty;
+  serviceBox: ErgoUnsignedInput;
+  ticketBox: ErgoUnsignedInput;
+  ticketRedeemBox: ErgoUnsignedInput;
+  ticketRedeemOutputBox: OutputBuilder;
+  redeemedDonationOutputBox: OutputBuilder;
+  ticketRedeemBoxForLicenseRedeem: ErgoUnsignedInput;
+  serviceOutputBox: OutputBuilder;
+  serviceFeeBox: OutputBuilder;
+}
+
+interface TestInterface {
+  ticketRedeemTestRequirements: TicketRedeemTestInterface;
+  ticketRedeemTokenGoalTestRequirements: TicketRedeemTestInterface;
+}
+
 /*
- * create fixtures that contains below steps data:
- *   - mock boxFactory.chain and partners
+ * provide test requirements that contains below data:
+ *   - mock ticketRedeemTestRequirements.boxFactory.chain and partners
  *   - compile contracts
  *   - create required input & output boxes
- * @returns vitest customized "it" object
+ * @returns object
  */
-const createTicketRedeemTest = (collectingToken?: TokenAmount<bigint>) => {
+const provideTicketRedeemTestRequirements = (
+  collectingToken?: TokenAmount<bigint>,
+) => {
   const totalSoldTickets = 10n;
   const ticketPrice = collectingToken
     ? collectingToken.amount / totalSoldTickets
@@ -128,7 +155,7 @@ const createTicketRedeemTest = (collectingToken?: TokenAmount<bigint>) => {
     blake2b256(Buffer.from(creator.ergoTree, 'hex')),
   );
 
-  return it.extend({
+  return {
     boxFactory: boxFactory,
     someoneWallet: someone,
     anotherOne: another,
@@ -141,14 +168,17 @@ const createTicketRedeemTest = (collectingToken?: TokenAmount<bigint>) => {
     serviceBox: serviceBox,
     serviceOutputBox: serviceOutputBox,
     serviceFeeBox: serviceFeeBox,
-  });
+  };
 };
 
 describe('ticketRedeem', () => {
-  const ticketRedeemTest = createTicketRedeemTest();
-  const ticketRedeemTokenGoalTest = createTicketRedeemTest({
-    tokenId: testUtils.TestConstants.X_TOKEN_ID,
-    amount: 100n,
+  beforeEach<TestInterface>(async (ctx) => {
+    ctx.ticketRedeemTestRequirements = provideTicketRedeemTestRequirements();
+    ctx.ticketRedeemTokenGoalTestRequirements =
+      provideTicketRedeemTestRequirements({
+        tokenId: testUtils.TestConstants.X_TOKEN_ID,
+        amount: 100n,
+      });
   });
 
   describe('Ticket redeem', () => {
@@ -161,27 +191,30 @@ describe('ticketRedeem', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    ticketRedeemTest(
-      'should successfully return ticket tokens and redeem the donation for an erg-goal raffle',
-      ({
-        boxFactory,
-        ticketRedeemBox,
-        ticketBox,
-        ticketRedeemOutputBox,
-        redeemedDonationOutputBox,
-      }) => {
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([ticketRedeemBox, ticketBox])
-          .to([ticketRedeemOutputBox, redeemedDonationOutputBox])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+    it<TestInterface>('should successfully return ticket tokens and redeem the donation for an erg-goal raffle', ({
+      ticketRedeemTestRequirements,
+    }) => {
+      const transaction = new TransactionBuilder(
+        ticketRedeemTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          ticketRedeemTestRequirements.ticketRedeemBox,
+          ticketRedeemTestRequirements.ticketBox,
+        ])
+        .to([
+          ticketRedeemTestRequirements.ticketRedeemOutputBox,
+          ticketRedeemTestRequirements.redeemedDonationOutputBox,
+        ])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(boxFactory.chain.execute(transaction)).toBeTruthy();
-      },
-    );
+      expect(
+        ticketRedeemTestRequirements.boxFactory.chain.execute(transaction),
+      ).toBeTruthy();
+    });
 
     /**
      * @target should successfully return ticket tokens and redeem the donation for a token-goal raffle
@@ -192,27 +225,32 @@ describe('ticketRedeem', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    ticketRedeemTokenGoalTest(
-      'should successfully return ticket tokens and redeem the donation for a token-goal raffle',
-      ({
-        boxFactory,
-        ticketRedeemBox,
-        ticketBox,
-        ticketRedeemOutputBox,
-        redeemedDonationOutputBox,
-      }) => {
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([ticketRedeemBox, ticketBox])
-          .to([ticketRedeemOutputBox, redeemedDonationOutputBox])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+    it<TestInterface>('should successfully return ticket tokens and redeem the donation for a token-goal raffle', ({
+      ticketRedeemTokenGoalTestRequirements,
+    }) => {
+      const transaction = new TransactionBuilder(
+        ticketRedeemTokenGoalTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          ticketRedeemTokenGoalTestRequirements.ticketRedeemBox,
+          ticketRedeemTokenGoalTestRequirements.ticketBox,
+        ])
+        .to([
+          ticketRedeemTokenGoalTestRequirements.ticketRedeemOutputBox,
+          ticketRedeemTokenGoalTestRequirements.redeemedDonationOutputBox,
+        ])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(boxFactory.chain.execute(transaction)).toBeTruthy();
-      },
-    );
+      expect(
+        ticketRedeemTokenGoalTestRequirements.boxFactory.chain.execute(
+          transaction,
+        ),
+      ).toBeTruthy();
+    });
 
     /**
      * @target should fail if ticket redeem box assets decreases more than the redeemed donation in an erg-goal raffle
@@ -223,25 +261,31 @@ describe('ticketRedeem', () => {
      * @expected
      * - transaction result must throw error
      */
-    ticketRedeemTest(
-      'should fail if ticket redeem box assets decreases more than the redeemed donation in an erg-goal raffle',
-      ({ boxFactory, ticketBox, ticketRedeemBox }) => {
-        const totalSoldTickets = 10n;
-        const ticketPrice = testUtils.TestConstants.FEE * 2n;
-        const ticketCount = 1n;
-        const redeemedDonationOutputBox = boxFactory.createSafePayOutputBox(
+    it<TestInterface>('should fail if ticket redeem box assets decreases more than the redeemed donation in an erg-goal raffle', ({
+      ticketRedeemTestRequirements,
+    }) => {
+      const totalSoldTickets = 10n;
+      const ticketPrice = testUtils.TestConstants.FEE * 2n;
+      const ticketCount = 1n;
+      const redeemedDonationOutputBox =
+        ticketRedeemTestRequirements.boxFactory.createSafePayOutputBox(
           // set increased value
-          BigInt(ticketBox.value) -
+          BigInt(ticketRedeemTestRequirements.ticketBox.value) -
             testUtils.TestConstants.FEE +
             ticketPrice * ticketCount +
             5n,
           [],
-          SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array,
+          SConstant.from(
+            ticketRedeemTestRequirements.ticketBox.additionalRegisters.R4!,
+          ).data as Uint8Array,
         );
 
-        const ticketRedeemOutputBox = boxFactory.createTicketRedeemOutputBox(
+      const ticketRedeemOutputBox =
+        ticketRedeemTestRequirements.boxFactory.createTicketRedeemOutputBox(
           // set decreased value
-          BigInt(ticketRedeemBox.value.toString()) -
+          BigInt(
+            ticketRedeemTestRequirements.ticketRedeemBox.value.toString(),
+          ) -
             ticketPrice * ticketCount -
             5n,
           totalSoldTickets,
@@ -250,20 +294,24 @@ describe('ticketRedeem', () => {
           testUtils.TestConstants.TICKET_TOKEN_ID,
           2n,
         );
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([ticketRedeemBox, ticketBox])
-          .to([ticketRedeemOutputBox, redeemedDonationOutputBox])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        ticketRedeemTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          ticketRedeemTestRequirements.ticketRedeemBox,
+          ticketRedeemTestRequirements.ticketBox,
+        ])
+        .to([ticketRedeemOutputBox, redeemedDonationOutputBox])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => {
-          boxFactory.chain.execute(transaction);
-        }).toThrowError();
-      },
-    );
+      expect(() => {
+        ticketRedeemTestRequirements.boxFactory.chain.execute(transaction);
+      }).toThrowError();
+    });
 
     /**
      * @target should fail if ticket redeem box assets decreases more than the redeemed donation in a token-goal raffle
@@ -274,27 +322,36 @@ describe('ticketRedeem', () => {
      * @expected
      * - transaction result must throw error
      */
-    ticketRedeemTokenGoalTest(
-      'should fail if ticket redeem box assets decreases more than the redeemed donation in a token-goal raffle',
-      ({ boxFactory, ticketBox, ticketRedeemBox }) => {
-        const totalSoldTickets = 10n;
-        const ticketPrice = 10n;
-        const ticketCount = 1n;
+    it<TestInterface>('should fail if ticket redeem box assets decreases more than the redeemed donation in a token-goal raffle', ({
+      ticketRedeemTokenGoalTestRequirements,
+    }) => {
+      const totalSoldTickets = 10n;
+      const ticketPrice = 10n;
+      const ticketCount = 1n;
 
-        const redeemedDonationOutputBox = boxFactory.createSafePayOutputBox(
-          BigInt(ticketBox.value.toString()) - testUtils.TestConstants.FEE,
+      const redeemedDonationOutputBox =
+        ticketRedeemTokenGoalTestRequirements.boxFactory.createSafePayOutputBox(
+          BigInt(
+            ticketRedeemTokenGoalTestRequirements.ticketBox.value.toString(),
+          ) - testUtils.TestConstants.FEE,
           [
             {
-              tokenId: ticketRedeemBox.assets[2].tokenId,
+              tokenId:
+                ticketRedeemTokenGoalTestRequirements.ticketRedeemBox.assets[2]
+                  .tokenId,
               // set increased value
               amount: ticketCount * ticketPrice + 10n,
             },
           ],
-          SConstant.from(ticketBox.additionalRegisters.R4!).data as Uint8Array,
+          SConstant.from(
+            ticketRedeemTokenGoalTestRequirements.ticketBox.additionalRegisters
+              .R4!,
+          ).data as Uint8Array,
         );
 
-        const ticketRedeemOutputBox = boxFactory.createTicketRedeemOutputBox(
-          BigInt(ticketRedeemBox.value),
+      const ticketRedeemOutputBox =
+        ticketRedeemTokenGoalTestRequirements.boxFactory.createTicketRedeemOutputBox(
+          BigInt(ticketRedeemTokenGoalTestRequirements.ticketRedeemBox.value),
           totalSoldTickets,
           ticketPrice,
           1n,
@@ -302,28 +359,39 @@ describe('ticketRedeem', () => {
           2n,
           {
             // set decreased value
-            tokenId: ticketRedeemBox.assets[2].tokenId,
+            tokenId:
+              ticketRedeemTokenGoalTestRequirements.ticketRedeemBox.assets[2]
+                .tokenId,
             amount:
-              BigInt(ticketRedeemBox.assets[2].amount) -
+              BigInt(
+                ticketRedeemTokenGoalTestRequirements.ticketRedeemBox.assets[2]
+                  .amount,
+              ) -
               ticketCount * ticketPrice -
               10n,
           },
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([ticketRedeemBox, ticketBox])
-          .to([ticketRedeemOutputBox, redeemedDonationOutputBox])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        ticketRedeemTokenGoalTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          ticketRedeemTokenGoalTestRequirements.ticketRedeemBox,
+          ticketRedeemTokenGoalTestRequirements.ticketBox,
+        ])
+        .to([ticketRedeemOutputBox, redeemedDonationOutputBox])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => {
-          boxFactory.chain.execute(transaction);
-        }).toThrowError();
-      },
-    );
+      expect(() => {
+        ticketRedeemTokenGoalTestRequirements.boxFactory.chain.execute(
+          transaction,
+        );
+      }).toThrowError();
+    });
 
     /**
      * @target should fail if one ticket token is stolen (not collected by the ticket redeem box)
@@ -334,20 +402,19 @@ describe('ticketRedeem', () => {
      * @expected
      * - transaction result must throw error
      */
-    ticketRedeemTest(
-      'should fail if one ticket token is stolen (not collected by the ticket redeem box)',
-      ({
-        boxFactory,
-        ticketBox,
-        ticketRedeemBox,
-        redeemedDonationOutputBox,
-      }) => {
-        const totalSoldTickets = 10n;
-        const ticketPrice = testUtils.TestConstants.FEE * 2n;
-        const ticketCount = 1n;
+    it<TestInterface>('should fail if one ticket token is stolen (not collected by the ticket redeem box)', ({
+      ticketRedeemTestRequirements,
+    }) => {
+      const totalSoldTickets = 10n;
+      const ticketPrice = testUtils.TestConstants.FEE * 2n;
+      const ticketCount = 1n;
 
-        const ticketRedeemOutputBox = boxFactory.createTicketRedeemOutputBox(
-          BigInt(ticketRedeemBox.value.toString()) - ticketPrice * ticketCount,
+      const ticketRedeemOutputBox =
+        ticketRedeemTestRequirements.boxFactory.createTicketRedeemOutputBox(
+          BigInt(
+            ticketRedeemTestRequirements.ticketRedeemBox.value.toString(),
+          ) -
+            ticketPrice * ticketCount,
           totalSoldTickets,
           ticketPrice,
           1n,
@@ -355,24 +422,31 @@ describe('ticketRedeem', () => {
           // set decreased amount of ticket-token
           1n,
         );
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([ticketRedeemBox, ticketBox])
-          .to([ticketRedeemOutputBox, redeemedDonationOutputBox])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          .burnTokens({
-            tokenId: testUtils.TestConstants.TICKET_TOKEN_ID,
-            amount: 1n,
-          })
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        ticketRedeemTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          ticketRedeemTestRequirements.ticketRedeemBox,
+          ticketRedeemTestRequirements.ticketBox,
+        ])
+        .to([
+          ticketRedeemOutputBox,
+          ticketRedeemTestRequirements.redeemedDonationOutputBox,
+        ])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        .burnTokens({
+          tokenId: testUtils.TestConstants.TICKET_TOKEN_ID,
+          amount: 1n,
+        })
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => {
-          boxFactory.chain.execute(transaction);
-        }).toThrowError();
-      },
-    );
+      expect(() => {
+        ticketRedeemTestRequirements.boxFactory.chain.execute(transaction);
+      }).toThrowError();
+    });
 
     /**
      * @target should fail if total sold ticket value changes in output ticket redeem
@@ -383,20 +457,19 @@ describe('ticketRedeem', () => {
      * @expected
      * - transaction result must throw error
      */
-    ticketRedeemTest(
-      'should fail if total sold ticket value changes in output ticket redeem',
-      ({
-        boxFactory,
-        ticketBox,
-        ticketRedeemBox,
-        redeemedDonationOutputBox,
-      }) => {
-        const totalSoldTickets = 10n;
-        const ticketPrice = testUtils.TestConstants.FEE * 2n;
-        const ticketCount = 1n;
+    it<TestInterface>('should fail if total sold ticket value changes in output ticket redeem', ({
+      ticketRedeemTestRequirements,
+    }) => {
+      const totalSoldTickets = 10n;
+      const ticketPrice = testUtils.TestConstants.FEE * 2n;
+      const ticketCount = 1n;
 
-        const ticketRedeemOutputBox = boxFactory.createTicketRedeemOutputBox(
-          BigInt(ticketRedeemBox.value.toString()) - ticketPrice * ticketCount,
+      const ticketRedeemOutputBox =
+        ticketRedeemTestRequirements.boxFactory.createTicketRedeemOutputBox(
+          BigInt(
+            ticketRedeemTestRequirements.ticketRedeemBox.value.toString(),
+          ) -
+            ticketPrice * ticketCount,
           // set invalid totalSoldTickets
           totalSoldTickets - 1n,
           ticketPrice,
@@ -404,20 +477,27 @@ describe('ticketRedeem', () => {
           testUtils.TestConstants.TICKET_TOKEN_ID,
           2n,
         );
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([ticketRedeemBox, ticketBox])
-          .to([ticketRedeemOutputBox, redeemedDonationOutputBox])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        ticketRedeemTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          ticketRedeemTestRequirements.ticketRedeemBox,
+          ticketRedeemTestRequirements.ticketBox,
+        ])
+        .to([
+          ticketRedeemOutputBox,
+          ticketRedeemTestRequirements.redeemedDonationOutputBox,
+        ])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => {
-          boxFactory.chain.execute(transaction);
-        }).toThrowError();
-      },
-    );
+      expect(() => {
+        ticketRedeemTestRequirements.boxFactory.chain.execute(transaction);
+      }).toThrowError();
+    });
 
     /**
      * @target should fail if redeemed ticket count is not updated correctly
@@ -428,20 +508,19 @@ describe('ticketRedeem', () => {
      * @expected
      * - transaction result must throw error
      */
-    ticketRedeemTest(
-      'should fail if redeemed ticket count is not updated correctly',
-      ({
-        boxFactory,
-        ticketBox,
-        ticketRedeemBox,
-        redeemedDonationOutputBox,
-      }) => {
-        const totalSoldTickets = 10n;
-        const ticketPrice = testUtils.TestConstants.FEE * 2n;
-        const ticketCount = 1n;
+    it<TestInterface>('should fail if redeemed ticket count is not updated correctly', ({
+      ticketRedeemTestRequirements,
+    }) => {
+      const totalSoldTickets = 10n;
+      const ticketPrice = testUtils.TestConstants.FEE * 2n;
+      const ticketCount = 1n;
 
-        const ticketRedeemOutputBox = boxFactory.createTicketRedeemOutputBox(
-          BigInt(ticketRedeemBox.value.toString()) - ticketPrice * ticketCount,
+      const ticketRedeemOutputBox =
+        ticketRedeemTestRequirements.boxFactory.createTicketRedeemOutputBox(
+          BigInt(
+            ticketRedeemTestRequirements.ticketRedeemBox.value.toString(),
+          ) -
+            ticketPrice * ticketCount,
           totalSoldTickets,
           ticketPrice,
           // set invalid redeemedTickets amount
@@ -449,20 +528,27 @@ describe('ticketRedeem', () => {
           testUtils.TestConstants.TICKET_TOKEN_ID,
           2n,
         );
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([ticketRedeemBox, ticketBox])
-          .to([ticketRedeemOutputBox, redeemedDonationOutputBox])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        ticketRedeemTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          ticketRedeemTestRequirements.ticketRedeemBox,
+          ticketRedeemTestRequirements.ticketBox,
+        ])
+        .to([
+          ticketRedeemOutputBox,
+          ticketRedeemTestRequirements.redeemedDonationOutputBox,
+        ])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => {
-          boxFactory.chain.execute(transaction);
-        }).toThrowError();
-      },
-    );
+      expect(() => {
+        ticketRedeemTestRequirements.boxFactory.chain.execute(transaction);
+      }).toThrowError();
+    });
 
     /**
      * @target should fail if ticket belongs to a different raffle (different ticket token)
@@ -474,26 +560,27 @@ describe('ticketRedeem', () => {
      * @expected
      * - transaction result must throw error
      */
-    ticketRedeemTest(
-      'should fail if ticket belongs to a different raffle (different ticket token)',
-      ({ boxFactory, someoneWallet, ticketBox, redeemedDonationOutputBox }) => {
-        const totalSoldTickets = 10n;
-        const ticketPrice = testUtils.TestConstants.FEE * 2n;
-        const ticketCount = 1n;
-        const creationFee = 1_000_000n;
-        const winnersCount = 3n;
+    it<TestInterface>('should fail if ticket belongs to a different raffle (different ticket token)', ({
+      ticketRedeemTestRequirements,
+    }) => {
+      const totalSoldTickets = 10n;
+      const ticketPrice = testUtils.TestConstants.FEE * 2n;
+      const ticketCount = 1n;
+      const creationFee = 1_000_000n;
+      const winnersCount = 3n;
 
-        const extraTokenBox = mockUTxO({
-          value: testUtils.TestConstants.FEE,
-          ergoTree: constants.TRUE_SCRIPT_HEX,
-          assets: [
-            {
-              tokenId: testUtils.TestConstants.X_TOKEN_ID,
-              amount: 1n,
-            },
-          ],
-        });
-        const ticketRedeemBox = boxFactory.createTicketRedeemBoxMock(
+      const extraTokenBox = mockUTxO({
+        value: testUtils.TestConstants.FEE,
+        ergoTree: constants.TRUE_SCRIPT_HEX,
+        assets: [
+          {
+            tokenId: testUtils.TestConstants.X_TOKEN_ID,
+            amount: 1n,
+          },
+        ],
+      });
+      const ticketRedeemBox =
+        ticketRedeemTestRequirements.boxFactory.createTicketRedeemBoxMock(
           creationFee +
             winnersCount * 3n * testUtils.TestConstants.FEE +
             6n * testUtils.TestConstants.FEE +
@@ -505,7 +592,8 @@ describe('ticketRedeem', () => {
           testUtils.TestConstants.X_TOKEN_ID,
           1n,
         );
-        const ticketRedeemOutputBox = boxFactory.createTicketRedeemOutputBox(
+      const ticketRedeemOutputBox =
+        ticketRedeemTestRequirements.boxFactory.createTicketRedeemOutputBox(
           BigInt(ticketRedeemBox.value.toString()) - ticketPrice * ticketCount,
           totalSoldTickets,
           ticketPrice,
@@ -514,21 +602,29 @@ describe('ticketRedeem', () => {
           testUtils.TestConstants.X_TOKEN_ID,
           2n,
         );
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([ticketRedeemBox, ticketBox, extraTokenBox])
-          .to([ticketRedeemOutputBox, redeemedDonationOutputBox])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          .sendChangeTo(someoneWallet.address)
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        ticketRedeemTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          ticketRedeemBox,
+          ticketRedeemTestRequirements.ticketBox,
+          extraTokenBox,
+        ])
+        .to([
+          ticketRedeemOutputBox,
+          ticketRedeemTestRequirements.redeemedDonationOutputBox,
+        ])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        .sendChangeTo(ticketRedeemTestRequirements.someoneWallet.address)
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => {
-          boxFactory.chain.execute(transaction);
-        }).toThrowError();
-      },
-    );
+      expect(() => {
+        ticketRedeemTestRequirements.boxFactory.chain.execute(transaction);
+      }).toThrowError();
+    });
   });
 
   describe('License redeem', () => {
@@ -541,28 +637,34 @@ describe('ticketRedeem', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    ticketRedeemTest(
-      'should successfully return license tokens for an erg-goal raffle',
-      ({
-        boxFactory,
-        serviceBox,
-        serviceOutputBox,
-        ticketRedeemBoxForLicenseRedeem,
-        serviceFeeBox,
-      }) => {
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([serviceBox, ticketRedeemBoxForLicenseRedeem])
-          .to([serviceOutputBox, serviceFeeBox])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          .burnTokens(ticketRedeemBoxForLicenseRedeem.assets[1])
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+    it<TestInterface>('should successfully return license tokens for an erg-goal raffle', ({
+      ticketRedeemTestRequirements,
+    }) => {
+      const transaction = new TransactionBuilder(
+        ticketRedeemTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          ticketRedeemTestRequirements.serviceBox,
+          ticketRedeemTestRequirements.ticketRedeemBoxForLicenseRedeem,
+        ])
+        .to([
+          ticketRedeemTestRequirements.serviceOutputBox,
+          ticketRedeemTestRequirements.serviceFeeBox,
+        ])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        .burnTokens(
+          ticketRedeemTestRequirements.ticketRedeemBoxForLicenseRedeem
+            .assets[1],
+        )
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(boxFactory.chain.execute(transaction)).toBeTruthy();
-      },
-    );
+      expect(
+        ticketRedeemTestRequirements.boxFactory.chain.execute(transaction),
+      ).toBeTruthy();
+    });
 
     /**
      * @target should successfully return license tokens for a token-goal raffle
@@ -573,28 +675,36 @@ describe('ticketRedeem', () => {
      * - transaction result must be true
      * - it should create three output box
      */
-    ticketRedeemTokenGoalTest(
-      'should successfully return license tokens for a token-goal raffle',
-      ({
-        boxFactory,
-        serviceBox,
-        serviceOutputBox,
-        ticketRedeemBoxForLicenseRedeem,
-        serviceFeeBox,
-      }) => {
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([serviceBox, ticketRedeemBoxForLicenseRedeem])
-          .to([serviceOutputBox, serviceFeeBox])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          .burnTokens(ticketRedeemBoxForLicenseRedeem.assets[1])
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+    it<TestInterface>('should successfully return license tokens for a token-goal raffle', ({
+      ticketRedeemTokenGoalTestRequirements,
+    }) => {
+      const transaction = new TransactionBuilder(
+        ticketRedeemTokenGoalTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          ticketRedeemTokenGoalTestRequirements.serviceBox,
+          ticketRedeemTokenGoalTestRequirements.ticketRedeemBoxForLicenseRedeem,
+        ])
+        .to([
+          ticketRedeemTokenGoalTestRequirements.serviceOutputBox,
+          ticketRedeemTokenGoalTestRequirements.serviceFeeBox,
+        ])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        .burnTokens(
+          ticketRedeemTokenGoalTestRequirements.ticketRedeemBoxForLicenseRedeem
+            .assets[1],
+        )
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(boxFactory.chain.execute(transaction)).toBeTruthy();
-      },
-    );
+      expect(
+        ticketRedeemTokenGoalTestRequirements.boxFactory.chain.execute(
+          transaction,
+        ),
+      ).toBeTruthy();
+    });
 
     /**
      * @target should fail if service box doesn't have specified service nft
@@ -605,16 +715,12 @@ describe('ticketRedeem', () => {
      * @expected
      * - transaction result must throw error
      */
-    ticketRedeemTest(
-      "should fail if service box doesn't have specified service nft",
-      ({
-        boxFactory,
-        creator,
-        serviceFeeBox,
-        ticketRedeemBoxForLicenseRedeem,
-      }) => {
-        const serviceBox = boxFactory.createServiceBoxMock(
-          creator.ergoTree,
+    it<TestInterface>("should fail if service box doesn't have specified service nft", ({
+      ticketRedeemTestRequirements,
+    }) => {
+      const serviceBox =
+        ticketRedeemTestRequirements.boxFactory.createServiceBoxMock(
+          ticketRedeemTestRequirements.creator.ergoTree,
           999_999_999n,
           undefined,
           undefined,
@@ -623,8 +729,9 @@ describe('ticketRedeem', () => {
           // set invalid license-NFT id
           testUtils.TestConstants.X_TOKEN_ID,
         );
-        const serviceOutputBox = boxFactory.createServiceOutputBox(
-          creator.ergoTree,
+      const serviceOutputBox =
+        ticketRedeemTestRequirements.boxFactory.createServiceOutputBox(
+          ticketRedeemTestRequirements.creator.ergoTree,
           1_000_000_000n,
           undefined,
           undefined,
@@ -634,21 +741,28 @@ describe('ticketRedeem', () => {
           testUtils.TestConstants.X_TOKEN_ID,
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([serviceBox, ticketRedeemBoxForLicenseRedeem])
-          .to([serviceOutputBox, serviceFeeBox])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          .burnTokens(ticketRedeemBoxForLicenseRedeem.assets[1])
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        ticketRedeemTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          serviceBox,
+          ticketRedeemTestRequirements.ticketRedeemBoxForLicenseRedeem,
+        ])
+        .to([serviceOutputBox, ticketRedeemTestRequirements.serviceFeeBox])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        .burnTokens(
+          ticketRedeemTestRequirements.ticketRedeemBoxForLicenseRedeem
+            .assets[1],
+        )
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => {
-          boxFactory.chain.execute(transaction);
-        }).toThrowError();
-      },
-    );
+      expect(() => {
+        ticketRedeemTestRequirements.boxFactory.chain.execute(transaction);
+      }).toThrowError();
+    });
 
     /**
      * @target should fail if service box license token is different from ticket redeem license
@@ -660,25 +774,21 @@ describe('ticketRedeem', () => {
      * @expected
      * - transaction result must throw error
      */
-    ticketRedeemTest(
-      'should fail if service box license token is different from ticket redeem license',
-      ({
-        boxFactory,
-        creator,
-        someoneWallet,
-        serviceFeeBox,
-        ticketRedeemBoxForLicenseRedeem,
-      }) => {
-        const serviceBox = boxFactory.createServiceBoxMock(
-          creator.ergoTree,
+    it<TestInterface>('should fail if service box license token is different from ticket redeem license', ({
+      ticketRedeemTestRequirements,
+    }) => {
+      const serviceBox =
+        ticketRedeemTestRequirements.boxFactory.createServiceBoxMock(
+          ticketRedeemTestRequirements.creator.ergoTree,
           999_999_999n,
           undefined,
           undefined,
           undefined,
           testUtils.TestConstants.X_TOKEN_ID,
         );
-        const serviceOutputBox = boxFactory.createServiceOutputBox(
-          creator.ergoTree,
+      const serviceOutputBox =
+        ticketRedeemTestRequirements.boxFactory.createServiceOutputBox(
+          ticketRedeemTestRequirements.creator.ergoTree,
           1_000_000_000n,
           undefined,
           undefined,
@@ -686,37 +796,41 @@ describe('ticketRedeem', () => {
           testUtils.TestConstants.X_TOKEN_ID,
         );
 
-        const extraLicenseToken = mockUTxO({
-          value: testUtils.TestConstants.FEE,
-          ergoTree: constants.TRUE_SCRIPT_HEX,
-          assets: [
-            {
-              tokenId: testUtils.TestConstants.X_TOKEN_ID,
-              amount: 1n,
-            },
-          ],
-        });
+      const extraLicenseToken = mockUTxO({
+        value: testUtils.TestConstants.FEE,
+        ergoTree: constants.TRUE_SCRIPT_HEX,
+        assets: [
+          {
+            tokenId: testUtils.TestConstants.X_TOKEN_ID,
+            amount: 1n,
+          },
+        ],
+      });
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([
-            serviceBox,
-            ticketRedeemBoxForLicenseRedeem,
-            extraLicenseToken,
-          ])
-          .to([serviceOutputBox, serviceFeeBox])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          .burnTokens(ticketRedeemBoxForLicenseRedeem.assets[1])
-          .sendChangeTo(someoneWallet.address)
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        ticketRedeemTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          serviceBox,
+          ticketRedeemTestRequirements.ticketRedeemBoxForLicenseRedeem,
+          extraLicenseToken,
+        ])
+        .to([serviceOutputBox, ticketRedeemTestRequirements.serviceFeeBox])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        .burnTokens(
+          ticketRedeemTestRequirements.ticketRedeemBoxForLicenseRedeem
+            .assets[1],
+        )
+        .sendChangeTo(ticketRedeemTestRequirements.someoneWallet.address)
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => {
-          boxFactory.chain.execute(transaction);
-        }).toThrowError();
-      },
-    );
+      expect(() => {
+        ticketRedeemTestRequirements.boxFactory.chain.execute(transaction);
+      }).toThrowError();
+    });
 
     /**
      * @target should fail if safe pay box (service fee) Erg value is not correct
@@ -727,40 +841,45 @@ describe('ticketRedeem', () => {
      * @expected
      * - transaction result must throw error
      */
-    ticketRedeemTest(
-      'should fail if safe pay box (service fee) Erg value is not correct',
-      ({
-        boxFactory,
-        creator,
-        someoneWallet,
-        serviceBox,
-        serviceOutputBox,
-        ticketRedeemBoxForLicenseRedeem,
-      }) => {
-        const serviceFeeBox = boxFactory.createSafePayOutputBox(
+    it<TestInterface>('should fail if safe pay box (service fee) Erg value is not correct', ({
+      ticketRedeemTestRequirements,
+    }) => {
+      const serviceFeeBox =
+        ticketRedeemTestRequirements.boxFactory.createSafePayOutputBox(
           // put reduced value
-          BigInt(ticketRedeemBoxForLicenseRedeem.value.toString()) -
+          BigInt(
+            ticketRedeemTestRequirements.ticketRedeemBoxForLicenseRedeem.value.toString(),
+          ) -
             testUtils.TestConstants.FEE * 2n,
           [],
-          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+          blake2b256(
+            Buffer.from(ticketRedeemTestRequirements.creator.ergoTree, 'hex'),
+          ),
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([serviceBox, ticketRedeemBoxForLicenseRedeem])
-          .to([serviceOutputBox, serviceFeeBox])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          .burnTokens(ticketRedeemBoxForLicenseRedeem.assets[1])
-          .sendChangeTo(someoneWallet.address)
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        ticketRedeemTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          ticketRedeemTestRequirements.serviceBox,
+          ticketRedeemTestRequirements.ticketRedeemBoxForLicenseRedeem,
+        ])
+        .to([ticketRedeemTestRequirements.serviceOutputBox, serviceFeeBox])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        .burnTokens(
+          ticketRedeemTestRequirements.ticketRedeemBoxForLicenseRedeem
+            .assets[1],
+        )
+        .sendChangeTo(ticketRedeemTestRequirements.someoneWallet.address)
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => {
-          boxFactory.chain.execute(transaction);
-        }).toThrowError();
-      },
-    );
+      expect(() => {
+        ticketRedeemTestRequirements.boxFactory.chain.execute(transaction);
+      }).toThrowError();
+    });
 
     /**
      * @target should fail if safe pay box (service fee) collecting token value is not correct
@@ -771,49 +890,66 @@ describe('ticketRedeem', () => {
      * @expected
      * - transaction result must throw error
      */
-    ticketRedeemTokenGoalTest(
-      'should fail if safe pay box (service fee) collecting token value is not correct',
-      ({
-        boxFactory,
-        creator,
-        serviceBox,
-        serviceOutputBox,
-        ticketRedeemBoxForLicenseRedeem,
-      }) => {
-        const serviceFeeBox = boxFactory.createSafePayOutputBox(
-          BigInt(ticketRedeemBoxForLicenseRedeem.value.toString()) -
-            testUtils.TestConstants.FEE,
+    it<TestInterface>('should fail if safe pay box (service fee) collecting token value is not correct', ({
+      ticketRedeemTokenGoalTestRequirements,
+    }) => {
+      const serviceFeeBox =
+        ticketRedeemTokenGoalTestRequirements.boxFactory.createSafePayOutputBox(
+          BigInt(
+            ticketRedeemTokenGoalTestRequirements.ticketRedeemBoxForLicenseRedeem.value.toString(),
+          ) - testUtils.TestConstants.FEE,
           [
             {
-              tokenId: ticketRedeemBoxForLicenseRedeem.assets[2].tokenId,
+              tokenId:
+                ticketRedeemTokenGoalTestRequirements
+                  .ticketRedeemBoxForLicenseRedeem.assets[2].tokenId,
               // put reduced amount of collecting token
-              amount: ticketRedeemBoxForLicenseRedeem.assets[2].amount - 1n,
+              amount:
+                ticketRedeemTokenGoalTestRequirements
+                  .ticketRedeemBoxForLicenseRedeem.assets[2].amount - 1n,
             },
           ],
-          blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+          blake2b256(
+            Buffer.from(
+              ticketRedeemTokenGoalTestRequirements.creator.ergoTree,
+              'hex',
+            ),
+          ),
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([serviceBox, ticketRedeemBoxForLicenseRedeem])
-          .to([serviceOutputBox, serviceFeeBox])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          .burnTokens([
-            ticketRedeemBoxForLicenseRedeem.assets[1],
-            {
-              tokenId: ticketRedeemBoxForLicenseRedeem.assets[2].tokenId,
-              amount: 1n,
-            },
-          ])
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        ticketRedeemTokenGoalTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          ticketRedeemTokenGoalTestRequirements.serviceBox,
+          ticketRedeemTokenGoalTestRequirements.ticketRedeemBoxForLicenseRedeem,
+        ])
+        .to([
+          ticketRedeemTokenGoalTestRequirements.serviceOutputBox,
+          serviceFeeBox,
+        ])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        .burnTokens([
+          ticketRedeemTokenGoalTestRequirements.ticketRedeemBoxForLicenseRedeem
+            .assets[1],
+          {
+            tokenId:
+              ticketRedeemTokenGoalTestRequirements
+                .ticketRedeemBoxForLicenseRedeem.assets[2].tokenId,
+            amount: 1n,
+          },
+        ])
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => {
-          boxFactory.chain.execute(transaction);
-        }).toThrowError();
-      },
-    );
+      expect(() => {
+        ticketRedeemTokenGoalTestRequirements.boxFactory.chain.execute(
+          transaction,
+        );
+      }).toThrowError();
+    });
 
     /**
      * @target should fail if safe pay box (service fee) address hash differs from service fee address hash
@@ -824,38 +960,46 @@ describe('ticketRedeem', () => {
      * @expected
      * - transaction result must throw error
      */
-    ticketRedeemTest(
-      'should fail if safe pay box (service fee) address hash differs from service fee address hash',
-      ({
-        boxFactory,
-        someoneWallet,
-        serviceBox,
-        serviceOutputBox,
-        ticketRedeemBoxForLicenseRedeem,
-      }) => {
-        const serviceFeeBox = boxFactory.createSafePayOutputBox(
-          BigInt(ticketRedeemBoxForLicenseRedeem.value.toString()) -
-            testUtils.TestConstants.FEE,
+    it<TestInterface>('should fail if safe pay box (service fee) address hash differs from service fee address hash', ({
+      ticketRedeemTestRequirements,
+    }) => {
+      const serviceFeeBox =
+        ticketRedeemTestRequirements.boxFactory.createSafePayOutputBox(
+          BigInt(
+            ticketRedeemTestRequirements.ticketRedeemBoxForLicenseRedeem.value.toString(),
+          ) - testUtils.TestConstants.FEE,
           [],
           // set different address
-          blake2b256(Buffer.from(someoneWallet.ergoTree, 'hex')),
+          blake2b256(
+            Buffer.from(
+              ticketRedeemTestRequirements.someoneWallet.ergoTree,
+              'hex',
+            ),
+          ),
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([serviceBox, ticketRedeemBoxForLicenseRedeem])
-          .to([serviceOutputBox, serviceFeeBox])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          .burnTokens([ticketRedeemBoxForLicenseRedeem.assets[1]])
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        ticketRedeemTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          ticketRedeemTestRequirements.serviceBox,
+          ticketRedeemTestRequirements.ticketRedeemBoxForLicenseRedeem,
+        ])
+        .to([ticketRedeemTestRequirements.serviceOutputBox, serviceFeeBox])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        .burnTokens([
+          ticketRedeemTestRequirements.ticketRedeemBoxForLicenseRedeem
+            .assets[1],
+        ])
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => {
-          boxFactory.chain.execute(transaction);
-        }).toThrowError();
-      },
-    );
+      expect(() => {
+        ticketRedeemTestRequirements.boxFactory.chain.execute(transaction);
+      }).toThrowError();
+    });
 
     /**
      * @target should fail if two ticket redeem boxes from two different raffles are spent in same tx
@@ -866,49 +1010,49 @@ describe('ticketRedeem', () => {
      * @expected
      * - transaction result must throw error
      */
-    ticketRedeemTest(
-      'should fail if two ticket redeem boxes from two different raffles are spent in same tx',
-      ({
-        boxFactory,
-        someoneWallet,
-        serviceBox,
-        serviceFeeBox,
-        serviceOutputBox,
-        ticketRedeemBoxForLicenseRedeem,
-      }) => {
-        const totalSoldTickets = 10n;
-        const ticketPrice = testUtils.TestConstants.FEE * 2n;
+    it<TestInterface>('should fail if two ticket redeem boxes from two different raffles are spent in same tx', ({
+      ticketRedeemTestRequirements,
+    }) => {
+      const totalSoldTickets = 10n;
+      const ticketPrice = testUtils.TestConstants.FEE * 2n;
 
-        const ticketRedeemBoxForLicenseRedeem2 =
-          boxFactory.createTicketRedeemBoxMock(
-            testUtils.TestConstants.FEE * 3n,
-            totalSoldTickets,
-            ticketPrice,
-            10n,
-            testUtils.TestConstants.TICKET_TOKEN_ID,
-            10n,
-          );
+      const ticketRedeemBoxForLicenseRedeem2 =
+        ticketRedeemTestRequirements.boxFactory.createTicketRedeemBoxMock(
+          testUtils.TestConstants.FEE * 3n,
+          totalSoldTickets,
+          ticketPrice,
+          10n,
+          testUtils.TestConstants.TICKET_TOKEN_ID,
+          10n,
+        );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([
-            serviceBox,
-            ticketRedeemBoxForLicenseRedeem,
-            // put duplicated  ticketRedeemBox
-            ticketRedeemBoxForLicenseRedeem2,
-          ])
-          .to([serviceOutputBox, serviceFeeBox])
-          .configureSelector((selector) => {
-            selector.defineStrategy((inputs) => inputs);
-          })
-          .sendChangeTo(someoneWallet.address)
-          .burnTokens(ticketRedeemBoxForLicenseRedeem.assets[1])
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(
+        ticketRedeemTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          ticketRedeemTestRequirements.serviceBox,
+          ticketRedeemTestRequirements.ticketRedeemBoxForLicenseRedeem,
+          // put duplicated  ticketRedeemBox
+          ticketRedeemBoxForLicenseRedeem2,
+        ])
+        .to([
+          ticketRedeemTestRequirements.serviceOutputBox,
+          ticketRedeemTestRequirements.serviceFeeBox,
+        ])
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        .sendChangeTo(ticketRedeemTestRequirements.someoneWallet.address)
+        .burnTokens(
+          ticketRedeemTestRequirements.ticketRedeemBoxForLicenseRedeem
+            .assets[1],
+        )
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() => {
-          boxFactory.chain.execute(transaction);
-        }).toThrowError();
-      },
-    );
+      expect(() => {
+        ticketRedeemTestRequirements.boxFactory.chain.execute(transaction);
+      }).toThrowError();
+    });
   });
 });

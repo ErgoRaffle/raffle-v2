@@ -30,7 +30,7 @@ export const sampleGiftRedeemBoxes: OutputBox[] = [
 ];
 
 export const sampleGiftRedeemExtractedData = {
-  boxId: sampleGiftRedeemBoxes[0].boxId,
+  identifier: sampleGiftRedeemBoxes[0].boxId,
   txId: sampleGiftRedeemBoxes[0].transactionId,
   step: 2,
   raffleId: 'fe8393d4f042775947616dbf4558e41048430c24e44e348e4ff1b567f49f1420',

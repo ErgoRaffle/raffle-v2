@@ -30,7 +30,7 @@ export const sampleWinnerPrizeBoxes: OutputBox[] = [
 ];
 
 export const sampleWinnerPrizeExtractedData = {
-  boxId: sampleWinnerPrizeBoxes[0].boxId,
+  identifier: sampleWinnerPrizeBoxes[0].boxId,
   txId: sampleWinnerPrizeBoxes[0].transactionId,
   winnerTicketIndex: 16,
   winnerIndex: 1,

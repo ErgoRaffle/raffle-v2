@@ -8,8 +8,8 @@ import {
 import { bigintBE, hex } from '@fleet-sdk/crypto';
 import { deserializeBox } from '@fleet-sdk/serializer';
 import { ErgoHDKey } from '@fleet-sdk/wallet';
-import { AbstractErgoExtractorEntity } from '@rosen-bridge/abstract-extractor';
-import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
+import { AbstractErgoEntity } from '@rosen-bridge/abstract-extractor';
+import { DefaultLogger } from '@rosen-bridge/abstract-logger';
 import JsonBigInt from '@rosen-bridge/json-bigint';
 import { ProverBuilder$ } from 'sigmastate-js/main';
 
@@ -19,7 +19,7 @@ import { TxPotService } from '../services/txPotService';
 import { BoxValue } from '../types/box';
 import { TxType } from './types';
 
-const logger = CallbackLoggerFactory.getInstance().getLogger(import.meta.url);
+const logger = DefaultLogger.getInstance().child(import.meta.url);
 
 /**
  * Signs an unsigned Ergo transaction with the provided keys.
@@ -107,7 +107,7 @@ export const signAndAddTx = async (
  * @returns The list of ErgoBox objects
  */
 export const convertDbBoxesToErgoBoxes = (
-  dbBoxes: AbstractErgoExtractorEntity[],
+  dbBoxes: AbstractErgoEntity[],
 ): ErgoBox[] => {
   return dbBoxes.map((dbBox) => {
     /**

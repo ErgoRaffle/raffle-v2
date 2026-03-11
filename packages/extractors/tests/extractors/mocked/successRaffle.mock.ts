@@ -61,7 +61,8 @@ export const sampleSuccessRaffleBoxes: OutputBox[] = [
 
 export const sampleSuccessRaffleExtractedData = [
   {
-    boxId: '45f9478564cbdfe3078ccd6b34a5cc426635d715ca915c483c5b5414d6acb46b',
+    identifier:
+      '45f9478564cbdfe3078ccd6b34a5cc426635d715ca915c483c5b5414d6acb46b',
     raffleId:
       'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
     selectedWinnersList: [].toString(),
@@ -75,7 +76,8 @@ export const sampleSuccessRaffleExtractedData = [
     txId: 'a235297b97de9b47d75846dca68d0f7b752d831f08133ea211c502b586a670df',
   },
   {
-    boxId: '4a07171a18c118a493270febf33332428fe6cbca25d3df97e8d682daedd26d44',
+    identifier:
+      '4a07171a18c118a493270febf33332428fe6cbca25d3df97e8d682daedd26d44',
     raffleId:
       'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
     selectedWinnersList: [16n].toString(),

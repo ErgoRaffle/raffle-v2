@@ -1,5 +1,3 @@
-import { WinnerBuilder } from '@ergo-raffle/boxes';
-import { SafePayBuilder } from '@ergo-raffle/boxes';
 import {
   TransactionBuilder,
   Box,
@@ -10,6 +8,9 @@ import {
   SByte,
 } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
+
+import { WinnerBuilder } from '@ergo-raffle/boxes';
+import { SafePayBuilder } from '@ergo-raffle/boxes';
 
 /**
  * Builder class for creating gift return transactions

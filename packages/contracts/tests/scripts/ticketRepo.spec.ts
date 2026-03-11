@@ -1,19 +1,32 @@
-import { TransactionBuilder } from '@fleet-sdk/core';
-import { mockUTxO } from '@fleet-sdk/mock-chain';
-import { it, describe, expect } from 'vitest';
+import { ErgoUnsignedInput, TransactionBuilder } from '@fleet-sdk/core';
+import { KeyedMockChainParty, mockUTxO } from '@fleet-sdk/mock-chain';
+import { it, describe, expect, beforeEach } from 'vitest';
 
 import * as constants from '../../lib/constants';
 import { ScriptNamesType } from '../../lib/types';
 import * as testUtils from '../testUtils';
 
+interface TicketRepoTestInterface {
+  boxFactory: testUtils.RaffleBoxFactory;
+  creator: KeyedMockChainParty;
+  someoneWallet: KeyedMockChainParty;
+  ticketRepoInputBox: ErgoUnsignedInput;
+  inactiveRaffleInputBox: ErgoUnsignedInput;
+}
+
+interface TestInterface {
+  ticketRepoBy1WinnerTestRequirements: TicketRepoTestInterface;
+  ticketRepoBy5WinnerTestRequirements: TicketRepoTestInterface;
+}
+
 /*
- * create fixtures that contains below steps data:
+ * provide test requirements that contains below data:
  *   - mock chain and partners
  *   - compile contracts
  *   - create ticketRepo & inactiveRaffle input boxes
- * @returns vitest customized "it" object
+ * @returns object
  */
-function createTicketRepoTest(winnersCount: number = 1) {
+const provideTicketRepoTestRequirements = (winnersCount: number = 1) => {
   const boxFactory = new testUtils.RaffleBoxFactory(
     { height: 1000 },
     constants.scriptList.filter(
@@ -40,18 +53,22 @@ function createTicketRepoTest(winnersCount: number = 1) {
     0n,
   );
 
-  return it.extend({
+  return {
     boxFactory: boxFactory,
     someoneWallet: someone,
     creator: creator,
     ticketRepoInputBox: ticketRepoInputBox,
     inactiveRaffleInputBox: inactiveRaffleInputBox,
-  });
-}
+  };
+};
 
 describe('ticketRepo', () => {
-  const ticketRepoBy1WinnerTest = createTicketRepoTest();
-  const ticketRepoBy5WinnerTest = createTicketRepoTest(5);
+  beforeEach<TestInterface>(async (ctx) => {
+    ctx.ticketRepoBy1WinnerTestRequirements =
+      provideTicketRepoTestRequirements();
+    ctx.ticketRepoBy5WinnerTestRequirements =
+      provideTicketRepoTestRequirements(5);
+  });
 
   describe('Active raffle creation', () => {
     /**
@@ -63,49 +80,54 @@ describe('ticketRepo', () => {
      * @expected
      * - transaction result must be true
      */
-    ticketRepoBy1WinnerTest(
-      'should create active raffle by 1 winner successfully',
-      ({
-        boxFactory,
-        someoneWallet,
-        creator,
-        ticketRepoInputBox,
-        inactiveRaffleInputBox,
-      }) => {
-        const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
-          creator.ergoTree,
-          creator.ergoTree,
-          someoneWallet.ergoTree,
+    it<TestInterface>('should create active raffle by 1 winner successfully', ({
+      ticketRepoBy1WinnerTestRequirements,
+    }) => {
+      const activeRaffleOutputBox =
+        ticketRepoBy1WinnerTestRequirements.boxFactory.createActiveRaffleOutputBox(
+          ticketRepoBy1WinnerTestRequirements.creator.ergoTree,
+          ticketRepoBy1WinnerTestRequirements.creator.ergoTree,
+          ticketRepoBy1WinnerTestRequirements.someoneWallet.ergoTree,
         );
-        const raffleDetailsOutputBox =
-          boxFactory.createRaffleDetailsOutputBox();
-        const giftTokenRepoOutputBox =
-          boxFactory.createGiftTokenRepoOutputBox(1);
-
-        const winnersBoxes = boxFactory.createWinnersOutputBox(
+      const raffleDetailsOutputBox =
+        ticketRepoBy1WinnerTestRequirements.boxFactory.createRaffleDetailsOutputBox();
+      const giftTokenRepoOutputBox =
+        ticketRepoBy1WinnerTestRequirements.boxFactory.createGiftTokenRepoOutputBox(
           1,
-          inactiveRaffleInputBox.boxId.toString(),
         );
 
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([inactiveRaffleInputBox, ticketRepoInputBox])
-          .to([
-            activeRaffleOutputBox,
-            raffleDetailsOutputBox,
-            giftTokenRepoOutputBox,
-            ...winnersBoxes,
-          ])
-          .payFee(testUtils.TestConstants.FEE)
-          .sendChangeTo(creator.address)
-          .build();
+      const winnersBoxes =
+        ticketRepoBy1WinnerTestRequirements.boxFactory.createWinnersOutputBox(
+          1,
+          ticketRepoBy1WinnerTestRequirements.inactiveRaffleInputBox.boxId.toString(),
+        );
 
-        const res = boxFactory.chain.execute(transaction, {
-          signers: [creator],
-        });
-        // Check execution result
-        expect(res).toBeTruthy();
-      },
-    );
+      const transaction = new TransactionBuilder(
+        ticketRepoBy1WinnerTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          ticketRepoBy1WinnerTestRequirements.inactiveRaffleInputBox,
+          ticketRepoBy1WinnerTestRequirements.ticketRepoInputBox,
+        ])
+        .to([
+          activeRaffleOutputBox,
+          raffleDetailsOutputBox,
+          giftTokenRepoOutputBox,
+          ...winnersBoxes,
+        ])
+        .payFee(testUtils.TestConstants.FEE)
+        .sendChangeTo(ticketRepoBy1WinnerTestRequirements.creator.address)
+        .build();
+
+      const res = ticketRepoBy1WinnerTestRequirements.boxFactory.chain.execute(
+        transaction,
+        {
+          signers: [ticketRepoBy1WinnerTestRequirements.creator],
+        },
+      );
+      // Check execution result
+      expect(res).toBeTruthy();
+    });
 
     /**
      * @target should create active raffle by 5 winner
@@ -116,47 +138,51 @@ describe('ticketRepo', () => {
      * @expected
      * - transaction result must be true
      */
-    ticketRepoBy5WinnerTest(
-      'should create active raffle by 5 winner',
-      ({
-        boxFactory,
-        someoneWallet,
-        creator,
-        ticketRepoInputBox,
-        inactiveRaffleInputBox,
-      }) => {
-        const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
-          creator.ergoTree,
-          creator.ergoTree,
-          someoneWallet.ergoTree,
+    it<TestInterface>('should create active raffle by 5 winner', ({
+      ticketRepoBy5WinnerTestRequirements,
+    }) => {
+      const activeRaffleOutputBox =
+        ticketRepoBy5WinnerTestRequirements.boxFactory.createActiveRaffleOutputBox(
+          ticketRepoBy5WinnerTestRequirements.creator.ergoTree,
+          ticketRepoBy5WinnerTestRequirements.creator.ergoTree,
+          ticketRepoBy5WinnerTestRequirements.someoneWallet.ergoTree,
           5,
         );
-        const raffleDetailsOutputBox =
-          boxFactory.createRaffleDetailsOutputBox();
-        const giftTokenRepoOutputBox =
-          boxFactory.createGiftTokenRepoOutputBox(5);
-        const transaction = new TransactionBuilder(boxFactory.chain.height)
-          .from([inactiveRaffleInputBox, ticketRepoInputBox])
-          .to([
-            activeRaffleOutputBox,
-            raffleDetailsOutputBox,
-            giftTokenRepoOutputBox,
-            ...boxFactory.createWinnersOutputBox(
-              5,
-              inactiveRaffleInputBox.boxId.toString(),
-            ),
-          ])
-          .payFee(testUtils.TestConstants.FEE)
-          .sendChangeTo(creator.address)
-          .build();
+      const raffleDetailsOutputBox =
+        ticketRepoBy5WinnerTestRequirements.boxFactory.createRaffleDetailsOutputBox();
+      const giftTokenRepoOutputBox =
+        ticketRepoBy5WinnerTestRequirements.boxFactory.createGiftTokenRepoOutputBox(
+          5,
+        );
+      const transaction = new TransactionBuilder(
+        ticketRepoBy5WinnerTestRequirements.boxFactory.chain.height,
+      )
+        .from([
+          ticketRepoBy5WinnerTestRequirements.inactiveRaffleInputBox,
+          ticketRepoBy5WinnerTestRequirements.ticketRepoInputBox,
+        ])
+        .to([
+          activeRaffleOutputBox,
+          raffleDetailsOutputBox,
+          giftTokenRepoOutputBox,
+          ...ticketRepoBy5WinnerTestRequirements.boxFactory.createWinnersOutputBox(
+            5,
+            ticketRepoBy5WinnerTestRequirements.inactiveRaffleInputBox.boxId.toString(),
+          ),
+        ])
+        .payFee(testUtils.TestConstants.FEE)
+        .sendChangeTo(ticketRepoBy5WinnerTestRequirements.creator.address)
+        .build();
 
-        const res = boxFactory.chain.execute(transaction, {
-          signers: [creator],
-        });
-        // Check execution result
-        expect(res).toBeTruthy();
-      },
-    );
+      const res = ticketRepoBy5WinnerTestRequirements.boxFactory.chain.execute(
+        transaction,
+        {
+          signers: [ticketRepoBy5WinnerTestRequirements.creator],
+        },
+      );
+      // Check execution result
+      expect(res).toBeTruthy();
+    });
 
     /**
      * @target should creating of active raffle by 1 winner with invalid ticket token id be fail
@@ -167,63 +193,67 @@ describe('ticketRepo', () => {
      * @expected
      * - transaction result must throw error
      */
-    ticketRepoBy1WinnerTest(
-      'should creating of active raffle by 1 winner with invalid ticket token id be fail',
-      ({
-        boxFactory,
-        someoneWallet,
-        creator,
-        ticketRepoInputBox,
-        inactiveRaffleInputBox,
-      }) => {
-        const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
-          creator.ergoTree,
-          creator.ergoTree,
-          someoneWallet.ergoTree,
+    it<TestInterface>('should creating of active raffle by 1 winner with invalid ticket token id be fail', ({
+      ticketRepoBy1WinnerTestRequirements,
+    }) => {
+      const activeRaffleOutputBox =
+        ticketRepoBy1WinnerTestRequirements.boxFactory.createActiveRaffleOutputBox(
+          ticketRepoBy1WinnerTestRequirements.creator.ergoTree,
+          ticketRepoBy1WinnerTestRequirements.creator.ergoTree,
+          ticketRepoBy1WinnerTestRequirements.someoneWallet.ergoTree,
         );
-        const raffleDetailsOutputBox =
-          boxFactory.createRaffleDetailsOutputBox();
-        const winnersOutputBoxes = boxFactory.createWinnersOutputBox(
+      const raffleDetailsOutputBox =
+        ticketRepoBy1WinnerTestRequirements.boxFactory.createRaffleDetailsOutputBox();
+      const winnersOutputBoxes =
+        ticketRepoBy1WinnerTestRequirements.boxFactory.createWinnersOutputBox(
           1,
-          inactiveRaffleInputBox.boxId.toString(),
+          ticketRepoBy1WinnerTestRequirements.inactiveRaffleInputBox.boxId.toString(),
         );
-        const giftTokenRepoOutputBox =
-          boxFactory.createGiftTokenRepoOutputBox(1);
+      const giftTokenRepoOutputBox =
+        ticketRepoBy1WinnerTestRequirements.boxFactory.createGiftTokenRepoOutputBox(
+          1,
+        );
 
-        // Replace Ticket-Token with another token
-        const extraInputBox = mockUTxO({
-          value: testUtils.TestConstants.FEE,
-          ergoTree: creator.ergoTree,
-          assets: [
-            {
-              tokenId: '12'.repeat(32),
-              amount: 1_000_000_000n,
-            },
-          ],
-        });
-        activeRaffleOutputBox.assets.remove(1);
-        activeRaffleOutputBox.assets.add({
-          tokenId: '12'.repeat(32),
-          amount: 1_000_000_000n - 1n - 1n,
-        });
+      // Replace Ticket-Token with another token
+      const extraInputBox = mockUTxO({
+        value: testUtils.TestConstants.FEE,
+        ergoTree: ticketRepoBy1WinnerTestRequirements.creator.ergoTree,
+        assets: [
+          {
+            tokenId: '12'.repeat(32),
+            amount: 1_000_000_000n,
+          },
+        ],
+      });
+      activeRaffleOutputBox.assets.remove(1);
+      activeRaffleOutputBox.assets.add({
+        tokenId: '12'.repeat(32),
+        amount: 1_000_000_000n - 1n - 1n,
+      });
 
-        const transaction = new TransactionBuilder(1000)
-          .from([inactiveRaffleInputBox, ticketRepoInputBox, extraInputBox])
-          .to([
-            activeRaffleOutputBox,
-            raffleDetailsOutputBox,
-            giftTokenRepoOutputBox,
-            ...winnersOutputBoxes,
-          ])
-          .payFee(testUtils.TestConstants.FEE)
-          .sendChangeTo(creator.address)
-          .build();
+      const transaction = new TransactionBuilder(1000)
+        .from([
+          ticketRepoBy1WinnerTestRequirements.inactiveRaffleInputBox,
+          ticketRepoBy1WinnerTestRequirements.ticketRepoInputBox,
+          extraInputBox,
+        ])
+        .to([
+          activeRaffleOutputBox,
+          raffleDetailsOutputBox,
+          giftTokenRepoOutputBox,
+          ...winnersOutputBoxes,
+        ])
+        .payFee(testUtils.TestConstants.FEE)
+        .sendChangeTo(ticketRepoBy1WinnerTestRequirements.creator.address)
+        .build();
 
-        expect(() =>
-          boxFactory.chain.execute(transaction, { signers: [creator] }),
-        ).toThrowError();
-      },
-    );
+      expect(() =>
+        ticketRepoBy1WinnerTestRequirements.boxFactory.chain.execute(
+          transaction,
+          { signers: [ticketRepoBy1WinnerTestRequirements.creator] },
+        ),
+      ).toThrowError();
+    });
 
     /**
      * @target should creating of active raffle by 1 winner with invalid number of ticket token be fail
@@ -234,19 +264,14 @@ describe('ticketRepo', () => {
      * @expected
      * - transaction result must throw error
      */
-    ticketRepoBy1WinnerTest(
-      'should creating of active raffle by 1 winner with invalid number of ticket token be fail',
-      ({
-        boxFactory,
-        someoneWallet,
-        creator,
-        ticketRepoInputBox,
-        inactiveRaffleInputBox,
-      }) => {
-        const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
-          creator.ergoTree,
-          creator.ergoTree,
-          someoneWallet.ergoTree,
+    it<TestInterface>('should creating of active raffle by 1 winner with invalid number of ticket token be fail', ({
+      ticketRepoBy1WinnerTestRequirements,
+    }) => {
+      const activeRaffleOutputBox =
+        ticketRepoBy1WinnerTestRequirements.boxFactory.createActiveRaffleOutputBox(
+          ticketRepoBy1WinnerTestRequirements.creator.ergoTree,
+          ticketRepoBy1WinnerTestRequirements.creator.ergoTree,
+          ticketRepoBy1WinnerTestRequirements.someoneWallet.ergoTree,
           1,
           undefined,
           undefined,
@@ -255,37 +280,45 @@ describe('ticketRepo', () => {
           undefined,
           999_999_997n,
         );
-        const raffleDetailsOutputBox =
-          boxFactory.createRaffleDetailsOutputBox();
-        const winnersOutputBoxes = boxFactory.createWinnersOutputBox(
+      const raffleDetailsOutputBox =
+        ticketRepoBy1WinnerTestRequirements.boxFactory.createRaffleDetailsOutputBox();
+      const winnersOutputBoxes =
+        ticketRepoBy1WinnerTestRequirements.boxFactory.createWinnersOutputBox(
           1,
-          inactiveRaffleInputBox.boxId.toString(),
+          ticketRepoBy1WinnerTestRequirements.inactiveRaffleInputBox.boxId.toString(),
         );
-        const giftTokenRepoOutputBox =
-          boxFactory.createGiftTokenRepoOutputBox(1);
+      const giftTokenRepoOutputBox =
+        ticketRepoBy1WinnerTestRequirements.boxFactory.createGiftTokenRepoOutputBox(
+          1,
+        );
 
-        // Move one extra Ticket-Token to the giftTokenRepoOutputBox
-        giftTokenRepoOutputBox.assets.add({
-          tokenId: testUtils.TestConstants.TICKET_TOKEN_ID,
-          amount: 1n,
-        });
+      // Move one extra Ticket-Token to the giftTokenRepoOutputBox
+      giftTokenRepoOutputBox.assets.add({
+        tokenId: testUtils.TestConstants.TICKET_TOKEN_ID,
+        amount: 1n,
+      });
 
-        const transaction = new TransactionBuilder(1000)
-          .from([inactiveRaffleInputBox, ticketRepoInputBox])
-          .to([
-            activeRaffleOutputBox,
-            raffleDetailsOutputBox,
-            giftTokenRepoOutputBox,
-            ...winnersOutputBoxes,
-          ])
-          .payFee(testUtils.TestConstants.FEE)
-          .build();
+      const transaction = new TransactionBuilder(1000)
+        .from([
+          ticketRepoBy1WinnerTestRequirements.inactiveRaffleInputBox,
+          ticketRepoBy1WinnerTestRequirements.ticketRepoInputBox,
+        ])
+        .to([
+          activeRaffleOutputBox,
+          raffleDetailsOutputBox,
+          giftTokenRepoOutputBox,
+          ...winnersOutputBoxes,
+        ])
+        .payFee(testUtils.TestConstants.FEE)
+        .build();
 
-        expect(() =>
-          boxFactory.chain.execute(transaction, { signers: [creator] }),
-        ).toThrowError();
-      },
-    );
+      expect(() =>
+        ticketRepoBy1WinnerTestRequirements.boxFactory.chain.execute(
+          transaction,
+          { signers: [ticketRepoBy1WinnerTestRequirements.creator] },
+        ),
+      ).toThrowError();
+    });
 
     /**
      * @target should creating of active raffle by 1 winner with invalid ticket token id in R7 of inactive input box be fail
@@ -296,14 +329,15 @@ describe('ticketRepo', () => {
      * @expected
      * - transaction result must throw error
      */
-    ticketRepoBy1WinnerTest(
-      'should creating of active raffle by 1 winner with invalid ticket token id in R7 of inactive input box be fail',
-      ({ boxFactory, someoneWallet, creator, ticketRepoInputBox }) => {
-        // Replace Ticket-Token id with invalid id
-        const inactiveRaffleInputBox = boxFactory.createInactiveRaffleBoxMock(
-          creator.ergoTree,
-          someoneWallet.ergoTree,
-          creator.ergoTree,
+    it<TestInterface>('should creating of active raffle by 1 winner with invalid ticket token id in R7 of inactive input box be fail', ({
+      ticketRepoBy1WinnerTestRequirements,
+    }) => {
+      // Replace Ticket-Token id with invalid id
+      const inactiveRaffleInputBox =
+        ticketRepoBy1WinnerTestRequirements.boxFactory.createInactiveRaffleBoxMock(
+          ticketRepoBy1WinnerTestRequirements.creator.ergoTree,
+          ticketRepoBy1WinnerTestRequirements.someoneWallet.ergoTree,
+          ticketRepoBy1WinnerTestRequirements.creator.ergoTree,
           1,
           undefined,
           undefined,
@@ -313,48 +347,58 @@ describe('ticketRepo', () => {
           '1234'.repeat(16),
           0n,
         );
-        const extraInputBox = mockUTxO({
-          value: testUtils.TestConstants.FEE,
-          ergoTree: creator.ergoTree,
-          assets: [
-            {
-              tokenId: '1234'.repeat(16),
-              amount: 1_000_000_000n,
-            },
-          ],
-        });
+      const extraInputBox = mockUTxO({
+        value: testUtils.TestConstants.FEE,
+        ergoTree: ticketRepoBy1WinnerTestRequirements.creator.ergoTree,
+        assets: [
+          {
+            tokenId: '1234'.repeat(16),
+            amount: 1_000_000_000n,
+          },
+        ],
+      });
 
-        const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
-          creator.ergoTree,
-          creator.ergoTree,
-          someoneWallet.ergoTree,
+      const activeRaffleOutputBox =
+        ticketRepoBy1WinnerTestRequirements.boxFactory.createActiveRaffleOutputBox(
+          ticketRepoBy1WinnerTestRequirements.creator.ergoTree,
+          ticketRepoBy1WinnerTestRequirements.creator.ergoTree,
+          ticketRepoBy1WinnerTestRequirements.someoneWallet.ergoTree,
         );
-        const raffleDetailsOutputBox =
-          boxFactory.createRaffleDetailsOutputBox();
-        const winnersOutputBoxes = boxFactory.createWinnersOutputBox(
+      const raffleDetailsOutputBox =
+        ticketRepoBy1WinnerTestRequirements.boxFactory.createRaffleDetailsOutputBox();
+      const winnersOutputBoxes =
+        ticketRepoBy1WinnerTestRequirements.boxFactory.createWinnersOutputBox(
           1,
           inactiveRaffleInputBox.boxId.toString(),
         );
-        const giftTokenRepoOutputBox =
-          boxFactory.createGiftTokenRepoOutputBox(1);
+      const giftTokenRepoOutputBox =
+        ticketRepoBy1WinnerTestRequirements.boxFactory.createGiftTokenRepoOutputBox(
+          1,
+        );
 
-        const transaction = new TransactionBuilder(1000)
-          .from([inactiveRaffleInputBox, ticketRepoInputBox, extraInputBox])
-          .to([
-            activeRaffleOutputBox,
-            raffleDetailsOutputBox,
-            giftTokenRepoOutputBox,
-            ...winnersOutputBoxes,
-          ])
-          .payFee(testUtils.TestConstants.FEE)
-          .sendChangeTo(creator.address)
-          .build();
+      const transaction = new TransactionBuilder(1000)
+        .from([
+          inactiveRaffleInputBox,
+          ticketRepoBy1WinnerTestRequirements.ticketRepoInputBox,
+          extraInputBox,
+        ])
+        .to([
+          activeRaffleOutputBox,
+          raffleDetailsOutputBox,
+          giftTokenRepoOutputBox,
+          ...winnersOutputBoxes,
+        ])
+        .payFee(testUtils.TestConstants.FEE)
+        .sendChangeTo(ticketRepoBy1WinnerTestRequirements.creator.address)
+        .build();
 
-        expect(() =>
-          boxFactory.chain.execute(transaction, { signers: [creator] }),
-        ).toThrowError();
-      },
-    );
+      expect(() =>
+        ticketRepoBy1WinnerTestRequirements.boxFactory.chain.execute(
+          transaction,
+          { signers: [ticketRepoBy1WinnerTestRequirements.creator] },
+        ),
+      ).toThrowError();
+    });
   });
 
   /**
@@ -366,52 +410,59 @@ describe('ticketRepo', () => {
    * @expected
    * - transaction result must be true
    */
-  ticketRepoBy1WinnerTest(
-    'should fail creating active raffle by wrong place of ticket token',
-    ({
-      boxFactory,
-      someoneWallet,
-      creator,
-      ticketRepoInputBox,
-      inactiveRaffleInputBox,
-    }) => {
-      const activeRaffleOutputBox = boxFactory.createActiveRaffleOutputBox(
-        creator.ergoTree,
-        creator.ergoTree,
-        someoneWallet.ergoTree,
+  it<TestInterface>('should fail creating active raffle by wrong place of ticket token', ({
+    ticketRepoBy1WinnerTestRequirements,
+  }) => {
+    const activeRaffleOutputBox =
+      ticketRepoBy1WinnerTestRequirements.boxFactory.createActiveRaffleOutputBox(
+        ticketRepoBy1WinnerTestRequirements.creator.ergoTree,
+        ticketRepoBy1WinnerTestRequirements.creator.ergoTree,
+        ticketRepoBy1WinnerTestRequirements.someoneWallet.ergoTree,
       );
 
-      const raffleDetailsOutputBox = boxFactory.createRaffleDetailsOutputBox();
-      const giftTokenRepoOutputBox = boxFactory.createGiftTokenRepoOutputBox(1);
-      const winnerBoxes = boxFactory.createWinnersOutputBox(
+    const raffleDetailsOutputBox =
+      ticketRepoBy1WinnerTestRequirements.boxFactory.createRaffleDetailsOutputBox();
+    const giftTokenRepoOutputBox =
+      ticketRepoBy1WinnerTestRequirements.boxFactory.createGiftTokenRepoOutputBox(
         1,
-        inactiveRaffleInputBox.boxId.toString(),
+      );
+    const winnerBoxes =
+      ticketRepoBy1WinnerTestRequirements.boxFactory.createWinnersOutputBox(
+        1,
+        ticketRepoBy1WinnerTestRequirements.inactiveRaffleInputBox.boxId.toString(),
       );
 
-      // Decrease one ticket token from Active-Raffle box
-      activeRaffleOutputBox.assets.at(1).amount =
-        activeRaffleOutputBox.assets.at(1).amount - 1n;
+    // Decrease one ticket token from Active-Raffle box
+    activeRaffleOutputBox.assets.at(1).amount =
+      activeRaffleOutputBox.assets.at(1).amount - 1n;
 
-      const transaction = new TransactionBuilder(boxFactory.chain.height)
-        .from([inactiveRaffleInputBox, ticketRepoInputBox])
-        .to([
-          activeRaffleOutputBox,
-          raffleDetailsOutputBox,
-          giftTokenRepoOutputBox,
-          ...winnerBoxes,
-        ])
-        .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(creator.address)
-        .burnTokens({
-          tokenId: activeRaffleOutputBox.assets.at(1).tokenId!.toString(),
-          amount: 1n,
-        })
-        .build();
+    const transaction = new TransactionBuilder(
+      ticketRepoBy1WinnerTestRequirements.boxFactory.chain.height,
+    )
+      .from([
+        ticketRepoBy1WinnerTestRequirements.inactiveRaffleInputBox,
+        ticketRepoBy1WinnerTestRequirements.ticketRepoInputBox,
+      ])
+      .to([
+        activeRaffleOutputBox,
+        raffleDetailsOutputBox,
+        giftTokenRepoOutputBox,
+        ...winnerBoxes,
+      ])
+      .payFee(testUtils.TestConstants.FEE)
+      .sendChangeTo(ticketRepoBy1WinnerTestRequirements.creator.address)
+      .burnTokens({
+        tokenId: activeRaffleOutputBox.assets.at(1).tokenId!.toString(),
+        amount: 1n,
+      })
+      .build();
 
-      // Check execution result
-      expect(() =>
-        boxFactory.chain.execute(transaction, { signers: [creator] }),
-      ).toThrowError();
-    },
-  );
+    // Check execution result
+    expect(() =>
+      ticketRepoBy1WinnerTestRequirements.boxFactory.chain.execute(
+        transaction,
+        { signers: [ticketRepoBy1WinnerTestRequirements.creator] },
+      ),
+    ).toThrowError();
+  });
 });

@@ -1,14 +1,15 @@
-// sort-imports-begin-ignore
-import { CallbackLoggerFactory } from '@rosen-bridge/callback-logger';
-import '@rosen-bridge/extended-typeorm';
-// sort-imports-end-ignore
+import '@rosen-bridge/extended-typeorm/bootstrap';
 
+import { DefaultLogger } from '@rosen-bridge/abstract-logger';
+import CallbackLogger from '@rosen-bridge/callback-logger';
 import WinstonLogger from '@rosen-bridge/winston-logger';
 
 import packageJson from '../package.json' with { type: 'json' };
 import { configs, getLogOptions } from './config';
 
-CallbackLoggerFactory.init(new WinstonLogger(getLogOptions(configs.logs)));
-const logger = CallbackLoggerFactory.getInstance().getLogger(import.meta.url);
+DefaultLogger.init(
+  new CallbackLogger(WinstonLogger.createLogger(getLogOptions(configs.logs))),
+);
+const logger = DefaultLogger.getInstance().child(import.meta.url);
 
 logger.info(`Raffle background-service version: ${packageJson.version}`);

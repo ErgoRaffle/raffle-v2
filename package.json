@@ -9,23 +9,22 @@
     ]
   },
   "scripts": {
+    "prebuild": "npm run build --workspace packages/contracts",
     "build": "npm run build --workspaces",
     "clean": "npm run clean --workspaces",
     "coverage": "npm run coverage --workspaces",
     "lint": "npm run lint --workspaces",
     "lint:check": "npm run lint:check --workspaces",
-    "prepare": "husky install && npm run build --workspace packages/contracts",
+    "prepare": "husky install",
     "prettify": "npm run prettify --workspaces",
     "prettify:check": "npm run prettify:check --workspaces",
     "release": "npm run release --workspaces",
     "test": "npm run test --workspaces",
     "type-check": "npm run type-check --workspaces",
-    "version": "npx changeset version && npm i"
-  },
-  "dependencies": {
-    "@changesets/cli": "^2.29.8"
+    "version": "npx changeset version && npm i && npx changeset add --empty"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.29.8",
     "@eslint/js": "^9.35.0",
     "@rosen-bridge/changeset-formatter": "^2.0.1",
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
