@@ -1,4 +1,3 @@
-import { raffleInfo } from '@ergo-raffle/contracts';
 import { NonMandatoryRegisters } from '@fleet-sdk/common';
 import {
   ConstantInput,
@@ -8,6 +7,8 @@ import {
   SLong,
   TokenAmount,
 } from '@fleet-sdk/core';
+
+import { raffleInfo } from '@ergo-raffle/contracts';
 
 import { DonationProxyParams } from '../types';
 import { hashAndSerializeToBase64, hexToBase64 } from '../utils';

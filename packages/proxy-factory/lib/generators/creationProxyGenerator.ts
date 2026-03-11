@@ -1,4 +1,3 @@
-import { raffleInfo } from '@ergo-raffle/contracts';
 import { NonMandatoryRegisters } from '@fleet-sdk/common';
 import {
   ConstantInput,
@@ -10,6 +9,8 @@ import {
   TokenAmount,
 } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
+
+import { raffleInfo } from '@ergo-raffle/contracts';
 
 import { CreationProxyParams } from '../types';
 import { bigIntToUint8Array, hexToBase64 } from '../utils';

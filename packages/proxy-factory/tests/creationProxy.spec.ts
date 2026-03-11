@@ -1,11 +1,12 @@
-import { ServiceBuilder } from '@ergo-raffle/boxes';
-import { CreationTxBuilder } from '@ergo-raffle/transactions';
 import { Amount, Network } from '@fleet-sdk/common';
 import { Box, TransactionBuilder, OutputBuilder } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
 import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
 import { Buffer } from 'buffer';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+
+import { ServiceBuilder } from '@ergo-raffle/boxes';
+import { CreationTxBuilder } from '@ergo-raffle/transactions';
 
 import { CreationProxyParams, ProxyFactory } from '../lib';
 import { createMockUtxo, CustomMockChain } from './testUtils';

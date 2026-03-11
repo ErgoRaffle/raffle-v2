@@ -1,11 +1,12 @@
-import { WinnerBuilder } from '@ergo-raffle/boxes';
-import { AddGiftTxBuilder } from '@ergo-raffle/transactions';
 import { Amount, Network } from '@fleet-sdk/common';
 import { Box, TransactionBuilder, OutputBuilder } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
 import { KeyedMockChainParty } from '@fleet-sdk/mock-chain';
 import { Buffer } from 'buffer';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+
+import { WinnerBuilder } from '@ergo-raffle/boxes';
+import { AddGiftTxBuilder } from '@ergo-raffle/transactions';
 
 import { AddGiftProxyParams, ProxyFactory } from '../lib';
 import { createMockUtxo, CustomMockChain } from './testUtils';
