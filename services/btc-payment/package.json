@@ -30,6 +30,7 @@
   },
   "dependencies": {
     "@ergo-raffle/data-source": "^0.0.0",
+    "@ergo-raffle/dynamic-extractor": "^0.0.0",
     "@ergo-raffle/extractors": "^0.0.0",
     "@rosen-bridge/bitcoin-scanner": "^1.0.1",
     "@ergo-raffle/request-params": "^0.0.0",

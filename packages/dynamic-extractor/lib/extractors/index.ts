@@ -1,0 +1,1 @@
+export { DynamicExtractor } from './dynamicExtractor';

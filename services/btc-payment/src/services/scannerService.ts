@@ -9,7 +9,7 @@ import {
   ServiceStatus,
 } from '@rosen-bridge/service-manager';
 
-import { DynamicExtractor } from '@ergo-raffle/extractors';
+import { DynamicExtractor } from '@ergo-raffle/dynamic-extractor';
 
 import { Scanner as ScannerConfig } from '../types/configs';
 import { DbService } from './dbService';

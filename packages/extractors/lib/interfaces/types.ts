@@ -34,11 +34,6 @@ export interface RaffleBoxInterface extends AbstractRaffleBoxInterface {
   type: RaffleBoxType;
 }
 
-export interface DynamicBoxInterface extends AbstractEntityData {
-  txId: string;
-  address: string;
-}
-
 export interface WinnerBoxInterface extends AbstractRaffleBoxInterface {
   index: number;
   rewardPercent: number;

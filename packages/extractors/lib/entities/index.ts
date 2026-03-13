@@ -11,4 +11,3 @@ export { GiftRedeemEntity } from './giftRedeem';
 export { SuccessRaffleEntity } from './successRaffle';
 export { TicketRedeemEntity } from './ticketRedeem';
 export { SafePayEntity } from './safePay';
-export { DynamicBoxEntity } from './dynamicBoxEntity';

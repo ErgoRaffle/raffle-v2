@@ -250,22 +250,6 @@ export class Postgres1765798163301 implements MigrationInterface {
             )
         `);
     await queryRunner.query(`
-            CREATE TABLE "dynamic_box" (
-                "id" SERIAL NOT NULL,
-                "identifier" character varying NOT NULL,
-                "block" character varying NOT NULL,
-                "height" integer NOT NULL,
-                "spendBlock" character varying,
-                "spendHeight" integer,
-                "extractor" character varying NOT NULL,
-                "serialized" character varying NOT NULL,
-                "txId" character varying NOT NULL,
-                "address" character varying NOT NULL,
-                CONSTRAINT "UQ_feefdeac8f946da3dd3712dab63" UNIQUE ("identifier", "extractor"),
-                CONSTRAINT "PK_fd7aae41539dfa38135368d3296" PRIMARY KEY ("id")
-            )
-        `);
-    await queryRunner.query(`
             ALTER TABLE "picture"
             ADD CONSTRAINT "FK_ce8d1331589e50a820e6a84c5ad" FOREIGN KEY ("detailsId") REFERENCES "raffle_details"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
         `);
@@ -274,9 +258,6 @@ export class Postgres1765798163301 implements MigrationInterface {
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
             ALTER TABLE "picture" DROP CONSTRAINT "FK_ce8d1331589e50a820e6a84c5ad"
-        `);
-    await queryRunner.query(`
-            DROP TABLE "dynamic_box"
         `);
     await queryRunner.query(`
             DROP TABLE "safe_pay"
