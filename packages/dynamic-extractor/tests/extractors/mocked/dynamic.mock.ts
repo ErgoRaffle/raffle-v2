@@ -1,4 +1,7 @@
-import { BitcoinEsploraTransaction } from '@rosen-bridge/bitcoin-scanner';
+import {
+  BitcoinRpcTransaction,
+  BitcoinRpcTxOutput,
+} from '@rosen-bridge/bitcoin-scanner';
 
 /** Bitcoin-style test data for DynamicExtractor */
 export const sampleBitcoinAddress =
@@ -8,30 +11,30 @@ export const sampleBitcoinAddressOther =
   'bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4';
 export const sampleInvalidBitcoinAddress = 'not-a-valid-btc-address';
 
-export const sampleBitcoinTxOutput = {
-  scriptpubkey: '0014751e76e8199196d454941c45d1b3a323f1433bd6',
-  scriptpubkey_asm:
-    'OP_0 OP_PUSHBYTES_20 751e76e8199196d454941c45d1b3a323f1433bd6',
-  scriptpubkey_type: 'v0_p2wpkh',
-  scriptpubkey_address: sampleBitcoinAddress,
+/** P2WPKH scriptPubKey hex that decodes to sampleBitcoinAddress */
+export const sampleScriptPubKeyHex =
+  '0014751e76e8199196d454941c45d1b3a323f1433bd6';
+
+export const sampleBitcoinTxOutput: BitcoinRpcTxOutput = {
   value: 50000,
+  n: 0,
+  scriptPubKey: {
+    asm: 'OP_0 751e76e8199196d454941c45d1b3a323f1433bd6',
+    hex: sampleScriptPubKeyHex,
+  },
 };
 
-export const sampleBitcoinTx: BitcoinEsploraTransaction = {
+export const sampleBitcoinTx: BitcoinRpcTransaction = {
   txid: 'a1b2c3d4e5f6789012345678901234567890abcdef',
+  hash: 'a1b2c3d4e5f6789012345678901234567890abcdef',
   version: 2,
+  size: 100,
+  vsize: 100,
+  weight: 400,
   locktime: 0,
   vin: [],
   vout: [sampleBitcoinTxOutput],
-  size: 100,
-  weight: 400,
-  fee: 1000,
-  status: {
-    confirmed: true,
-    block_height: 800000,
-    block_hash: '0000000000000000000123456789abcdef',
-    block_time: 1234567890,
-  },
+  hex: '',
 };
 
 export const sampleTokenId = 'rune-id-sample';

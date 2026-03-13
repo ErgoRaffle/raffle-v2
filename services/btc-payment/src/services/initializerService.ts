@@ -110,7 +110,7 @@ export class InitializerService extends AbstractService {
 
     // Initialize scanner service
     this.logger.debug('Initializing scanner service');
-    await ScannerService.init(configs.scanner, scannerLogger);
+    await ScannerService.init(configs.bitcoin, scannerLogger);
     this.logger.debug('Scanner service initialized');
 
     // Initialize api service

@@ -1,6 +1,5 @@
 /**
  * Rune/token output info for a Bitcoin transaction, as returned by the runes protocol network.
- * Matches the pattern used in rosen-bridge bitcoin-runes-observation-extractor.
  */
 export interface TxOutputRune {
   /** Receiving address for this rune output */

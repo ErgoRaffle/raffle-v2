@@ -1,49 +1,58 @@
 import { AbstractLogger, DefaultLogger } from '@rosen-bridge/abstract-logger';
 import {
-  BitcoinEsploraScanner,
-  EsploraNetwork,
+  BitcoinRpcNetwork,
+  BitcoinRpcScanner,
 } from '@rosen-bridge/bitcoin-scanner';
 import {
   Dependency,
   PeriodicTaskService,
   ServiceStatus,
 } from '@rosen-bridge/service-manager';
+import * as bitcoin from 'bitcoinjs-lib';
 
 import { DynamicExtractor } from '@ergo-raffle/dynamic-extractor';
 
-import { Scanner as ScannerConfig } from '../types/configs';
+import { Bitcoin as BitcoinConfig } from '../types/configs';
 import { DbService } from './dbService';
 
 export class ScannerService extends PeriodicTaskService {
   name = 'ScannerService';
   private static instance: ScannerService;
-  readonly scannerConfig: ScannerConfig;
   protected dependencies: Dependency[] = [
     {
       serviceName: DbService.name,
       allowedStatuses: [ServiceStatus.running],
     },
   ];
-  readonly bitcoinScanner: BitcoinEsploraScanner;
+  readonly bitcoinScanner: BitcoinRpcScanner;
   private dynamicExtractor: DynamicExtractor;
 
-  private constructor(scannerConfig: ScannerConfig, logger?: AbstractLogger) {
+  private constructor(
+    private readonly config: BitcoinConfig,
+    logger?: AbstractLogger,
+  ) {
     super(logger);
-    this.scannerConfig = scannerConfig;
-    const network = new EsploraNetwork(
-      this.scannerConfig.esplora.url,
-      this.scannerConfig.esplora.timeout,
+    const { url, timeout, username, password } = this.config.rpc;
+    const network = new BitcoinRpcNetwork(
+      url,
+      timeout,
+      username && password ? { username, password } : undefined,
     );
-    this.bitcoinScanner = new BitcoinEsploraScanner({
+    this.bitcoinScanner = new BitcoinRpcScanner({
       dataSource: DbService.getInstance().dataSource,
-      initialHeight: this.scannerConfig.initialHeight ?? 0,
+      initialHeight: this.config.initialHeight ?? 0,
       network,
       logger: DefaultLogger.getInstance().child('btc-scanner'),
     });
-    const unisat = this.scannerConfig.runes.unisat;
+    const unisat = this.config.runes.unisat;
+    const btcNetwork =
+      this.config.network === 'testnet'
+        ? bitcoin.networks.testnet
+        : bitcoin.networks.bitcoin;
     this.dynamicExtractor = new DynamicExtractor(
       DbService.getInstance().dataSource,
       'Donation',
+      btcNetwork,
       unisat.url,
       unisat.apiKey,
       DefaultLogger.getInstance().child('btc-dynamic-extractor'),
@@ -62,25 +71,19 @@ export class ScannerService extends PeriodicTaskService {
    * If initialHeight is not set in config, fetches current network height and uses it.
    */
   static readonly init = async (
-    scannerConfig: ScannerConfig,
+    config: BitcoinConfig,
     logger?: AbstractLogger,
   ) => {
     if (this.instance != undefined) {
       return;
     }
-    let config = scannerConfig;
-    if (scannerConfig.initialHeight == null) {
-      const network = new EsploraNetwork(
-        scannerConfig.esplora.url,
-        scannerConfig.esplora.timeout,
-      );
-      const currentHeight = await network.getCurrentHeight();
-      config = { ...scannerConfig, initialHeight: currentHeight };
-    }
     this.instance = new ScannerService(config, logger);
     await this.instance.registerExtractors();
   };
 
+  /**
+   * Returns the singleton instance of ScannerService
+   */
   static readonly getInstance = (): ScannerService => {
     if (!this.instance) {
       throw new Error('ScannerService instance is not initialized yet');
@@ -120,7 +123,7 @@ export class ScannerService extends PeriodicTaskService {
             }
           }
         },
-        interval: this.scannerConfig.scannerInterval * 1000,
+        interval: this.config.scannerInterval * 1000,
       },
     ];
   };

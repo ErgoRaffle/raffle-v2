@@ -2,22 +2,24 @@ import { AbstractExtractor } from '@rosen-bridge/abstract-extractor';
 import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
 import { validateAddress } from '@rosen-bridge/address-codec';
 import {
-  BitcoinEsploraTransaction,
-  EsploraTxOutput,
+  BitcoinRpcTransaction,
+  BitcoinRpcTxOutput,
 } from '@rosen-bridge/bitcoin-scanner';
 import { DataSource, SelectQueryBuilder } from '@rosen-bridge/extended-typeorm';
 import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
+import * as bitcoin from 'bitcoinjs-lib';
 
 import { DynamicBoxAction } from '../actions/dynamicBoxAction';
 import { DynamicBoxEntity } from '../entities';
 import { DynamicBoxInterface } from '../interfaces/types';
 import { UnisatRunesProtocolNetwork } from '../network/unisatRunesProtocolNetwork';
+import { getAddressFromScriptPubKey } from '../utils';
 
 /** Token id for native Bitcoin UTXO value */
 export const BTC_TOKEN_ID = 'btc';
 
 export class DynamicExtractor extends AbstractExtractor<
-  BitcoinEsploraTransaction,
+  BitcoinRpcTransaction,
   DynamicBoxEntity
 > {
   readonly actions: DynamicBoxAction;
@@ -35,6 +37,7 @@ export class DynamicExtractor extends AbstractExtractor<
   constructor(
     dataSource: DataSource,
     private readonly id: string,
+    private readonly network: bitcoin.Network,
     unisatUrl: string,
     unisatApiKey?: string,
     private readonly logger: AbstractLogger = new DummyLogger(),
@@ -62,21 +65,24 @@ export class DynamicExtractor extends AbstractExtractor<
    * @returns true if processing completed successfully
    */
   processTransactions = async (
-    txs: BitcoinEsploraTransaction[],
+    txs: BitcoinRpcTransaction[],
     block: BlockInfo,
   ): Promise<boolean> => {
     const boxesToInsert: DynamicBoxInterface[] = [];
 
     for (const tx of txs) {
       // BTC: watched addresses with tokenId 'btc' — use UTXO value directly from vout
-      const vout = (tx as { vout?: EsploraTxOutput[] }).vout ?? [];
-      for (let voutIndex = 0; voutIndex < vout.length; voutIndex++) {
-        const output = vout[voutIndex];
-        const address = output.scriptpubkey_address;
+      const vout: BitcoinRpcTxOutput[] = tx.vout ?? [];
+      for (const output of vout) {
+        const address = getAddressFromScriptPubKey(
+          output.scriptPubKey.hex,
+          this.network,
+        );
         if (!address) continue;
         const watchedTokenId = this.addressWatchList.get(address);
         if (watchedTokenId === BTC_TOKEN_ID) {
-          const value = (output as { value?: number }).value ?? 0;
+          const value = output.value ?? 0;
+          const voutIndex = output.n;
           boxesToInsert.push({
             identifier: `${tx.txid}:${voutIndex}`,
             txId: tx.txid,

@@ -1,4 +1,5 @@
 import { DataSource } from '@rosen-bridge/extended-typeorm';
+import * as bitcoin from 'bitcoinjs-lib';
 
 import { DynamicExtractor } from '../../lib/extractors/dynamicExtractor';
 import type { TxOutputRune } from '../../lib/network/types';
@@ -6,6 +7,7 @@ import { createDatabase } from '../utils.mock';
 import {
   sampleDynamicExtractedDataWithRune,
   sampleBitcoinAddress,
+  sampleBitcoinAddressOther,
   sampleInvalidBitcoinAddress,
   sampleBitcoinTx,
   sampleTokenId,
@@ -22,6 +24,7 @@ describe('DynamicExtractor', () => {
     extractor = new DynamicExtractor(
       dataSource,
       'Dynamic',
+      bitcoin.networks.bitcoin,
       unisatUrl,
       unisatApiKey,
     );
@@ -96,7 +99,7 @@ describe('DynamicExtractor', () => {
      * @target should store box with tokenId btc and UTXO value when watching address for btc
      * @dependencies
      * @scenario
-     * - add (address, 'btc') to watch list
+     * - add (address, 'btc') to watch list; tx vout scriptPubKey decodes to that address
      * - call processTransactions with tx that has vout to that address
      * @expected
      * - storeEntities called with one box tokenId 'btc', amount = vout value (sats)
@@ -106,7 +109,8 @@ describe('DynamicExtractor', () => {
         .spyOn(extractor.actions, 'storeEntities')
         .mockResolvedValue(true);
 
-      extractor.addNewAddress(sampleBitcoinAddress, 'btc');
+      // sampleBitcoinTx vout scriptPubKey decodes to sampleBitcoinAddressOther (P2WPKH)
+      extractor.addNewAddress(sampleBitcoinAddressOther, 'btc');
       const block = { hash: 'block', height: 800000 };
       const result = await extractor.processTransactions(
         [sampleBitcoinTx],
@@ -120,7 +124,7 @@ describe('DynamicExtractor', () => {
           {
             identifier: `${sampleBitcoinTx.txid}:0`,
             txId: sampleBitcoinTx.txid,
-            address: sampleBitcoinAddress,
+            address: sampleBitcoinAddressOther,
             serialized: '',
             tokenId: 'btc',
             amount: '50000',

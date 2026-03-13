@@ -227,36 +227,38 @@
           },
           { "choices": ["mainnet", "testnet"] }
         ]
-      }
-    }
-  },
-  "scanner": {
-    "type": "object",
-    "children": {
-      "esplora": {
+      },
+      "rpc": {
         "type": "object",
         "children": {
           "url": {
             "type": "string",
-            "description": "Bitcoin Esplora API base URL",
-            "default": "https://blockstream.info",
+            "description": "Bitcoin RPC base URL",
             "validations": [
               {
                 "required": true,
-                "error": "scanner Esplora url must be specified"
+                "error": "bitcoin RPC url must be specified"
               }
             ]
           },
           "timeout": {
             "type": "number",
             "default": 30,
-            "description": "Esplora API timeout in seconds",
+            "description": "RPC timeout in seconds",
             "validations": [
               {
                 "required": true,
-                "error": "scanner Esplora timeout must be specified"
+                "error": "scanner RPC timeout must be specified"
               }
             ]
+          },
+          "username": {
+            "type": "string",
+            "description": "Bitcoin Core RPC username (optional)"
+          },
+          "password": {
+            "type": "string",
+            "description": "Bitcoin Core RPC password (optional)"
           }
         }
       },

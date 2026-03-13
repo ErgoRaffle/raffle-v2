@@ -1,5 +1,4 @@
 export interface BtcPaymentConfig {
-  scanner: Scanner;
   bitcoin: Bitcoin;
   ergo: Ergo;
   api: Api;
@@ -40,25 +39,24 @@ export interface Ergo {
 export interface Bitcoin {
   mnemonic: string;
   network: 'mainnet' | 'testnet';
-}
-
-export interface Scanner {
-  esplora: ScannerEsplora;
+  rpc: BitcoinRpc;
   scannerInterval: number;
   initialHeight: number;
-  runes: ScannerRunes;
+  runes: BitcoinRunes;
 }
 
-export interface ScannerRunes {
-  unisat: ScannerRunesUnisat;
+export interface BitcoinRunes {
+  unisat: BitcoinRunesUnisat;
 }
 
-export interface ScannerRunesUnisat {
+export interface BitcoinRunesUnisat {
   url: string;
   apiKey?: string;
 }
 
-export interface ScannerEsplora {
+export interface BitcoinRpc {
   url: string;
   timeout: number;
+  username?: string;
+  password?: string;
 }
