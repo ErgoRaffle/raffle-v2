@@ -34,9 +34,23 @@ export const sampleBitcoinTx: BitcoinEsploraTransaction = {
   },
 };
 
+export const sampleTokenId = 'rune-id-sample';
+
 export const sampleDynamicExtractedData = {
   identifier: `${sampleBitcoinTx.txid}:0`,
   txId: sampleBitcoinTx.txid,
   address: sampleBitcoinAddress,
   serialized: '',
+  tokenId: sampleTokenId,
+  amount: '0',
+};
+
+/** Expected box when processTransactions uses runes network returning one rune */
+export const sampleDynamicExtractedDataWithRune = {
+  identifier: `${sampleBitcoinTx.txid}:0`,
+  txId: sampleBitcoinTx.txid,
+  address: sampleBitcoinAddress,
+  serialized: '',
+  tokenId: sampleTokenId,
+  amount: '100',
 };

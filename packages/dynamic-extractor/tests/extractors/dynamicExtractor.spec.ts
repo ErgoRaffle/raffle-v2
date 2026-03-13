@@ -1,91 +1,51 @@
 import { DataSource } from '@rosen-bridge/extended-typeorm';
 
 import { DynamicExtractor } from '../../lib/extractors/dynamicExtractor';
+import type { TxOutputRune } from '../../lib/network/types';
 import { createDatabase } from '../utils.mock';
 import {
-  sampleDynamicExtractedData,
+  sampleDynamicExtractedDataWithRune,
   sampleBitcoinAddress,
-  sampleBitcoinAddressOther,
   sampleInvalidBitcoinAddress,
   sampleBitcoinTx,
-  sampleBitcoinTxOutput,
+  sampleTokenId,
 } from './mocked/dynamic.mock';
+
+const unisatUrl = 'https://open-api.unisat.io';
+const unisatApiKey = '';
 
 describe('DynamicExtractor', () => {
   let dataSource: DataSource;
   let extractor: DynamicExtractor;
   beforeEach(async () => {
     dataSource = await createDatabase();
-    extractor = new DynamicExtractor(dataSource, 'Dynamic');
-  });
-
-  describe('extractBoxData', () => {
-    /**
-     * @target should successfully extract data from a Bitcoin tx output
-     * @dependencies
-     * @scenario
-     * - call the extractBoxData function with tx, vout index, and output
-     * - check if Dynamic box data extracted correctly
-     * @expected
-     * - Extracted data should match expected shape
-     */
-    it(`should successfully extract data from a Bitcoin tx output`, () => {
-      const extractedData = extractor.extractBoxData(
-        sampleBitcoinTx,
-        0,
-        sampleBitcoinTxOutput,
-      );
-
-      expect(extractedData).toEqual(sampleDynamicExtractedData);
-    });
-  });
-
-  describe('hasData', () => {
-    /**
-     * @target should return true when output address is in the watch list
-     * @dependencies
-     * @scenario
-     * - add the output address to the watch list
-     * - call hasData with the output
-     * @expected
-     * - hasData returns true
-     */
-    it(`should return true with output address in the watch list`, () => {
-      extractor.addNewAddress(sampleBitcoinAddress);
-
-      expect(extractor.hasData(sampleBitcoinTxOutput)).toBeTruthy();
-    });
-
-    /**
-     * @target should return false when output address is not in the watch list
-     * @dependencies
-     * @scenario
-     * - add a different (valid) address to the watch list
-     * - call hasData with the output
-     * @expected
-     * - hasData returns false
-     */
-    it(`should return false when output address is not in the watch list`, () => {
-      extractor.addNewAddress(sampleBitcoinAddressOther);
-
-      expect(extractor.hasData(sampleBitcoinTxOutput)).toBeFalsy();
-    });
+    extractor = new DynamicExtractor(
+      dataSource,
+      'Dynamic',
+      unisatUrl,
+      unisatApiKey,
+    );
   });
 
   describe('addNewAddress', () => {
     /**
-     * @target should add new Bitcoin address to the watch list
+     * @target should add new Bitcoin address and tokenId to the watch list
      * @dependencies
      * @scenario
-     * - call the addNewAddress function with valid Bitcoin address
+     * - call the addNewAddress function with valid Bitcoin address and tokenId
      * - check if the address is added to the watch list
      * @expected
-     * - Address should be in addressWatchList
+     * - Address and tokenId should be in addressWatchList
      */
-    it(`should add new Bitcoin address to the watch list`, () => {
-      extractor.addNewAddress(sampleBitcoinAddress);
+    it(`should add new Bitcoin address and tokenId to the watch list`, () => {
+      extractor.addNewAddress(sampleBitcoinAddress, sampleTokenId);
 
-      expect(extractor['addressWatchList']).toContain(sampleBitcoinAddress);
+      expect(extractor['addressWatchList'].has(sampleBitcoinAddress)).toBe(
+        true,
+      );
+      expect(extractor['addressWatchList'].get(sampleBitcoinAddress)).toBe(
+        sampleTokenId,
+      );
     });
 
     /**
@@ -98,7 +58,7 @@ describe('DynamicExtractor', () => {
      */
     it(`should throw when adding invalid Bitcoin address`, () => {
       expect(() =>
-        extractor.addNewAddress(sampleInvalidBitcoinAddress),
+        extractor.addNewAddress(sampleInvalidBitcoinAddress, sampleTokenId),
       ).toThrow();
     });
   });
@@ -115,38 +75,39 @@ describe('DynamicExtractor', () => {
      * - Address is removed from watch list
      */
     it(`should remove address from the watch list`, () => {
-      extractor['addressWatchList'] = new Set([
-        sampleBitcoinAddress,
-        'bc1qanothertestaddress1234567890abcdefghjk',
+      extractor['addressWatchList'] = new Map([
+        [sampleBitcoinAddress, sampleTokenId],
+        ['bc1qanothertestaddress1234567890abcdefghjk', 'other-rune'],
       ]);
       extractor.removeAddress(sampleBitcoinAddress);
-      expect(extractor['addressWatchList']).not.toContain(sampleBitcoinAddress);
-      expect(extractor['addressWatchList']).toContain(
-        'bc1qanothertestaddress1234567890abcdefghjk',
+      expect(extractor['addressWatchList'].has(sampleBitcoinAddress)).toBe(
+        false,
       );
+      expect(
+        extractor['addressWatchList'].has(
+          'bc1qanothertestaddress1234567890abcdefghjk',
+        ),
+      ).toBe(true);
     });
   });
 
   describe('processTransactions', () => {
     /**
-     * @target should store boxes for watched addresses in block
+     * @target should store box with tokenId btc and UTXO value when watching address for btc
      * @dependencies
      * @scenario
-     * - add address to watch list
-     * - call processTransactions with tx that has output to that address
+     * - add (address, 'btc') to watch list
+     * - call processTransactions with tx that has vout to that address
      * @expected
-     * - processTransactions returns true and boxes are stored
+     * - storeEntities called with one box tokenId 'btc', amount = vout value (sats)
      */
-    it(`should process transactions and store boxes for watched addresses`, async () => {
+    it(`should store box for watched address with tokenId btc using UTXO value`, async () => {
       const storeEntitiesSpy = vi
         .spyOn(extractor.actions, 'storeEntities')
         .mockResolvedValue(true);
 
-      extractor['addressWatchList'] = new Set([sampleBitcoinAddress]);
-      const block = {
-        hash: '0000000000000000000123456789abcdef',
-        height: 800000,
-      };
+      extractor.addNewAddress(sampleBitcoinAddress, 'btc');
+      const block = { hash: 'block', height: 800000 };
       const result = await extractor.processTransactions(
         [sampleBitcoinTx],
         block,
@@ -155,10 +116,130 @@ describe('DynamicExtractor', () => {
       expect(result).toBe(true);
       expect(storeEntitiesSpy).toHaveBeenCalledTimes(1);
       expect(storeEntitiesSpy).toHaveBeenCalledWith(
-        [sampleDynamicExtractedData],
+        [
+          {
+            identifier: `${sampleBitcoinTx.txid}:0`,
+            txId: sampleBitcoinTx.txid,
+            address: sampleBitcoinAddress,
+            serialized: '',
+            tokenId: 'btc',
+            amount: '50000',
+          },
+        ],
         block,
         'Dynamic',
       );
+    });
+
+    /**
+     * @target should store box for watched (address, tokenId) when runes network returns matching rune
+     * @dependencies
+     * @scenario
+     * - add (address, tokenId) to watch list
+     * - mock runes network to return one rune for the tx matching address and tokenId
+     * - call processTransactions
+     * @expected
+     * - storeEntities called with one box with tokenId and amount from rune
+     */
+    it(`should store box for runes token when runes network returns matching rune`, async () => {
+      const storeEntitiesSpy = vi
+        .spyOn(extractor.actions, 'storeEntities')
+        .mockResolvedValue(true);
+
+      const mockRunes: TxOutputRune[] = [
+        {
+          address: sampleBitcoinAddress,
+          runeId: sampleTokenId,
+          runeAmount: '100',
+          voutIndex: 0,
+        },
+      ];
+      vi.spyOn(extractor['runesNetwork'], 'getTxOutputRunes').mockResolvedValue(
+        mockRunes,
+      );
+
+      extractor.addNewAddress(sampleBitcoinAddress, sampleTokenId);
+      const block = { hash: 'block', height: 800000 };
+      const result = await extractor.processTransactions(
+        [sampleBitcoinTx],
+        block,
+      );
+
+      expect(result).toBe(true);
+      expect(storeEntitiesSpy).toHaveBeenCalledTimes(1);
+      expect(storeEntitiesSpy).toHaveBeenCalledWith(
+        [sampleDynamicExtractedDataWithRune],
+        block,
+        'Dynamic',
+      );
+    });
+
+    /**
+     * @target should not store rune when runeId does not match watched tokenId
+     * @dependencies
+     * @scenario
+     * - add (address, tokenId) to watch list
+     * - mock runes network to return rune with different runeId for same address
+     * - call processTransactions
+     * @expected
+     * - storeEntities not called (rune filtered out)
+     */
+    it(`should not store rune when runeId does not match watched tokenId`, async () => {
+      const storeEntitiesSpy = vi
+        .spyOn(extractor.actions, 'storeEntities')
+        .mockResolvedValue(true);
+
+      const otherRuneId = 'other-rune-id';
+      vi.spyOn(extractor['runesNetwork'], 'getTxOutputRunes').mockResolvedValue(
+        [
+          {
+            address: sampleBitcoinAddress,
+            runeId: otherRuneId,
+            runeAmount: '50',
+            voutIndex: 0,
+          },
+        ],
+      );
+
+      extractor.addNewAddress(sampleBitcoinAddress, sampleTokenId);
+      const block = { hash: 'block', height: 800000 };
+      const result = await extractor.processTransactions(
+        [sampleBitcoinTx],
+        block,
+      );
+
+      expect(result).toBe(true);
+      expect(storeEntitiesSpy).not.toHaveBeenCalled();
+    });
+
+    /**
+     * @target should not store when runes network returns no runes for tx
+     * @dependencies
+     * @scenario
+     * - add (address, tokenId) to watch list
+     * - mock runes network to return empty array
+     * - call processTransactions
+     * @expected
+     * - processTransactions returns true and storeEntities is not called
+     */
+    it(`should not store when runes network returns no runes for tx`, async () => {
+      const storeEntitiesSpy = vi
+        .spyOn(extractor.actions, 'storeEntities')
+        .mockResolvedValue(true);
+
+      vi.spyOn(extractor['runesNetwork'], 'getTxOutputRunes').mockResolvedValue(
+        [],
+      );
+
+      extractor.addNewAddress(sampleBitcoinAddress, sampleTokenId);
+      const block = { hash: 'block', height: 800000 };
+      const result = await extractor.processTransactions(
+        [sampleBitcoinTx],
+        block,
+      );
+
+      expect(result).toBe(true);
+      expect(storeEntitiesSpy).not.toHaveBeenCalled();
     });
   });
 });
