@@ -46,6 +46,16 @@ export interface Scanner {
   esplora: ScannerEsplora;
   scannerInterval: number;
   initialHeight: number;
+  runes: ScannerRunes;
+}
+
+export interface ScannerRunes {
+  unisat: ScannerRunesUnisat;
+}
+
+export interface ScannerRunesUnisat {
+  url: string;
+  apiKey?: string;
 }
 
 export interface ScannerEsplora {

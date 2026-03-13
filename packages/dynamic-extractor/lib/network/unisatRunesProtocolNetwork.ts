@@ -23,7 +23,7 @@ export class UnisatRunesProtocolNetwork {
    */
   constructor(
     protected readonly unisatUrl: string,
-    protected readonly unisatApiKey: string,
+    protected readonly unisatApiKey?: string,
     protected readonly logger?: AbstractLogger,
   ) {
     const unisatHeaders: Record<string, string> = {

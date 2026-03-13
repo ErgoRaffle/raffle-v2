@@ -36,14 +36,14 @@ export class DynamicExtractor extends AbstractExtractor<
     dataSource: DataSource,
     private readonly id: string,
     unisatUrl: string,
-    unisatApiKey: string,
+    unisatApiKey?: string,
     private readonly logger: AbstractLogger = new DummyLogger(),
   ) {
     super();
     this.actions = new DynamicBoxAction(dataSource, logger);
     this.runesNetwork = new UnisatRunesProtocolNetwork(
       unisatUrl,
-      unisatApiKey ?? '',
+      unisatApiKey,
       logger,
     );
   }

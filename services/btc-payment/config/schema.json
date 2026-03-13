@@ -280,6 +280,32 @@
             "error": "scanner initial block height must be specified"
           }
         ]
+      },
+      "runes": {
+        "type": "object",
+        "children": {
+          "unisat": {
+            "type": "object",
+            "description": "Unisat indexer API for runes data",
+            "children": {
+              "url": {
+                "type": "string",
+                "description": "Unisat API base URL",
+                "default": "https://open-api.unisat.io",
+                "validations": [
+                  {
+                    "required": true,
+                    "error": "Unisat API base URL must be specified"
+                  }
+                ]
+              },
+              "apiKey": {
+                "type": "string",
+                "description": "Unisat API key"
+              }
+            }
+          }
+        }
       }
     }
   }

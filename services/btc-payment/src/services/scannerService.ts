@@ -40,9 +40,12 @@ export class ScannerService extends PeriodicTaskService {
       network,
       logger: DefaultLogger.getInstance().child('btc-scanner'),
     });
+    const unisat = this.scannerConfig.runes.unisat;
     this.dynamicExtractor = new DynamicExtractor(
       DbService.getInstance().dataSource,
       'Donation',
+      unisat.url,
+      unisat.apiKey,
       DefaultLogger.getInstance().child('btc-dynamic-extractor'),
     );
   }
@@ -123,10 +126,10 @@ export class ScannerService extends PeriodicTaskService {
   };
 
   /**
-   * Add a Bitcoin address to the dynamic extractor (e.g. donation proxy address).
+   * Add a (address, tokenId) pair to the dynamic extractor (e.g. donation proxy address and rune to watch).
    */
-  addDynamicAddress = (address: string) => {
-    this.dynamicExtractor.addNewAddress(address);
+  addDynamicAddress = (address: string, tokenId: string) => {
+    this.dynamicExtractor.addNewAddress(address, tokenId);
   };
 
   /**

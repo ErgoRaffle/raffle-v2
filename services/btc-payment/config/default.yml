@@ -25,3 +25,6 @@ scanner:
     url: https://blockstream.info
     timeout: 30
   scannerInterval: 30
+  runes:
+    unisat:
+      url: https://open-api.unisat.io
