@@ -20,3 +20,8 @@ ergo:
   fee: 1500000
 bitcoin:
   network: mainnet
+scanner:
+  esplora:
+    url: https://blockstream.info
+    timeout: 30
+  scannerInterval: 30

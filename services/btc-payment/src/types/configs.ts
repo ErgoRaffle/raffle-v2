@@ -1,4 +1,5 @@
 export interface BtcPaymentConfig {
+  scanner: Scanner;
   bitcoin: Bitcoin;
   ergo: Ergo;
   api: Api;
@@ -39,4 +40,15 @@ export interface Ergo {
 export interface Bitcoin {
   mnemonic: string;
   network: 'mainnet' | 'testnet';
+}
+
+export interface Scanner {
+  esplora: ScannerEsplora;
+  scannerInterval: number;
+  initialHeight: number;
+}
+
+export interface ScannerEsplora {
+  url: string;
+  timeout: number;
 }
