@@ -1,0 +1,197 @@
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import {
+  Dependency,
+  PeriodicTaskService,
+  ServiceStatus,
+} from '@rosen-bridge/service-manager';
+
+import {
+  DonationParamsEntity,
+  DonationStatus,
+} from '@ergo-raffle/request-params';
+
+import { Donation as DonationConfig } from '../types/configs';
+import { DbService } from './dbService';
+import { ScannerService } from './scannerService';
+
+export class DonationService extends PeriodicTaskService {
+  name = 'DonationService';
+  private static instance: DonationService;
+  protected dependencies: Dependency[] = [
+    {
+      serviceName: DbService.name,
+      allowedStatuses: [ServiceStatus.running],
+    },
+    {
+      serviceName: ScannerService.name,
+      allowedStatuses: [ServiceStatus.running],
+    },
+  ];
+
+  private constructor(
+    private readonly config: DonationConfig,
+    logger?: AbstractLogger,
+  ) {
+    super(logger);
+  }
+
+  static readonly init = async (
+    config: DonationConfig,
+    logger?: AbstractLogger,
+  ) => {
+    if (this.instance != undefined) {
+      return;
+    }
+    this.instance = new DonationService(config, logger);
+  };
+
+  static readonly getInstance = (): DonationService => {
+    if (!this.instance) {
+      throw new Error('DonationService instance is not initialized yet');
+    }
+    return this.instance;
+  };
+
+  protected preStart = async (): Promise<void> => {
+    this.logger.debug('Starting DonationService');
+  };
+
+  protected postStop = async (): Promise<void> => {
+    this.logger.info('DonationService stopped');
+  };
+
+  protected getTasks = () => {
+    const intervalMs = this.config.interval * 1000;
+    return [
+      {
+        fn: async () => {
+          try {
+            await this.processDonationTimeouts();
+          } catch (err) {
+            this.logger.error(
+              `DonationService processDonationTimeouts failed: ${err}`,
+            );
+            if (err instanceof Error && err.stack) {
+              this.logger.error(err.stack);
+            }
+          }
+        },
+        interval: intervalMs,
+      },
+      {
+        fn: async () => {
+          try {
+            await this.processDonations();
+          } catch (err) {
+            this.logger.error(
+              `DonationService processDonations failed: ${err}`,
+            );
+            if (err instanceof Error && err.stack) {
+              this.logger.error(err.stack);
+            }
+          }
+        },
+        interval: intervalMs,
+      },
+    ];
+  };
+
+  /**
+   * Mark pending donation requests as timed out when they have passed the deadline.
+   */
+  private processDonationTimeouts = async (): Promise<void> => {
+    const db = DbService.getInstance();
+    const ongoing = await db.getOngoingDonationRequests();
+    if (ongoing.length === 0) {
+      this.logger.debug('No ongoing donation requests, skipping timeout check');
+      return;
+    }
+
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    for (const donation of ongoing) {
+      try {
+        const ageSeconds = nowSeconds - donation.timestamp;
+        if (ageSeconds >= this.config.requestTimeout) {
+          await db.updateDonationStatus(donation.id, DonationStatus.TimedOut);
+          this.logger.info(
+            `Donation request id=${donation.id} timed out (age=${ageSeconds}s, raffleId=${donation.raffleId})`,
+          );
+        }
+      } catch (err) {
+        this.logger.error(
+          `Error timing out donation id=${donation.id}: ${err}`,
+        );
+        if (err instanceof Error && err.stack) {
+          this.logger.error(err.stack);
+        }
+      }
+    }
+  };
+
+  /**
+   * Query ongoing donation requests, check satisfaction and confirmation via dynamic boxes,
+   * then create donation transaction and mark completed when ready.
+   */
+  private processDonations = async (): Promise<void> => {
+    const db = DbService.getInstance();
+    const ongoing = await db.getOngoingDonationRequests();
+    if (ongoing.length === 0) {
+      this.logger.debug(
+        'No ongoing donation requests, skipping donation check',
+      );
+      return;
+    }
+
+    const latestHeight = await db.getLatestBlockHeight(
+      ScannerService.getInstance().getBitcoinScannerName(),
+    );
+    if (latestHeight === null) {
+      this.logger.debug('No blocks stored yet, skipping donation check');
+      return;
+    }
+
+    const minConfirmedHeight = latestHeight - this.config.requiredConfirmations;
+
+    for (const donation of ongoing) {
+      try {
+        const tokenId = donation.tokenId;
+        const tokenAmount = donation.tokenAmount;
+        const confirmedSum = await db.getConfirmedDynamicBoxSum(
+          donation.bitcoinAddress,
+          tokenId,
+          minConfirmedHeight,
+        );
+
+        if (confirmedSum < tokenAmount) {
+          this.logger.info(
+            `Donation request id=${donation.id} not satisfied (confirmedSum=${confirmedSum}, tokenAmount=${tokenAmount})`,
+          );
+          continue;
+        }
+
+        this.logger.info(
+          `Donation request id=${donation.id} satisfied and confirmed (raffleId=${donation.raffleId}, ticketCount=${donation.ticketCount})`,
+        );
+
+        await this.createDonationTransaction(donation);
+        await db.updateDonationStatus(donation.id, DonationStatus.Completed);
+      } catch (err) {
+        this.logger.error(
+          `Error processing donation id=${donation.id}: ${err}`,
+        );
+        if (err instanceof Error && err.stack) {
+          this.logger.error(err.stack);
+        }
+      }
+    }
+  };
+
+  /**
+   * Create a donation transaction for the specified raffle.
+   */
+  private createDonationTransaction = async (
+    donation: DonationParamsEntity, // eslint-disable-line @typescript-eslint/no-unused-vars
+  ): Promise<void> => {
+    // TODO create donation transaction using the proxy factory
+  };
+}

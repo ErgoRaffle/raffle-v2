@@ -11,6 +11,7 @@ export const registerDonationRoute = (
   fastify: FastifyWithZod,
   logger: AbstractLogger,
   addressDeriver: AddressDeriver,
+  addWatchingAddress: (address: string, tokenId: string) => void,
 ) => {
   fastify.post(
     '/api/donation',
@@ -45,13 +46,14 @@ export const registerDonationRoute = (
             donatorAddress,
             bitcoinAddress,
           });
+        await addWatchingAddress(bitcoinAddress, savedDonationParams.tokenId);
 
         return {
           success: true,
           message: 'Donation request received',
           data: {
-            requiredTokenId: savedDonationParams.tokenId?.toString(),
-            requiredTokenCount: savedDonationParams.tokenAmount?.toString(),
+            requiredTokenId: savedDonationParams.tokenId.toString(),
+            requiredTokenCount: savedDonationParams.tokenAmount.toString(),
             bitcoinAddress,
           },
         };

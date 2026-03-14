@@ -10,6 +10,7 @@ import {
 import { configs } from '../configs';
 import { ApiService } from './apiService';
 import { DbService } from './dbService';
+import { DonationService } from './donationService';
 import { ScannerService } from './scannerService';
 
 export class InitializerService extends AbstractService {
@@ -64,6 +65,10 @@ export class InitializerService extends AbstractService {
       serviceName: ApiService.name,
       allowedStatuses: [ServiceStatus.running],
     },
+    {
+      serviceName: DonationService.name,
+      allowedStatuses: [ServiceStatus.running],
+    },
   ];
 
   /**
@@ -102,6 +107,7 @@ export class InitializerService extends AbstractService {
     const dbLogger = defaultLogger.child('DbService');
     const scannerLogger = defaultLogger.child('ScannerService');
     const apiLogger = defaultLogger.child('ApiService');
+    const donationLogger = defaultLogger.child('DonationService');
 
     // Initialize database service
     this.logger.debug('Initializing database service');
@@ -117,6 +123,11 @@ export class InitializerService extends AbstractService {
     this.logger.debug('Initializing api service');
     ApiService.init(configs.api, apiLogger);
     this.logger.debug('Api service initialized');
+
+    // Initialize donation service
+    this.logger.debug('Initializing donation service');
+    await DonationService.init(configs.donation, donationLogger);
+    this.logger.debug('Donation service initialized');
   };
 
   /**
@@ -135,5 +146,6 @@ export class InitializerService extends AbstractService {
     this.serviceManager.register(DbService.getInstance());
     this.serviceManager.register(ScannerService.getInstance());
     this.serviceManager.register(ApiService.getInstance());
+    this.serviceManager.register(DonationService.getInstance());
   };
 }

@@ -1,5 +1,6 @@
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
-import { DataSource } from '@rosen-bridge/extended-typeorm';
+import { BlockEntity } from '@rosen-bridge/abstract-scanner';
+import { DataSource, LessThanOrEqual } from '@rosen-bridge/extended-typeorm';
 import {
   AbstractService,
   Dependency,
@@ -7,6 +8,7 @@ import {
 } from '@rosen-bridge/service-manager';
 
 import { createDataSource } from '@ergo-raffle/data-source';
+import { DynamicBoxEntity } from '@ergo-raffle/dynamic-extractor';
 import { InactiveRaffleEntity } from '@ergo-raffle/extractors';
 import {
   DonationParamsEntity,
@@ -163,5 +165,69 @@ export class DbService extends AbstractService {
     }
 
     return savedEntity;
+  };
+
+  /**
+   * Get all ongoing (pending) donation requests.
+   */
+  getOngoingDonationRequests = async (): Promise<DonationParamsEntity[]> => {
+    return this.dataSource.getRepository(DonationParamsEntity).find({
+      where: { status: DonationStatus.Pending },
+      order: { id: 'ASC' },
+    });
+  };
+
+  /**
+   * Get the sum of confirmed dynamic box amounts for an address and token.
+   * Only includes boxes at or below maxHeightInclusive (i.e. confirmed enough).
+   * @param address - Bitcoin address
+   * @param tokenId - Token id (e.g. rune id or 'btc')
+   * @param extractor - Extractor id (e.g. 'Donation')
+   * @param maxHeightInclusive - Maximum block height to include (typically latestHeight - requiredConfirmations)
+   */
+  getConfirmedDynamicBoxSum = async (
+    address: string,
+    tokenId: string,
+    maxHeightInclusive: number,
+  ): Promise<bigint> => {
+    const boxes = await this.dataSource.getRepository(DynamicBoxEntity).find({
+      where: {
+        address,
+        tokenId,
+        height: LessThanOrEqual(maxHeightInclusive),
+      },
+    });
+    this.logger.info(
+      `Found ${boxes.length} confirmed dynamic boxes for address=${address}, tokenId=${tokenId}, maxHeightInclusive=${maxHeightInclusive}`,
+    );
+    this.logger.debug(
+      `Confirmed dynamic boxes: ${boxes.map((box) => `boxId=${box.identifier}, amount=${box.amount}`).join(', ')}`,
+    );
+    return boxes.reduce((sum, box) => sum + BigInt(box.amount), BigInt(0));
+  };
+
+  /**
+   * Get the latest stored block height for a scanner.
+   * @param scanner - Scanner name (e.g. BITCOIN_SCANNER_NAME)
+   * @returns The latest height, or null if no blocks stored yet
+   */
+  getLatestBlockHeight = async (scanner: string): Promise<number | null> => {
+    const block = await this.dataSource.getRepository(BlockEntity).findOne({
+      where: { scanner },
+      order: { height: 'DESC' },
+    });
+    return block?.height ?? null;
+  };
+
+  /**
+   * Update donation request status.
+   */
+  updateDonationStatus = async (
+    id: number,
+    status: DonationStatus,
+  ): Promise<void> => {
+    await this.dataSource
+      .getRepository(DonationParamsEntity)
+      .update({ id }, { status });
   };
 }
