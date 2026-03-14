@@ -144,6 +144,45 @@ describe('AddGiftProxy', () => {
     });
 
     /**
+     * @target add gift proxy should fail when gift tokens are not transferred compeletly
+     * @scenario
+     * - create gift proxy input box
+     * - add incorrect token count for gift tokens to the transaction builder
+     * - add extra utxo to cover the change box value
+     * - create two output boxes: updated winner, gift, change
+     * - execute transaction
+     * @expected
+     * - transaction execution should throw
+     */
+    it('add gift proxy should fail when gift tokens are not transferred compeletly', () => {
+      const giftTokenId = '4'.repeat(64);
+      const giftTokenAmount = 10n;
+
+      const proxyOutput = buildAddGiftProxyBox(
+        contracts['addGiftProxy'],
+        proxyParams,
+        {
+          creationHeight: 5,
+          tokens: [{ tokenId: giftTokenId, amount: giftTokenAmount }],
+        },
+      );
+      const proxyBoxWithTokens = createMockUtxo(proxyOutput);
+      giftGiver.addBalance({ nanoergs: 1000000n });
+
+      // Add gift tokens to the builder
+      addGiftTxBuilder
+        .setGiftTokens([{ tokenId: giftTokenId, amount: giftTokenAmount - 1n }])
+        .setGiftGiverUtxos([proxyBoxWithTokens, ...giftGiver.utxos]);
+
+      // Execute transaction
+      // [Winner, Proxy] --> [Winner, Gift, Change]
+      const transaction = addGiftTxBuilder.build();
+
+      // Check execution result
+      expect(() => chain.executeTx(transaction, [giftGiver])).toThrow();
+    });
+
+    /**
      * @target add gift proxy should fail with incorrect parameters
      * @scenario
      * - for each parameter, modify it to an incorrect value
@@ -176,6 +215,11 @@ describe('AddGiftProxy', () => {
       [
         'giftGiverAddress',
         (builder) => builder.setGiftGiverAddress(creator.address.toString()),
+      ],
+      [
+        'value',
+        (builder) =>
+          builder.setGiftValue(BigInt(proxyBox.value) - proxyParams.txFee * 2n),
       ],
     ];
 
@@ -340,6 +384,50 @@ describe('AddGiftProxy', () => {
         .to([refundBoxWithBurntTokens])
         .payFee(proxyParams.txFee)
         .burnTokens(proxyBoxWithToken.assets[0])
+        .build();
+
+      // Execute transaction and expect it to throw an error
+      expect(() => chain.executeTx(transaction, [giftGiver])).toThrow();
+    });
+
+    /**
+     * @target add gift proxy should fail to refund with incorrect redeemed value
+     * @scenario
+     * - set chain height to >= expirationHeight
+     * - create transaction with only proxy box as input
+     * - create one output box to gift giver address but with incorrect redeemed value
+     * - execute transaction
+     * - check execution throws error
+     * @expected
+     * - transaction execution should throw an error
+     */
+    it('should fail to refund proxy with incorrect redeemed value', () => {
+      // Set chain height to >= expirationHeight to trigger refund scenario
+      chain.setTip(proxyParams.expirationHeight);
+
+      // Create add gift proxy input box including gift token
+      const giftTokenId = '0'.repeat(64);
+      const proxyOutput = buildAddGiftProxyBox(
+        contracts['addGiftProxy'],
+        proxyParams,
+        {
+          creationHeight: 5,
+          value: 100000000000n,
+          tokens: [{ tokenId: giftTokenId, amount: 10n }],
+        },
+      );
+      const proxyBoxWithToken = createMockUtxo(proxyOutput);
+
+      // Create refund box with incorrect redeemed value
+      const refundBoxWithBurntTokens = new OutputBuilder(
+        BigInt(proxyBoxWithToken.value) - 2n * proxyParams.txFee,
+        giftGiver.address.toString(),
+      ).addTokens(proxyBoxWithToken.assets);
+
+      const transaction = new TransactionBuilder(chain.height)
+        .from([proxyBoxWithToken])
+        .to([refundBoxWithBurntTokens])
+        .payFee(proxyParams.txFee * 2n) // pay extra fee to cover the extra value
         .build();
 
       // Execute transaction and expect it to throw an error

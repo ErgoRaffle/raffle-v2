@@ -355,5 +355,48 @@ describe('DonationProxy', () => {
       // Execute transaction and expect it to throw an error
       expect(() => chain.executeTx(transaction, [donator])).toThrow();
     });
+
+    /**
+     * @target donation proxy should fail to refund with incorrect redeemed value
+     * @scenario
+     * - set chain height to >= expirationHeight
+     * - create transaction with only proxy box as input
+     * - create one output box to donator address but with incorrect redeemed value
+     * - execute transaction
+     * - check execution throws error
+     * @expected
+     * - transaction execution should throw an error
+     */
+    it('should fail to refund proxy with incorrect redeemed value', () => {
+      // Set chain height to >= expirationHeight to trigger refund scenario
+      chain.setTip(proxyParams.expirationHeight);
+
+      // Create donation proxy input box including collecting token
+      const tokenGoalParams: DonationProxyParams = {
+        ...proxyParams,
+        requiredTokenId: '0'.repeat(64),
+      };
+      const proxyOutput = buildDonationProxyBox(
+        contracts['donationProxy'],
+        tokenGoalParams,
+        { creationHeight: 5, value: 100000000000n },
+      );
+      const proxyBoxWithToken = createMockUtxo(proxyOutput);
+
+      // Create refund box with incorrect redeemed value
+      const refundBoxWithBurntTokens = new OutputBuilder(
+        BigInt(proxyBoxWithToken.value) - 2n * proxyParams.txFee,
+        donator.address.toString(),
+      ).addTokens(proxyBoxWithToken.assets);
+
+      const transaction = new TransactionBuilder(chain.height)
+        .from([proxyBoxWithToken])
+        .to([refundBoxWithBurntTokens])
+        .payFee(proxyParams.txFee * 2n) // pay extra fee to cover the extra value
+        .build();
+
+      // Execute transaction and expect it to throw an error
+      expect(() => chain.executeTx(transaction, [donator])).toThrow();
+    });
   });
 });

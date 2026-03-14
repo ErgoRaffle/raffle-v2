@@ -62,10 +62,9 @@
     // [Proxy] --> [DonatorAddress]
     sigmaProp(allOf(Coll(
       INPUTS.size == 1,
-      OUTPUTS.size == 2,
       blake2b256(OUTPUTS(0).propositionBytes) == donatorErgoTreeHash,
       OUTPUTS(0).tokens == SELF.tokens,
-      OUTPUTS(1).value <= txFee,
+      OUTPUTS(0).value >= SELF.value - txFee  
     )))
   }
 }

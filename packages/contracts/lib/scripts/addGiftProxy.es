@@ -57,16 +57,17 @@
       gift.R4[Coll[Byte]].get == giftGiverErgoTreeHash,
       gift.R5[Int].get == winnerIndex,
       blake2b256(gift.propositionBytes) == giftScriptHash,
+      gift.tokens.slice(1, gift.tokens.size) == SELF.tokens,
+      gift.value >= SELF.value - txFee,
     )))
   } else {
     // Proxy redeem
     // [Proxy] --> [GiftGiverAddress]
     sigmaProp(allOf(Coll(
       INPUTS.size == 1,
-      OUTPUTS.size == 2,
       blake2b256(OUTPUTS(0).propositionBytes) == giftGiverErgoTreeHash,
       OUTPUTS(0).tokens == SELF.tokens,
-      OUTPUTS(1).value <= txFee,
+      OUTPUTS(0).value >= SELF.value - txFee,
     )))
   }
 }
