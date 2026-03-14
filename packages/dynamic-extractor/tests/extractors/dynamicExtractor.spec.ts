@@ -10,6 +10,7 @@ import {
   sampleBitcoinAddressOther,
   sampleInvalidBitcoinAddress,
   sampleBitcoinTx,
+  sampleBitcoinTxOnlyOther,
   sampleTokenId,
 } from './mocked/dynamic.mock';
 
@@ -96,8 +97,41 @@ describe('DynamicExtractor', () => {
 
   describe('processTransactions', () => {
     /**
+     * @target should skip tx when no vout decodes to a watched address
+     * @dependencies
+     * - db actions
+     * @scenario
+     * - watch BTC only for an address that does not match tx vout (tx vout decodes to different address)
+     * - call processTransactions with that tx
+     * @expected
+     * - getTxOutputRunes not called, storeEntities not called
+     */
+    it(`should skip tx when no vout decodes to a watched address`, async () => {
+      const getTxOutputRunesSpy = vi.spyOn(
+        extractor['runesNetwork'],
+        'getTxOutputRunes',
+      );
+      const storeEntitiesSpy = vi
+        .spyOn(extractor.actions, 'storeEntities')
+        .mockResolvedValue(true);
+
+      // Watch BTC only; tx has no vout decoding to sampleBitcoinAddress (only Other)
+      extractor.addNewAddress(sampleBitcoinAddress, 'btc');
+      const block = { hash: 'block', height: 800000 };
+      const result = await extractor.processTransactions(
+        [sampleBitcoinTxOnlyOther],
+        block,
+      );
+
+      expect(result).toBe(true);
+      expect(getTxOutputRunesSpy).not.toHaveBeenCalled();
+      expect(storeEntitiesSpy).not.toHaveBeenCalled();
+    });
+
+    /**
      * @target should store box with tokenId btc and UTXO value when watching address for btc
      * @dependencies
+     * - db actions
      * @scenario
      * - add (address, 'btc') to watch list; tx vout scriptPubKey decodes to that address
      * - call processTransactions with tx that has vout to that address
@@ -138,8 +172,10 @@ describe('DynamicExtractor', () => {
     /**
      * @target should store box for watched (address, tokenId) when runes network returns matching rune
      * @dependencies
+     * - db actions
+     * - runesNetwork
      * @scenario
-     * - add (address, tokenId) to watch list
+     * - add (address, tokenId) to watch list; tx has vout decoding to that address so passes pre-filter
      * - mock runes network to return one rune for the tx matching address and tokenId
      * - call processTransactions
      * @expected
@@ -155,7 +191,7 @@ describe('DynamicExtractor', () => {
           address: sampleBitcoinAddress,
           runeId: sampleTokenId,
           runeAmount: '100',
-          voutIndex: 0,
+          voutIndex: 1,
         },
       ];
       vi.spyOn(extractor['runesNetwork'], 'getTxOutputRunes').mockResolvedValue(
@@ -181,9 +217,11 @@ describe('DynamicExtractor', () => {
     /**
      * @target should not store rune when runeId does not match watched tokenId
      * @dependencies
+     * - db actions
+     * - runesNetwork
      * @scenario
-     * - add (address, tokenId) to watch list
-     * - mock runes network to return rune with different runeId for same address
+     * - add (address, tokenId) to watch list; tx has vout decoding to that address so passes pre-filter
+     * - mock runes network to return rune with different runeId for that address
      * - call processTransactions
      * @expected
      * - storeEntities not called (rune filtered out)
@@ -200,7 +238,7 @@ describe('DynamicExtractor', () => {
             address: sampleBitcoinAddress,
             runeId: otherRuneId,
             runeAmount: '50',
-            voutIndex: 0,
+            voutIndex: 1,
           },
         ],
       );
@@ -219,8 +257,10 @@ describe('DynamicExtractor', () => {
     /**
      * @target should not store when runes network returns no runes for tx
      * @dependencies
+     * - db actions
+     * - runesNetwork
      * @scenario
-     * - add (address, tokenId) to watch list
+     * - add (address, tokenId) to watch list; tx has vout decoding to that address so passes pre-filter
      * - mock runes network to return empty array
      * - call processTransactions
      * @expected

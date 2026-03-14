@@ -21,7 +21,6 @@ ergo:
 bitcoin:
   network: mainnet
   rpc:
-    url: http://localhost:8332
     timeout: 30
   scannerInterval: 30
   runes:

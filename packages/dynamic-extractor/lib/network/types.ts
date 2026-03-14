@@ -4,7 +4,7 @@
 export interface TxOutputRune {
   /** Receiving address for this rune output */
   address: string;
-  /** Rune/token id (e.g. rune id on Bitcoin) */
+  /** Rune/token id */
   runeId: string;
   /** Amount as string (for large integers) */
   runeAmount: string;

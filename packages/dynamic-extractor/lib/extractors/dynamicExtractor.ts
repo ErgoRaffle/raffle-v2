@@ -58,7 +58,28 @@ export class DynamicExtractor extends AbstractExtractor<
   getId = () => `${this.id}`;
 
   /**
+   * True if at least one tx output decodes to an address in the watch list.
+   * Used to skip transactions that cannot match any watched address.
+   * @param tx - Bitcoin RPC transaction
+   * @returns true if any vout scriptPubKey decodes to a watched address
+   */
+  private hasWatchedOutput = (tx: BitcoinRpcTransaction): boolean => {
+    const vout: BitcoinRpcTxOutput[] = tx.vout ?? [];
+    for (const output of vout) {
+      const address = getAddressFromScriptPubKey(
+        output.scriptPubKey.hex,
+        this.network,
+      );
+      if (address != null && this.addressWatchList.has(address)) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  /**
    * Process a list of Bitcoin transactions in a block and store outputs for watched addresses.
+   * Skips transactions that cannot match any watched address.
    * When tokenId is 'btc' uses UTXO total value (sats); otherwise uses runes network for token amount.
    * @param txs - List of Bitcoin transactions in the block
    * @param block - Block info (hash, height)
@@ -71,6 +92,10 @@ export class DynamicExtractor extends AbstractExtractor<
     const boxesToInsert: DynamicBoxInterface[] = [];
 
     for (const tx of txs) {
+      if (!this.hasWatchedOutput(tx)) {
+        this.logger.trace(`tx ${tx.txid} does not match any watched address`);
+        continue;
+      }
       // BTC: watched addresses with tokenId 'btc' — use UTXO value directly from vout
       const vout: BitcoinRpcTxOutput[] = tx.vout ?? [];
       for (const output of vout) {
@@ -78,7 +103,12 @@ export class DynamicExtractor extends AbstractExtractor<
           output.scriptPubKey.hex,
           this.network,
         );
-        if (!address) continue;
+        if (!address) {
+          this.logger.debug(
+            `address can not be derived from scriptPubKey for tx ${tx.txid}, output scriptPubKey hex: ${output.scriptPubKey.hex}`,
+          );
+          continue;
+        }
         const watchedTokenId = this.addressWatchList.get(address);
         if (watchedTokenId === BTC_TOKEN_ID) {
           const value = output.value ?? 0;
@@ -104,7 +134,12 @@ export class DynamicExtractor extends AbstractExtractor<
           const watchedTokenId = this.addressWatchList.get(rune.address);
           if (watchedTokenId == null || watchedTokenId === BTC_TOKEN_ID)
             continue;
-          if (watchedTokenId !== rune.runeId) continue;
+          if (watchedTokenId !== rune.runeId) {
+            this.logger.debug(
+              `rune ${rune.runeId} does not match watched tokenId ${watchedTokenId}`,
+            );
+            continue;
+          }
           boxesToInsert.push({
             identifier: `${tx.txid}:${rune.voutIndex}`,
             txId: tx.txid,
@@ -183,7 +218,6 @@ export class DynamicExtractor extends AbstractExtractor<
 
   /**
    * dynamic box extractor does not need to initialize boxes
-   * @returns void
    */
   initializeData = async () => {
     this.logger.info(

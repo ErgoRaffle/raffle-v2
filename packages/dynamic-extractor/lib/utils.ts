@@ -1,9 +1,11 @@
 import * as bitcoin from 'bitcoinjs-lib';
+import * as ecc from 'tiny-secp256k1';
 
+bitcoin.initEccLib(ecc);
 /**
  * Derive Bitcoin address from RPC scriptPubKey hex.
- * @param scriptPubKeyHex - scriptPubKey.hex from BitcoinRpcTxOutput
- * @param network - Optional network (default mainnet)
+ * @param scriptPubKeyHex
+ * @param network
  * @returns Address string or null if script cannot be decoded to a standard address
  */
 export function getAddressFromScriptPubKey(
