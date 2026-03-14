@@ -19,6 +19,9 @@ export const scriptList = [
   'ticketRedeem',
   'raffleDetails',
   'safePay',
+  'creationProxy',
+  'donationProxy',
+  'addGiftProxy',
 ];
 
 export const scriptsRequireAddresses: {
@@ -72,6 +75,13 @@ export const scriptsRequireAddresses: {
     activeRaffle: 'ACTIVE_RAFFLE_SCRIPT_HASH_B64',
   },
   safePay: {},
+  creationProxy: {},
+  donationProxy: {
+    ticket: 'TICKET_SCRIPT_HASH_B64',
+  },
+  addGiftProxy: {
+    gift: 'GIFT_SCRIPT_HASH_B64',
+  },
 };
 
 export const defaultScriptsVariables: {

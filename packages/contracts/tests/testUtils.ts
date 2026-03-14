@@ -240,6 +240,15 @@ export const initialContracts = (
   ticket.set('TICKET_EXPIRATION_HEIGHT', defaultTicketExpirationHeight);
   scriptsVars.set('ticket', ticket);
 
+  const creationProxy = scriptsVars.get('creationProxy') || new Map();
+  creationProxy.set('SERVICE_NFT_B64', defaultRaffleNftIdB64);
+  creationProxy.set('RAFFLE_LICENSE_B64', defaultLicenseTokenIdB64);
+  scriptsVars.set('creationProxy', creationProxy);
+
+  const donationProxy = scriptsVars.get('donationProxy') || new Map();
+  donationProxy.set('RAFFLE_LICENSE_B64', defaultLicenseTokenIdB64);
+  scriptsVars.set('donationProxy', donationProxy);
+
   return compileAll(scriptsVars as ContextVarsType, true, trueScripts);
 };
 
