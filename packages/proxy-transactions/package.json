@@ -1,0 +1,32 @@
+{
+  "name": "@ergo-raffle/proxy-transactions",
+  "version": "0.0.0",
+  "description": "Build and manage proxy transactions",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ErgoRaffle/raffle-v2"
+  },
+  "license": "MIT",
+  "author": "Ergo Raffle Team",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsc --build tsconfig.build.json",
+    "clean": "rimraf dist && rimraf tsconfig.build.tsbuildinfo",
+    "lint": "eslint --fix . && npm run prettify",
+    "lint:check": "eslint . && npm run prettify:check",
+    "prettify": "prettier --write . --ignore-path ../../.gitignore",
+    "prettify:check": "prettier --check . --ignore-path ../../.gitignore",
+    "release": "npm run clean && npm run build && npm publish --access public",
+    "type-check": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=22.18.0",
+    "npm": "11.6.2"
+  }
+}
