@@ -9,9 +9,9 @@ import {
   SLong,
   SByte,
   TokenAmount,
+  ErgoUnsignedInput,
 } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
-import { Buffer } from 'buffer';
 
 import { raffleInfo } from '@ergo-raffle/contracts';
 
@@ -30,6 +30,7 @@ export class AddGiftProxyTxBuilder {
   private expirationHeight?: number;
   private raffleDeadline?: number;
   private chainHeight?: number;
+  private giftValue?: bigint;
   private giftTokens?: TokenAmount<bigint>[];
 
   /**
@@ -135,6 +136,16 @@ export class AddGiftProxyTxBuilder {
   };
 
   /**
+   * Set the gift value.
+   * @param value - Gift value in nanoERG
+   * @returns this builder instance
+   */
+  setGiftValue = (value: bigint): this => {
+    this.giftValue = value;
+    return this;
+  };
+
+  /**
    * Set current chain height.
    * @param height - Current chain height
    * @returns this builder instance
@@ -158,6 +169,9 @@ export class AddGiftProxyTxBuilder {
     if (!this.expirationHeight) throw new Error('Expiration height not set');
     if (!this.raffleDeadline) throw new Error('Raffle deadline not set');
     if (!this.chainHeight) throw new Error('Chain height not set');
+    if (!this.giftValue) throw new Error('Gift value not set');
+    if (this.giftValue < 4n * this.txFee)
+      throw new Error('Gift value is too low, should be at least 4 * txFee');
   };
 
   /**
@@ -165,14 +179,12 @@ export class AddGiftProxyTxBuilder {
    * @returns OutputBuilder instance for the proxy box
    */
   private buildAddGiftProxyBox = (): OutputBuilder => {
-    const value = this.txFee! * 4n;
-
     const giftGiverHash = blake2b256(
       Buffer.from(this.giftGiverErgoTree!, 'hex'),
     );
 
     let out = new OutputBuilder(
-      value,
+      this.giftValue!,
       ErgoAddress.fromBase58(raffleInfo.addresses.addGiftProxy).ergoTree,
     ).setAdditionalRegisters({
       R4: SColl(SLong, [
@@ -198,10 +210,15 @@ export class AddGiftProxyTxBuilder {
   build = (): ErgoUnsignedTransaction => {
     this.validate();
 
+    // The first input is the fee box that contains the gift giver ErgoTree.
+    const firstInput = new ErgoUnsignedInput(this.feeBoxes[0]!);
+    firstInput.setContextExtension({
+      0: SColl(SByte, Array.from(Buffer.from(this.giftGiverErgoTree!, 'hex'))),
+    });
     const proxyBox = this.buildAddGiftProxyBox();
 
     const tx = new TransactionBuilder(this.chainHeight!)
-      .from(this.feeBoxes)
+      .from([firstInput, ...this.feeBoxes.slice(1)])
       .to([proxyBox])
       .configureSelector((selector) => {
         selector.defineStrategy((inputs) => inputs);

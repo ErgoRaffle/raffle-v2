@@ -9,9 +9,9 @@ import {
   SLong,
   SInt,
   SByte,
+  ErgoUnsignedInput,
 } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
-import { Buffer } from 'buffer';
 
 import { raffleInfo } from '@ergo-raffle/contracts';
 
@@ -75,6 +75,16 @@ export class CreationProxyTxBuilder {
    */
   setCreatorErgoTree = (ergoTree: string): this => {
     this.creatorErgoTree = ergoTree;
+    return this;
+  };
+
+  /**
+   * Set the implementer address.
+   * @param address - Implementer base58 address
+   * @returns this builder instance
+   */
+  setImplementerAddress = (address: string): this => {
+    this.implementerErgoTree = ErgoAddress.fromBase58(address).ergoTree;
     return this;
   };
 
@@ -199,7 +209,7 @@ export class CreationProxyTxBuilder {
   };
 
   /**
-   * Set the collecting token id for token-goal raffles.
+   * Set the collecting token id for token-goal raffles, for erg-goal raffle don't set this.
    * @param tokenId - Collecting token id in hex format
    * @returns this builder instance
    */
@@ -317,14 +327,14 @@ export class CreationProxyTxBuilder {
   };
 
   /**
-   * Convert a bigint into a big-endian Uint8Array.
+   * Convert a bigint into an Uint8Array.
    * @param num - Bigint value to convert
    * @returns Uint8Array representation
    */
   private bigIntToUint8Array = (num: bigint): Uint8Array => {
-    const hexString = num.toString(16);
-    const padded = hexString.length % 2 === 0 ? hexString : `0${hexString}`;
-    return Buffer.from(padded, 'hex');
+    const b = new ArrayBuffer(8);
+    new DataView(b).setBigUint64(0, num);
+    return new Uint8Array(b);
   };
 
   /**
@@ -334,10 +344,19 @@ export class CreationProxyTxBuilder {
   build = (): ErgoUnsignedTransaction => {
     this.validate();
 
+    // The first input is the fee box that contains the winners percentage list and the implementer and creator ErgoTrees.
+    const firstInput = new ErgoUnsignedInput(this.feeBoxes[0]!);
+    firstInput.setContextExtension({
+      0: SColl(SLong, this.winnersPercentList!),
+      1: SColl(SColl(SByte), [
+        Array.from(Buffer.from(this.implementerErgoTree!, 'hex')),
+        Array.from(Buffer.from(this.creatorErgoTree!, 'hex')),
+      ]),
+    });
     const proxyBox = this.buildCreationProxyBox();
 
     const tx = new TransactionBuilder(this.chainHeight!)
-      .from(this.feeBoxes)
+      .from([firstInput, ...this.feeBoxes.slice(1)])
       .to([proxyBox])
       .configureSelector((selector) => {
         selector.defineStrategy((inputs) => inputs);

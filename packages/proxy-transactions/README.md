@@ -7,7 +7,7 @@
 
 ## Introduction
 
-Build and manages proxy transactions
+Build and manage proxy transactions
 
 ## Installation
 

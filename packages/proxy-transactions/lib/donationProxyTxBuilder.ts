@@ -8,9 +8,9 @@ import {
   SColl,
   SLong,
   SByte,
+  ErgoUnsignedInput,
 } from '@fleet-sdk/core';
 import { blake2b256 } from '@fleet-sdk/crypto';
-import { Buffer } from 'buffer';
 
 import { raffleInfo } from '@ergo-raffle/contracts';
 
@@ -29,7 +29,7 @@ export class DonationProxyTxBuilder {
   private txFee?: bigint;
   private expirationHeight?: number;
   private raffleDeadline?: number;
-  private requiredTokenId?: string;
+  private collectingTokenId?: string;
   private chainHeight?: number;
 
   /**
@@ -124,12 +124,12 @@ export class DonationProxyTxBuilder {
   };
 
   /**
-   * Set the required token id for token-goal donations.
-   * @param tokenId - Required token id in hex format
+   * Set the collecting token id for token-goal donations, for erg-goal donation don't set this.
+   * @param tokenId - Collecting token id in hex format
    * @returns this builder instance
    */
-  setRequiredTokenId = (tokenId: string): this => {
-    this.requiredTokenId = tokenId;
+  setCollectingTokenId = (tokenId: string): this => {
+    this.collectingTokenId = tokenId;
     return this;
   };
 
@@ -166,15 +166,15 @@ export class DonationProxyTxBuilder {
    */
   private buildDonationProxyBox = (): OutputBuilder => {
     const value =
-      this.requiredTokenId != null
+      this.collectingTokenId != null
         ? this.txFee! * 4n
         : this.ticketPrice! * this.ticketCount! + this.txFee! * 4n;
 
     const tokens =
-      this.requiredTokenId != null
+      this.collectingTokenId != null
         ? [
             {
-              tokenId: this.requiredTokenId,
+              tokenId: this.collectingTokenId,
               amount: this.ticketPrice! * this.ticketCount!,
             },
           ]
@@ -209,10 +209,15 @@ export class DonationProxyTxBuilder {
   build = (): ErgoUnsignedTransaction => {
     this.validate();
 
+    // The first input is the fee box that contains the donator ErgoTree.
+    const firstInput = new ErgoUnsignedInput(this.feeBoxes[0]!);
+    firstInput.setContextExtension({
+      0: SColl(SByte, Array.from(Buffer.from(this.donatorErgoTree!, 'hex'))),
+    });
     const proxyBox = this.buildDonationProxyBox();
 
     const tx = new TransactionBuilder(this.chainHeight!)
-      .from(this.feeBoxes)
+      .from([firstInput, ...this.feeBoxes.slice(1)])
       .to([proxyBox])
       .configureSelector((selector) => {
         selector.defineStrategy((inputs) => inputs);
