@@ -1,0 +1,215 @@
+import {
+  TransactionBuilder,
+  Box,
+  Amount,
+  ErgoUnsignedTransaction,
+  OutputBuilder,
+  ErgoAddress,
+  SColl,
+  SLong,
+  SByte,
+  TokenAmount,
+} from '@fleet-sdk/core';
+import { blake2b256 } from '@fleet-sdk/crypto';
+import { Buffer } from 'buffer';
+
+import { raffleInfo } from '@ergo-raffle/contracts';
+
+/**
+ * Builder class for add-gift proxy funding transactions.
+ */
+export class AddGiftProxyTxBuilder {
+  private feeBoxes: Box<Amount>[] = [];
+
+  private giftGiverAddress?: string;
+  private giftGiverErgoTree?: string;
+
+  private raffleId?: string;
+  private winnerIndex?: number;
+  private txFee?: bigint;
+  private expirationHeight?: number;
+  private raffleDeadline?: number;
+  private chainHeight?: number;
+  private giftTokens?: TokenAmount<bigint>[];
+
+  /**
+   * Set input fee boxes (funding boxes) for the transaction.
+   * @param boxes - Funding boxes used as transaction inputs
+   * @returns this builder instance
+   */
+  setFeeBoxes = (boxes: Box<Amount>[]): this => {
+    this.feeBoxes = boxes;
+    return this;
+  };
+
+  /**
+   * Add a single fee box.
+   * @param box - Box to add as funding input
+   * @returns this builder instance
+   */
+  addFeeBox = (box: Box<Amount>): this => {
+    this.feeBoxes.push(box);
+    return this;
+  };
+
+  /**
+   * Set the gift giver address (also used as change address).
+   * @param address - Gift giver base58 address
+   * @returns this builder instance
+   */
+  setGiftGiverAddress = (address: string): this => {
+    this.giftGiverAddress = address;
+    this.giftGiverErgoTree = ErgoAddress.fromBase58(address).ergoTree;
+    return this;
+  };
+
+  /**
+   * Set the raffle id.
+   * @param raffleId - Raffle identifier (hex string)
+   * @returns this builder instance
+   */
+  setRaffleId = (raffleId: string): this => {
+    this.raffleId = raffleId;
+    return this;
+  };
+
+  /**
+   * Set the winner index.
+   * @param index - Winner index
+   * @returns this builder instance
+   */
+  setWinnerIndex = (index: number): this => {
+    this.winnerIndex = index;
+    return this;
+  };
+
+  /**
+   * Set the transaction fee.
+   * @param fee - Miner fee in nanoERG
+   * @returns this builder instance
+   */
+  setTxFee = (fee: bigint): this => {
+    this.txFee = fee;
+    return this;
+  };
+
+  /**
+   * Set the proxy expiration height.
+   * @param height - Expiration height
+   * @returns this builder instance
+   */
+  setExpirationHeight = (height: number): this => {
+    this.expirationHeight = height;
+    return this;
+  };
+
+  /**
+   * Set the raffle deadline height.
+   * @param height - Raffle deadline height
+   * @returns this builder instance
+   */
+  setRaffleDeadline = (height: number): this => {
+    this.raffleDeadline = height;
+    return this;
+  };
+
+  /**
+   * Set gift tokens to be attached to the proxy box.
+   * @param tokens - List of gift tokens
+   * @returns this builder instance
+   */
+  setGiftTokens = (tokens: TokenAmount<bigint>[]): this => {
+    this.giftTokens = tokens;
+    return this;
+  };
+
+  /**
+   * Add a single gift token.
+   * @param token - Gift token to add
+   * @returns this builder instance
+   */
+  addGiftToken = (token: TokenAmount<bigint>): this => {
+    if (!this.giftTokens) this.giftTokens = [];
+    this.giftTokens.push(token);
+    return this;
+  };
+
+  /**
+   * Set current chain height.
+   * @param height - Current chain height
+   * @returns this builder instance
+   */
+  setChainHeight = (height: number): this => {
+    this.chainHeight = height;
+    return this;
+  };
+
+  /**
+   * Validate that all required parameters are set.
+   * @throws Error if any required parameter is missing
+   */
+  private validate = (): void => {
+    if (this.feeBoxes.length === 0) throw new Error('Fee boxes not set');
+    if (!this.giftGiverErgoTree) throw new Error('Gift giver ErgoTree not set');
+    if (!this.giftGiverAddress) throw new Error('Gift giver address not set');
+    if (!this.raffleId) throw new Error('Raffle id not set');
+    if (this.winnerIndex == null) throw new Error('Winner index not set');
+    if (!this.txFee) throw new Error('Transaction fee not set');
+    if (!this.expirationHeight) throw new Error('Expiration height not set');
+    if (!this.raffleDeadline) throw new Error('Raffle deadline not set');
+    if (!this.chainHeight) throw new Error('Chain height not set');
+  };
+
+  /**
+   * Build the add-gift proxy output box.
+   * @returns OutputBuilder instance for the proxy box
+   */
+  private buildAddGiftProxyBox = (): OutputBuilder => {
+    const value = this.txFee! * 4n;
+
+    const giftGiverHash = blake2b256(
+      Buffer.from(this.giftGiverErgoTree!, 'hex'),
+    );
+
+    let out = new OutputBuilder(
+      value,
+      ErgoAddress.fromBase58(raffleInfo.addresses.addGiftProxy).ergoTree,
+    ).setAdditionalRegisters({
+      R4: SColl(SLong, [
+        BigInt(this.expirationHeight!),
+        BigInt(this.raffleDeadline!),
+        BigInt(this.winnerIndex!),
+        this.txFee!,
+      ]).toHex(),
+      R5: SColl(SColl(SByte), [
+        Array.from(Buffer.from(this.raffleId!, 'hex')),
+        Array.from(giftGiverHash),
+      ]).toHex(),
+    });
+
+    if (this.giftTokens?.length) out = out.addTokens(this.giftTokens);
+    return out;
+  };
+
+  /**
+   * Build the add-gift proxy funding transaction.
+   * @returns ErgoUnsignedTransaction instance
+   */
+  build = (): ErgoUnsignedTransaction => {
+    this.validate();
+
+    const proxyBox = this.buildAddGiftProxyBox();
+
+    const tx = new TransactionBuilder(this.chainHeight!)
+      .from(this.feeBoxes)
+      .to([proxyBox])
+      .configureSelector((selector) => {
+        selector.defineStrategy((inputs) => inputs);
+      })
+      .payFee(this.txFee!)
+      .sendChangeTo(this.giftGiverAddress!)
+      .build();
+
+    return tx;
+  };
+}
