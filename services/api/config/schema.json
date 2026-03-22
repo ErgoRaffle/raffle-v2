@@ -1,0 +1,165 @@
+{
+  "logs": {
+    "type": "array",
+    "default": [
+      { "type": "console" },
+      {
+        "type": "file",
+        "path": "./logs/",
+        "maxSize": "20m",
+        "maxFiles": "14d"
+      }
+    ],
+    "items": {
+      "type": "object",
+      "children": {
+        "type": {
+          "type": "string",
+          "description": "options: file, console, loki",
+          "default": "file",
+          "validations": [
+            { "required": true, "error": "log type must be specified" },
+            { "choices": ["file", "console", "loki"] }
+          ]
+        },
+        "maxSize": {
+          "type": "string",
+          "validations": [
+            {
+              "required": true,
+              "error": "maxSize for file log type must be specified",
+              "when": { "path": "logs.type", "value": "file" }
+            }
+          ]
+        },
+        "maxFiles": {
+          "type": "string",
+          "validations": [
+            {
+              "required": true,
+              "error": "maxFiles for file log type must be specified",
+              "when": { "path": "logs.type", "value": "file" }
+            }
+          ]
+        },
+        "path": {
+          "type": "string",
+          "validations": [
+            {
+              "required": true,
+              "error": "path for file log type must be specified",
+              "when": { "path": "logs.type", "value": "file" }
+            }
+          ]
+        },
+        "level": {
+          "type": "string",
+          "default": "info",
+          "validations": [
+            { "required": true, "error": "log level must be specified" }
+          ]
+        },
+        "serviceName": {
+          "type": "string",
+          "validations": [
+            {
+              "required": true,
+              "error": "Service-Name for the \"loki\" log type must be specified",
+              "when": { "path": "logs.type", "value": "loki" }
+            }
+          ]
+        },
+        "host": {
+          "type": "string",
+          "validations": [
+            {
+              "required": true,
+              "error": "host for the \"loki\" log type must be specified",
+              "when": { "path": "logs.type", "value": "loki" }
+            }
+          ]
+        },
+        "basicAuth": { "type": "string" }
+      }
+    }
+  },
+  "database": {
+    "type": "object",
+    "children": {
+      "type": {
+        "type": "string",
+        "default": "postgres",
+        "validations": [
+          { "required": true, "error": "database type must be specified" },
+          { "choices": ["sqlite", "postgres"] }
+        ]
+      },
+      "host": {
+        "type": "string",
+        "default": "localhost",
+        "validations": [
+          {
+            "required": true,
+            "when": { "path": "database.type", "value": "postgres" },
+            "error": "host for the \"postgres\" database address must be specified"
+          }
+        ]
+      },
+      "port": {
+        "type": "number",
+        "default": 5432,
+        "validations": [
+          {
+            "required": true,
+            "when": { "path": "database.type", "value": "postgres" },
+            "error": "port for the \"postgres\" database must be specified"
+          }
+        ]
+      },
+      "username": { "type": "string", "default": "postgres" },
+      "password": { "type": "string", "default": "" },
+      "name": {
+        "type": "string",
+        "default": "raffle_v2",
+        "validations": [
+          {
+            "required": true,
+            "when": { "path": "database.type", "value": "postgres" },
+            "error": "postgres database name is required"
+          }
+        ]
+      },
+      "path": {
+        "type": "string",
+        "validations": [
+          {
+            "required": true,
+            "when": { "path": "database.type", "value": "sqlite" },
+            "error": "sqlite database path is required"
+          }
+        ]
+      }
+    }
+  },
+  "api": {
+    "type": "object",
+    "children": {
+      "host": {
+        "type": "string",
+        "default": "localhost",
+        "description": "API server host",
+        "validations": [
+          { "required": true, "error": "API host must be specified" }
+        ]
+      },
+      "port": {
+        "type": "number",
+        "default": 8800,
+        "description": "API server port",
+        "validations": [
+          { "required": true, "error": "API port must be specified" }
+        ]
+      }
+    }
+  }
+}
