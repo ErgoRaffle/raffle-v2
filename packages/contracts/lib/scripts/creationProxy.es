@@ -15,10 +15,10 @@
   //       ]
   //
   //   R5: Coll[Coll[Byte]] = [
-  //         implementorErgoTreeHash,
-  //         creatorErgoTreeHash,
+  //         implementerErgoTreeHash,
+  //         organizerErgoTreeHash,
+  //         projectErgoTreeHash,
   //         winnersPercentListHash,
-  //         collectingTokenId (empty if ERG goal)
   //       ]
   //
   //   R6: Coll[Coll[Byte]] = [
@@ -27,14 +27,11 @@
   //         pictures (optional, from index 2 onward)
   //       ]
   //
-  //   R7: Coll[Int] = [
-  //         winnersCount,
-  //         isErgGoal
-  //       ]
+  //   R7: Int = winnersCount
   //
   // Context:
   //   C0: Coll[Long]: WinnersPercentList (in raffle creation tx)
-  //   C1: Coll[Coll[Byte]]: [ImplementerErgoTree, CreatorErgoTree]
+  //   C1: Coll[Coll[Byte]]: [ImplementerErgoTree, OrganizerErgoTree, ProjectErgoTree]
   //
   // Spent in 2 transactions:
   //   - New raffle creation
@@ -54,13 +51,12 @@
   val goal = SELF.R4[Coll[Long]].get(4)
   val txFee = SELF.R4[Coll[Long]].get(5)
 
-  val implementorErgoTreeHash = SELF.R5[Coll[Coll[Byte]]].get(0)
-  val creatorErgoTreeHash = SELF.R5[Coll[Coll[Byte]]].get(1)
-  val winnersPercentListHash = SELF.R5[Coll[Coll[Byte]]].get(2)
-  val collectingTokenId = SELF.R5[Coll[Coll[Byte]]].get(3)
+  val implementerErgoTreeHash = SELF.R5[Coll[Coll[Byte]]].get(0)
+  val organizerErgoTreeHash = SELF.R5[Coll[Coll[Byte]]].get(1)
+  val projectErgoTreeHash = SELF.R5[Coll[Coll[Byte]]].get(2)
+  val winnersPercentListHash = SELF.R5[Coll[Coll[Byte]]].get(3)
 
-  val winnersCount = SELF.R7[Coll[Int]].get(0)
-  val isErgGoal = SELF.R7[Coll[Int]].get(1) == 1
+  val winnersCount = SELF.R7[Int].get
 
 
   if(HEIGHT < expirationHeight && HEIGHT < raffleDeadline) {  
@@ -75,7 +71,7 @@
 
       // Correct InactiveRaffle format
       // R4: [WinnersPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, Deadline, TxFee]
-      // R5: [ServiceErgoTreeHash, ImplementerErgoTreeHash, CreatorErgoTreeHash]
+      // R5: [ServiceErgoTreeHash, ImplementerErgoTreeHash, ProjectErgoTreeHash]
       // R6: [Name, Description, Pictures(optional)]
       // R7: [TicketId, WinnersPercentListHash]
       // R8: WinnersCount
@@ -84,13 +80,13 @@
       inactiveRaffle.R4[Coll[Long]].get(3) == ticketPrice,
       inactiveRaffle.R4[Coll[Long]].get(4) == goal,
       inactiveRaffle.R4[Coll[Long]].get(5) == raffleDeadline,
-      inactiveRaffle.R5[Coll[Coll[Byte]]].get(1) == implementorErgoTreeHash,
-      inactiveRaffle.R5[Coll[Coll[Byte]]].get(2) == creatorErgoTreeHash,
+      inactiveRaffle.R5[Coll[Coll[Byte]]].get(1) == implementerErgoTreeHash,
+      inactiveRaffle.R5[Coll[Coll[Byte]]].get(2) == projectErgoTreeHash,
       inactiveRaffle.R6[Coll[Coll[Byte]]].get == SELF.R6[Coll[Coll[Byte]]].get,
       inactiveRaffle.R7[Coll[Coll[Byte]]].get(1) == winnersPercentListHash,
       inactiveRaffle.R8[Int].get == winnersCount,
-      if(!isErgGoal){
-        inactiveRaffle.tokens(1)._1 == collectingTokenId
+      if(SELF.tokens.size >= 1){
+        inactiveRaffle.tokens(1) == SELF.tokens(0)
       } else { true },
     )))
   } else {
@@ -99,7 +95,7 @@
     sigmaProp(allOf(Coll(
       INPUTS.size == 1,
       OUTPUTS.size == 2,
-      blake2b256(OUTPUTS(0).propositionBytes) == creatorErgoTreeHash,
+      blake2b256(OUTPUTS(0).propositionBytes) == organizerErgoTreeHash,
       OUTPUTS(0).tokens == SELF.tokens,
       OUTPUTS(1).value <= txFee,
     )))

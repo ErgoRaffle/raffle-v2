@@ -14,9 +14,10 @@ import { createMockUtxo, CustomMockChain } from './testUtils';
 
 describe('CreationProxy', () => {
   let chain: CustomMockChain;
-  let creator: KeyedMockChainParty;
+  let organizer: KeyedMockChainParty;
   let service: KeyedMockChainParty;
   let implementer: KeyedMockChainParty;
+  let project: KeyedMockChainParty;
   let proxyBox: Box<Amount>;
   let proxyParams: CreationProxyParams;
   let contracts: { [key: string]: string };
@@ -27,7 +28,8 @@ describe('CreationProxy', () => {
     chain.setTip(100);
 
     service = chain.newParty('service');
-    creator = chain.newParty('creator');
+    organizer = chain.newParty('organizer');
+    project = chain.newParty('project');
     implementer = chain.newParty('implementer');
 
     contracts = initialContracts();
@@ -48,11 +50,14 @@ describe('CreationProxy', () => {
       goal: 1000n,
       winnersPercent: Number(winnersPercent),
       txFee: 1_000_000n,
-      implementorErgoTreeHash: Buffer.from(
+      implementerErgoTreeHash: Buffer.from(
         blake2b256(Buffer.from(implementer.ergoTree, 'hex')),
       ).toString('hex'),
-      creatorErgoTreeHash: Buffer.from(
-        blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+      organizerErgoTreeHash: Buffer.from(
+        blake2b256(Buffer.from(organizer.ergoTree, 'hex')),
+      ).toString('hex'),
+      projectErgoTreeHash: Buffer.from(
+        blake2b256(Buffer.from(project.ergoTree, 'hex')),
       ).toString('hex'),
       winnerCount,
       winnersPercentList,
@@ -88,7 +93,8 @@ describe('CreationProxy', () => {
       createRaffleBuilder = new CreationTxBuilder()
         .setServiceBox(serviceBox)
         .setFeeBoxes([proxyBox])
-        .setCreatorAddress(creator.address.toString())
+        .setOrganizerAddress(organizer.address.toString())
+        .setProjectErgoTree(project.ergoTree)
         .setImplementerErgoTree(implementer.ergoTree)
         .setWinnersCount(proxyParams.winnerCount)
         .setDeadline(BigInt(proxyParams.raffleDeadline))
@@ -191,11 +197,25 @@ describe('CreationProxy', () => {
       ],
       [
         'implementerErgoTreeHash',
-        (b) => b.setImplementerErgoTree(creator.ergoTree),
+        (b) => b.setImplementerErgoTree(organizer.ergoTree),
       ],
       [
-        'creatorErgoTreeHash',
-        (b) => b.setCreatorAddress(implementer.address.toString()),
+        'projectErgoTreeHash',
+        (b) =>
+          b.setFeeBoxes([
+            createMockUtxo(
+              buildCreationProxyBox(
+                contracts['creationProxy'],
+                {
+                  ...proxyParams,
+                  projectErgoTreeHash: Buffer.from(
+                    blake2b256(Buffer.from(implementer.ergoTree, 'hex')),
+                  ).toString('hex'),
+                },
+                { creationHeight: 5 },
+              ),
+            ),
+          ]),
       ],
       ['name', (b) => b.setRaffleName('Wrong Name')],
       ['description', (b) => b.setRaffleDescription('Wrong Description')],
@@ -254,12 +274,12 @@ describe('CreationProxy', () => {
   });
 
   describe('refund transaction', () => {
-    let creatorRefundBox: OutputBuilder;
+    let organizerRefundBox: OutputBuilder;
     beforeEach(() => {
-      // create creator refund box with all tokens from proxy box
-      creatorRefundBox = new OutputBuilder(
+      // create organizer refund box with all tokens from proxy box
+      organizerRefundBox = new OutputBuilder(
         BigInt(proxyBox.value) - proxyParams.txFee,
-        creator.address.toString(),
+        organizer.address.toString(),
       ).addTokens(
         proxyBox.assets.map((asset) => ({
           tokenId: asset.tokenId,
@@ -284,14 +304,14 @@ describe('CreationProxy', () => {
       // expirationHeight is chain.height + 100 = 200
       chain.setTip(proxyParams.expirationHeight);
 
-      // [Proxy] --> [CreatorRefund]
+      // [Proxy] --> [OrganizerRefund]
       const transaction = new TransactionBuilder(chain.height)
         .from([proxyBox])
-        .to([creatorRefundBox])
+        .to([organizerRefundBox])
         .payFee(proxyParams.txFee)
         .build();
       // Execute transaction
-      const res = chain.executeTx(transaction, [creator]);
+      const res = chain.executeTx(transaction, [organizer]);
 
       // Check execution result
       expect(res).toBeTruthy();
@@ -314,15 +334,15 @@ describe('CreationProxy', () => {
       // Set to 150 which is < 200 and < 1100
       chain.setTip(150);
 
-      // [Proxy] --> [CreatorRefund]
+      // [Proxy] --> [OrganizerRefund]
       const transaction = new TransactionBuilder(chain.height)
         .from([proxyBox])
-        .to([creatorRefundBox])
+        .to([organizerRefundBox])
         .payFee(proxyParams.txFee)
         .build();
 
       // Execute transaction and expect it to throw an error
-      expect(() => chain.executeTx(transaction, [creator])).toThrow();
+      expect(() => chain.executeTx(transaction, [organizer])).toThrow();
     });
 
     /**
@@ -330,7 +350,7 @@ describe('CreationProxy', () => {
      * @scenario
      * - set chain height to >= expirationHeight
      * - create transaction with only proxy box as input
-     * - create one output box to wrong address (implementer instead of creator) with all tokens
+     * - create one output box to wrong address (implementer instead of organizer) with all tokens
      * - execute transaction
      * - check execution throws error
      * @expected
@@ -340,7 +360,7 @@ describe('CreationProxy', () => {
       // Set chain height to >= expirationHeight to trigger refund scenario
       chain.setTip(proxyParams.expirationHeight);
 
-      // Create refund box with wrong recipient address (implementer instead of creator)
+      // Create refund box with wrong recipient address (implementer instead of organizer)
       const wrongRecipientRefundBox = new OutputBuilder(
         BigInt(proxyBox.value) - proxyParams.txFee,
         implementer.address.toString(),
@@ -359,7 +379,7 @@ describe('CreationProxy', () => {
         .build();
 
       // Execute transaction and expect it to throw an error
-      expect(() => chain.executeTx(transaction, [creator])).toThrow();
+      expect(() => chain.executeTx(transaction, [organizer])).toThrow();
     });
 
     /**
@@ -391,7 +411,7 @@ describe('CreationProxy', () => {
       // Create refund box with missing tokens (simulating burnt tokens)
       const refundBoxWithBurntTokens = new OutputBuilder(
         BigInt(proxyBoxWithToken.value) - proxyParams.txFee,
-        creator.address.toString(),
+        organizer.address.toString(),
       );
 
       const transaction = new TransactionBuilder(chain.height)
@@ -402,7 +422,7 @@ describe('CreationProxy', () => {
         .build();
 
       // Execute transaction and expect it to throw an error
-      expect(() => chain.executeTx(transaction, [creator])).toThrow();
+      expect(() => chain.executeTx(transaction, [organizer])).toThrow();
     });
   });
 });

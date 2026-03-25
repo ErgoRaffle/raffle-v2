@@ -14,7 +14,7 @@ import * as testUtils from '../testUtils';
 interface RaffleGiftRedeemTestInterface {
   boxFactory: testUtils.RaffleBoxFactory;
   someoneWallet: KeyedMockChainParty;
-  creator: KeyedMockChainParty;
+  giftGiverAddress: KeyedMockChainParty;
   winnerBox: ErgoUnsignedInput;
   giftRedeemBox: ErgoUnsignedInput;
   giftRedeemBoxForTicketRedeemBox: ErgoUnsignedInput;
@@ -47,10 +47,11 @@ const provideRaffleGiftRedeemTest = (collectingToken?: TokenAmount<bigint>) => {
     ) as ScriptNamesType[],
   );
   boxFactory.chain.setTip(100);
-  const { creator, someone } = boxFactory.createPartners({
-    creator: testUtils.TestConstants.CREATOR_DEFAULT_BALANCE,
-    someone: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
-  });
+  const { giftgiveraddress: giftGiverAddress, someone } =
+    boxFactory.createPartners({
+      giftGiverAddress: testUtils.TestConstants.ORGANIZER_DEFAULT_BALANCE,
+      someone: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    });
   someone.addBalance({
     tokens: [{ tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 100n }],
   });
@@ -122,7 +123,7 @@ const provideRaffleGiftRedeemTest = (collectingToken?: TokenAmount<bigint>) => {
   return {
     boxFactory: boxFactory,
     someoneWallet: someone,
-    creator: creator,
+    giftGiverAddress: giftGiverAddress,
     winnerBox: winnerBox,
     giftRedeemBox: giftRedeemBox,
     giftRedeemBoxForTicketRedeemBox: giftRedeemBoxForTicketRedeemBox,

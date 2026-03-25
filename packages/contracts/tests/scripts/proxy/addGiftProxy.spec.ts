@@ -15,7 +15,7 @@ import { createMockUtxo, CustomMockChain } from './testUtils';
 describe('AddGiftProxy', () => {
   let chain: CustomMockChain;
   let giftGiver: KeyedMockChainParty;
-  let creator: KeyedMockChainParty;
+  let fakeParty: KeyedMockChainParty;
   let proxyBox: Box<Amount>;
   let winnerBox: Box<Amount>;
   let winnerBuilder: WinnerBuilder;
@@ -30,7 +30,7 @@ describe('AddGiftProxy', () => {
     chain.setTip(100);
 
     giftGiver = chain.newParty('giftGiver');
-    creator = chain.newParty('creator');
+    fakeParty = chain.newParty('fakeParty');
 
     contracts = initialContracts();
 
@@ -214,7 +214,7 @@ describe('AddGiftProxy', () => {
       ],
       [
         'giftGiverAddress',
-        (builder) => builder.setGiftGiverAddress(creator.address.toString()),
+        (builder) => builder.setGiftGiverAddress(fakeParty.address.toString()),
       ],
       [
         'value',
@@ -326,7 +326,7 @@ describe('AddGiftProxy', () => {
       // Create refund box with wrong recipient address (creator instead of gift giver)
       const wrongRecipientRefundBox = new OutputBuilder(
         BigInt(proxyBox.value) - proxyParams.txFee,
-        creator.address.toString(),
+        fakeParty.address.toString(),
       ).addTokens(
         proxyBox.assets.map((asset) => ({
           tokenId: asset.tokenId,

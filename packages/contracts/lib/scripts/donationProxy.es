@@ -52,10 +52,10 @@
 
       // Correct ticket format
       // R4: [DonatorErgoTreeHash]
-      ticket.tokens(0)._1 == raffleId, 
+      ticket.tokens(0)._1 == raffleId,
       ticket.tokens(0)._2 == ticketCount,
       blake2b256(ticket.propositionBytes) == ticketScriptHash,
-      ticket.R4[Coll[Byte]].get == donatorErgoTreeHash,  
+      ticket.R4[Coll[Byte]].get == donatorErgoTreeHash,
     )))
   } else {
     // Proxy redeem

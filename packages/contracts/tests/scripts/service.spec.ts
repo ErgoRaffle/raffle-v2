@@ -15,7 +15,7 @@ import * as testUtils from '../testUtils';
 
 interface RaffleServiceTestInterface {
   boxFactory: testUtils.RaffleBoxFactory;
-  creator: KeyedMockChainParty;
+  owner: KeyedMockChainParty;
   someoneWallet: KeyedMockChainParty;
   inputBoxes: ErgoUnsignedInput[] | Box<bigint>[];
 }
@@ -40,15 +40,15 @@ const provideRaffleServiceTestRequirements = (winnersCount: bigint = 1n) => {
     ) as ScriptNamesType[],
   );
   boxFactory.chain.setTip(100);
-  const { creator, someone } = boxFactory.createPartners({
-    creator: testUtils.TestConstants.CREATOR_DEFAULT_BALANCE,
+  const { owner, someone } = boxFactory.createPartners({
+    owner: testUtils.TestConstants.OWNER_DEFAULT_BALANCE,
     someone: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
   });
-  creator.addBalance({
+  owner.addBalance({
     tokens: [{ tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 100n }],
   });
   // Created input service-box
-  const serviceBox = boxFactory.createServiceBoxMock(creator.ergoTree);
+  const serviceBox = boxFactory.createServiceBoxMock(owner.ergoTree);
   const winnersPercent = [];
   for (let i = 0; i < winnersCount; i++)
     winnersPercent.push(1000n / winnersCount);
@@ -56,15 +56,15 @@ const provideRaffleServiceTestRequirements = (winnersCount: bigint = 1n) => {
     0: SColl(SLong, winnersPercent),
     1: SColl(SColl(SByte), [
       Array.from(Buffer.from(someone.ergoTree, 'hex')),
-      Array.from(Buffer.from(creator.ergoTree, 'hex')),
+      Array.from(Buffer.from(owner.ergoTree, 'hex')),
     ]),
   });
 
   return {
     boxFactory: boxFactory,
     someoneWallet: someone,
-    creator: creator,
-    inputBoxes: [serviceBox, ...creator.utxos.toArray()],
+    owner: owner,
+    inputBoxes: [serviceBox, ...owner.utxos.toArray()],
   };
 };
 
@@ -91,15 +91,15 @@ describe('Service', () => {
     }) => {
       const serviceOutputBox =
         raffleServiceTestRequirements.boxFactory.createServiceOutputBox(
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
         );
       const ticketRepoOutputBox =
         raffleServiceTestRequirements.boxFactory.createTicketRepoOutputBox();
       const inactiveRaffleOutputBox =
         raffleServiceTestRequirements.boxFactory.createInactiveRaffleOutputBox(
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
           raffleServiceTestRequirements.someoneWallet.ergoTree,
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
           1,
           undefined,
           undefined,
@@ -115,13 +115,13 @@ describe('Service', () => {
         .from(raffleServiceTestRequirements.inputBoxes)
         .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(raffleServiceTestRequirements.creator.address)
+        .sendChangeTo(raffleServiceTestRequirements.owner.address)
         .build();
 
       const res = raffleServiceTestRequirements.boxFactory.chain.execute(
         transaction,
         {
-          signers: [raffleServiceTestRequirements.creator],
+          signers: [raffleServiceTestRequirements.owner],
         },
       );
       // Check execution result
@@ -144,15 +144,15 @@ describe('Service', () => {
       // Create output boxes
       const serviceOutputBox =
         raffleServiceBy10WinnersTestRequirements.boxFactory.createServiceOutputBox(
-          raffleServiceBy10WinnersTestRequirements.creator.ergoTree,
+          raffleServiceBy10WinnersTestRequirements.owner.ergoTree,
         );
       const ticketRepoOutputBox =
         raffleServiceBy10WinnersTestRequirements.boxFactory.createTicketRepoOutputBox();
       const inactiveRaffleOutputBox =
         raffleServiceBy10WinnersTestRequirements.boxFactory.createInactiveRaffleOutputBox(
-          raffleServiceBy10WinnersTestRequirements.creator.ergoTree,
+          raffleServiceBy10WinnersTestRequirements.owner.ergoTree,
           raffleServiceBy10WinnersTestRequirements.someoneWallet.ergoTree,
-          raffleServiceBy10WinnersTestRequirements.creator.ergoTree,
+          raffleServiceBy10WinnersTestRequirements.owner.ergoTree,
           10,
           undefined,
           undefined,
@@ -168,14 +168,14 @@ describe('Service', () => {
         .from(raffleServiceBy10WinnersTestRequirements.inputBoxes)
         .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(raffleServiceBy10WinnersTestRequirements.creator.address)
+        .sendChangeTo(raffleServiceBy10WinnersTestRequirements.owner.address)
         .build();
 
       const res =
         raffleServiceBy10WinnersTestRequirements.boxFactory.chain.execute(
           transaction,
           {
-            signers: [raffleServiceBy10WinnersTestRequirements.creator],
+            signers: [raffleServiceBy10WinnersTestRequirements.owner],
           },
         );
       // Check execution result
@@ -199,15 +199,15 @@ describe('Service', () => {
       // Create output boxes
       const serviceOutputBox =
         raffleServiceTestRequirements.boxFactory.createServiceOutputBox(
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
         );
       const ticketRepoOutputBox =
         raffleServiceTestRequirements.boxFactory.createTicketRepoOutputBox();
       const inactiveRaffleOutputBox =
         raffleServiceTestRequirements.boxFactory.createInactiveRaffleOutputBox(
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
           raffleServiceTestRequirements.someoneWallet.ergoTree,
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
           1,
           { tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 1n },
           undefined,
@@ -223,13 +223,13 @@ describe('Service', () => {
         .from(raffleServiceTestRequirements.inputBoxes)
         .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(raffleServiceTestRequirements.creator.address)
+        .sendChangeTo(raffleServiceTestRequirements.owner.address)
         .build();
 
       const res = raffleServiceTestRequirements.boxFactory.chain.execute(
         transaction,
         {
-          signers: [raffleServiceTestRequirements.creator],
+          signers: [raffleServiceTestRequirements.owner],
         },
       );
       // Check execution result
@@ -251,15 +251,15 @@ describe('Service', () => {
       // Create output boxes
       const serviceOutputBox =
         raffleServiceTestRequirements.boxFactory.createServiceOutputBox(
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
         );
       const ticketRepoOutputBox =
         raffleServiceTestRequirements.boxFactory.createTicketRepoOutputBox();
       const inactiveRaffleOutputBox =
         raffleServiceTestRequirements.boxFactory.createInactiveRaffleOutputBox(
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
           raffleServiceTestRequirements.someoneWallet.ergoTree,
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
         );
       inactiveRaffleOutputBox.assets.remove(
         testUtils.TestConstants.LICENSE_TOKEN_ID,
@@ -271,12 +271,12 @@ describe('Service', () => {
         .from(raffleServiceTestRequirements.inputBoxes)
         .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(raffleServiceTestRequirements.creator.address)
+        .sendChangeTo(raffleServiceTestRequirements.owner.address)
         .build();
 
       expect(() =>
         raffleServiceTestRequirements.boxFactory.chain.execute(transaction, {
-          signers: [raffleServiceTestRequirements.creator],
+          signers: [raffleServiceTestRequirements.owner],
         }),
       ).toThrowError();
     });
@@ -297,16 +297,16 @@ describe('Service', () => {
       // Create output boxes
       const serviceOutputBox =
         raffleServiceTestRequirements.boxFactory.createServiceOutputBox(
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
           1000000000n,
         );
       const ticketRepoOutputBox =
         raffleServiceTestRequirements.boxFactory.createTicketRepoOutputBox();
       const inactiveRaffleOutputBox =
         raffleServiceTestRequirements.boxFactory.createInactiveRaffleOutputBox(
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
           raffleServiceTestRequirements.someoneWallet.ergoTree,
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
         );
       inactiveRaffleOutputBox.assets.remove(
         testUtils.TestConstants.LICENSE_TOKEN_ID,
@@ -318,12 +318,12 @@ describe('Service', () => {
         .from(raffleServiceTestRequirements.inputBoxes)
         .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(raffleServiceTestRequirements.creator.address)
+        .sendChangeTo(raffleServiceTestRequirements.owner.address)
         .build();
 
       expect(() =>
         raffleServiceTestRequirements.boxFactory.chain.execute(transaction, {
-          signers: [raffleServiceTestRequirements.creator],
+          signers: [raffleServiceTestRequirements.owner],
         }),
       ).toThrowError();
     });
@@ -343,15 +343,15 @@ describe('Service', () => {
       // Create output boxes
       const serviceOutputBox =
         raffleServiceTestRequirements.boxFactory.createServiceOutputBox(
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
         );
       const ticketRepoOutputBox =
         raffleServiceTestRequirements.boxFactory.createTicketRepoOutputBox();
       const inactiveRaffleOutputBox =
         raffleServiceTestRequirements.boxFactory.createInactiveRaffleOutputBox(
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
           raffleServiceTestRequirements.someoneWallet.ergoTree,
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
           1,
           undefined,
           undefined,
@@ -364,12 +364,12 @@ describe('Service', () => {
         .from(raffleServiceTestRequirements.inputBoxes)
         .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(raffleServiceTestRequirements.creator.address)
+        .sendChangeTo(raffleServiceTestRequirements.owner.address)
         .build();
 
       expect(() =>
         raffleServiceTestRequirements.boxFactory.chain.execute(transaction, {
-          signers: [raffleServiceTestRequirements.creator],
+          signers: [raffleServiceTestRequirements.owner],
         }),
       ).toThrowError();
     });
@@ -389,7 +389,7 @@ describe('Service', () => {
       // Create output boxes
       const serviceOutputBox =
         raffleServiceTestRequirements.boxFactory.createServiceOutputBox(
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
           20n,
           10n,
           110n,
@@ -398,9 +398,9 @@ describe('Service', () => {
         raffleServiceTestRequirements.boxFactory.createTicketRepoOutputBox();
       const inactiveRaffleOutputBox =
         raffleServiceTestRequirements.boxFactory.createInactiveRaffleOutputBox(
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
           raffleServiceTestRequirements.someoneWallet.ergoTree,
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
         );
       // Execute transaction
       const transaction = new TransactionBuilder(
@@ -409,12 +409,12 @@ describe('Service', () => {
         .from(raffleServiceTestRequirements.inputBoxes)
         .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(raffleServiceTestRequirements.creator.address)
+        .sendChangeTo(raffleServiceTestRequirements.owner.address)
         .build();
 
       expect(() =>
         raffleServiceTestRequirements.boxFactory.chain.execute(transaction, {
-          signers: [raffleServiceTestRequirements.creator],
+          signers: [raffleServiceTestRequirements.owner],
         }),
       ).toThrowError();
     });
@@ -439,15 +439,15 @@ describe('Service', () => {
       // Create output boxes
       const serviceOutputBox =
         raffleServiceTestRequirements.boxFactory.createServiceOutputBox(
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
         );
       const ticketRepoOutputBox =
         raffleServiceTestRequirements.boxFactory.createTicketRepoOutputBox();
       const inactiveRaffleOutputBox =
         raffleServiceTestRequirements.boxFactory.createInactiveRaffleOutputBox(
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
           raffleServiceTestRequirements.someoneWallet.ergoTree,
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
           2,
           undefined,
           [500n, 600n],
@@ -459,12 +459,12 @@ describe('Service', () => {
         .from(raffleServiceTestRequirements.inputBoxes)
         .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(raffleServiceTestRequirements.creator.address)
+        .sendChangeTo(raffleServiceTestRequirements.owner.address)
         .build();
 
       expect(() =>
         raffleServiceTestRequirements.boxFactory.chain.execute(transaction, {
-          signers: [raffleServiceTestRequirements.creator],
+          signers: [raffleServiceTestRequirements.owner],
         }),
       ).toThrowError();
     });
@@ -484,15 +484,15 @@ describe('Service', () => {
       // Create output boxes
       const serviceOutputBox =
         raffleServiceTestRequirements.boxFactory.createServiceOutputBox(
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
         );
       const ticketRepoOutputBox =
         raffleServiceTestRequirements.boxFactory.createTicketRepoOutputBox();
       const inactiveRaffleOutputBox =
         raffleServiceTestRequirements.boxFactory.createInactiveRaffleOutputBox(
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
           raffleServiceTestRequirements.someoneWallet.ergoTree,
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
           1,
           undefined,
           undefined,
@@ -506,12 +506,12 @@ describe('Service', () => {
         .from(raffleServiceTestRequirements.inputBoxes)
         .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(raffleServiceTestRequirements.creator.address)
+        .sendChangeTo(raffleServiceTestRequirements.owner.address)
         .build();
 
       expect(() =>
         raffleServiceTestRequirements.boxFactory.chain.execute(transaction, {
-          signers: [raffleServiceTestRequirements.creator],
+          signers: [raffleServiceTestRequirements.owner],
         }),
       ).toThrowError();
     });
@@ -537,15 +537,15 @@ describe('Service', () => {
       // Create output boxes
       const serviceOutputBox =
         raffleServiceTestRequirements.boxFactory.createServiceOutputBox(
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
         );
       const ticketRepoOutputBox =
         raffleServiceTestRequirements.boxFactory.createTicketRepoOutputBox();
       const inactiveRaffleOutputBox =
         raffleServiceTestRequirements.boxFactory.createInactiveRaffleOutputBox(
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
           raffleServiceTestRequirements.someoneWallet.ergoTree,
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
           2,
           undefined,
           [1000n],
@@ -557,12 +557,12 @@ describe('Service', () => {
         .from(raffleServiceTestRequirements.inputBoxes)
         .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(raffleServiceTestRequirements.creator.address)
+        .sendChangeTo(raffleServiceTestRequirements.owner.address)
         .build();
 
       expect(() =>
         raffleServiceTestRequirements.boxFactory.chain.execute(transaction, {
-          signers: [raffleServiceTestRequirements.creator],
+          signers: [raffleServiceTestRequirements.owner],
         }),
       ).toThrowError();
     });
@@ -582,15 +582,15 @@ describe('Service', () => {
       // Create output boxes
       const serviceOutputBox =
         raffleServiceTestRequirements.boxFactory.createServiceOutputBox(
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
         );
       const ticketRepoOutputBox =
         raffleServiceTestRequirements.boxFactory.createTicketRepoOutputBox();
       const inactiveRaffleOutputBox =
         raffleServiceTestRequirements.boxFactory.createInactiveRaffleOutputBox(
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
           raffleServiceTestRequirements.someoneWallet.ergoTree,
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
           2,
         );
       // Execute transaction
@@ -600,12 +600,12 @@ describe('Service', () => {
         .from(raffleServiceTestRequirements.inputBoxes)
         .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(raffleServiceTestRequirements.creator.address)
+        .sendChangeTo(raffleServiceTestRequirements.owner.address)
         .build();
 
       expect(() =>
         raffleServiceTestRequirements.boxFactory.chain.execute(transaction, {
-          signers: [raffleServiceTestRequirements.creator],
+          signers: [raffleServiceTestRequirements.owner],
         }),
       ).toThrowError();
     });
@@ -631,15 +631,15 @@ describe('Service', () => {
       // Create output boxes
       const serviceOutputBox =
         raffleServiceTestRequirements.boxFactory.createServiceOutputBox(
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
         );
       const ticketRepoOutputBox =
         raffleServiceTestRequirements.boxFactory.createTicketRepoOutputBox();
       const inactiveRaffleOutputBox =
         raffleServiceTestRequirements.boxFactory.createInactiveRaffleOutputBox(
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
           raffleServiceTestRequirements.someoneWallet.ergoTree,
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
           2,
           undefined,
           [450n, 450n],
@@ -651,12 +651,12 @@ describe('Service', () => {
         .from(raffleServiceTestRequirements.inputBoxes)
         .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(raffleServiceTestRequirements.creator.address)
+        .sendChangeTo(raffleServiceTestRequirements.owner.address)
         .build();
 
       expect(() =>
         raffleServiceTestRequirements.boxFactory.chain.execute(transaction, {
-          signers: [raffleServiceTestRequirements.creator],
+          signers: [raffleServiceTestRequirements.owner],
         }),
       ).toThrowError();
     });
@@ -681,15 +681,15 @@ describe('Service', () => {
       // Create output boxes
       const serviceOutputBox =
         raffleServiceTestRequirements.boxFactory.createServiceOutputBox(
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
         );
       const ticketRepoOutputBox =
         raffleServiceTestRequirements.boxFactory.createTicketRepoOutputBox();
       const inactiveRaffleOutputBox =
         raffleServiceTestRequirements.boxFactory.createInactiveRaffleOutputBox(
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
           raffleServiceTestRequirements.someoneWallet.ergoTree,
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
           2,
           undefined,
           undefined,
@@ -705,12 +705,12 @@ describe('Service', () => {
         .from(raffleServiceTestRequirements.inputBoxes)
         .to([serviceOutputBox, ticketRepoOutputBox, inactiveRaffleOutputBox])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(raffleServiceTestRequirements.creator.address)
+        .sendChangeTo(raffleServiceTestRequirements.owner.address)
         .build();
 
       expect(() =>
         raffleServiceTestRequirements.boxFactory.chain.execute(transaction, {
-          signers: [raffleServiceTestRequirements.creator],
+          signers: [raffleServiceTestRequirements.owner],
         }),
       ).toThrowError();
     });
@@ -730,17 +730,17 @@ describe('Service', () => {
       raffleServiceTestRequirements,
     }) => {
       const serviceBox = raffleServiceTestRequirements.inputBoxes[0];
-      raffleServiceTestRequirements.creator.addBalance({
+      raffleServiceTestRequirements.owner.addBalance({
         tokens: [{ tokenId: testUtils.TestConstants.OWNER_NFT_ID, amount: 1n }],
       });
       const newInputBoxes: Box<bigint>[] = [
         serviceBox,
-        ...raffleServiceTestRequirements.creator.utxos.toArray(),
+        ...raffleServiceTestRequirements.owner.utxos.toArray(),
       ];
       // Create output boxes
       const outputBox = new OutputBuilder(
         15_000_000n,
-        raffleServiceTestRequirements.creator.address.ergoTree,
+        raffleServiceTestRequirements.owner.address.ergoTree,
       ).addTokens([
         {
           tokenId: testUtils.TestConstants.OWNER_NFT_ID,
@@ -754,12 +754,12 @@ describe('Service', () => {
         .from(newInputBoxes)
         .to([outputBox])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(raffleServiceTestRequirements.creator.address)
+        .sendChangeTo(raffleServiceTestRequirements.owner.address)
         .build();
       const res = raffleServiceTestRequirements.boxFactory.chain.execute(
         transaction,
         {
-          signers: [raffleServiceTestRequirements.creator],
+          signers: [raffleServiceTestRequirements.owner],
         },
       );
       // Check execution result
@@ -783,7 +783,7 @@ describe('Service', () => {
       // Mock Required Things
       const serviceBox =
         raffleServiceTestRequirements.boxFactory.createServiceBoxMock(
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
           999_999_999n,
         );
       const successRaffleInputBox =
@@ -792,7 +792,7 @@ describe('Service', () => {
             4n * testUtils.TestConstants.FEE,
           testUtils.TestConstants.LICENSE_TOKEN_ID,
           blake2b256(
-            Buffer.from(raffleServiceTestRequirements.creator.ergoTree, 'hex'),
+            Buffer.from(raffleServiceTestRequirements.owner.ergoTree, 'hex'),
           ),
           '0123456789012345',
           [],
@@ -809,13 +809,13 @@ describe('Service', () => {
       // Create output boxes
       const serviceOutputBox =
         raffleServiceTestRequirements.boxFactory.createServiceOutputBox(
-          raffleServiceTestRequirements.creator.ergoTree,
+          raffleServiceTestRequirements.owner.ergoTree,
           1_000_000_000n,
         );
       const inputBoxes: Box<bigint>[] = [
         serviceBox,
         successRaffleInputBox,
-        ...raffleServiceTestRequirements.creator.utxos.toArray(),
+        ...raffleServiceTestRequirements.owner.utxos.toArray(),
       ];
       // Execute transaction
       const transaction = new TransactionBuilder(
@@ -824,7 +824,7 @@ describe('Service', () => {
         .from(inputBoxes)
         .to([serviceOutputBox])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(raffleServiceTestRequirements.creator.address)
+        .sendChangeTo(raffleServiceTestRequirements.owner.address)
         .build();
 
       const res = raffleServiceTestRequirements.boxFactory.chain.execute(

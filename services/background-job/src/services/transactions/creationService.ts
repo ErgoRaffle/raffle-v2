@@ -104,8 +104,8 @@
 //         .setWinnersPercent(
 //           raffleParams.winnersPercentList.split(',').map(BigInt),
 //         )
-//         .setImplementerAddress(raffleParams.implementorAddress)
-//         .setCreatorAddress(raffleParams.creatorAddress)
+//         .setImplementerAddress(raffleParams.implementerAddress)
+//         .setOrganizerAddress(raffleParams.creatorAddress)
 //         .setInactiveRaffleValue(
 //           raffleParams.requiredValue - configs.ergo.fee * 4n,
 //         )

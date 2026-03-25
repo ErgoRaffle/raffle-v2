@@ -15,7 +15,7 @@ import { createMockUtxo, CustomMockChain } from './testUtils';
 describe('DonationProxy', () => {
   let chain: CustomMockChain;
   let donator: KeyedMockChainParty;
-  let creator: KeyedMockChainParty;
+  let project: KeyedMockChainParty;
   let implementer: KeyedMockChainParty;
   let proxyBox: Box<Amount>;
   let activeRaffleBuilder: ActiveRaffleBuilder;
@@ -30,7 +30,7 @@ describe('DonationProxy', () => {
     chain.setTip(100);
 
     donator = chain.newParty('donator');
-    creator = chain.newParty('creator');
+    project = chain.newParty('project');
     implementer = chain.newParty('implementer');
 
     contracts = initialContracts();
@@ -68,9 +68,9 @@ describe('DonationProxy', () => {
       .setTxFee(proxyParams.txFee)
       .setWinnersCount(1)
       .setTotalSoldTickets(0n)
-      .setServiceAddress(creator.address.toString())
+      .setServiceAddress(project.address.toString())
       .setImplementerAddress(implementer.address.toString())
-      .setProjectAddress(creator.address.toString())
+      .setProjectAddress(project.address.toString())
       .setTicketId(raffleId)
       .setTicketCount(1_000_000_000n);
 
@@ -177,7 +177,7 @@ describe('DonationProxy', () => {
       ],
       [
         'donatorAddress',
-        (b) => b.setDonatorAddress(creator.address.toString()),
+        (b) => b.setDonatorAddress(project.address.toString()),
       ],
       [
         'raffleId',
@@ -293,7 +293,7 @@ describe('DonationProxy', () => {
       // Create refund box with wrong recipient address (creator instead of donator)
       const wrongRecipientRefundBox = new OutputBuilder(
         BigInt(proxyBox.value) - proxyParams.txFee,
-        creator.address.toString(),
+        project.address.toString(),
       ).addTokens(
         proxyBox.assets.map((asset) => ({
           tokenId: asset.tokenId,

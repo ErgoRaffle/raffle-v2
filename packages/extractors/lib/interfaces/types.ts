@@ -17,8 +17,8 @@ export interface ServiceBoxInterface extends AbstractEntityData {
 
 export interface InactiveRaffleBoxInterface extends AbstractRaffleBoxInterface {
   serviceErgoTree: string;
-  implementorErgoTree: string;
-  creatorErgoTree: string;
+  implementerErgoTree: string;
+  projectErgoTree: string;
   serviceFeePercent: number;
   implementerFeePercent: number;
   winnersPercent: number;
