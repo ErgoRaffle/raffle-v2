@@ -1,4 +1,4 @@
-import { ErgoAddress, Box } from '@fleet-sdk/core';
+import { ErgoAddress } from '@fleet-sdk/core';
 import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 import { AbstractErgoBoxExtractor } from '@rosen-bridge/abstract-extractor';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
@@ -96,9 +96,7 @@ export class AddGiftProxyExtractor extends AbstractErgoBoxExtractor<
       txFee: r4Register[3],
       raffleId: Buffer.from(r5Register[0]).toString('hex'),
       giftGiverErgoTree: giftGiverErgoTree,
-      serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(
-        'base64',
-      ),
+      serialized: Buffer.from(serializeBox(box).toBytes()).toString('base64'),
     };
   };
 }

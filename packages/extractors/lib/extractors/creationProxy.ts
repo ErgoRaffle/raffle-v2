@@ -58,8 +58,7 @@ export class CreationProxyExtractor extends AbstractErgoBoxExtractor<
         (SConstant.from(box.additionalRegisters.R6).data as Uint8Array[])
           .length >= 2 &&
         box.additionalRegisters.R7 != undefined &&
-        (SConstant.from(box.additionalRegisters.R7).data as number[]).length ==
-          2
+        Number.isInteger(SConstant.from(box.additionalRegisters.R7).data)
       );
     } catch (err) {
       this.logger.error(`CreationProxyExtractor Error: ${err}`);
@@ -78,17 +77,15 @@ export class CreationProxyExtractor extends AbstractErgoBoxExtractor<
   ): CreationProxyBoxInterface | undefined => {
     const r4Register = SConstant.from(box.additionalRegisters!.R4!)
       .data as bigint[];
-    const r5Register = SConstant.from(box.additionalRegisters!.R5!)
-      .data as Uint8Array[];
     const r6Register = SConstant.from(box.additionalRegisters!.R6!)
       .data as Uint8Array[];
     const r7Register = SConstant.from(box.additionalRegisters!.R7!)
-      .data as number[];
+      .data as number;
 
     const pictures = r6Register
       .slice(2)
       .map((pic) => Buffer.from(pic).toString());
-    let implementorErgoTree = '';
+    let implementerErgoTree = '';
     let creatorErgoTree = '';
     let winnersPercentList = '';
     try {
@@ -97,7 +94,7 @@ export class CreationProxyExtractor extends AbstractErgoBoxExtractor<
       ).toString();
       const ergoTrees = SConstant.from(inputExtensions[0]['1'])
         .data as Uint8Array[];
-      implementorErgoTree = Buffer.from(ergoTrees[0]).toString('hex');
+      implementerErgoTree = Buffer.from(ergoTrees[0]).toString('hex');
       creatorErgoTree = Buffer.from(ergoTrees[1]).toString('hex');
     } catch (err) {
       this.logger.warn(
@@ -116,15 +113,14 @@ export class CreationProxyExtractor extends AbstractErgoBoxExtractor<
       ticketPrice: r4Register[3],
       goal: r4Register[4],
       txFee: r4Register[5],
-      implementorErgoTree: implementorErgoTree,
+      implementerErgoTree: implementerErgoTree,
       creatorErgoTree: creatorErgoTree,
       winnersPercentList: winnersPercentList,
-      collectingTokenId: Buffer.from(r5Register[3]).toString('hex'),
+      collectingTokenId: box.assets.length > 0 ? box.assets[0].tokenId : 'erg',
       name: Buffer.from(r6Register[0]).toString(),
       description: Buffer.from(r6Register[1]).toString(),
       pictures: JSON.stringify(pictures),
-      winnerCount: r7Register[0],
-      isErgGoal: r7Register[1] === 1,
+      winnerCount: r7Register,
       serialized: Buffer.from(serializeBox(box).toBytes()).toString('base64'),
     };
   };

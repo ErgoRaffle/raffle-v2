@@ -3,8 +3,8 @@ import {
   QueryRunner,
 } from '@rosen-bridge/extended-typeorm';
 
-export class Migration1774517005522 implements MigrationInterface {
-  name = 'Migration1774517005522';
+export class Migration1774542877898 implements MigrationInterface {
+  name = 'Migration1774542877898';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
@@ -47,7 +47,7 @@ export class Migration1774517005522 implements MigrationInterface {
                 "ticketPrice" bigint NOT NULL,
                 "goal" bigint NOT NULL,
                 "txFee" bigint NOT NULL,
-                "implementorErgoTree" character varying NOT NULL,
+                "implementerErgoTree" character varying NOT NULL,
                 "creatorErgoTree" character varying NOT NULL,
                 "winnersPercentList" character varying NOT NULL,
                 "collectingTokenId" character varying NOT NULL,
@@ -55,7 +55,6 @@ export class Migration1774517005522 implements MigrationInterface {
                 "description" character varying NOT NULL,
                 "pictures" text NOT NULL,
                 "winnerCount" integer NOT NULL,
-                "isErgGoal" boolean NOT NULL,
                 CONSTRAINT "UQ_dc8a55846404e70e4bc1c0ecd9d" UNIQUE ("identifier", "extractor"),
                 CONSTRAINT "PK_8d9ee82089cda3a3907783d3039" PRIMARY KEY ("id")
             )

@@ -41,7 +41,7 @@ export class CreationProxyAction extends AbstractErgoBoxAction<
         ticketPrice: box.ticketPrice,
         goal: box.goal,
         txFee: box.txFee,
-        implementorErgoTree: box.implementorErgoTree,
+        implementerErgoTree: box.implementerErgoTree,
         creatorErgoTree: box.creatorErgoTree,
         winnersPercentList: box.winnersPercentList,
         collectingTokenId: box.collectingTokenId,
@@ -49,7 +49,6 @@ export class CreationProxyAction extends AbstractErgoBoxAction<
         description: box.description,
         pictures: box.pictures,
         winnerCount: box.winnerCount,
-        isErgGoal: box.isErgGoal,
       };
     });
   };
@@ -72,7 +71,7 @@ export class CreationProxyAction extends AbstractErgoBoxAction<
         'ticketPrice',
         'goal',
         'txFee',
-        'implementorErgoTree',
+        'implementerErgoTree',
         'creatorErgoTree',
         'winnersPercentList',
         'collectingTokenId',
@@ -80,7 +79,6 @@ export class CreationProxyAction extends AbstractErgoBoxAction<
         'description',
         'pictures',
         'winnerCount',
-        'isErgGoal',
         'extractor',
         'serialized',
       ]),

@@ -32,7 +32,7 @@ export class CreationProxyEntity extends AbstractErgoBoxEntity {
   txFee: bigint;
 
   @Column({ type: 'varchar' })
-  implementorErgoTree: string;
+  implementerErgoTree: string;
 
   @Column({ type: 'varchar' })
   creatorErgoTree: string;
@@ -54,7 +54,4 @@ export class CreationProxyEntity extends AbstractErgoBoxEntity {
 
   @Column({ type: 'integer' })
   winnerCount: number;
-
-  @Column({ type: 'boolean' })
-  isErgGoal: boolean;
 }

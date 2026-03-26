@@ -43,7 +43,7 @@ export interface CreationProxyBoxInterface extends AbstractEntityData {
   ticketPrice: bigint;
   goal: bigint;
   txFee: bigint;
-  implementorErgoTree: string;
+  implementerErgoTree: string;
   creatorErgoTree: string;
   winnersPercentList: string;
   collectingTokenId: string;
@@ -51,7 +51,6 @@ export interface CreationProxyBoxInterface extends AbstractEntityData {
   description: string;
   pictures: string;
   winnerCount: number;
-  isErgGoal: boolean;
 }
 
 export interface DonationProxyBoxInterface extends AbstractRaffleBoxInterface {
