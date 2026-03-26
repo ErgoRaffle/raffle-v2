@@ -52,14 +52,26 @@ export class DonationService extends PeriodicTaskService {
     return this.instance;
   };
 
+  /**
+   * Logs the start of the DonationService.
+   */
   protected preStart = async (): Promise<void> => {
     this.logger.debug('Starting DonationService');
   };
 
+  /**
+   * Logs the stop of the DonationService.
+   */
   protected postStop = async (): Promise<void> => {
     this.logger.info('DonationService stopped');
   };
 
+  /**
+   * Returns the tasks for the DonationService.
+   * - processDonationTimeouts: Update old pending donation requests to timed out.
+   * - processDonations: Process confirmed and filled donations.
+   * @returns The tasks for the DonationService.
+   */
   protected getTasks = () => {
     const intervalMs = this.config.interval * 1000;
     return [
@@ -72,7 +84,7 @@ export class DonationService extends PeriodicTaskService {
               `DonationService processDonationTimeouts failed: ${err}`,
             );
             if (err instanceof Error && err.stack) {
-              this.logger.error(err.stack);
+              this.logger.debug(err.stack);
             }
           }
         },
@@ -87,7 +99,7 @@ export class DonationService extends PeriodicTaskService {
               `DonationService processDonations failed: ${err}`,
             );
             if (err instanceof Error && err.stack) {
-              this.logger.error(err.stack);
+              this.logger.debug(err.stack);
             }
           }
         },
