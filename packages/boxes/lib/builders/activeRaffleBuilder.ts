@@ -617,7 +617,7 @@ export class ActiveRaffleBuilder {
     builder.implementerErgoTreeHash =
       inactiveRaffleBuilder.getImplementerErgoTreeHash();
     builder.projectErgoTreeHash =
-      inactiveRaffleBuilder.getCreatorErgoTreeHash();
+      inactiveRaffleBuilder.getProjectErgoTreeHash();
 
     // Set collecting token ID and count if present
     if (!inactiveRaffleBuilder.isErgGoal()) {

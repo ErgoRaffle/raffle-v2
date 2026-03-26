@@ -14,7 +14,7 @@ import * as testUtils from '../testUtils';
 interface InactiveRaffleTestInterface {
   boxFactory: testUtils.RaffleBoxFactory;
   someoneWallet: KeyedMockChainParty;
-  creator: KeyedMockChainParty;
+  project: KeyedMockChainParty;
   ticketRepoInputBox: ErgoUnsignedInput;
   inactiveRaffleInputBox: ErgoUnsignedInput;
 }
@@ -39,23 +39,23 @@ const provideInactiveRaffleTestRequirements = (winnersCount: number = 1) => {
       (value) => value != 'inactiveRaffle',
     ) as ScriptNamesType[],
   );
-  const { creator, someone } = boxFactory.createPartners({
-    creator: testUtils.TestConstants.CREATOR_DEFAULT_BALANCE,
+  const { project, someone } = boxFactory.createPartners({
+    project: testUtils.TestConstants.ORGANIZER_DEFAULT_BALANCE,
     someone: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
   });
 
   const ticketRepoInputBox = boxFactory.createTicketRepoBoxMock();
   const inactiveRaffleInputBox = boxFactory.createInactiveRaffleBoxMock(
-    creator.ergoTree,
+    project.ergoTree,
     someone.ergoTree,
-    creator.ergoTree,
+    project.ergoTree,
     winnersCount,
   );
 
   return {
     boxFactory: boxFactory,
     someoneWallet: someone,
-    creator: creator,
+    project: project,
     ticketRepoInputBox: ticketRepoInputBox,
     inactiveRaffleInputBox: inactiveRaffleInputBox,
   };
@@ -84,9 +84,9 @@ describe('inactiveRaffle', () => {
     }) => {
       const activeRaffleOutputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createActiveRaffleOutputBox(
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
           inactiveRaffleBy1WinnerTestRequirements.someoneWallet.ergoTree,
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
         );
       const raffleDetailsOutputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createRaffleDetailsOutputBox();
@@ -115,14 +115,14 @@ describe('inactiveRaffle', () => {
           ...winnersBoxes,
         ])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(inactiveRaffleBy1WinnerTestRequirements.creator.address)
+        .sendChangeTo(inactiveRaffleBy1WinnerTestRequirements.project.address)
         .build();
 
       const res =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.chain.execute(
           transaction,
           {
-            signers: [inactiveRaffleBy1WinnerTestRequirements.creator],
+            signers: [inactiveRaffleBy1WinnerTestRequirements.project],
           },
         );
       // Check execution result
@@ -143,9 +143,9 @@ describe('inactiveRaffle', () => {
     }) => {
       const activeRaffleOutputBox =
         inactiveRaffleBy5WinnerTestRequirements.boxFactory.createActiveRaffleOutputBox(
-          inactiveRaffleBy5WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy5WinnerTestRequirements.project.ergoTree,
           inactiveRaffleBy5WinnerTestRequirements.someoneWallet.ergoTree,
-          inactiveRaffleBy5WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy5WinnerTestRequirements.project.ergoTree,
           5,
         );
       const raffleDetailsOutputBox =
@@ -171,14 +171,14 @@ describe('inactiveRaffle', () => {
           ),
         ])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(inactiveRaffleBy5WinnerTestRequirements.creator.address)
+        .sendChangeTo(inactiveRaffleBy5WinnerTestRequirements.project.address)
         .build();
 
       const res =
         inactiveRaffleBy5WinnerTestRequirements.boxFactory.chain.execute(
           transaction,
           {
-            signers: [inactiveRaffleBy5WinnerTestRequirements.creator],
+            signers: [inactiveRaffleBy5WinnerTestRequirements.project],
           },
         );
       // Check execution result
@@ -199,17 +199,17 @@ describe('inactiveRaffle', () => {
     }) => {
       const inactiveRaffleInputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createInactiveRaffleBoxMock(
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
           inactiveRaffleBy1WinnerTestRequirements.someoneWallet.ergoTree,
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
           1,
           { tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 1n },
         );
       const activeRaffleOutputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createActiveRaffleOutputBox(
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
           inactiveRaffleBy1WinnerTestRequirements.someoneWallet.ergoTree,
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
           1,
           undefined,
           { tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 1n },
@@ -246,7 +246,7 @@ describe('inactiveRaffle', () => {
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.chain.execute(
           transaction,
           {
-            signers: [inactiveRaffleBy1WinnerTestRequirements.creator],
+            signers: [inactiveRaffleBy1WinnerTestRequirements.project],
           },
         );
       // Check execution result
@@ -267,9 +267,9 @@ describe('inactiveRaffle', () => {
     }) => {
       const activeRaffleOutputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createActiveRaffleOutputBox(
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
           inactiveRaffleBy1WinnerTestRequirements.someoneWallet.ergoTree,
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
         );
 
       const raffleDetailsOutputBox =
@@ -305,14 +305,14 @@ describe('inactiveRaffle', () => {
           ),
         ])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(inactiveRaffleBy1WinnerTestRequirements.creator.address)
+        .sendChangeTo(inactiveRaffleBy1WinnerTestRequirements.project.address)
         .build();
 
       // Check execution result
       expect(() =>
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.chain.execute(
           transaction,
-          { signers: [inactiveRaffleBy1WinnerTestRequirements.creator] },
+          { signers: [inactiveRaffleBy1WinnerTestRequirements.project] },
         ),
       ).toThrowError();
     });
@@ -331,9 +331,9 @@ describe('inactiveRaffle', () => {
     }) => {
       const activeRaffleOutputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createActiveRaffleOutputBox(
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
           inactiveRaffleBy1WinnerTestRequirements.someoneWallet.ergoTree,
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
         );
 
       const raffleDetailsOutputBox =
@@ -370,14 +370,14 @@ describe('inactiveRaffle', () => {
           ...winnerBoxes,
         ])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(inactiveRaffleBy1WinnerTestRequirements.creator.address)
+        .sendChangeTo(inactiveRaffleBy1WinnerTestRequirements.project.address)
         .build();
 
       // Check execution result
       expect(() =>
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.chain.execute(
           transaction,
-          { signers: [inactiveRaffleBy1WinnerTestRequirements.creator] },
+          { signers: [inactiveRaffleBy1WinnerTestRequirements.project] },
         ),
       ).toThrowError();
     });
@@ -396,9 +396,9 @@ describe('inactiveRaffle', () => {
     }) => {
       const activeRaffleOutputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createActiveRaffleOutputBox(
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
           inactiveRaffleBy1WinnerTestRequirements.someoneWallet.ergoTree,
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
         );
       const raffleDetailsOutputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createRaffleDetailsOutputBox();
@@ -427,7 +427,7 @@ describe('inactiveRaffle', () => {
           ),
           Array.from(
             Buffer.from(
-              inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+              inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
             ),
           ),
         ]),
@@ -451,14 +451,14 @@ describe('inactiveRaffle', () => {
           ),
         ])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(inactiveRaffleBy1WinnerTestRequirements.creator.address)
+        .sendChangeTo(inactiveRaffleBy1WinnerTestRequirements.project.address)
         .build();
 
       // Check execution result
       expect(() =>
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.chain.execute(
           transaction,
-          { signers: [inactiveRaffleBy1WinnerTestRequirements.creator] },
+          { signers: [inactiveRaffleBy1WinnerTestRequirements.project] },
         ),
       ).toThrowError();
     });
@@ -477,9 +477,9 @@ describe('inactiveRaffle', () => {
     }) => {
       const activeRaffleOutputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createActiveRaffleOutputBox(
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
           inactiveRaffleBy1WinnerTestRequirements.someoneWallet.ergoTree,
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
         );
       const raffleDetailsOutputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createRaffleDetailsOutputBox();
@@ -521,14 +521,14 @@ describe('inactiveRaffle', () => {
           ),
         ])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(inactiveRaffleBy1WinnerTestRequirements.creator.address)
+        .sendChangeTo(inactiveRaffleBy1WinnerTestRequirements.project.address)
         .build();
 
       // Check execution result
       expect(() =>
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.chain.execute(
           transaction,
-          { signers: [inactiveRaffleBy1WinnerTestRequirements.creator] },
+          { signers: [inactiveRaffleBy1WinnerTestRequirements.project] },
         ),
       ).toThrowError();
     });
@@ -547,9 +547,9 @@ describe('inactiveRaffle', () => {
     }) => {
       const activeRaffleOutputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createActiveRaffleOutputBox(
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
           inactiveRaffleBy1WinnerTestRequirements.someoneWallet.ergoTree,
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
         );
       const raffleDetailsOutputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createRaffleDetailsOutputBox();
@@ -578,14 +578,14 @@ describe('inactiveRaffle', () => {
           ),
         ])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(inactiveRaffleBy1WinnerTestRequirements.creator.address)
+        .sendChangeTo(inactiveRaffleBy1WinnerTestRequirements.project.address)
         .build();
 
       // Check execution result
       expect(() =>
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.chain.execute(
           transaction,
-          { signers: [inactiveRaffleBy1WinnerTestRequirements.creator] },
+          { signers: [inactiveRaffleBy1WinnerTestRequirements.project] },
         ),
       ).toThrowError();
     });
@@ -605,15 +605,15 @@ describe('inactiveRaffle', () => {
       // Set collecting token as X-Token that not found on the Inactive-Raffle Box
       const activeRaffleOutputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createActiveRaffleOutputBox(
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
           inactiveRaffleBy1WinnerTestRequirements.someoneWallet.ergoTree,
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
           1,
           undefined,
           { tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 1n }, // set collecting token
         );
       const extraInputBox = mockUTxO({
-        ergoTree: inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+        ergoTree: inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
         value: 11_000_000n,
         creationHeight: 4,
         assets: [{ tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 1n }],
@@ -642,14 +642,14 @@ describe('inactiveRaffle', () => {
           ),
         ])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(inactiveRaffleBy1WinnerTestRequirements.creator.address)
+        .sendChangeTo(inactiveRaffleBy1WinnerTestRequirements.project.address)
         .build();
 
       // Check execution result
       expect(() =>
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.chain.execute(
           transaction,
-          { signers: [inactiveRaffleBy1WinnerTestRequirements.creator] },
+          { signers: [inactiveRaffleBy1WinnerTestRequirements.project] },
         ),
       ).toThrowError();
     });
@@ -672,16 +672,16 @@ describe('inactiveRaffle', () => {
             'service'
           ],
           inactiveRaffleBy1WinnerTestRequirements.someoneWallet.ergoTree,
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
           1,
           { tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 1n }, // Set collecting token as X-Token that missed on the active box
         );
 
       const activeRaffleOutputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createActiveRaffleOutputBox(
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
           inactiveRaffleBy1WinnerTestRequirements.someoneWallet.ergoTree,
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
         );
       const raffleDetailsOutputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createRaffleDetailsOutputBox();
@@ -712,14 +712,14 @@ describe('inactiveRaffle', () => {
           ),
         ])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(inactiveRaffleBy1WinnerTestRequirements.creator.address)
+        .sendChangeTo(inactiveRaffleBy1WinnerTestRequirements.project.address)
         .build();
 
       // Check execution result
       expect(() =>
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.chain.execute(
           transaction,
-          { signers: [inactiveRaffleBy1WinnerTestRequirements.creator] },
+          { signers: [inactiveRaffleBy1WinnerTestRequirements.project] },
         ),
       ).toThrowError();
     });
@@ -738,9 +738,9 @@ describe('inactiveRaffle', () => {
     }) => {
       const activeRaffleOutputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createActiveRaffleOutputBox(
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
           inactiveRaffleBy1WinnerTestRequirements.someoneWallet.ergoTree,
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
         );
       const raffleDetailsOutputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createRaffleDetailsOutputBox();
@@ -772,14 +772,14 @@ describe('inactiveRaffle', () => {
           ...winnersBoxes,
         ])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(inactiveRaffleBy1WinnerTestRequirements.creator.address)
+        .sendChangeTo(inactiveRaffleBy1WinnerTestRequirements.project.address)
         .build();
 
       // Check execution result
       expect(() =>
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.chain.execute(
           transaction,
-          { signers: [inactiveRaffleBy1WinnerTestRequirements.creator] },
+          { signers: [inactiveRaffleBy1WinnerTestRequirements.project] },
         ),
       ).toThrowError();
     });
@@ -798,9 +798,9 @@ describe('inactiveRaffle', () => {
     }) => {
       const activeRaffleOutputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createActiveRaffleOutputBox(
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
           inactiveRaffleBy1WinnerTestRequirements.someoneWallet.ergoTree,
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
         );
       const raffleDetailsOutputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createRaffleDetailsOutputBox();
@@ -832,14 +832,14 @@ describe('inactiveRaffle', () => {
           ...winnersBoxes,
         ])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(inactiveRaffleBy1WinnerTestRequirements.creator.address)
+        .sendChangeTo(inactiveRaffleBy1WinnerTestRequirements.project.address)
         .build();
 
       // Check execution result
       expect(() =>
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.chain.execute(
           transaction,
-          { signers: [inactiveRaffleBy1WinnerTestRequirements.creator] },
+          { signers: [inactiveRaffleBy1WinnerTestRequirements.project] },
         ),
       ).toThrowError();
     });
@@ -862,15 +862,15 @@ describe('inactiveRaffle', () => {
             'service'
           ],
           inactiveRaffleBy1WinnerTestRequirements.someoneWallet.ergoTree,
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
           1,
           { tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 1n },
         );
       const activeRaffleOutputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createActiveRaffleOutputBox(
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
           inactiveRaffleBy1WinnerTestRequirements.someoneWallet.ergoTree,
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
         );
       const raffleDetailsOutputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createRaffleDetailsOutputBox();
@@ -912,14 +912,14 @@ describe('inactiveRaffle', () => {
           ...winnersBoxes,
         ])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(inactiveRaffleBy1WinnerTestRequirements.creator.address)
+        .sendChangeTo(inactiveRaffleBy1WinnerTestRequirements.project.address)
         .build();
 
       // Check execution result
       expect(() =>
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.chain.execute(
           transaction,
-          { signers: [inactiveRaffleBy1WinnerTestRequirements.creator] },
+          { signers: [inactiveRaffleBy1WinnerTestRequirements.project] },
         ),
       ).toThrowError();
     });
@@ -939,9 +939,9 @@ describe('inactiveRaffle', () => {
     }) => {
       const activeRaffleOutputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createActiveRaffleOutputBox(
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
           inactiveRaffleBy1WinnerTestRequirements.someoneWallet.ergoTree,
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
         );
       const raffleDetailsOutputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createRaffleDetailsOutputBox();
@@ -977,14 +977,14 @@ describe('inactiveRaffle', () => {
           ),
         ])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(inactiveRaffleBy1WinnerTestRequirements.creator.address)
+        .sendChangeTo(inactiveRaffleBy1WinnerTestRequirements.project.address)
         .build();
 
       // Check execution result
       expect(() =>
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.chain.execute(
           transaction,
-          { signers: [inactiveRaffleBy1WinnerTestRequirements.creator] },
+          { signers: [inactiveRaffleBy1WinnerTestRequirements.project] },
         ),
       ).toThrowError();
     });
@@ -1003,9 +1003,9 @@ describe('inactiveRaffle', () => {
     }) => {
       const activeRaffleOutputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createActiveRaffleOutputBox(
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
           inactiveRaffleBy1WinnerTestRequirements.someoneWallet.ergoTree,
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
           1,
         );
       const raffleDetailsOutputBox =
@@ -1040,14 +1040,14 @@ describe('inactiveRaffle', () => {
           ),
         ])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(inactiveRaffleBy1WinnerTestRequirements.creator.address)
+        .sendChangeTo(inactiveRaffleBy1WinnerTestRequirements.project.address)
         .build();
 
       // Check execution result
       expect(() =>
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.chain.execute(
           transaction,
-          { signers: [inactiveRaffleBy1WinnerTestRequirements.creator] },
+          { signers: [inactiveRaffleBy1WinnerTestRequirements.project] },
         ),
       ).toThrowError();
     });
@@ -1067,9 +1067,9 @@ describe('inactiveRaffle', () => {
     }) => {
       const activeRaffleOutputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createActiveRaffleOutputBox(
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
           inactiveRaffleBy1WinnerTestRequirements.someoneWallet.ergoTree,
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
           1,
         );
       const raffleDetailsOutputBox =
@@ -1098,14 +1098,14 @@ describe('inactiveRaffle', () => {
           ),
         ])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(inactiveRaffleBy1WinnerTestRequirements.creator.address)
+        .sendChangeTo(inactiveRaffleBy1WinnerTestRequirements.project.address)
         .build();
 
       // Check execution result
       expect(() =>
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.chain.execute(
           transaction,
-          { signers: [inactiveRaffleBy1WinnerTestRequirements.creator] },
+          { signers: [inactiveRaffleBy1WinnerTestRequirements.project] },
         ),
       ).toThrowError();
     });
@@ -1124,9 +1124,9 @@ describe('inactiveRaffle', () => {
     }) => {
       const activeRaffleOutputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createActiveRaffleOutputBox(
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
           inactiveRaffleBy1WinnerTestRequirements.someoneWallet.ergoTree,
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
         );
       const raffleDetailsOutputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createRaffleDetailsOutputBox();
@@ -1161,14 +1161,14 @@ describe('inactiveRaffle', () => {
           ),
         ])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(inactiveRaffleBy1WinnerTestRequirements.creator.address)
+        .sendChangeTo(inactiveRaffleBy1WinnerTestRequirements.project.address)
         .build();
 
       // Check execution result
       expect(() =>
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.chain.execute(
           transaction,
-          { signers: [inactiveRaffleBy1WinnerTestRequirements.creator] },
+          { signers: [inactiveRaffleBy1WinnerTestRequirements.project] },
         ),
       ).toThrowError();
     });
@@ -1189,9 +1189,9 @@ describe('inactiveRaffle', () => {
     }) => {
       const activeRaffleOutputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createActiveRaffleOutputBox(
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
           inactiveRaffleBy1WinnerTestRequirements.someoneWallet.ergoTree,
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
         );
       const raffleDetailsOutputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createRaffleDetailsOutputBox();
@@ -1202,13 +1202,13 @@ describe('inactiveRaffle', () => {
 
       // Create input and output box required for this test
       const extraInput = mockUTxO({
-        ergoTree: inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+        ergoTree: inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
         value: 150_000n,
         creationHeight: 10,
       });
       const changeBox = new OutputBuilder(
         150_000n,
-        inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+        inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
       ).addTokens({
         tokenId:
           inactiveRaffleBy1WinnerTestRequirements.inactiveRaffleInputBox.boxId,
@@ -1241,7 +1241,7 @@ describe('inactiveRaffle', () => {
       expect(() =>
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.chain.execute(
           transaction,
-          { signers: [inactiveRaffleBy1WinnerTestRequirements.creator] },
+          { signers: [inactiveRaffleBy1WinnerTestRequirements.project] },
         ),
       ).toThrowError();
     });
@@ -1260,9 +1260,9 @@ describe('inactiveRaffle', () => {
     }) => {
       const activeRaffleOutputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createActiveRaffleOutputBox(
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
           inactiveRaffleBy1WinnerTestRequirements.someoneWallet.ergoTree,
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
         );
       const raffleDetailsOutputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createRaffleDetailsOutputBox();
@@ -1279,7 +1279,7 @@ describe('inactiveRaffle', () => {
       // Replace Ticket-Token with another token
       const extraInputBox = mockUTxO({
         value: testUtils.TestConstants.FEE,
-        ergoTree: inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+        ergoTree: inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
         assets: [
           {
             tokenId: '12'.repeat(32),
@@ -1306,13 +1306,13 @@ describe('inactiveRaffle', () => {
           ...winnersOutputBoxes,
         ])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(inactiveRaffleBy1WinnerTestRequirements.creator.address)
+        .sendChangeTo(inactiveRaffleBy1WinnerTestRequirements.project.address)
         .build();
 
       expect(() =>
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.chain.execute(
           transaction,
-          { signers: [inactiveRaffleBy1WinnerTestRequirements.creator] },
+          { signers: [inactiveRaffleBy1WinnerTestRequirements.project] },
         ),
       ).toThrowError();
     });
@@ -1331,9 +1331,9 @@ describe('inactiveRaffle', () => {
     }) => {
       const activeRaffleOutputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createActiveRaffleOutputBox(
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
           inactiveRaffleBy1WinnerTestRequirements.someoneWallet.ergoTree,
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
           1,
           undefined,
           undefined,
@@ -1372,13 +1372,13 @@ describe('inactiveRaffle', () => {
           ...winnersOutputBoxes,
         ])
         .payFee(testUtils.TestConstants.FEE)
-        // .sendChangeTo(creator.address)
+        // .sendChangeTo(project.address)
         .build();
 
       expect(() =>
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.chain.execute(
           transaction,
-          { signers: [inactiveRaffleBy1WinnerTestRequirements.creator] },
+          { signers: [inactiveRaffleBy1WinnerTestRequirements.project] },
         ),
       ).toThrowError();
     });
@@ -1398,9 +1398,9 @@ describe('inactiveRaffle', () => {
       // Replace Ticket-Token id with invalid id
       const inactiveRaffleInputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createInactiveRaffleBoxMock(
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
           inactiveRaffleBy1WinnerTestRequirements.someoneWallet.ergoTree,
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
           1,
           undefined,
           undefined,
@@ -1412,7 +1412,7 @@ describe('inactiveRaffle', () => {
         );
       const extraInputBox = mockUTxO({
         value: testUtils.TestConstants.FEE,
-        ergoTree: inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+        ergoTree: inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
         assets: [
           {
             tokenId: '1234'.repeat(16),
@@ -1423,9 +1423,9 @@ describe('inactiveRaffle', () => {
 
       const activeRaffleOutputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createActiveRaffleOutputBox(
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
           inactiveRaffleBy1WinnerTestRequirements.someoneWallet.ergoTree,
-          inactiveRaffleBy1WinnerTestRequirements.creator.ergoTree,
+          inactiveRaffleBy1WinnerTestRequirements.project.ergoTree,
         );
       const raffleDetailsOutputBox =
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.createRaffleDetailsOutputBox();
@@ -1452,13 +1452,13 @@ describe('inactiveRaffle', () => {
           ...winnersOutputBoxes,
         ])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(inactiveRaffleBy1WinnerTestRequirements.creator.address)
+        .sendChangeTo(inactiveRaffleBy1WinnerTestRequirements.project.address)
         .build();
 
       expect(() =>
         inactiveRaffleBy1WinnerTestRequirements.boxFactory.chain.execute(
           transaction,
-          { signers: [inactiveRaffleBy1WinnerTestRequirements.creator] },
+          { signers: [inactiveRaffleBy1WinnerTestRequirements.project] },
         ),
       ).toThrowError();
     });

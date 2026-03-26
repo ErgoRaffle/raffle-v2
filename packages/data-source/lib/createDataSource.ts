@@ -10,6 +10,10 @@ import {
 } from '@rosen-bridge/tx-pot';
 
 import {
+  DynamicBoxEntity,
+  migrations as dynamicBoxMigrations,
+} from '@ergo-raffle/dynamic-extractor';
+import {
   ServiceEntity,
   InactiveRaffleEntity,
   RaffleBoxEntity,
@@ -23,7 +27,6 @@ import {
   SuccessRaffleEntity,
   TicketRedeemEntity,
   SafePayEntity,
-  DynamicBoxEntity,
   migrations as extractorsMigrations,
 } from '@ergo-raffle/extractors';
 import {
@@ -60,12 +63,14 @@ const MIGRATIONS = {
     ...txpotMigrations.sqlite,
     ...extractorsMigrations.sqlite,
     ...requestParamsMigrations.sqlite,
+    ...dynamicBoxMigrations.sqlite,
   ],
   postgres: [
     ...scannerMigrations.postgres,
     ...txpotMigrations.postgres,
     ...extractorsMigrations.postgres,
     ...requestParamsMigrations.postgres,
+    ...dynamicBoxMigrations.postgres,
   ],
 };
 

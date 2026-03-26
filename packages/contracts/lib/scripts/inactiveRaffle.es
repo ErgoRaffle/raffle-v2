@@ -3,7 +3,7 @@
   //
   // Registers:
   //   R4[Coll[Long]]: [WinnersPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, Deadline, txFee]
-  //   R5[Coll[Coll[Byte]]]: [ServiceErgoTreeHash, ImplementerErgoTreeHash, CreatorErgoTreeHash]
+  //   R5[Coll[Coll[Byte]]]: [ServiceErgoTreeHash, ImplementerErgoTreeHash, ProjectErgoTreeHash]
   //   R6[Coll[Coll[Byte]]]: [Name, Description, Pictures(optional)]
   //   R7[Coll[Coll[Byte]]]: [TicketId, WinnersPercentListHash]
   //   R8[Int]: winnersCount
@@ -69,7 +69,7 @@
   sigmaProp(allOf(Coll(
     // Correct ActiveRaffle format
     // R4: [WinnersPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, Deadline, TxFee]
-    // R5: [ServiceErgoTreeHash, ImplementerErgoTreeHash, CreatorErgoTreeHash]
+    // R5: [ServiceErgoTreeHash, ImplementerErgoTreeHash, ProjectErgoTreeHash]
     // R6: WinnersCount
     // R7: TotalSoldTicket
     blake2b256(activeRaffle.propositionBytes) == activeRaffleScriptHash,

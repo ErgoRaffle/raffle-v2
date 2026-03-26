@@ -227,6 +227,87 @@
           },
           { "choices": ["mainnet", "testnet"] }
         ]
+      },
+      "rpc": {
+        "type": "object",
+        "children": {
+          "url": {
+            "type": "string",
+            "description": "Bitcoin RPC base URL",
+            "validations": [
+              {
+                "required": true,
+                "error": "bitcoin RPC url must be specified"
+              }
+            ]
+          },
+          "timeout": {
+            "type": "number",
+            "default": 30,
+            "description": "RPC timeout in seconds",
+            "validations": [
+              {
+                "required": true,
+                "error": "scanner RPC timeout must be specified"
+              }
+            ]
+          },
+          "username": {
+            "type": "string",
+            "description": "Bitcoin Core RPC username (optional)"
+          },
+          "password": {
+            "type": "string",
+            "description": "Bitcoin Core RPC password (optional)"
+          }
+        }
+      },
+      "scannerInterval": {
+        "type": "number",
+        "default": 30,
+        "description": "scanner update interval in seconds",
+        "validations": [
+          {
+            "required": true,
+            "error": "scanner update interval must be specified"
+          }
+        ]
+      },
+      "initialHeight": {
+        "type": "number",
+        "description": "Bitcoin scanner initial block height",
+        "validations": [
+          {
+            "required": true,
+            "error": "scanner initial block height must be specified"
+          }
+        ]
+      },
+      "runes": {
+        "type": "object",
+        "children": {
+          "unisat": {
+            "type": "object",
+            "description": "Unisat indexer API for runes data",
+            "children": {
+              "url": {
+                "type": "string",
+                "description": "Unisat API base URL",
+                "default": "https://open-api.unisat.io",
+                "validations": [
+                  {
+                    "required": true,
+                    "error": "Unisat API base URL must be specified"
+                  }
+                ]
+              },
+              "apiKey": {
+                "type": "string",
+                "description": "Unisat API key"
+              }
+            }
+          }
+        }
       }
     }
   }

@@ -89,7 +89,7 @@
     val serviceFeePercent = SELF.R4[Coll[Long]].get(1)
     val implementerFeePercent = SELF.R4[Coll[Long]].get(2)
     val serviceErgoTreeHash = SELF.R5[Coll[Coll[Byte]]].get(0)
-    val implementorErgoTreeHash = SELF.R5[Coll[Coll[Byte]]].get(1)
+    val implementerErgoTreeHash = SELF.R5[Coll[Coll[Byte]]].get(1)
     val projectErgoTreeHash = SELF.R5[Coll[Coll[Byte]]].get(2)
     val serviceErgoTree = getVar[Coll[Coll[Byte]]](0).get(0)
     val implementerErgoTree = getVar[Coll[Coll[Byte]]](0).get(1)
@@ -141,7 +141,7 @@
       serviceFee.R5[Long].get == txFee,
       blake2b256(serviceErgoTree) == serviceFee.R4[Coll[Byte]].get,
       blake2b256(implementerFee.propositionBytes) == safePayScriptHash,
-      implementerFee.R4[Coll[Byte]].get == implementorErgoTreeHash,
+      implementerFee.R4[Coll[Byte]].get == implementerErgoTreeHash,
       implementerFee.R5[Long].get == txFee,
       blake2b256(implementerErgoTree) == implementerFee.R4[Coll[Byte]].get,
 

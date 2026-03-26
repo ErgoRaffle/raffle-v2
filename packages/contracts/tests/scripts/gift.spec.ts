@@ -16,7 +16,7 @@ import * as testUtils from '../testUtils';
 interface RaffleGiftTestInterface {
   boxFactory: testUtils.RaffleBoxFactory;
   someoneWallet: KeyedMockChainParty;
-  creator: KeyedMockChainParty;
+  giftGiverAddress: KeyedMockChainParty;
   prizeBox: ErgoUnsignedInput;
   prizeOutputBox: OutputBuilder;
   unwrappedGiftOutputBox: OutputBuilder;
@@ -57,11 +57,12 @@ const provideRaffleGiftTestRequirements = (
     ) as ScriptNamesType[],
   );
   boxFactory.chain.setTip(100);
-  const { creator, someone } = boxFactory.createPartners({
-    creator: testUtils.TestConstants.CREATOR_DEFAULT_BALANCE,
-    someone: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
-  });
-  creator.addBalance({
+  const { giftgiveraddress: giftGiverAddress, someone } =
+    boxFactory.createPartners({
+      giftGiverAddress: testUtils.TestConstants.ORGANIZER_DEFAULT_BALANCE,
+      someone: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
+    });
+  giftGiverAddress.addBalance({
     tokens: [{ tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 100n }],
   });
 
@@ -125,14 +126,14 @@ const provideRaffleGiftTestRequirements = (
   // Create giftBox input box
   const giftBox = boxFactory.createGiftBoxMock(
     1,
-    blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+    blake2b256(Buffer.from(giftGiverAddress.ergoTree, 'hex')),
     testUtils.TestConstants.FEE * 3n,
     testUtils.TestConstants.GIFT_TOKEN_ID,
     1n,
     extraGiftTokens,
   );
   giftBox.setContextExtension({
-    0: SColl(SByte, Array.from(Buffer.from(creator.ergoTree, 'hex'))),
+    0: SColl(SByte, Array.from(Buffer.from(giftGiverAddress.ergoTree, 'hex'))),
   });
 
   // Create raffleGiftErgTestRequirements.giftBox input box
@@ -149,12 +150,12 @@ const provideRaffleGiftTestRequirements = (
   const unwrappedGiftOutputBox = boxFactory.createSafePayOutputBox(
     BigInt(giftBox.value) - testUtils.TestConstants.FEE,
     giftOutputBoxTokens,
-    blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+    blake2b256(Buffer.from(giftGiverAddress.ergoTree, 'hex')),
   );
 
   // create ticket box
   const ticketBox = boxFactory.createTicketBoxMock(
-    creator.ergoTree,
+    giftGiverAddress.ergoTree,
     5n,
     testUtils.TestConstants.TICKET_TOKEN_ID,
     [0n, 5n, 100_000n], // from-ticket-range, to-ticket-range, ticket-price
@@ -163,7 +164,7 @@ const provideRaffleGiftTestRequirements = (
   return {
     boxFactory: boxFactory,
     someoneWallet: someone,
-    creator: creator,
+    giftGiverAddress: giftGiverAddress,
     prizeBox: prizeBox,
     prizeOutputBox: prizeOutputBox,
     unwrappedGiftOutputBox: unwrappedGiftOutputBox,
@@ -335,7 +336,10 @@ describe('gift', () => {
         raffleGiftErgTestRequirements.boxFactory.createGiftBoxMock(
           1,
           blake2b256(
-            Buffer.from(raffleGiftErgTestRequirements.creator.ergoTree, 'hex'),
+            Buffer.from(
+              raffleGiftErgTestRequirements.giftGiverAddress.ergoTree,
+              'hex',
+            ),
           ),
           testUtils.TestConstants.FEE * 3n,
           testUtils.TestConstants.GIFT_TOKEN_ID,
@@ -683,7 +687,10 @@ describe('gift', () => {
         raffleGiftErgTestRequirements.boxFactory.createGiftBoxMock(
           1,
           blake2b256(
-            Buffer.from(raffleGiftErgTestRequirements.creator.ergoTree, 'hex'),
+            Buffer.from(
+              raffleGiftErgTestRequirements.giftGiverAddress.ergoTree,
+              'hex',
+            ),
           ),
           testUtils.TestConstants.FEE * 3n,
           testUtils.TestConstants.GIFT_TOKEN_ID,
@@ -751,7 +758,12 @@ describe('gift', () => {
           BigInt(raffleGiftErgTestRequirements.giftBox.value) -
             testUtils.TestConstants.FEE * 2n,
           giftOutputBoxTokens,
-          blake2b256(raffleGiftErgTestRequirements.creator.ergoTree),
+          blake2b256(
+            Buffer.from(
+              raffleGiftErgTestRequirements.giftGiverAddress.ergoTree,
+              'hex',
+            ),
+          ),
         );
 
       const transaction = new TransactionBuilder(
@@ -796,7 +808,12 @@ describe('gift', () => {
             testUtils.TestConstants.FEE,
           // missing tokens
           [],
-          blake2b256(raffleGiftTokenTestRequirements.creator.ergoTree),
+          blake2b256(
+            Buffer.from(
+              raffleGiftTokenTestRequirements.giftGiverAddress.ergoTree,
+              'hex',
+            ),
+          ),
         );
 
       const transaction = new TransactionBuilder(

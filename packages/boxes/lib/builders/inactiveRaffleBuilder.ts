@@ -22,7 +22,7 @@ import { ServiceBuilder } from './serviceBuilder';
  *
  * Registers:
  *   R4[Coll[Long]]: [WinnersPercentage, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, Deadline, TxFee]
- *   R5[Coll[Coll[Byte]]]: [ServiceErgoTreeHash, ImplementerErgoTreeHash, CreatorErgoTreeHash]
+ *   R5[Coll[Coll[Byte]]]: [ServiceErgoTreeHash, ImplementerErgoTreeHash, ProjectErgoTreeHash]
  *   R6[Coll[Coll[Byte]]]: [Name, Description, Pictures(optional)]
  *   R7[Coll[Coll[Byte]]]: [TicketId, WinnersPercentListHash]
  *   R8[Int]: WinnersCount
@@ -49,7 +49,7 @@ export class InactiveRaffleBuilder {
   private winnersPercentListHash?: Uint8Array;
   private serviceErgoTreeHash?: Uint8Array;
   private implementerErgoTreeHash?: Uint8Array;
-  private creatorErgoTreeHash?: Uint8Array;
+  private projectErgoTreeHash?: Uint8Array;
   private collectingTokenId?: string;
   private collectingTokenAmount: bigint = 1n;
 
@@ -247,12 +247,12 @@ export class InactiveRaffleBuilder {
   };
 
   /**
-   * Set the creator ergoTree and hash it
+   * Set the project ergoTree and hash it
    * @param ergoTree - ErgoTree in hex format
    * @returns this builder instance
    */
-  setCreatorErgoTree = (ergoTree: string): this => {
-    this.creatorErgoTreeHash = blake2b256(Buffer.from(ergoTree, 'hex'));
+  setProjectErgoTree = (ergoTree: string): this => {
+    this.projectErgoTreeHash = blake2b256(Buffer.from(ergoTree, 'hex'));
     return this;
   };
 
@@ -389,11 +389,11 @@ export class InactiveRaffleBuilder {
   };
 
   /**
-   * Get the creator ergo tree hash
-   * @returns Creator ergo tree hash
+   * Get the project ergo tree hash
+   * @returns Project ergo tree hash
    */
-  getCreatorErgoTreeHash = (): Uint8Array => {
-    return this.creatorErgoTreeHash!;
+  getProjectErgoTreeHash = (): Uint8Array => {
+    return this.projectErgoTreeHash!;
   };
 
   /**
@@ -464,8 +464,8 @@ export class InactiveRaffleBuilder {
       throw new Error('Service ergoTree hash not set');
     if (!this.implementerErgoTreeHash)
       throw new Error('Implementer ergoTree hash not set');
-    if (!this.creatorErgoTreeHash)
-      throw new Error('Creator ergoTree hash not set');
+    if (!this.projectErgoTreeHash)
+      throw new Error('Project ergoTree hash not set');
   };
 
   /**
@@ -510,7 +510,7 @@ export class InactiveRaffleBuilder {
         R5: SColl(SColl(SByte), [
           Array.from(this.serviceErgoTreeHash!),
           Array.from(this.implementerErgoTreeHash!),
-          Array.from(this.creatorErgoTreeHash!),
+          Array.from(this.projectErgoTreeHash!),
         ]).toHex(),
         R6: SColl(SColl(SByte), [
           Array.from(Buffer.from(this.name!)),
@@ -601,7 +601,7 @@ export class InactiveRaffleBuilder {
     // Set ergoTree hashes
     builder.serviceErgoTreeHash = r5Data[0];
     builder.implementerErgoTreeHash = r5Data[1];
-    builder.creatorErgoTreeHash = r5Data[2];
+    builder.projectErgoTreeHash = r5Data[2];
 
     // Set pictures if present
     if (r6Data.length > 2) {

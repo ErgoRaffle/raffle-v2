@@ -31,7 +31,6 @@ export abstract class AbstractTxService extends AbstractService {
   protected network: ErgoNodeNetwork;
   protected activeTxpotCallbackIds: [TxType, string][] = [];
   protected activeBoxLookupRequestIds: number[] = [];
-  protected activeProxyAddresses: string[] = [];
   protected static instance: AbstractTxService;
 
   constructor(nodeUrl: string, logger: AbstractLogger) {
@@ -73,12 +72,6 @@ export abstract class AbstractTxService extends AbstractService {
     });
     this.activeBoxLookupRequestIds = [];
 
-    // Remove the proxy addresses
-    this.activeProxyAddresses.forEach((proxyAddress) => {
-      ScannerService.getInstance().removeDynamicAddress(proxyAddress);
-    });
-    this.activeProxyAddresses = [];
-
     // Set the status to dormant
     this.setStatus(ServiceStatus.dormant);
     return true;
@@ -111,11 +104,6 @@ export abstract class AbstractTxService extends AbstractService {
     TxPotService.getInstance().unregisterCompletionCallback(txType, callbackId);
     this.activeTxpotCallbackIds = this.activeTxpotCallbackIds.filter(
       ([, callbackId]) => callbackId !== callbackId,
-    );
-
-    ScannerService.getInstance().removeDynamicAddress(proxyAddress);
-    this.activeProxyAddresses = this.activeProxyAddresses.filter(
-      (address) => address !== proxyAddress,
     );
   };
 

@@ -14,7 +14,7 @@ import * as testUtils from '../testUtils';
 interface TestInterface {
   boxFactory: testUtils.RaffleBoxFactory;
   someoneWallet: KeyedMockChainParty;
-  creator: KeyedMockChainParty;
+  project: KeyedMockChainParty;
   implementer: KeyedMockChainParty;
   oracleBox: ErgoUnsignedInput;
   activeRaffleBoxForSuccessEnd: ErgoUnsignedInput;
@@ -40,12 +40,12 @@ describe('raffleDetails', () => {
       ) as ScriptNamesType[],
     );
     boxFactory.chain.setTip(100);
-    const { creator, implementer, someone } = boxFactory.createPartners({
-      creator: testUtils.TestConstants.CREATOR_DEFAULT_BALANCE,
+    const { project, implementer, someone } = boxFactory.createPartners({
+      project: testUtils.TestConstants.ORGANIZER_DEFAULT_BALANCE,
       implementer: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
       someone: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
     });
-    creator.addBalance({
+    project.addBalance({
       tokens: [
         {
           tokenId: testUtils.TestConstants.X_TOKEN_ID,
@@ -53,7 +53,7 @@ describe('raffleDetails', () => {
         },
       ],
     });
-    creator.addBalance({
+    project.addBalance({
       tokens: [
         {
           tokenId: testUtils.TestConstants.TICKET_TOKEN_ID,
@@ -68,9 +68,9 @@ describe('raffleDetails', () => {
 
     // Created activeRaffle & raffleDetails input boxes
     const activeRaffleBoxForSuccessEnd = boxFactory.createActiveRaffleBoxMock(
-      creator.ergoTree,
+      project.ergoTree,
       implementer.ergoTree,
-      creator.ergoTree,
+      project.ergoTree,
       winnersCount,
       serviceFeePercent,
       undefined,
@@ -90,7 +90,7 @@ describe('raffleDetails', () => {
       BigInt((totalRaised * serviceFeePercent) / 1000n) +
         2n * testUtils.TestConstants.FEE,
       [],
-      blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+      blake2b256(Buffer.from(project.ergoTree, 'hex')),
     );
     const implementerFeeOutputBox = boxFactory.createSafePayOutputBox(
       BigInt((totalRaised * implementerFeePercent) / 1000n) +
@@ -103,7 +103,7 @@ describe('raffleDetails', () => {
 
     ctx.boxFactory = boxFactory;
     ctx.someoneWallet = someone;
-    ctx.creator = creator;
+    ctx.project = project;
     ctx.implementer = implementer;
     ctx.oracleBox = oracleBox;
     ctx.activeRaffleBoxForSuccessEnd = activeRaffleBoxForSuccessEnd;
@@ -124,7 +124,7 @@ describe('raffleDetails', () => {
      */
     it<TestInterface>('should successfully spend in raffle finalize transaction after the deadline', ({
       boxFactory,
-      creator,
+      project,
       oracleBox,
       raffleDetailsBox,
       activeRaffleBoxForSuccessEnd,
@@ -144,7 +144,7 @@ describe('raffleDetails', () => {
           testUtils.TestConstants.FEE * 4n,
         activeRaffleBoxForSuccessEnd.assets[0].tokenId,
         oracleBox.boxId.toString(),
-        blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+        blake2b256(Buffer.from(project.ergoTree, 'hex')),
         [],
         totalSoldTickets,
         winnersCount,
@@ -185,7 +185,7 @@ describe('raffleDetails', () => {
      */
     it<TestInterface>("should fail if active raffle doesn't have a proper license token", ({
       boxFactory,
-      creator,
+      project,
       implementer,
       oracleBox,
       raffleDetailsBox,
@@ -204,9 +204,9 @@ describe('raffleDetails', () => {
       const serviceFeePercent = 200n;
 
       const activeRaffleBoxForSuccessEnd = boxFactory.createActiveRaffleBoxMock(
-        creator.ergoTree,
+        project.ergoTree,
         implementer.ergoTree,
-        creator.ergoTree,
+        project.ergoTree,
         winnersCount,
         serviceFeePercent,
         undefined,
@@ -228,7 +228,7 @@ describe('raffleDetails', () => {
           testUtils.TestConstants.FEE * 4n,
         activeRaffleBoxForSuccessEnd.assets[0].tokenId,
         oracleBox.boxId.toString(),
-        blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+        blake2b256(Buffer.from(project.ergoTree, 'hex')),
         [],
         totalSoldTickets,
         winnersCount,
@@ -267,7 +267,7 @@ describe('raffleDetails', () => {
      */
     it<TestInterface>('should fail if active raffle belongs to a different raffle', ({
       boxFactory,
-      creator,
+      project,
       implementer,
       oracleBox,
       raffleDetailsBox,
@@ -286,9 +286,9 @@ describe('raffleDetails', () => {
       const serviceFeePercent = 200n;
 
       const activeRaffleBoxForSuccessEnd = boxFactory.createActiveRaffleBoxMock(
-        creator.ergoTree,
+        project.ergoTree,
         implementer.ergoTree,
-        creator.ergoTree,
+        project.ergoTree,
         winnersCount,
         serviceFeePercent,
         undefined,
@@ -308,7 +308,7 @@ describe('raffleDetails', () => {
           testUtils.TestConstants.FEE * 4n,
         activeRaffleBoxForSuccessEnd.assets[0].tokenId,
         oracleBox.boxId.toString(),
-        blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+        blake2b256(Buffer.from(project.ergoTree, 'hex')),
         [],
         totalSoldTickets,
         winnersCount,
@@ -332,7 +332,7 @@ describe('raffleDetails', () => {
         .configureSelector((selector) => {
           selector.defineStrategy((inputs) => inputs);
         })
-        .sendChangeTo(creator.address)
+        .sendChangeTo(project.address)
         .burnTokens(raffleDetailsBox.assets[0])
         .payFee(testUtils.TestConstants.FEE)
         .build();
@@ -351,7 +351,7 @@ describe('raffleDetails', () => {
      */
     it<TestInterface>("should fail if active raffle didn't meet the deadline", ({
       boxFactory,
-      creator,
+      project,
       oracleBox,
       raffleDetailsBox,
       activeRaffleBoxForSuccessEnd,
@@ -373,7 +373,7 @@ describe('raffleDetails', () => {
           testUtils.TestConstants.FEE * 4n,
         activeRaffleBoxForSuccessEnd.assets[0].tokenId,
         oracleBox.boxId.toString(),
-        blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+        blake2b256(Buffer.from(project.ergoTree, 'hex')),
         [],
         totalSoldTickets,
         winnersCount,

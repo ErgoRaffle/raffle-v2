@@ -52,16 +52,16 @@
 
       // Correct ticket format
       // R4: [DonatorErgoTreeHash]
-      ticket.tokens(0)._1 == raffleId, 
+      ticket.tokens(0)._1 == raffleId,
       ticket.tokens(0)._2 == ticketCount,
       blake2b256(ticket.propositionBytes) == ticketScriptHash,
-      ticket.R4[Coll[Byte]].get == donatorErgoTreeHash,  
+      ticket.R4[Coll[Byte]].get == donatorErgoTreeHash,
     )))
   } else {
     // Proxy redeem
     // [Proxy] --> [DonatorAddress]
     sigmaProp(allOf(Coll(
-      INPUTS.size == 1,
+      INPUTS(0).id == SELF.id,
       blake2b256(OUTPUTS(0).propositionBytes) == donatorErgoTreeHash,
       OUTPUTS(0).tokens == SELF.tokens,
       OUTPUTS(0).value >= SELF.value - txFee  

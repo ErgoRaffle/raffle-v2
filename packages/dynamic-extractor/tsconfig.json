@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "outDir": "./dist",
+    "types": ["vitest/globals", "node"],
+    "composite": true
+  },
+  "include": ["tests", "lib"]
+}

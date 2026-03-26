@@ -12,8 +12,9 @@ export interface CreationProxyParams {
   ticketPrice: bigint;
   goal: bigint;
   winnersPercent: number;
-  implementorErgoTreeHash: string;
-  creatorErgoTreeHash: string;
+  implementerErgoTreeHash: string;
+  organizerErgoTreeHash: string;
+  projectErgoTreeHash: string;
   winnerCount: number;
   winnersPercentList: bigint[];
   txFee: bigint;
@@ -57,11 +58,6 @@ export function buildCreationProxyBox(
   params: CreationProxyParams,
   options?: { value?: bigint; creationHeight?: number },
 ): OutputBuilder {
-  const isErgGoal = params.collectingTokenId == null;
-  const collectingTokenBytes = isErgGoal
-    ? Array.from(Buffer.alloc(32))
-    : Array.from(Buffer.from(params.collectingTokenId!, 'hex'));
-
   const winnersPercentListHash = Array.from(
     blake2b256(
       Buffer.concat(
@@ -95,17 +91,17 @@ export function buildCreationProxyBox(
       params.txFee,
     ]).toHex(),
     R5: SColl(SColl(SByte), [
-      Array.from(Buffer.from(params.implementorErgoTreeHash, 'hex')),
-      Array.from(Buffer.from(params.creatorErgoTreeHash, 'hex')),
+      Array.from(Buffer.from(params.implementerErgoTreeHash, 'hex')),
+      Array.from(Buffer.from(params.organizerErgoTreeHash, 'hex')),
+      Array.from(Buffer.from(params.projectErgoTreeHash, 'hex')),
       winnersPercentListHash,
-      collectingTokenBytes,
     ]).toHex(),
     R6: SColl(SColl(SByte), [
       Array.from(Buffer.from(params.name)),
       Array.from(Buffer.from(params.description)),
       ...(params.pictures ?? []).map((p) => Array.from(Buffer.from(p))),
     ]).toHex(),
-    R7: SColl(SInt, [params.winnerCount, isErgGoal ? 1 : 0]).toHex(),
+    R7: SInt(params.winnerCount).toHex(),
   });
 
   if (tokens.length > 0) out = out.addTokens(tokens);
