@@ -13,7 +13,7 @@ import * as testUtils from '../testUtils';
 
 interface GiftTokenRepoTestInterface {
   boxFactory: testUtils.RaffleBoxFactory;
-  creator: KeyedMockChainParty;
+  attacker: KeyedMockChainParty;
   winnersInputBoxes: ErgoUnsignedInput[];
 }
 
@@ -36,8 +36,8 @@ const provideGiftTokenRepoTestRequirements = (winnersCount: number = 1) => {
       (value) => value != 'giftTokenRepo',
     ) as ScriptNamesType[],
   );
-  const { creator } = boxFactory.createPartners({
-    Creator: testUtils.TestConstants.CREATOR_DEFAULT_BALANCE,
+  const { attacker: attacker } = boxFactory.createPartners({
+    attacker: testUtils.TestConstants.ORGANIZER_DEFAULT_BALANCE,
   });
 
   const winnersInputBoxes = boxFactory.createWinnersBoxMock(
@@ -52,7 +52,7 @@ const provideGiftTokenRepoTestRequirements = (winnersCount: number = 1) => {
 
   return {
     boxFactory: boxFactory,
-    creator: creator,
+    attacker: attacker,
     winnersInputBoxes: winnersInputBoxes,
   };
 };
@@ -241,7 +241,7 @@ describe('giftTokenRepo', () => {
         );
       const extraInput = mockUTxO({
         value: testUtils.TestConstants.FEE,
-        ergoTree: giftTokenRepoBy5WinnerTestRequirements.creator.ergoTree,
+        ergoTree: giftTokenRepoBy5WinnerTestRequirements.attacker.ergoTree,
       });
       const giftTokenInputBox =
         giftTokenRepoBy5WinnerTestRequirements.boxFactory.createGiftTokenRepoBoxMock(
@@ -253,7 +253,7 @@ describe('giftTokenRepo', () => {
       });
       const extraOutputBox = new OutputBuilder(
         testUtils.TestConstants.FEE,
-        giftTokenRepoBy5WinnerTestRequirements.creator.ergoTree,
+        giftTokenRepoBy5WinnerTestRequirements.attacker.ergoTree,
       ).addTokens({
         tokenId: giftTokenInputBox.assets[0].tokenId,
         amount: 1n,
@@ -667,7 +667,7 @@ describe('giftTokenRepo', () => {
         .from([(anotherWinnersInputBoxes as Box[])[4], giftTokenInputBox])
         .to(outBoxes)
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(giftTokenRepoBy5WinnerTestRequirements.creator.ergoTree)
+        .sendChangeTo(giftTokenRepoBy5WinnerTestRequirements.attacker.ergoTree)
         .build();
 
       expect(() =>
@@ -727,7 +727,7 @@ describe('giftTokenRepo', () => {
         ])
         .to(outBoxes)
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(giftTokenRepoBy5WinnerTestRequirements.creator.ergoTree)
+        .sendChangeTo(giftTokenRepoBy5WinnerTestRequirements.attacker.ergoTree)
         .build();
 
       expect(() =>

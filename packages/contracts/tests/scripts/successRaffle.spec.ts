@@ -14,7 +14,7 @@ interface SuccessRaffleTestInterface {
   boxFactory: testUtils.RaffleBoxFactory;
   ownerWallet: KeyedMockChainParty;
   someoneWallet: KeyedMockChainParty;
-  creator: KeyedMockChainParty;
+  project: KeyedMockChainParty;
   newWinnerTicketIndex: bigint;
   nextSeed: string;
   serviceBox: ErgoUnsignedInput;
@@ -50,12 +50,12 @@ const provideSuccessRaffleTestRequirements = (collectingTokenId?: string) => {
   );
   boxFactory.chain.setTip(100);
 
-  const { owner, creator, someone } = boxFactory.createPartners({
-    owner: testUtils.TestConstants.CREATOR_DEFAULT_BALANCE,
-    creator: testUtils.TestConstants.CREATOR_DEFAULT_BALANCE,
+  const { owner, project, someone } = boxFactory.createPartners({
+    owner: testUtils.TestConstants.ORGANIZER_DEFAULT_BALANCE,
+    project: testUtils.TestConstants.ORGANIZER_DEFAULT_BALANCE,
     someone: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
   });
-  creator.addBalance({
+  project.addBalance({
     tokens: [{ tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 100n }],
   });
   someone.addBalance({
@@ -75,7 +75,7 @@ const provideSuccessRaffleTestRequirements = (collectingTokenId?: string) => {
   const successRaffleBox = boxFactory.createSuccessRaffleBoxMock(
     testUtils.TestConstants.FEE * 3n + testUtils.TestConstants.CREATION_FEE,
     testUtils.TestConstants.LICENSE_TOKEN_ID,
-    blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+    blake2b256(Buffer.from(project.ergoTree, 'hex')),
     TEST_INITIAL_SEED,
     [],
     5n,
@@ -104,7 +104,7 @@ const provideSuccessRaffleTestRequirements = (collectingTokenId?: string) => {
     boxFactory.createSuccessRaffleBoxMock(
       testUtils.TestConstants.FEE * 3n + testUtils.TestConstants.CREATION_FEE,
       testUtils.TestConstants.LICENSE_TOKEN_ID,
-      blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+      blake2b256(Buffer.from(project.ergoTree, 'hex')),
       TEST_INITIAL_SEED,
       [],
       5n,
@@ -139,7 +139,7 @@ const provideSuccessRaffleTestRequirements = (collectingTokenId?: string) => {
     boxFactory: boxFactory,
     someoneWallet: someone,
     ownerWallet: owner,
-    creator: creator,
+    project: project,
     newWinnerTicketIndex: newWinnerTicketIndex,
     nextSeed: nextSeed,
     serviceBox: serviceBox,
@@ -197,7 +197,7 @@ describe('successRaffle', () => {
           testUtils.TestConstants.LICENSE_TOKEN_ID,
           successRaffleTestRequirements.nextSeed,
           blake2b256(
-            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+            Buffer.from(successRaffleTestRequirements.project.ergoTree, 'hex'),
           ),
           [successRaffleTestRequirements.newWinnerTicketIndex],
           totalSoldTickets,
@@ -260,7 +260,7 @@ describe('successRaffle', () => {
           successRaffleTokenGoalTestRequirements.nextSeed,
           blake2b256(
             Buffer.from(
-              successRaffleTokenGoalTestRequirements.creator.ergoTree,
+              successRaffleTokenGoalTestRequirements.project.ergoTree,
               'hex',
             ),
           ),
@@ -346,7 +346,7 @@ describe('successRaffle', () => {
           successRaffleTokenGoalTestRequirements.nextSeed,
           blake2b256(
             Buffer.from(
-              successRaffleTokenGoalTestRequirements.creator.ergoTree,
+              successRaffleTokenGoalTestRequirements.project.ergoTree,
               'hex',
             ),
           ),
@@ -439,7 +439,7 @@ describe('successRaffle', () => {
           testUtils.TestConstants.LICENSE_TOKEN_ID,
           successRaffleTestRequirements.nextSeed,
           blake2b256(
-            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+            Buffer.from(successRaffleTestRequirements.project.ergoTree, 'hex'),
           ),
           // put invalid ticket index to the successRaffle box
           [invalidWinnerTicketIndex],
@@ -494,7 +494,7 @@ describe('successRaffle', () => {
             testUtils.TestConstants.CREATION_FEE,
           testUtils.TestConstants.LICENSE_TOKEN_ID,
           blake2b256(
-            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+            Buffer.from(successRaffleTestRequirements.project.ergoTree, 'hex'),
           ),
           TEST_INITIAL_SEED,
           // set invalid ticket-index list
@@ -532,7 +532,7 @@ describe('successRaffle', () => {
           testUtils.TestConstants.LICENSE_TOKEN_ID,
           successRaffleTestRequirements.nextSeed,
           blake2b256(
-            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+            Buffer.from(successRaffleTestRequirements.project.ergoTree, 'hex'),
           ),
           [successRaffleTestRequirements.newWinnerTicketIndex],
           totalSoldTickets,
@@ -583,7 +583,7 @@ describe('successRaffle', () => {
           testUtils.TestConstants.FEE,
           testUtils.TestConstants.LICENSE_TOKEN_ID,
           blake2b256(
-            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+            Buffer.from(successRaffleTestRequirements.project.ergoTree, 'hex'),
           ),
           TEST_INITIAL_SEED,
           [successRaffleTestRequirements.newWinnerTicketIndex],
@@ -637,7 +637,7 @@ describe('successRaffle', () => {
           testUtils.TestConstants.LICENSE_TOKEN_ID,
           successRaffleTestRequirements.nextSeed,
           blake2b256(
-            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+            Buffer.from(successRaffleTestRequirements.project.ergoTree, 'hex'),
           ),
           [
             successRaffleTestRequirements.newWinnerTicketIndex,
@@ -703,7 +703,7 @@ describe('successRaffle', () => {
           testUtils.TestConstants.LICENSE_TOKEN_ID,
           successRaffleTestRequirements.nextSeed,
           blake2b256(
-            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+            Buffer.from(successRaffleTestRequirements.project.ergoTree, 'hex'),
           ),
           [successRaffleTestRequirements.newWinnerTicketIndex],
           totalSoldTickets,
@@ -789,7 +789,7 @@ describe('successRaffle', () => {
           testUtils.TestConstants.LICENSE_TOKEN_ID,
           successRaffleTestRequirements.nextSeed,
           blake2b256(
-            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+            Buffer.from(successRaffleTestRequirements.project.ergoTree, 'hex'),
           ),
           [successRaffleTestRequirements.newWinnerTicketIndex],
           totalSoldTickets,
@@ -867,7 +867,7 @@ describe('successRaffle', () => {
           testUtils.TestConstants.LICENSE_TOKEN_ID,
           successRaffleTestRequirements.nextSeed,
           blake2b256(
-            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+            Buffer.from(successRaffleTestRequirements.project.ergoTree, 'hex'),
           ),
           [successRaffleTestRequirements.newWinnerTicketIndex],
           totalSoldTickets,
@@ -930,7 +930,7 @@ describe('successRaffle', () => {
           testUtils.TestConstants.LICENSE_TOKEN_ID,
           successRaffleTestRequirements.nextSeed,
           blake2b256(
-            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+            Buffer.from(successRaffleTestRequirements.project.ergoTree, 'hex'),
           ),
           // set invalid selectedWinnersList
           [successRaffleTestRequirements.newWinnerTicketIndex + 1n],
@@ -997,7 +997,7 @@ describe('successRaffle', () => {
           // set invalid seed
           'invalid seed',
           blake2b256(
-            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+            Buffer.from(successRaffleTestRequirements.project.ergoTree, 'hex'),
           ),
           [successRaffleTestRequirements.newWinnerTicketIndex],
           totalSoldTickets,
@@ -1064,7 +1064,7 @@ describe('successRaffle', () => {
           testUtils.TestConstants.LICENSE_TOKEN_ID,
           successRaffleTestRequirements.nextSeed,
           blake2b256(
-            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+            Buffer.from(successRaffleTestRequirements.project.ergoTree, 'hex'),
           ),
           [successRaffleTestRequirements.newWinnerTicketIndex],
           totalSoldTickets,
@@ -1129,7 +1129,7 @@ describe('successRaffle', () => {
           successRaffleTokenGoalTestRequirements.nextSeed,
           blake2b256(
             Buffer.from(
-              successRaffleTokenGoalTestRequirements.creator.ergoTree,
+              successRaffleTokenGoalTestRequirements.project.ergoTree,
               'hex',
             ),
           ),
@@ -1204,7 +1204,7 @@ describe('successRaffle', () => {
           testUtils.TestConstants.LICENSE_TOKEN_ID,
           successRaffleTestRequirements.nextSeed,
           blake2b256(
-            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+            Buffer.from(successRaffleTestRequirements.project.ergoTree, 'hex'),
           ),
           [successRaffleTestRequirements.newWinnerTicketIndex],
           totalSoldTickets,
@@ -1271,17 +1271,17 @@ describe('successRaffle', () => {
         );
       successRaffleTestRequirements.successRaffleForLicenseRedeemBox.setContextExtension(
         {
-          0: SColl(SByte, successRaffleTestRequirements.creator.ergoTree),
+          0: SColl(SByte, successRaffleTestRequirements.project.ergoTree),
         },
       );
 
-      const creatorFund =
+      const projectFund =
         successRaffleTestRequirements.boxFactory.createSafePayOutputBox(
           successRaffleTestRequirements.successRaffleForLicenseRedeemBox.value -
             testUtils.TestConstants.FEE,
           [],
           blake2b256(
-            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+            Buffer.from(successRaffleTestRequirements.project.ergoTree, 'hex'),
           ),
         );
 
@@ -1292,7 +1292,7 @@ describe('successRaffle', () => {
           successRaffleTestRequirements.serviceBox,
           successRaffleTestRequirements.successRaffleForLicenseRedeemBox,
         ])
-        .to([serviceOutputBox, creatorFund])
+        .to([serviceOutputBox, projectFund])
         .configureSelector((selector) => {
           selector.defineStrategy((inputs) => inputs);
         })
@@ -1341,12 +1341,12 @@ describe('successRaffle', () => {
         {
           0: SColl(
             SByte,
-            successRaffleTokenGoalTestRequirements.creator.ergoTree,
+            successRaffleTokenGoalTestRequirements.project.ergoTree,
           ),
         },
       );
 
-      const creatorFund =
+      const projectFund =
         successRaffleTokenGoalTestRequirements.boxFactory.createSafePayOutputBox(
           successRaffleTokenGoalTestRequirements
             .successRaffleForLicenseRedeemBox.value -
@@ -1357,7 +1357,7 @@ describe('successRaffle', () => {
           ],
           blake2b256(
             Buffer.from(
-              successRaffleTokenGoalTestRequirements.creator.ergoTree,
+              successRaffleTokenGoalTestRequirements.project.ergoTree,
               'hex',
             ),
           ),
@@ -1370,7 +1370,7 @@ describe('successRaffle', () => {
           successRaffleTokenGoalTestRequirements.serviceBox,
           successRaffleTokenGoalTestRequirements.successRaffleForLicenseRedeemBox,
         ])
-        .to([serviceOutputBox, creatorFund])
+        .to([serviceOutputBox, projectFund])
         .configureSelector((selector) => {
           selector.defineStrategy((inputs) => inputs);
         })
@@ -1394,7 +1394,7 @@ describe('successRaffle', () => {
      * @target should fail if service box has a different service nft
      * @scenario
      * - create successRaffle output box by invalid nft id
-     * - create creatorFund output box
+     * - create projectFund output box
      * - execute transaction and burn current raffle related ticket tokens
      * - result of execution must be fail
      * @expected
@@ -1430,13 +1430,13 @@ describe('successRaffle', () => {
           testUtils.TestConstants.X_TOKEN_ID,
         );
 
-      const creatorFund =
+      const projectFund =
         successRaffleTestRequirements.boxFactory.createSafePayOutputBox(
           successRaffleTestRequirements.successRaffleForLicenseRedeemBox.value -
             testUtils.TestConstants.FEE,
           [],
           blake2b256(
-            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+            Buffer.from(successRaffleTestRequirements.project.ergoTree, 'hex'),
           ),
         );
 
@@ -1447,7 +1447,7 @@ describe('successRaffle', () => {
           serviceBox,
           successRaffleTestRequirements.successRaffleForLicenseRedeemBox,
         ])
-        .to([serviceOutputBox, creatorFund])
+        .to([serviceOutputBox, projectFund])
         .configureSelector((selector) => {
           selector.defineStrategy((inputs) => inputs);
         })
@@ -1469,7 +1469,7 @@ describe('successRaffle', () => {
      * @target should fail if project fund withdrawal is incorrect for an erg-goal raffle
      * @scenario
      * - create successRaffle output box
-     * - create creatorFund output box by invalid value
+     * - create projectFund output box by invalid value
      * - execute transaction and burn current raffle related ticket tokens
      * - result of execution must be fail
      * @expected
@@ -1493,7 +1493,7 @@ describe('successRaffle', () => {
           serviceR4[2],
         );
 
-      const creatorFund =
+      const projectFund =
         successRaffleTestRequirements.boxFactory.createSafePayOutputBox(
           // invalid value: minus one extra fee value
           successRaffleTestRequirements.successRaffleForLicenseRedeemBox.value -
@@ -1501,7 +1501,7 @@ describe('successRaffle', () => {
             testUtils.TestConstants.FEE,
           [],
           blake2b256(
-            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+            Buffer.from(successRaffleTestRequirements.project.ergoTree, 'hex'),
           ),
         );
 
@@ -1512,7 +1512,7 @@ describe('successRaffle', () => {
           successRaffleTestRequirements.serviceBox,
           successRaffleTestRequirements.successRaffleForLicenseRedeemBox,
         ])
-        .to([serviceOutputBox, creatorFund])
+        .to([serviceOutputBox, projectFund])
         .configureSelector((selector) => {
           selector.defineStrategy((inputs) => inputs);
         })
@@ -1522,7 +1522,7 @@ describe('successRaffle', () => {
             .assets[1],
         )
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(successRaffleTestRequirements.creator.address)
+        .sendChangeTo(successRaffleTestRequirements.project.address)
         .build();
 
       expect(() =>
@@ -1534,7 +1534,7 @@ describe('successRaffle', () => {
      * @target should fail if project fund withdrawal is incorrect for a token-goal raffle
      * @scenario
      * - create successRaffle output box
-     * - create creatorFund output box by invalid collecting token amount
+     * - create projectFund output box by invalid collecting token amount
      * - execute transaction and burn current raffle related ticket tokens and some of collecting token
      * - result of execution must be fail
      * @expected
@@ -1559,7 +1559,7 @@ describe('successRaffle', () => {
           serviceR4[2],
         );
 
-      const creatorFund =
+      const projectFund =
         successRaffleTokenGoalTestRequirements.boxFactory.createSafePayOutputBox(
           successRaffleTokenGoalTestRequirements
             .successRaffleForLicenseRedeemBox.value -
@@ -1579,7 +1579,7 @@ describe('successRaffle', () => {
           ],
           blake2b256(
             Buffer.from(
-              successRaffleTokenGoalTestRequirements.creator.ergoTree,
+              successRaffleTokenGoalTestRequirements.project.ergoTree,
               'hex',
             ),
           ),
@@ -1592,7 +1592,7 @@ describe('successRaffle', () => {
           successRaffleTokenGoalTestRequirements.serviceBox,
           successRaffleTokenGoalTestRequirements.successRaffleForLicenseRedeemBox,
         ])
-        .to([serviceOutputBox, creatorFund])
+        .to([serviceOutputBox, projectFund])
         .configureSelector((selector) => {
           selector.defineStrategy((inputs) => inputs);
         })
@@ -1621,7 +1621,7 @@ describe('successRaffle', () => {
      * @target should fail if a ticket token is stolen
      * @scenario
      * - create successRaffle output box
-     * - create creatorFund output box by one stole ticket token
+     * - create projectFund output box by one stole ticket token
      * - execute transaction and burn current raffle related ticket tokens and some of collecting token
      * - result of execution must be fail
      * @expected
@@ -1645,7 +1645,7 @@ describe('successRaffle', () => {
           serviceR4[2],
         );
 
-      const creatorFund =
+      const projectFund =
         successRaffleTestRequirements.boxFactory.createSafePayOutputBox(
           successRaffleTestRequirements.successRaffleForLicenseRedeemBox.value -
             testUtils.TestConstants.FEE,
@@ -1659,7 +1659,7 @@ describe('successRaffle', () => {
             },
           ],
           blake2b256(
-            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+            Buffer.from(successRaffleTestRequirements.project.ergoTree, 'hex'),
           ),
         );
 
@@ -1670,7 +1670,7 @@ describe('successRaffle', () => {
           successRaffleTestRequirements.serviceBox,
           successRaffleTestRequirements.successRaffleForLicenseRedeemBox,
         ])
-        .to([serviceOutputBox, creatorFund])
+        .to([serviceOutputBox, projectFund])
         .configureSelector((selector) => {
           selector.defineStrategy((inputs) => inputs);
         })
@@ -1719,7 +1719,7 @@ describe('successRaffle', () => {
             testUtils.TestConstants.CREATION_FEE,
           testUtils.TestConstants.LICENSE_TOKEN_ID,
           blake2b256(
-            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+            Buffer.from(successRaffleTestRequirements.project.ergoTree, 'hex'),
           ),
           TEST_INITIAL_SEED,
           [],
@@ -1740,13 +1740,13 @@ describe('successRaffle', () => {
           serviceR4[2],
         );
 
-      const creatorFund =
+      const projectFund =
         successRaffleTestRequirements.boxFactory.createSafePayOutputBox(
           successRaffleTestRequirements.successRaffleForLicenseRedeemBox.value -
             testUtils.TestConstants.FEE,
           [],
           blake2b256(
-            Buffer.from(successRaffleTestRequirements.creator.ergoTree, 'hex'),
+            Buffer.from(successRaffleTestRequirements.project.ergoTree, 'hex'),
           ),
         );
 
@@ -1759,7 +1759,7 @@ describe('successRaffle', () => {
           successRaffleForLicenseRedeemBox2,
           ...successRaffleTestRequirements.someoneWallet.utxos,
         ])
-        .to([serviceOutputBox, creatorFund])
+        .to([serviceOutputBox, projectFund])
         .configureSelector((selector) => {
           selector.defineStrategy((inputs) => inputs);
         })

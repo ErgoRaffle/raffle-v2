@@ -73,6 +73,29 @@ export class CustomMockChain extends MockChain {
       },
     });
     const eip12Tx = unsigned.toEIP12Object();
+    // #region agent log
+    fetch('http://127.0.0.1:7898/ingest/4095f1a3-8a21-47a6-8230-eb01a35c4622', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Debug-Session-Id': '651219',
+      },
+      body: JSON.stringify({
+        sessionId: '651219',
+        runId: 'donation-proxy-double-input-debug',
+        hypothesisId: 'H3',
+        location: 'proxy/testUtils.ts:76',
+        message: 'executeTx received unsigned transaction',
+        data: {
+          inputCount: eip12Tx.inputs.length,
+          inputBoxIds: eip12Tx.inputs.map((i) => i.boxId),
+          dataInputCount: eip12Tx.dataInputs.length,
+          outputCount: eip12Tx.outputs.length,
+        },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
     const params = {
       context: context,
       parameters: BLOCKCHAIN_PARAMETERS,

@@ -6,6 +6,7 @@
   },
   "include": ["src"],
   "references": [
+    { "path": "../../packages/dynamic-extractor/tsconfig.build.json" },
     { "path": "../../packages/data-source/tsconfig.build.json" },
     { "path": "../../packages/extractors/tsconfig.build.json" },
     { "path": "../../packages/request-params/tsconfig.build.json" }

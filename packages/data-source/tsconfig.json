@@ -5,6 +5,7 @@
   },
   "include": ["lib"],
   "references": [
+    { "path": "../../packages/dynamic-extractor" },
     { "path": "../../packages/extractors" },
     { "path": "../../packages/request-params" }
   ]

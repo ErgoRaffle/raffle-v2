@@ -157,7 +157,7 @@ export class FeePaymentService extends AbstractTxService {
       .setRaffleDetails(raffleDetailsBox)
       .setOracleBox(oracleBox)
       .setServiceErgoTree(raffleEntity.serviceErgoTree)
-      .setImplementerErgoTree(raffleEntity.implementorErgoTree)
+      .setImplementerErgoTree(raffleEntity.implementerErgoTree)
       .setChainHeight(currentHeight)
       .setTxFee(configs.ergo.fee);
 

@@ -21,13 +21,15 @@ import { TicketRepoBuilder } from '@ergo-raffle/boxes';
  * 2. Creates a new service box (with decremented license)
  * 3. Creates a ticket repository box
  * 4. Creates an inactive raffle box
- * 5. Sends change to the creator
+ * 5. Sends change to the organizer
  */
 export class CreationTxBuilder {
   private serviceBox?: Box<Amount>;
   private feeBoxes: Box<Amount>[] = [];
-  private creatorErgoTree?: string;
+  private organizerErgoTree?: string;
   private implementerErgoTree?: string;
+  /** Defaults to organizer ergo tree when unset. */
+  private projectErgoTree?: string;
   private winnersCount?: number;
   private deadline?: bigint;
   private winnersPercent?: bigint[];
@@ -78,22 +80,22 @@ export class CreationTxBuilder {
   };
 
   /**
-   * Set the creator address
+   * Set the organizer address
    * @param address - Base58 encoded Ergo address
    * @returns this builder instance
    */
-  setCreatorAddress = (address: string): this => {
-    this.creatorErgoTree = ErgoAddress.fromBase58(address).ergoTree;
+  setOrganizerAddress = (address: string): this => {
+    this.organizerErgoTree = ErgoAddress.fromBase58(address).ergoTree;
     return this;
   };
 
   /**
-   * Set the creator ErgoTree
+   * Set the organizer ErgoTree
    * @param ergoTree - ErgoTree in hex format
    * @returns this builder instance
    */
-  setCreatorErgoTree = (ergoTree: string): this => {
-    this.creatorErgoTree = ergoTree;
+  setOrganizerErgoTree = (ergoTree: string): this => {
+    this.organizerErgoTree = ergoTree;
     return this;
   };
 
@@ -114,6 +116,16 @@ export class CreationTxBuilder {
    */
   setImplementerErgoTree = (ergoTree: string): this => {
     this.implementerErgoTree = ergoTree;
+    return this;
+  };
+
+  /**
+   * Set the project ErgoTree (inactive raffle R5 and service context; defaults to organizer tree)
+   * @param ergoTree - ErgoTree in hex format
+   * @returns this builder instance
+   */
+  setProjectErgoTree = (ergoTree: string): this => {
+    this.projectErgoTree = ergoTree;
     return this;
   };
 
@@ -283,7 +295,7 @@ export class CreationTxBuilder {
    */
   private validate = (): void => {
     if (!this.serviceBox) throw new Error('Service box not set');
-    if (!this.creatorErgoTree) throw new Error('Creator ErgoTree not set');
+    if (!this.organizerErgoTree) throw new Error('Organizer ErgoTree not set');
     if (!this.implementerErgoTree)
       throw new Error('Implementer ErgoTree not set');
     if (!this.winnersCount) throw new Error('Winners count not set');
@@ -312,11 +324,12 @@ export class CreationTxBuilder {
 
     // Set context extension for service box
     const inputServiceBox = new ErgoUnsignedInput(this.serviceBox!);
+    const projectTreeHex = this.projectErgoTree ?? this.organizerErgoTree!;
     inputServiceBox.setContextExtension({
       0: SColl(SLong, this.winnersPercent!),
       1: SColl(SColl(SByte), [
         Array.from(Buffer.from(this.implementerErgoTree!, 'hex')),
-        Array.from(Buffer.from(this.creatorErgoTree!, 'hex')),
+        Array.from(Buffer.from(projectTreeHex, 'hex')),
       ]),
     });
 
@@ -356,7 +369,7 @@ export class CreationTxBuilder {
       .setTicketId(this.raffleId!)
       .setWinnersPercentList(this.winnersPercent!)
       .setImplementerErgoTree(this.implementerErgoTree!)
-      .setCreatorErgoTree(this.creatorErgoTree!);
+      .setProjectErgoTree(projectTreeHex);
 
     // Set collecting token if specified
     if (this.collectingTokenId) {
@@ -378,7 +391,7 @@ export class CreationTxBuilder {
         selector.defineStrategy((inputs) => inputs);
       })
       .payFee(this.txFee!)
-      .sendChangeTo(this.creatorErgoTree!)
+      .sendChangeTo(this.organizerErgoTree!)
       .build();
 
     return transaction;

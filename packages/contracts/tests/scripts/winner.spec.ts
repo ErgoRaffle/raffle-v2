@@ -11,7 +11,7 @@ import * as testUtils from '../testUtils';
 interface TestInterface {
   boxFactory: testUtils.RaffleBoxFactory;
   someoneWallet: KeyedMockChainParty;
-  creator: KeyedMockChainParty;
+  project: KeyedMockChainParty;
   giftTokenRepoBox: ErgoUnsignedInput;
   winnerBoxes: ErgoUnsignedInput[];
   successRaffleBox: ErgoUnsignedInput;
@@ -27,8 +27,8 @@ describe('winner', () => {
         (value) => value != 'winner',
       ) as ScriptNamesType[],
     );
-    const { creator, someone } = boxFactory.createPartners({
-      creator: testUtils.TestConstants.CREATOR_DEFAULT_BALANCE,
+    const { project, someone } = boxFactory.createPartners({
+      project: testUtils.TestConstants.ORGANIZER_DEFAULT_BALANCE,
       someone: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
     });
     someone.addBalance({
@@ -52,7 +52,7 @@ describe('winner', () => {
     const successRaffleBox = boxFactory.createSuccessRaffleBoxMock(
       testUtils.TestConstants.CREATION_FEE + 4n * testUtils.TestConstants.FEE,
       testUtils.TestConstants.LICENSE_TOKEN_ID,
-      blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+      blake2b256(Buffer.from(project.ergoTree, 'hex')),
       '0123456789012345',
       [],
       0n,
@@ -68,7 +68,7 @@ describe('winner', () => {
 
     ctx.boxFactory = boxFactory;
     ctx.someoneWallet = someone;
-    ctx.creator = creator;
+    ctx.project = project;
     ctx.giftTokenRepoBox = giftTokenRepoBox;
     ctx.winnerBoxes = winnerBoxes;
     ctx.successRaffleBox = successRaffleBox;
@@ -88,7 +88,7 @@ describe('winner', () => {
      */
     it<TestInterface>('should success erg-goal based gift token receipt', ({
       boxFactory,
-      creator,
+      project,
       winnerBoxes,
       giftTokenRepoBox,
     }) => {
@@ -105,14 +105,14 @@ describe('winner', () => {
         .from([(winnerBoxes as Box[])[0], giftTokenRepoBox])
         .to([winnerOutputBox])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(creator.address)
+        .sendChangeTo(project.address)
         .configureSelector((selector) => {
           selector.defineStrategy((inputs) => inputs);
         })
         .build();
 
       const result = boxFactory.chain.execute(transaction, {
-        signers: [creator],
+        signers: [project],
       });
 
       // Check execution result
@@ -132,7 +132,7 @@ describe('winner', () => {
      */
     it<TestInterface>('should fail when move another token instead of real gift-token to the winner box', ({
       boxFactory,
-      creator,
+      project,
       winnerBoxes,
     }) => {
       const invalidTokenId = '1234'.repeat(16);
@@ -161,7 +161,7 @@ describe('winner', () => {
         .from([(winnerBoxes as Box[])[0], giftTokenRepoBox])
         .to([winnerOutputBox])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(creator.address)
+        .sendChangeTo(project.address)
         .configureSelector((selector) => {
           selector.defineStrategy((inputs) => inputs);
         })
@@ -169,7 +169,7 @@ describe('winner', () => {
 
       // Check execution result
       expect(() =>
-        boxFactory.chain.execute(transaction, { signers: [creator] }),
+        boxFactory.chain.execute(transaction, { signers: [project] }),
       ).toThrowError();
     });
 
@@ -185,7 +185,7 @@ describe('winner', () => {
      */
     it<TestInterface>('should fail when incorrect count of gift-token write on the R6 of the output winner-box', ({
       boxFactory,
-      creator,
+      project,
       winnerBoxes,
       giftTokenRepoBox,
     }) => {
@@ -206,7 +206,7 @@ describe('winner', () => {
         .from([winnerBox, giftTokenRepoBox])
         .to([winnerOutputBox])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(creator.address)
+        .sendChangeTo(project.address)
         .configureSelector((selector) => {
           selector.defineStrategy((inputs) => inputs);
         })
@@ -214,7 +214,7 @@ describe('winner', () => {
 
       // Check execution result
       expect(() =>
-        boxFactory.chain.execute(transaction, { signers: [creator] }),
+        boxFactory.chain.execute(transaction, { signers: [project] }),
       ).toThrowError();
     });
 
@@ -230,7 +230,7 @@ describe('winner', () => {
      */
     it<TestInterface>('should fail when incorrect deadline put in R4 of the output winner-box', ({
       boxFactory,
-      creator,
+      project,
       winnerBoxes,
       giftTokenRepoBox,
     }) => {
@@ -252,7 +252,7 @@ describe('winner', () => {
         .from([winnerBox, giftTokenRepoBox])
         .to([winnerOutputBox])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(creator.address)
+        .sendChangeTo(project.address)
         .configureSelector((selector) => {
           selector.defineStrategy((inputs) => inputs);
         })
@@ -260,7 +260,7 @@ describe('winner', () => {
 
       // Check execution result
       expect(() =>
-        boxFactory.chain.execute(transaction, { signers: [creator] }),
+        boxFactory.chain.execute(transaction, { signers: [project] }),
       ).toThrowError();
     });
 
@@ -276,7 +276,7 @@ describe('winner', () => {
      */
     it<TestInterface>('should fail when two same winner-boxes placed as inputs', ({
       boxFactory,
-      creator,
+      project,
     }) => {
       const giftTokenRepoBox = boxFactory.createGiftTokenRepoBoxMock(2);
       const inputWinnerBoxes = boxFactory.createWinnersBoxMock(
@@ -303,7 +303,7 @@ describe('winner', () => {
         .from([winnerBox1, giftTokenRepoBox, winnerBox2])
         .to([winnerOutputBox])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(creator.address)
+        .sendChangeTo(project.address)
         .configureSelector((selector) => {
           selector.defineStrategy((inputs) => inputs);
         })
@@ -311,7 +311,7 @@ describe('winner', () => {
 
       // Check execution result
       expect(() =>
-        boxFactory.chain.execute(transaction, { signers: [creator] }),
+        boxFactory.chain.execute(transaction, { signers: [project] }),
       ).toThrowError();
     });
   });
@@ -650,7 +650,7 @@ describe('winner', () => {
     it<TestInterface>('should success erg-goal based winner-prize creation', ({
       boxFactory,
       successRaffleBox,
-      creator,
+      project,
     }) => {
       const totalPrize = 60;
 
@@ -695,7 +695,7 @@ describe('winner', () => {
         BigInt(successRaffleBox.value) - BigInt(prizeAmount),
         testUtils.TestConstants.LICENSE_TOKEN_ID,
         'test seed',
-        blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+        blake2b256(Buffer.from(project.ergoTree, 'hex')),
         [winnerTicketIndex],
         0n,
         1,
@@ -732,13 +732,13 @@ describe('winner', () => {
      */
     it<TestInterface>('should success token-goal based winner-prize creation', ({
       boxFactory,
-      creator,
+      project,
     }) => {
       const totalPrize = 60;
       const successRaffleBox = boxFactory.createSuccessRaffleBoxMock(
         testUtils.TestConstants.CREATION_FEE + 4n * testUtils.TestConstants.FEE,
         testUtils.TestConstants.LICENSE_TOKEN_ID,
-        blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+        blake2b256(Buffer.from(project.ergoTree, 'hex')),
         '0123456789012345',
         [],
         0n,
@@ -806,7 +806,7 @@ describe('winner', () => {
         BigInt(successRaffleBox.value),
         testUtils.TestConstants.LICENSE_TOKEN_ID,
         'test seed',
-        blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+        blake2b256(Buffer.from(project.ergoTree, 'hex')),
         [winnerTicketIndex],
         0n,
         1,
@@ -844,13 +844,13 @@ describe('winner', () => {
      */
     it<TestInterface>('should successfully create the prize for a token-goal raffle when the prize amount is 0', ({
       boxFactory,
-      creator,
+      project,
     }) => {
       const totalPrize = 0;
       const successRaffleBox = boxFactory.createSuccessRaffleBoxMock(
         testUtils.TestConstants.CREATION_FEE + 4n * testUtils.TestConstants.FEE,
         testUtils.TestConstants.LICENSE_TOKEN_ID,
-        blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+        blake2b256(Buffer.from(project.ergoTree, 'hex')),
         '0123456789012345',
         [],
         0n,
@@ -904,7 +904,7 @@ describe('winner', () => {
         BigInt(successRaffleBox.value),
         testUtils.TestConstants.LICENSE_TOKEN_ID,
         'test seed',
-        blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+        blake2b256(Buffer.from(project.ergoTree, 'hex')),
         [winnerTicketIndex],
         0n,
         1,
@@ -943,7 +943,7 @@ describe('winner', () => {
     it<TestInterface>('should fail when incorrect prize amount puts on the erg-goal prize box', ({
       boxFactory,
       successRaffleBox,
-      creator,
+      project,
     }) => {
       const totalPrize = 60;
       const winnerBox = boxFactory.createWinnersBoxMock(
@@ -988,7 +988,7 @@ describe('winner', () => {
         BigInt(successRaffleBox.value) - BigInt(incorrectPrizeAmount),
         testUtils.TestConstants.LICENSE_TOKEN_ID,
         'test seed',
-        blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+        blake2b256(Buffer.from(project.ergoTree, 'hex')),
         [winnerTicketIndex],
         0n,
         1,
@@ -1027,13 +1027,13 @@ describe('winner', () => {
     it<TestInterface>('should fail when incorrect prize amount puts on the token-goal prize box', ({
       boxFactory,
       someoneWallet,
-      creator,
+      project,
     }) => {
       const totalPrize = 60;
       const successRaffleBox = boxFactory.createSuccessRaffleBoxMock(
         testUtils.TestConstants.CREATION_FEE + 4n * testUtils.TestConstants.FEE,
         testUtils.TestConstants.LICENSE_TOKEN_ID,
-        blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+        blake2b256(Buffer.from(project.ergoTree, 'hex')),
         '0123456789012345',
         [],
         0n,
@@ -1098,7 +1098,7 @@ describe('winner', () => {
         BigInt(successRaffleBox.value),
         testUtils.TestConstants.LICENSE_TOKEN_ID,
         'test seed',
-        blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+        blake2b256(Buffer.from(project.ergoTree, 'hex')),
         [winnerTicketIndex],
         0n,
         1,
@@ -1138,7 +1138,7 @@ describe('winner', () => {
     it<TestInterface>("should fails when the total assets aren't transferred from the winner's box to the prize box", ({
       boxFactory,
       successRaffleBox,
-      creator,
+      project,
     }) => {
       const totalPrize = 60;
 
@@ -1183,7 +1183,7 @@ describe('winner', () => {
         BigInt(successRaffleBox.value) - BigInt(prizeAmount),
         testUtils.TestConstants.LICENSE_TOKEN_ID,
         'test seed',
-        blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+        blake2b256(Buffer.from(project.ergoTree, 'hex')),
         [winnerTicketIndex],
         0n,
         1,
@@ -1227,7 +1227,7 @@ describe('winner', () => {
     it<TestInterface>('should fail when an invalid winner box index is placed in the prize box', ({
       boxFactory,
       successRaffleBox,
-      creator,
+      project,
     }) => {
       const totalPrize = 60;
 
@@ -1272,7 +1272,7 @@ describe('winner', () => {
         BigInt(successRaffleBox.value) - BigInt(prizeAmount),
         testUtils.TestConstants.LICENSE_TOKEN_ID,
         'test seed',
-        blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+        blake2b256(Buffer.from(project.ergoTree, 'hex')),
         [winnerTicketIndex],
         0n,
         1,
@@ -1312,7 +1312,7 @@ describe('winner', () => {
       boxFactory,
       someoneWallet,
       successRaffleBox,
-      creator,
+      project,
     }) => {
       const totalPrize = 60;
       const winnerBox = boxFactory.createWinnersBoxMock(
@@ -1356,7 +1356,7 @@ describe('winner', () => {
         BigInt(successRaffleBox.value) - BigInt(prizeAmount),
         testUtils.TestConstants.LICENSE_TOKEN_ID,
         'test seed',
-        blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+        blake2b256(Buffer.from(project.ergoTree, 'hex')),
         [winnerTicketIndex],
         0n,
         1,
@@ -1398,7 +1398,7 @@ describe('winner', () => {
       boxFactory,
       someoneWallet,
       successRaffleBox,
-      creator,
+      project,
     }) => {
       const totalPrize = 60;
       const inputWinnerBoxes = boxFactory.createWinnersBoxMock(
@@ -1444,7 +1444,7 @@ describe('winner', () => {
         BigInt(successRaffleBox.value) - BigInt(prizeAmount),
         testUtils.TestConstants.LICENSE_TOKEN_ID,
         'test seed',
-        blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+        blake2b256(Buffer.from(project.ergoTree, 'hex')),
         [winnerTicketIndex],
         0n,
         1,
@@ -2039,7 +2039,7 @@ describe('winner', () => {
      */
     it<TestInterface>('should should fail if two winner boxes are spent in inputs', ({
       boxFactory,
-      creator,
+      project,
     }) => {
       // Create input boxes
       const winners = boxFactory.createWinnersBoxMock(
@@ -2088,7 +2088,7 @@ describe('winner', () => {
         })
         .burnTokens([winners[0].assets[1], winners[1].assets[1]])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(creator.ergoTree)
+        .sendChangeTo(project.ergoTree)
         .build();
 
       expect(() => boxFactory.chain.execute(giftReturnTx)).toThrowError();

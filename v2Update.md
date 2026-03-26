@@ -21,7 +21,7 @@ In ErgoRaffle V2, several new features have been integrated that make the ErgoRa
 - **Additional Gifts**: Anyone can add gifts to winner baskets during the raffle's fundraising period. These gifts can include NFTs, tokens, or a set of them​​.
 - **Empty Baskets**: Beyond the baskets with winners pot share, raffles can have up to 5000 additional empty baskets. All baskets start with no gifts, but anyone can add gifts to any basket during the fundraising period. This allows for dynamic gift distribution beyond the main winner prizes.
 - **NFT Marketplace**: The platform can function as an NFT/RWA marketplace through raffles. An NFT holder can create a raffle where the goal is to raise funds equal to the NFT's value. They start with an empty winner basket and add the NFT as a gift. If the fundraising goal is met, the winner receives the NFT along with any other gifts in their basket.
-- **Implementor Fee**: Other services can use the ErgoRaffle infrastructure to implement new games or use cases, allowing the implementor to have a share of the raised funds​​.
+- **Implementer Fee**: Other services can use the ErgoRaffle infrastructure to implement new games or use cases, allowing the implementer to have a share of the raised funds​​.
 - **Creation Fee**: A fee is charged when creating a raffle. If the raffle ends successfully, this fee is refunded to the raffle creator (excluding transaction fees).
 
 ### V2 Procedure
@@ -33,5 +33,5 @@ The V2 procedure includes the same initial steps as V1, with additional features
   - Participants buy raffle tickets using the chosen fundraising token until the deadline.
   - Additional rewards can be added as gifts to raffle winners.
 - **End**:
-  - **Successful Raffle**: Multiple winners are selected using different random seeds initiated by oracle data. Finally, funds are distributed among the project, the winners, the raffle service and the implementor (if applicable). Additional gifts are awarded to the winners as specified.
+  - **Successful Raffle**: Multiple winners are selected using different random seeds initiated by oracle data. Finally, funds are distributed among the project, the winners, the raffle service and the implementer (if applicable). Additional gifts are awarded to the winners as specified.
   - **Failed Raffle**: If the raffle does not meet its goal, all donations are refunded to the participants, and any additional gifts are returned.

@@ -15,7 +15,8 @@ import { createMockUtxo, CustomMockChain } from './testUtils';
 describe('DonationProxy', () => {
   let chain: CustomMockChain;
   let donator: KeyedMockChainParty;
-  let creator: KeyedMockChainParty;
+  let attacker: KeyedMockChainParty;
+  let project: KeyedMockChainParty;
   let implementer: KeyedMockChainParty;
   let proxyBox: Box<Amount>;
   let activeRaffleBuilder: ActiveRaffleBuilder;
@@ -30,7 +31,8 @@ describe('DonationProxy', () => {
     chain.setTip(100);
 
     donator = chain.newParty('donator');
-    creator = chain.newParty('creator');
+    attacker = chain.newParty('attacker');
+    project = chain.newParty('project');
     implementer = chain.newParty('implementer');
 
     contracts = initialContracts();
@@ -68,9 +70,9 @@ describe('DonationProxy', () => {
       .setTxFee(proxyParams.txFee)
       .setWinnersCount(1)
       .setTotalSoldTickets(0n)
-      .setServiceAddress(creator.address.toString())
+      .setServiceAddress(project.address.toString())
       .setImplementerAddress(implementer.address.toString())
-      .setProjectAddress(creator.address.toString())
+      .setProjectAddress(project.address.toString())
       .setTicketId(raffleId)
       .setTicketCount(1_000_000_000n);
 
@@ -177,7 +179,7 @@ describe('DonationProxy', () => {
       ],
       [
         'donatorAddress',
-        (b) => b.setDonatorAddress(creator.address.toString()),
+        (b) => b.setDonatorAddress(project.address.toString()),
       ],
       [
         'raffleId',
@@ -248,6 +250,40 @@ describe('DonationProxy', () => {
     });
 
     /**
+     * @target donation proxy should fail to refund when two proxy boxes are spent in one transaction
+     * @scenario
+     * - set chain height to >= expirationHeight
+     * - create second proxy input box
+     * - create two refund output boxes (one per proxy)
+     * - execute single transaction that spends both proxy boxes
+     * - check execution throws error
+     * @expected
+     * - transaction execution should throw an error
+     */
+    it('should fail to refund when two proxy boxes are spent at once', () => {
+      chain.setTip(proxyParams.expirationHeight);
+
+      const secondProxyOutput = buildDonationProxyBox(
+        contracts['donationProxy'],
+        proxyParams,
+        { creationHeight: 6 },
+      );
+      const secondProxyBox = createMockUtxo(secondProxyOutput);
+
+      const transaction2 = new TransactionBuilder(chain.height)
+        .from([proxyBox, secondProxyBox])
+        .to([donatorRefundBox])
+        .payFee(proxyParams.txFee)
+        .sendChangeTo(attacker.address.toString())
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        .build();
+
+      expect(() => chain.executeTx(transaction2, [donator])).toThrow();
+    });
+
+    /**
      * @target donation proxy should fail to refund when deadline has not passed
      * @scenario
      * - set chain height to < expirationHeight and < deadline
@@ -293,7 +329,7 @@ describe('DonationProxy', () => {
       // Create refund box with wrong recipient address (creator instead of donator)
       const wrongRecipientRefundBox = new OutputBuilder(
         BigInt(proxyBox.value) - proxyParams.txFee,
-        creator.address.toString(),
+        project.address.toString(),
       ).addTokens(
         proxyBox.assets.map((asset) => ({
           tokenId: asset.tokenId,

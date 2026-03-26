@@ -21,7 +21,7 @@ import * as testUtils from '../../testUtils';
 
 interface TestInterface {
   boxFactory: testUtils.RaffleBoxFactory;
-  creator: KeyedMockChainParty;
+  organizer: KeyedMockChainParty;
   serviceBox: ErgoUnsignedInput;
   implementerErgoTree: string;
   ownerErgoTree: string;
@@ -35,15 +35,15 @@ describe('Raffle', () => {
     const boxFactory = new testUtils.RaffleBoxFactory({ height: 1000 }, []);
     const {
       owner,
-      creator,
+      organizer,
       implementer,
       giftgiver1,
       giftgiver2,
       donator1,
       donator2,
     } = boxFactory.createPartners({
-      owner: testUtils.TestConstants.CREATOR_DEFAULT_BALANCE,
-      Creator: testUtils.TestConstants.CREATOR_DEFAULT_BALANCE,
+      owner: testUtils.TestConstants.OWNER_DEFAULT_BALANCE,
+      organizer: testUtils.TestConstants.ORGANIZER_DEFAULT_BALANCE,
       implementer: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
       giftGiver1: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
       giftGiver2: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
@@ -77,7 +77,7 @@ describe('Raffle', () => {
     const donatorWallets: KeyedMockChainParty[] = [donator1, donator2];
 
     ctx.boxFactory = boxFactory;
-    ctx.creator = creator;
+    ctx.organizer = organizer;
     ctx.serviceBox = serviceBox;
     ctx.implementerErgoTree = implementer.ergoTree;
     ctx.ownerErgoTree = owner.ergoTree;
@@ -105,7 +105,7 @@ describe('Raffle', () => {
      */
     it<TestInterface>('Failed Erg-goal raffle with 2 winners', ({
       boxFactory,
-      creator,
+      organizer,
       serviceBox,
       implementerErgoTree,
       ownerErgoTree,
@@ -122,8 +122,8 @@ describe('Raffle', () => {
       // Step 1: Raffle creation phase 1 (create inactive raffle and ticketRepo)
       const createRaffleBuilder = new CreationTxBuilder()
         .setServiceBox(serviceBox)
-        .setFeeBoxes(creator.utxos.toArray())
-        .setCreatorAddress(creator.address.toString())
+        .setFeeBoxes(organizer.utxos.toArray())
+        .setOrganizerAddress(organizer.address.toString())
         .setImplementerErgoTree(implementerErgoTree)
         .setWinnersCount(winnersCount)
         .setDeadline(deadline)
@@ -143,12 +143,12 @@ describe('Raffle', () => {
         .setTxFee(testUtils.TestConstants.FEE);
 
       boxFactory.chain.execute(createRaffleBuilder.build(), {
-        signers: [creator],
+        signers: [organizer],
       });
 
       const createRaffleTx = boxFactory.chain.executeAndReturnOutputs(
         createRaffleBuilder.build(),
-        { signers: [creator] },
+        { signers: [organizer] },
       );
       expect(createRaffleTx.success).toBeTruthy();
 

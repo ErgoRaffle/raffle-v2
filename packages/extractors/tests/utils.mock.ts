@@ -16,7 +16,6 @@ import {
   GiftEntity,
   TicketEntity,
   WinnerPrizeEntity,
-  DynamicBoxEntity,
 } from '../lib/entities';
 import { migrations } from '../lib/migrations';
 
@@ -29,14 +28,14 @@ export const implementerWallet = chain.addParty(
   '0008cd02f715df779699555ed7febbfb34b16e2844ad6040a7e455f3c3cbc6debed33f36',
   'implementer',
 );
-export const creatorWallet = chain.addParty(
+export const projectWallet = chain.addParty(
   '0008cd02d9d15a5f83022a63614d1761f0f4bbd6bf5d01906c78b3f06cd02ede7ba76b2c',
-  'creator',
+  'project',
 );
 
 export const donatorWallet = chain.addParty(
   '0008cd02d9d15a5f83022a63614d1761f0f4bbd6bf5d01906c78b3f06cd02ede7ba76cc4',
-  'creator',
+  'donator',
 );
 
 /**
@@ -60,7 +59,6 @@ export const createDatabase = async (): Promise<DataSource> => {
       GiftEntity,
       TicketEntity,
       WinnerPrizeEntity,
-      DynamicBoxEntity,
     ],
     migrations: [...migrations.sqlite, ...scannerMigrations.sqlite],
     synchronize: false,

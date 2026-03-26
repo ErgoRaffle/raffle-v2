@@ -17,10 +17,10 @@ export class InactiveRaffleEntity extends AbstractErgoBoxEntity {
   serviceErgoTree: string;
 
   @Column({ type: 'varchar' })
-  implementorErgoTree: string;
+  implementerErgoTree: string;
 
   @Column({ type: 'varchar' })
-  creatorErgoTree: string;
+  projectErgoTree: string;
 
   @Column('integer')
   serviceFeePercent: number;

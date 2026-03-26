@@ -39,4 +39,24 @@ export interface Ergo {
 export interface Bitcoin {
   mnemonic: string;
   network: 'mainnet' | 'testnet';
+  rpc: BitcoinRpc;
+  scannerInterval: number;
+  initialHeight: number;
+  runes: BitcoinRunes;
+}
+
+export interface BitcoinRunes {
+  unisat: BitcoinRunesUnisat;
+}
+
+export interface BitcoinRunesUnisat {
+  url: string;
+  apiKey?: string;
+}
+
+export interface BitcoinRpc {
+  url: string;
+  timeout: number;
+  username?: string;
+  password?: string;
 }

@@ -17,8 +17,8 @@ export interface ServiceBoxInterface extends AbstractEntityData {
 
 export interface InactiveRaffleBoxInterface extends AbstractRaffleBoxInterface {
   serviceErgoTree: string;
-  implementorErgoTree: string;
-  creatorErgoTree: string;
+  implementerErgoTree: string;
+  projectErgoTree: string;
   serviceFeePercent: number;
   implementerFeePercent: number;
   winnersPercent: number;
@@ -32,11 +32,6 @@ export interface InactiveRaffleBoxInterface extends AbstractRaffleBoxInterface {
 
 export interface RaffleBoxInterface extends AbstractRaffleBoxInterface {
   type: RaffleBoxType;
-}
-
-export interface DynamicBoxInterface extends AbstractEntityData {
-  txId: string;
-  address: string;
 }
 
 export interface WinnerBoxInterface extends AbstractRaffleBoxInterface {
