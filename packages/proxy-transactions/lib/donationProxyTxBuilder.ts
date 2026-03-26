@@ -14,11 +14,13 @@ import { blake2b256 } from '@fleet-sdk/crypto';
 
 import { raffleInfo } from '@ergo-raffle/contracts';
 
+import { FleetBoxSelection } from './fleetBoxSelection';
+
 /**
  * Builder class for donation proxy funding transactions.
  */
 export class DonationProxyTxBuilder {
-  private feeBoxes: Box<Amount>[] = [];
+  private feeBoxes?: Iterator<Box<Amount>>;
 
   private donatorAddress?: string;
   private donatorErgoTree?: string;
@@ -33,22 +35,12 @@ export class DonationProxyTxBuilder {
   private chainHeight?: number;
 
   /**
-   * Set input fee boxes (funding boxes) for the transaction.
-   * @param boxes - Funding boxes used as transaction inputs
+   * Set input fee box iterator (funding boxes) for the transaction.
+   * @param boxes - Iterator of funding boxes used as transaction inputs
    * @returns this builder instance
    */
-  setFeeBoxes = (boxes: Box<Amount>[]): this => {
+  setFeeBoxes = (boxes: Iterator<Box<Amount>>): this => {
     this.feeBoxes = boxes;
-    return this;
-  };
-
-  /**
-   * Add a single fee box.
-   * @param box - Box to add as funding input
-   * @returns this builder instance
-   */
-  addFeeBox = (box: Box<Amount>): this => {
-    this.feeBoxes.push(box);
     return this;
   };
 
@@ -148,7 +140,7 @@ export class DonationProxyTxBuilder {
    * @throws Error if any required parameter is missing
    */
   private validate = (): void => {
-    if (this.feeBoxes.length === 0) throw new Error('Fee boxes not set');
+    if (!this.feeBoxes) throw new Error('Fee boxes not set');
     if (!this.donatorErgoTree) throw new Error('Donator ErgoTree not set');
     if (!this.donatorAddress) throw new Error('Donator address not set');
     if (!this.ticketCount) throw new Error('Ticket count not set');
@@ -203,25 +195,56 @@ export class DonationProxyTxBuilder {
   };
 
   /**
+   * Select enough fee boxes to cover proxy output, fee and optional token.
+   * @returns selected fee boxes
+   */
+  private selectFeeBoxes = async (): Promise<Box<Amount>[]> => {
+    const proxyBox = this.buildDonationProxyBox();
+    const requiredAssets = {
+      nativeToken: BigInt(proxyBox.value.toString()) + this.txFee!,
+      tokens:
+        this.collectingTokenId != null
+          ? [
+              {
+                id: this.collectingTokenId,
+                value: this.ticketPrice! * this.ticketCount!,
+              },
+            ]
+          : [],
+    };
+
+    const selector = new FleetBoxSelection();
+    const result = await selector.getCoveringBoxes(
+      requiredAssets,
+      [],
+      new Map(),
+      this.feeBoxes!,
+    );
+
+    if (!result.covered || result.boxes.length === 0)
+      throw new Error('Not enough fee boxes to cover transaction');
+
+    return result.boxes;
+  };
+
+  /**
    * Build the donation proxy funding transaction.
    * @returns ErgoUnsignedTransaction instance
    */
-  build = (): ErgoUnsignedTransaction => {
+  build = async (): Promise<ErgoUnsignedTransaction> => {
     this.validate();
+    const selectedFeeBoxes = await this.selectFeeBoxes();
 
     // The first input is the fee box that contains the donator ErgoTree.
-    const firstInput = new ErgoUnsignedInput(this.feeBoxes[0]!);
+    const firstInput = new ErgoUnsignedInput(selectedFeeBoxes[0]!);
     firstInput.setContextExtension({
       0: SColl(SByte, Array.from(Buffer.from(this.donatorErgoTree!, 'hex'))),
     });
     const proxyBox = this.buildDonationProxyBox();
 
     const tx = new TransactionBuilder(this.chainHeight!)
-      .from([firstInput, ...this.feeBoxes.slice(1)])
+      .from([firstInput, ...selectedFeeBoxes.slice(1)])
       .to([proxyBox])
-      .configureSelector((selector) => {
-        selector.defineStrategy((inputs) => inputs);
-      })
       .payFee(this.txFee!)
       .sendChangeTo(this.donatorAddress!)
       .build();

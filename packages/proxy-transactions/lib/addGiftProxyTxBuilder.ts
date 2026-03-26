@@ -15,11 +15,13 @@ import { blake2b256 } from '@fleet-sdk/crypto';
 
 import { raffleInfo } from '@ergo-raffle/contracts';
 
+import { FleetBoxSelection } from './fleetBoxSelection';
+
 /**
  * Builder class for add-gift proxy funding transactions.
  */
 export class AddGiftProxyTxBuilder {
-  private feeBoxes: Box<Amount>[] = [];
+  private feeBoxes?: Iterator<Box<Amount>>;
 
   private giftGiverAddress?: string;
   private giftGiverErgoTree?: string;
@@ -34,22 +36,12 @@ export class AddGiftProxyTxBuilder {
   private giftTokens?: TokenAmount<bigint>[];
 
   /**
-   * Set input fee boxes (funding boxes) for the transaction.
-   * @param boxes - Funding boxes used as transaction inputs
+   * Set input fee box iterator (funding boxes) for the transaction.
+   * @param boxes - Iterator of funding boxes used as transaction inputs
    * @returns this builder instance
    */
-  setFeeBoxes = (boxes: Box<Amount>[]): this => {
+  setFeeBoxes = (boxes: Iterator<Box<Amount>>): this => {
     this.feeBoxes = boxes;
-    return this;
-  };
-
-  /**
-   * Add a single fee box.
-   * @param box - Box to add as funding input
-   * @returns this builder instance
-   */
-  addFeeBox = (box: Box<Amount>): this => {
-    this.feeBoxes.push(box);
     return this;
   };
 
@@ -160,7 +152,7 @@ export class AddGiftProxyTxBuilder {
    * @throws Error if any required parameter is missing
    */
   private validate = (): void => {
-    if (this.feeBoxes.length === 0) throw new Error('Fee boxes not set');
+    if (!this.feeBoxes) throw new Error('Fee boxes not set');
     if (!this.giftGiverErgoTree) throw new Error('Gift giver ErgoTree not set');
     if (!this.giftGiverAddress) throw new Error('Gift giver address not set');
     if (!this.raffleId) throw new Error('Raffle id not set');
@@ -172,6 +164,34 @@ export class AddGiftProxyTxBuilder {
     if (!this.giftValue) throw new Error('Gift value not set');
     if (this.giftValue < 4n * this.txFee)
       throw new Error('Gift value is too low, should be at least 4 * txFee');
+  };
+
+  /**
+   * Select enough fee boxes to cover proxy output and fee.
+   * @returns selected fee boxes
+   */
+  private selectFeeBoxes = async (): Promise<Box<Amount>[]> => {
+    const requiredAssets = {
+      nativeToken: this.giftValue! + this.txFee!,
+      tokens: (this.giftTokens ?? []).map((token) => ({
+        id: token.tokenId,
+        value: token.amount,
+      })),
+    };
+
+    const selector = new FleetBoxSelection();
+
+    const result = await selector.getCoveringBoxes(
+      requiredAssets,
+      [],
+      new Map(),
+      this.feeBoxes!,
+    );
+
+    if (!result.covered || result.boxes.length === 0)
+      throw new Error('Not enough fee boxes to cover transaction');
+
+    return result.boxes;
   };
 
   /**
@@ -207,18 +227,19 @@ export class AddGiftProxyTxBuilder {
    * Build the add-gift proxy funding transaction.
    * @returns ErgoUnsignedTransaction instance
    */
-  build = (): ErgoUnsignedTransaction => {
+  build = async (): Promise<ErgoUnsignedTransaction> => {
     this.validate();
+    const selectedFeeBoxes = await this.selectFeeBoxes();
 
     // The first input is the fee box that contains the gift giver ErgoTree.
-    const firstInput = new ErgoUnsignedInput(this.feeBoxes[0]!);
+    const firstInput = new ErgoUnsignedInput(selectedFeeBoxes[0]!);
     firstInput.setContextExtension({
       0: SColl(SByte, Array.from(Buffer.from(this.giftGiverErgoTree!, 'hex'))),
     });
     const proxyBox = this.buildAddGiftProxyBox();
 
     const tx = new TransactionBuilder(this.chainHeight!)
-      .from([firstInput, ...this.feeBoxes.slice(1)])
+      .from([firstInput, ...selectedFeeBoxes.slice(1)])
       .to([proxyBox])
       .configureSelector((selector) => {
         selector.defineStrategy((inputs) => inputs);

@@ -15,11 +15,13 @@ import { blake2b256 } from '@fleet-sdk/crypto';
 
 import { raffleInfo } from '@ergo-raffle/contracts';
 
+import { FleetBoxSelection } from './fleetBoxSelection';
+
 /**
  * Builder class for creation proxy funding transactions.
  */
 export class CreationProxyTxBuilder {
-  private feeBoxes: Box<Amount>[] = [];
+  private feeBoxes?: Iterator<Box<Amount>>;
   private creatorErgoTree?: string;
   private implementerErgoTree?: string;
 
@@ -39,22 +41,12 @@ export class CreationProxyTxBuilder {
   private chainHeight?: number;
 
   /**
-   * Set input fee boxes (funding boxes) for the transaction.
-   * @param boxes - Funding boxes used as transaction inputs
+   * Set input fee box iterator (funding boxes) for the transaction.
+   * @param boxes - Iterator of funding boxes used as transaction inputs
    * @returns this builder instance
    */
-  setFeeBoxes = (boxes: Box<Amount>[]): this => {
+  setFeeBoxes = (boxes: Iterator<Box<Amount>>): this => {
     this.feeBoxes = boxes;
-    return this;
-  };
-
-  /**
-   * Add a single fee box.
-   * @param box - Box to add as funding input
-   * @returns this builder instance
-   */
-  addFeeBox = (box: Box<Amount>): this => {
-    this.feeBoxes.push(box);
     return this;
   };
 
@@ -243,7 +235,7 @@ export class CreationProxyTxBuilder {
    * @throws Error if any required parameter is missing
    */
   private validate = (): void => {
-    if (this.feeBoxes.length === 0) throw new Error('Fee boxes not set');
+    if (!this.feeBoxes) throw new Error('Fee boxes not set');
     if (!this.creatorErgoTree) throw new Error('Creator ErgoTree not set');
     if (!this.implementerErgoTree)
       throw new Error('Implementer ErgoTree not set');
@@ -338,14 +330,43 @@ export class CreationProxyTxBuilder {
   };
 
   /**
+   * Select enough fee boxes to cover proxy output, fee and optional token.
+   * @returns selected fee boxes
+   */
+  private selectFeeBoxes = async (): Promise<Box<Amount>[]> => {
+    const proxyBox = this.buildCreationProxyBox();
+    const requiredAssets = {
+      nativeToken: BigInt(proxyBox.value.toString()) + this.txFee!,
+      tokens:
+        this.collectingTokenId != null
+          ? [{ id: this.collectingTokenId, value: 1n }]
+          : [],
+    };
+
+    const selector = new FleetBoxSelection();
+    const result = await selector.getCoveringBoxes(
+      requiredAssets,
+      [],
+      new Map(),
+      this.feeBoxes!,
+    );
+
+    if (!result.covered || result.boxes.length === 0)
+      throw new Error('Not enough fee boxes to cover transaction');
+
+    return result.boxes;
+  };
+
+  /**
    * Build the creation proxy funding transaction.
    * @returns ErgoUnsignedTransaction instance
    */
-  build = (): ErgoUnsignedTransaction => {
+  build = async (): Promise<ErgoUnsignedTransaction> => {
     this.validate();
+    const selectedFeeBoxes = await this.selectFeeBoxes();
 
     // The first input is the fee box that contains the winners percentage list and the implementer and creator ErgoTrees.
-    const firstInput = new ErgoUnsignedInput(this.feeBoxes[0]!);
+    const firstInput = new ErgoUnsignedInput(selectedFeeBoxes[0]!);
     firstInput.setContextExtension({
       0: SColl(SLong, this.winnersPercentList!),
       1: SColl(SColl(SByte), [
@@ -356,11 +377,8 @@ export class CreationProxyTxBuilder {
     const proxyBox = this.buildCreationProxyBox();
 
     const tx = new TransactionBuilder(this.chainHeight!)
-      .from([firstInput, ...this.feeBoxes.slice(1)])
+      .from([firstInput, ...selectedFeeBoxes.slice(1)])
       .to([proxyBox])
-      .configureSelector((selector) => {
-        selector.defineStrategy((inputs) => inputs);
-      })
       .payFee(this.txFee!)
       .sendChangeTo(this.creatorErgoTree!)
       .build();
