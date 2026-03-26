@@ -232,21 +232,6 @@ export class Sqlite1765798898052 implements MigrationInterface {
             )
         `);
     await queryRunner.query(`
-            CREATE TABLE "dynamic_box" (
-                "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-                "identifier" varchar NOT NULL,
-                "block" varchar NOT NULL,
-                "height" integer NOT NULL,
-                "spendBlock" varchar,
-                "spendHeight" integer,
-                "extractor" varchar NOT NULL,
-                "serialized" varchar NOT NULL,
-                "txId" varchar NOT NULL,
-                "address" varchar NOT NULL,
-                CONSTRAINT "UQ_feefdeac8f946da3dd3712dab63" UNIQUE ("identifier", "extractor")
-            )
-        `);
-    await queryRunner.query(`
             CREATE TABLE "temporary_picture" (
                 "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
                 "raffleId" varchar NOT NULL,
@@ -311,9 +296,6 @@ export class Sqlite1765798898052 implements MigrationInterface {
         `);
     await queryRunner.query(`
             DROP TABLE "temporary_picture"
-        `);
-    await queryRunner.query(`
-            DROP TABLE "dynamic_box"
         `);
     await queryRunner.query(`
             DROP TABLE "safe_pay"

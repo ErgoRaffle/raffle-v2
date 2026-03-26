@@ -24,7 +24,6 @@ import {
   SuccessRaffleExtractor,
   TicketRedeemExtractor,
   SafePayExtractor,
-  DynamicExtractor,
 } from '@ergo-raffle/extractors';
 
 import { configs } from '../config';
@@ -35,7 +34,6 @@ export class ScannerService extends AbstractService {
   name = 'ScannerService';
   private static instance: ScannerService;
   readonly scannerConfig: ScannerBaseOption;
-  private dynamicExtractor: DynamicExtractor;
   private shouldStop = false;
   private latestTimeOut: undefined | ReturnType<typeof setTimeout>;
   private continueStop = () => {
@@ -359,21 +357,5 @@ export class ScannerService extends AbstractService {
 
     this.setStatus(ServiceStatus.dormant);
     return true;
-  };
-
-  /**
-   * Add a new address to the dynamic extractor
-   * @param address - The address to add
-   */
-  addDynamicAddress = (address: string) => {
-    this.dynamicExtractor.addNewAddress(address);
-  };
-
-  /**
-   * Remove an address from the dynamic extractor
-   * @param address - The address to remove
-   */
-  removeDynamicAddress = (address: string) => {
-    this.dynamicExtractor.removeAddress(address);
   };
 }

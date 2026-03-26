@@ -16,7 +16,6 @@ import {
   GiftEntity,
   TicketEntity,
   WinnerPrizeEntity,
-  DynamicBoxEntity,
 } from '../lib/entities';
 import { migrations } from '../lib/migrations';
 
@@ -60,7 +59,6 @@ export const createDatabase = async (): Promise<DataSource> => {
       GiftEntity,
       TicketEntity,
       WinnerPrizeEntity,
-      DynamicBoxEntity,
     ],
     migrations: [...migrations.sqlite, ...scannerMigrations.sqlite],
     synchronize: false,

@@ -20,3 +20,9 @@ ergo:
   fee: 1500000
 bitcoin:
   network: mainnet
+  rpc:
+    timeout: 30
+  scannerInterval: 30
+  runes:
+    unisat:
+      url: https://open-api.unisat.io

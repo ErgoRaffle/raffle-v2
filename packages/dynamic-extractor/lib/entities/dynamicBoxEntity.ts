@@ -8,4 +8,10 @@ export class DynamicBoxEntity extends AbstractErgoEntity {
 
   @Column({ type: 'varchar' })
   address: string;
+
+  @Column({ type: 'varchar' })
+  tokenId: string;
+
+  @Column({ type: 'varchar' })
+  amount: string;
 }

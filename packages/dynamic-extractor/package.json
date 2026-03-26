@@ -1,14 +1,13 @@
 {
-  "name": "@ergo-raffle/extractors",
+  "name": "@ergo-raffle/dynamic-extractor",
   "version": "0.0.0",
-  "private": true,
-  "description": "Raffle v2 related extractors",
+  "description": "Dynamic bitcoin payment extractor",
   "repository": {
     "type": "git",
     "url": "https://github.com/ErgoRaffle/raffle-v2"
   },
   "license": "MIT",
-  "author": "Ergo Raffle Team",
+  "author": "ErgoRaffle Team",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -29,19 +28,19 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@fleet-sdk/core": "^0.12.0",
-    "@fleet-sdk/serializer": "^0.11.0",
     "@rosen-bridge/abstract-extractor": "^3.0.1",
     "@rosen-bridge/abstract-logger": "^4.0.0",
-    "@rosen-bridge/abstract-scanner": "^1.0.1",
+    "@rosen-bridge/address-codec": "^1.2.0",
+    "@rosen-bridge/bitcoin-scanner": "^1.0.1",
     "@rosen-bridge/extended-typeorm": "^1.0.1",
+    "@rosen-bridge/json-bigint": "^1.1.0",
     "@rosen-bridge/scanner-interfaces": "^0.2.2",
-    "lodash-es": "^4.17.21"
+    "@rosen-clients/rate-limited-axios": "^1.1.1",
+    "bitcoinjs-lib": "^6.1.7",
+    "lodash-es": "^4.17.21",
+    "tiny-secp256k1": "^2.2.4"
   },
   "devDependencies": {
-    "@fleet-sdk/compiler": "^0.12.0",
-    "@fleet-sdk/crypto": "^0.11.0",
-    "@fleet-sdk/mock-chain": "^0.12.0",
     "@types/lodash-es": "^4.17.12"
   },
   "engines": {
