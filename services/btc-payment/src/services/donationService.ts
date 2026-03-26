@@ -119,10 +119,21 @@ export class DonationService extends PeriodicTaskService {
       return;
     }
 
-    const nowSeconds = Math.floor(Date.now() / 1000);
+    const latestBlock = await db.getLatestBlock(
+      ScannerService.getInstance().getBitcoinScannerName(),
+    );
+    if (latestBlock === null) {
+      this.logger.debug(
+        'No blocks stored yet, skipping donation timeout check',
+      );
+      return;
+    }
+
     for (const donation of ongoing) {
       try {
-        const ageSeconds = nowSeconds - donation.timestamp;
+        const ageSeconds = Math.floor(
+          (latestBlock.timestamp - donation.timestamp) / 1000,
+        );
         if (ageSeconds >= this.config.requestTimeout) {
           await db.updateDonationStatus(donation.id, DonationStatus.TimedOut);
           this.logger.info(
@@ -154,15 +165,16 @@ export class DonationService extends PeriodicTaskService {
       return;
     }
 
-    const latestHeight = await db.getLatestBlockHeight(
+    const latestBlock = await db.getLatestBlock(
       ScannerService.getInstance().getBitcoinScannerName(),
     );
-    if (latestHeight === null) {
+    if (latestBlock === null) {
       this.logger.debug('No blocks stored yet, skipping donation check');
       return;
     }
 
-    const minConfirmedHeight = latestHeight - this.config.requiredConfirmations;
+    const minConfirmedHeight =
+      latestBlock.height - this.config.requiredConfirmations;
 
     for (const donation of ongoing) {
       try {

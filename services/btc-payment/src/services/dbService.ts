@@ -207,16 +207,16 @@ export class DbService extends AbstractService {
   };
 
   /**
-   * Get the latest stored block height for a scanner.
+   * Get the latest stored block for a scanner.
    * @param scanner - Scanner name (e.g. BITCOIN_SCANNER_NAME)
-   * @returns The latest height, or null if no blocks stored yet
+   * @returns The latest block, or null if no blocks stored yet
    */
-  getLatestBlockHeight = async (scanner: string): Promise<number | null> => {
+  getLatestBlock = async (scanner: string): Promise<BlockEntity | null> => {
     const block = await this.dataSource.getRepository(BlockEntity).findOne({
       where: { scanner },
       order: { height: 'DESC' },
     });
-    return block?.height ?? null;
+    return block ?? null;
   };
 
   /**
