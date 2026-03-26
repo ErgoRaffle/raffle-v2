@@ -12,7 +12,7 @@ import {
   sampleBitcoinTx,
   sampleBitcoinTxOnlyOther,
   sampleTokenId,
-} from './mocked/dynamic.mock';
+} from './testData';
 
 const unisatUrl = 'https://open-api.unisat.io';
 const unisatApiKey = '';
