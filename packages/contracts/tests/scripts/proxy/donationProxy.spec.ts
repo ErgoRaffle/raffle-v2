@@ -15,6 +15,7 @@ import { createMockUtxo, CustomMockChain } from './testUtils';
 describe('DonationProxy', () => {
   let chain: CustomMockChain;
   let donator: KeyedMockChainParty;
+  let attacker: KeyedMockChainParty;
   let project: KeyedMockChainParty;
   let implementer: KeyedMockChainParty;
   let proxyBox: Box<Amount>;
@@ -30,6 +31,7 @@ describe('DonationProxy', () => {
     chain.setTip(100);
 
     donator = chain.newParty('donator');
+    attacker = chain.newParty('attacker');
     project = chain.newParty('project');
     implementer = chain.newParty('implementer');
 
@@ -245,6 +247,40 @@ describe('DonationProxy', () => {
 
       // Check execution result
       expect(res).toBeTruthy();
+    });
+
+    /**
+     * @target donation proxy should fail to refund when two proxy boxes are spent in one transaction
+     * @scenario
+     * - set chain height to >= expirationHeight
+     * - create second proxy input box
+     * - create two refund output boxes (one per proxy)
+     * - execute single transaction that spends both proxy boxes
+     * - check execution throws error
+     * @expected
+     * - transaction execution should throw an error
+     */
+    it('should fail to refund when two proxy boxes are spent at once', () => {
+      chain.setTip(proxyParams.expirationHeight);
+
+      const secondProxyOutput = buildDonationProxyBox(
+        contracts['donationProxy'],
+        proxyParams,
+        { creationHeight: 6 },
+      );
+      const secondProxyBox = createMockUtxo(secondProxyOutput);
+
+      const transaction2 = new TransactionBuilder(chain.height)
+        .from([proxyBox, secondProxyBox])
+        .to([donatorRefundBox])
+        .payFee(proxyParams.txFee)
+        .sendChangeTo(attacker.address.toString())
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        .build();
+
+      expect(() => chain.executeTx(transaction2, [donator])).toThrow();
     });
 
     /**

@@ -318,6 +318,40 @@ describe('CreationProxy', () => {
     });
 
     /**
+     * @target creation proxy should fail to refund when two proxy boxes are spent in one transaction
+     * @scenario
+     * - set chain height to >= expirationHeight
+     * - create second proxy input box
+     * - create one organizer refund output box
+     * - execute single transaction that spends both proxy boxes
+     * - check execution throws error
+     * @expected
+     * - transaction execution should throw an error
+     */
+    it('should fail to refund when two proxy boxes are spent at once', () => {
+      chain.setTip(proxyParams.expirationHeight);
+
+      const secondProxyOutput = buildCreationProxyBox(
+        contracts['creationProxy'],
+        proxyParams,
+        { creationHeight: 6 },
+      );
+      const secondProxyBox = createMockUtxo(secondProxyOutput);
+
+      const transaction = new TransactionBuilder(chain.height)
+        .from([proxyBox, secondProxyBox])
+        .to([organizerRefundBox])
+        .payFee(proxyParams.txFee)
+        .sendChangeTo(implementer.address.toString())
+        .configureSelector((selector) => {
+          selector.defineStrategy((inputs) => inputs);
+        })
+        .build();
+
+      expect(() => chain.executeTx(transaction, [organizer])).toThrow();
+    });
+
+    /**
      * @target creation proxy should fail to refund when deadline has not passed
      * @scenario
      * - set chain height to < expirationHeight and < deadline

@@ -61,7 +61,7 @@
     // Proxy redeem
     // [Proxy] --> [DonatorAddress]
     sigmaProp(allOf(Coll(
-      INPUTS.size == 1,
+      INPUTS(0).id == SELF.id,
       blake2b256(OUTPUTS(0).propositionBytes) == donatorErgoTreeHash,
       OUTPUTS(0).tokens == SELF.tokens,
       OUTPUTS(0).value >= SELF.value - txFee  

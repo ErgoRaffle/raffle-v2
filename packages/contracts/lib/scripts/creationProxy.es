@@ -93,11 +93,10 @@
     // Proxy redeem
     // [Proxy] --> [UserAddress]
     sigmaProp(allOf(Coll(
-      INPUTS.size == 1,
-      OUTPUTS.size == 2,
+      INPUTS(0).id == SELF.id,
       blake2b256(OUTPUTS(0).propositionBytes) == organizerErgoTreeHash,
       OUTPUTS(0).tokens == SELF.tokens,
-      OUTPUTS(1).value <= txFee,
+      OUTPUTS(0).value >= INPUTS(0).value - txFee,
     )))
   }
 }
