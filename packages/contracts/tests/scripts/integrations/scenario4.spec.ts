@@ -21,7 +21,7 @@ import * as testUtils from '../../testUtils';
 
 interface TestInterface {
   boxFactory: testUtils.RaffleBoxFactory;
-  creator: KeyedMockChainParty;
+  organizer: KeyedMockChainParty;
   serviceBox: ErgoUnsignedInput;
   implementerErgoTree: string;
   ownerErgoTree: string;
@@ -35,7 +35,7 @@ describe('Raffle', () => {
     const boxFactory = new testUtils.RaffleBoxFactory({ height: 1000 });
     const {
       owner,
-      creator,
+      organizer,
       implementer,
       giftgiver1,
       donator1,
@@ -44,8 +44,8 @@ describe('Raffle', () => {
       donator4,
       donator5,
     } = boxFactory.createPartners({
-      owner: testUtils.TestConstants.CREATOR_DEFAULT_BALANCE,
-      Creator: testUtils.TestConstants.CREATOR_DEFAULT_BALANCE,
+      owner: testUtils.TestConstants.ORGANIZER_DEFAULT_BALANCE,
+      organizer: testUtils.TestConstants.ORGANIZER_DEFAULT_BALANCE,
       implementer: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
       giftGiver1: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
       donator1: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
@@ -54,7 +54,7 @@ describe('Raffle', () => {
       donator4: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
       donator5: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
     });
-    creator.addBalance({
+    organizer.addBalance({
       tokens: [
         { tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 1_000_000n },
       ],
@@ -97,7 +97,7 @@ describe('Raffle', () => {
     ];
 
     ctx.boxFactory = boxFactory;
-    ctx.creator = creator;
+    ctx.organizer = organizer;
     ctx.serviceBox = serviceBox;
     ctx.implementerErgoTree = implementer.ergoTree;
     ctx.ownerErgoTree = owner.ergoTree;
@@ -124,7 +124,7 @@ describe('Raffle', () => {
      */
     it<TestInterface>('success Erg-goal raffle with 1 winner', ({
       boxFactory,
-      creator,
+      organizer,
       serviceBox,
       implementerErgoTree,
       ownerErgoTree,
@@ -142,8 +142,8 @@ describe('Raffle', () => {
       // Step 1: Raffle creation phase 1 (create inactive raffle and ticketRepo)
       const createRaffleBuilder = new CreationTxBuilder()
         .setServiceBox(serviceBox)
-        .setFeeBoxes(creator.utxos.toArray())
-        .setCreatorAddress(creator.address.toString())
+        .setFeeBoxes(organizer.utxos.toArray())
+        .setOrganizerAddress(organizer.address.toString())
         .setImplementerErgoTree(implementerErgoTree)
         .setWinnersCount(winnersCount)
         .setDeadline(deadline)
@@ -164,7 +164,7 @@ describe('Raffle', () => {
 
       const createRaffleTx = boxFactory.chain.executeAndReturnOutputs(
         createRaffleBuilder.build(),
-        { signers: [creator] },
+        { signers: [organizer] },
       );
       expect(createRaffleTx.success).toBeTruthy();
 
@@ -427,7 +427,7 @@ describe('Raffle', () => {
       const returnLicenseBuilder = new ReturnRaffleLicenseTxBuilder()
         .setEndedRaffle(successRaffleBox)
         .setService(finalServiceBox)
-        .setChangeErgoTree(creator.ergoTree)
+        .setChangeErgoTree(organizer.ergoTree)
         .setChainHeight(boxFactory.chain.height)
         .setTxFee(testUtils.TestConstants.FEE);
 
@@ -439,7 +439,7 @@ describe('Raffle', () => {
       const projectSafePayBox = returnLicenseTx.outputs[1];
       const projectSafeWithdrawBuilder = new SafeWithdrawTxBuilder()
         .setSafePay(projectSafePayBox)
-        .setReceiverAddress(creator.ergoTree)
+        .setReceiverAddress(organizer.ergoTree)
         .setChainHeight(boxFactory.chain.height)
         .setTxFee(testUtils.TestConstants.FEE);
 

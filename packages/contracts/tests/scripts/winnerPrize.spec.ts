@@ -15,7 +15,7 @@ import * as testUtils from '../testUtils';
 interface TestInterface {
   boxFactory: testUtils.RaffleBoxFactory;
   someoneWallet: KeyedMockChainParty;
-  creator: KeyedMockChainParty;
+  project: KeyedMockChainParty;
   unknownWallet: KeyedMockChainParty;
   ticketBox: ErgoUnsignedInput;
   winnerPrizeBox: ErgoUnsignedInput;
@@ -39,12 +39,12 @@ describe('winnerPrize', () => {
       ) as ScriptNamesType[],
     );
     boxFactory.chain.setTip(100);
-    const { creator, someone, unknown } = boxFactory.createPartners({
-      creator: testUtils.TestConstants.CREATOR_DEFAULT_BALANCE,
+    const { project, someone, unknown } = boxFactory.createPartners({
+      project: testUtils.TestConstants.ORGANIZER_DEFAULT_BALANCE,
       someone: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
       unknown: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
     });
-    creator.addBalance({
+    project.addBalance({
       tokens: [{ tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 100n }],
     });
 
@@ -98,7 +98,7 @@ describe('winnerPrize', () => {
 
     ctx.boxFactory = boxFactory;
     ctx.someoneWallet = someone;
-    ctx.creator = creator;
+    ctx.project = project;
     ctx.unknownWallet = unknown;
     ctx.ticketBox = ticketBox;
     ctx.winnerPrizeBox = winnerPrizeBox;

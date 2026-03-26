@@ -19,7 +19,7 @@ import * as testUtils from '../../testUtils';
 
 interface TestInterface {
   boxFactory: testUtils.RaffleBoxFactory;
-  creator: KeyedMockChainParty;
+  organizer: KeyedMockChainParty;
   serviceBox: ErgoUnsignedInput;
   implementerErgoTree: string;
   ownerErgoTree: string;
@@ -30,15 +30,15 @@ describe('Raffle', () => {
   beforeEach<TestInterface>(async (ctx) => {
     testUtils.TestConstants.overrideBySampleConfigs();
     const boxFactory = new testUtils.RaffleBoxFactory({ height: 1000 });
-    const { owner, creator, implementer, donator1, donator2 } =
+    const { owner, organizer, implementer, donator1, donator2 } =
       boxFactory.createPartners({
-        owner: testUtils.TestConstants.CREATOR_DEFAULT_BALANCE,
-        Creator: testUtils.TestConstants.CREATOR_DEFAULT_BALANCE,
+        owner: testUtils.TestConstants.OWNER_DEFAULT_BALANCE,
+        organizer: testUtils.TestConstants.ORGANIZER_DEFAULT_BALANCE,
         implementer: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
         donator1: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
         donator2: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
       });
-    creator.addBalance({
+    organizer.addBalance({
       tokens: [
         { tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 1_000_000n },
       ],
@@ -52,7 +52,7 @@ describe('Raffle', () => {
 
     // Created input service-box
     const serviceBox = boxFactory.createServiceBoxMock(
-      owner.address.ergoTree,
+      owner.ergoTree,
       testUtils.TestConstants.LICENSE_TOKEN_COUNT,
       100n,
       100n,
@@ -62,10 +62,10 @@ describe('Raffle', () => {
     const donatorWallets: KeyedMockChainParty[] = [donator1, donator2];
 
     ctx.boxFactory = boxFactory;
-    ctx.creator = creator;
+    ctx.organizer = organizer;
     ctx.serviceBox = serviceBox;
-    ctx.implementerErgoTree = implementer.address.ergoTree;
-    ctx.ownerErgoTree = owner.address.ergoTree;
+    ctx.implementerErgoTree = implementer.ergoTree;
+    ctx.ownerErgoTree = owner.ergoTree;
     ctx.donatorWallets = donatorWallets as KeyedMockChainParty[];
   });
 
@@ -87,7 +87,7 @@ describe('Raffle', () => {
      */
     it<TestInterface>('Failed token-goal raffle with 2 winners', ({
       boxFactory,
-      creator,
+      organizer,
       serviceBox,
       implementerErgoTree,
       donatorWallets,
@@ -103,8 +103,8 @@ describe('Raffle', () => {
       // Step 1: Raffle creation phase 1 (create inactive raffle and ticketRepo)
       const createRaffleBuilder = new CreationTxBuilder()
         .setServiceBox(serviceBox)
-        .setFeeBoxes(creator.utxos.toArray())
-        .setCreatorAddress(creator.address.toString())
+        .setFeeBoxes(organizer.utxos.toArray())
+        .setOrganizerAddress(organizer.address.toString())
         .setImplementerErgoTree(implementerErgoTree)
         .setWinnersCount(winnersCount)
         .setDeadline(deadline)
@@ -126,7 +126,7 @@ describe('Raffle', () => {
 
       const createRaffleTx = boxFactory.chain.executeAndReturnOutputs(
         createRaffleBuilder.build(),
-        { signers: [creator] },
+        { signers: [organizer] },
       );
       expect(createRaffleTx.success).toBeTruthy();
 

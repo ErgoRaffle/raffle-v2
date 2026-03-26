@@ -17,7 +17,7 @@ interface TicketRedeemTestInterface {
   boxFactory: testUtils.RaffleBoxFactory;
   someoneWallet: KeyedMockChainParty;
   anotherOne: KeyedMockChainParty;
-  creator: KeyedMockChainParty;
+  owner: KeyedMockChainParty;
   serviceBox: ErgoUnsignedInput;
   ticketBox: ErgoUnsignedInput;
   ticketRedeemBox: ErgoUnsignedInput;
@@ -59,12 +59,12 @@ const provideTicketRedeemTestRequirements = (
     ) as ScriptNamesType[],
   );
   boxFactory.chain.setTip(10);
-  const { creator, someone, another } = boxFactory.createPartners({
-    creator: testUtils.TestConstants.CREATOR_DEFAULT_BALANCE,
+  const { owner, someone, another } = boxFactory.createPartners({
+    owner: testUtils.TestConstants.OWNER_DEFAULT_BALANCE,
     someone: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
     another: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
   });
-  creator.addBalance({
+  owner.addBalance({
     tokens: [{ tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 100n }],
   });
 
@@ -136,14 +136,14 @@ const provideTicketRedeemTestRequirements = (
     collectingToken,
   );
   ticketRedeemBoxForLicenseRedeem.setContextExtension({
-    0: SColl(SByte, Array.from(Buffer.from(creator.ergoTree, 'hex'))),
+    0: SColl(SByte, Array.from(Buffer.from(owner.ergoTree, 'hex'))),
   });
   const serviceBox = boxFactory.createServiceBoxMock(
-    creator.ergoTree,
+    owner.ergoTree,
     999_999_999n,
   );
   const serviceOutputBox = boxFactory.createServiceOutputBox(
-    creator.ergoTree,
+    owner.ergoTree,
     1_000_000_000n,
   );
   const serviceFeeBox = boxFactory.createSafePayOutputBox(
@@ -152,14 +152,14 @@ const provideTicketRedeemTestRequirements = (
     ticketRedeemBoxForLicenseRedeem.assets[2]
       ? [ticketRedeemBoxForLicenseRedeem.assets[2]]
       : [],
-    blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+    blake2b256(Buffer.from(owner.ergoTree, 'hex')),
   );
 
   return {
     boxFactory: boxFactory,
     someoneWallet: someone,
     anotherOne: another,
-    creator: creator,
+    owner: owner,
     ticketBox: ticketBox,
     ticketRedeemBox: ticketRedeemBox,
     ticketRedeemOutputBox: ticketRedeemOutputBox,
@@ -720,7 +720,7 @@ describe('ticketRedeem', () => {
     }) => {
       const serviceBox =
         ticketRedeemTestRequirements.boxFactory.createServiceBoxMock(
-          ticketRedeemTestRequirements.creator.ergoTree,
+          ticketRedeemTestRequirements.owner.ergoTree,
           999_999_999n,
           undefined,
           undefined,
@@ -731,7 +731,7 @@ describe('ticketRedeem', () => {
         );
       const serviceOutputBox =
         ticketRedeemTestRequirements.boxFactory.createServiceOutputBox(
-          ticketRedeemTestRequirements.creator.ergoTree,
+          ticketRedeemTestRequirements.owner.ergoTree,
           1_000_000_000n,
           undefined,
           undefined,
@@ -779,7 +779,7 @@ describe('ticketRedeem', () => {
     }) => {
       const serviceBox =
         ticketRedeemTestRequirements.boxFactory.createServiceBoxMock(
-          ticketRedeemTestRequirements.creator.ergoTree,
+          ticketRedeemTestRequirements.owner.ergoTree,
           999_999_999n,
           undefined,
           undefined,
@@ -788,7 +788,7 @@ describe('ticketRedeem', () => {
         );
       const serviceOutputBox =
         ticketRedeemTestRequirements.boxFactory.createServiceOutputBox(
-          ticketRedeemTestRequirements.creator.ergoTree,
+          ticketRedeemTestRequirements.owner.ergoTree,
           1_000_000_000n,
           undefined,
           undefined,
@@ -853,7 +853,7 @@ describe('ticketRedeem', () => {
             testUtils.TestConstants.FEE * 2n,
           [],
           blake2b256(
-            Buffer.from(ticketRedeemTestRequirements.creator.ergoTree, 'hex'),
+            Buffer.from(ticketRedeemTestRequirements.owner.ergoTree, 'hex'),
           ),
         );
 
@@ -911,7 +911,7 @@ describe('ticketRedeem', () => {
           ],
           blake2b256(
             Buffer.from(
-              ticketRedeemTokenGoalTestRequirements.creator.ergoTree,
+              ticketRedeemTokenGoalTestRequirements.owner.ergoTree,
               'hex',
             ),
           ),
