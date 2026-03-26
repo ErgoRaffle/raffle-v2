@@ -5,5 +5,8 @@
     "baseUrl": "."
   },
   "include": ["src"],
-  "references": [{ "path": "../../packages/data-source/tsconfig.build.json" }]
+  "references": [
+    { "path": "../../packages/data-source/tsconfig.build.json" },
+    { "path": "../../packages/extractors/tsconfig.build.json" }
+  ]
 }

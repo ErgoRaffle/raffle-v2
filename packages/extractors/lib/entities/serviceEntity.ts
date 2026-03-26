@@ -18,4 +18,7 @@ export class ServiceEntity extends AbstractErgoBoxEntity {
 
   @Column({ type: 'bigint', transformer: new BigIntValueTransformer() })
   creationFee: bigint;
+
+  @Column({ type: 'bigint', transformer: new BigIntValueTransformer() })
+  txFee: bigint;
 }

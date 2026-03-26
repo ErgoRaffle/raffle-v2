@@ -21,6 +21,7 @@ export class Postgres1765798163301 implements MigrationInterface {
                 "serviceFeePercent" integer NOT NULL,
                 "implementerFeePercent" integer NOT NULL,
                 "creationFee" bigint NOT NULL,
+                "txFee" bigint NOT NULL,
                 CONSTRAINT "UQ_f5398b3f54b5cea829d8f349de0" UNIQUE ("identifier", "extractor"),
                 CONSTRAINT "PK_85a21558c006647cd76fdce044b" PRIMARY KEY ("id")
             )

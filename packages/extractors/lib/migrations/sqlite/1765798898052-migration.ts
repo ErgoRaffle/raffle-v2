@@ -21,6 +21,7 @@ export class Sqlite1765798898052 implements MigrationInterface {
                 "serviceFeePercent" integer NOT NULL,
                 "implementerFeePercent" integer NOT NULL,
                 "creationFee" bigint NOT NULL,
+                "txFee" bigint NOT NULL,
                 CONSTRAINT "UQ_f5398b3f54b5cea829d8f349de0" UNIQUE ("identifier", "extractor")
             )
         `);

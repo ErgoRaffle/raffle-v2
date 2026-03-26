@@ -71,7 +71,7 @@ export class ServiceExtractor extends AbstractErgoBoxExtractor<
   extractBoxData = (box: OutputBox): ServiceBoxInterface | undefined => {
     const R4Serialized = SConstant.from(box.additionalRegisters!.R4!)
       .data as bigint[];
-    const data = {
+    return {
       identifier: box.boxId.toString(),
       txId: box.transactionId,
       serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(
@@ -80,8 +80,7 @@ export class ServiceExtractor extends AbstractErgoBoxExtractor<
       serviceFeePercent: Number(R4Serialized[0]),
       implementerFeePercent: Number(R4Serialized[1]),
       creationFee: R4Serialized[2],
+      txFee: R4Serialized[3],
     };
-
-    return data;
   };
 }

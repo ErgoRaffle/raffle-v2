@@ -9,7 +9,7 @@ import {
 import packageJson from '../../package.json' with { type: 'json' };
 import * as ConfigTypes from '../types/configs';
 import { DbService } from './dbService';
-import { registerHealthRoute } from './routes/health';
+import { registerInfoRoute } from './routes/info';
 
 export class ApiService extends AbstractService {
   name = 'ApiService';
@@ -66,7 +66,7 @@ export class ApiService extends AbstractService {
         { logger: true },
       );
 
-      registerHealthRoute(this.fastify);
+      registerInfoRoute(this.fastify);
 
       await this.fastify.listen({
         host: this.apiConfig.host,

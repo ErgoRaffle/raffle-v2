@@ -37,6 +37,7 @@ export class ServiceAction extends AbstractErgoBoxAction<
         serviceFeePercent: box.serviceFeePercent,
         implementerFeePercent: box.implementerFeePercent,
         creationFee: box.creationFee,
+        txFee: box.txFee,
       };
     });
   };
@@ -55,6 +56,7 @@ export class ServiceAction extends AbstractErgoBoxAction<
         'creationFee',
         'extractor',
         'serialized',
+        'txFee',
       ]),
     );
   };
