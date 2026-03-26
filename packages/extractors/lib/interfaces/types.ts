@@ -34,6 +34,44 @@ export interface RaffleBoxInterface extends AbstractRaffleBoxInterface {
   type: RaffleBoxType;
 }
 
+export interface CreationProxyBoxInterface extends AbstractEntityData {
+  txId: string;
+  address: string;
+  expirationHeight: number;
+  raffleDeadline: number;
+  winnersPercent: number;
+  ticketPrice: bigint;
+  goal: bigint;
+  txFee: bigint;
+  implementorErgoTree: string;
+  creatorErgoTree: string;
+  winnersPercentList: string;
+  collectingTokenId: string;
+  name: string;
+  description: string;
+  pictures: string;
+  winnerCount: number;
+  isErgGoal: boolean;
+}
+
+export interface DonationProxyBoxInterface extends AbstractRaffleBoxInterface {
+  address: string;
+  expirationHeight: number;
+  raffleDeadline: number;
+  ticketCount: number;
+  txFee: bigint;
+  donatorErgoTree: string;
+}
+
+export interface AddGiftProxyBoxInterface extends AbstractRaffleBoxInterface {
+  address: string;
+  expirationHeight: number;
+  raffleDeadline: number;
+  winnerIndex: number;
+  txFee: bigint;
+  giftGiverErgoTree: string;
+}
+
 export interface WinnerBoxInterface extends AbstractRaffleBoxInterface {
   index: number;
   rewardPercent: number;
