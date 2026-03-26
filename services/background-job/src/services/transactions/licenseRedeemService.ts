@@ -127,7 +127,7 @@ export class LicenseRedeemService extends AbstractTxService {
 
     // Return appropriate ergo tree based on box type
     return boxType === EndedRaffleBoxType.SuccessRaffle
-      ? raffleData.creatorErgoTree
+      ? raffleData.projectErgoTree
       : raffleData.serviceErgoTree;
   };
 

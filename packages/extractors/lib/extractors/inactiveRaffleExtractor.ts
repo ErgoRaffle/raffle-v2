@@ -87,17 +87,17 @@ export class InactiveRaffleExtractor extends AbstractErgoBoxExtractor<
       .data as Uint8Array[];
 
     let winnersPercentList = '';
-    let implementorErgoTree = '';
-    let creatorErgoTree = '';
+    let implementerErgoTree = '';
+    let projectErgoTree = '';
     try {
       winnersPercentList =
         (
           SConstant.from(inputExtensions![0]['0']).data as bigint[]
         ).toString() || '';
-      implementorErgoTree = Buffer.from(
+      implementerErgoTree = Buffer.from(
         (SConstant.from(inputExtensions![0]['1']).data as Uint8Array[])[0],
       ).toString('hex');
-      creatorErgoTree = Buffer.from(
+      projectErgoTree = Buffer.from(
         (SConstant.from(inputExtensions![0]['1']).data as Uint8Array[])[1],
       ).toString('hex');
     } catch (err) {
@@ -113,8 +113,8 @@ export class InactiveRaffleExtractor extends AbstractErgoBoxExtractor<
         'base64',
       ),
       serviceErgoTree: this.serviceErgoTree,
-      implementorErgoTree: implementorErgoTree,
-      creatorErgoTree: creatorErgoTree,
+      implementerErgoTree: implementerErgoTree,
+      projectErgoTree: projectErgoTree,
       winnersPercent: Number(R4Serialized[0]),
       serviceFeePercent: Number(R4Serialized[1]),
       implementerFeePercent: Number(R4Serialized[2]),

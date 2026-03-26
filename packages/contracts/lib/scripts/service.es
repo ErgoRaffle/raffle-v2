@@ -9,7 +9,7 @@
   //   1: RaffleLicense
   // Context:
   //   C0: Coll[Long]: WinnersPercentList (in raffle creation tx)
-  //   C1: Coll[Coll[Byte]]: [ImplementerErgoTree, CreatorErgoTree]
+  //   C1: Coll[Coll[Byte]]: [ImplementerErgoTree, ProjectErgoTree]
   //
   // Spent in 3 transactions:
   //   - Owner config update with OwnerNft
@@ -65,7 +65,7 @@
       val txFee = SELF.R4[Coll[Long]].get(3)
       val serviceFeeErgoTreeHash = SELF.R5[Coll[Byte]].get
       val implementerErgoTree = getVar[Coll[Coll[Byte]]](1).get(0)
-      val creatorErgoTree = getVar[Coll[Coll[Byte]]](1).get(1)
+      val projectErgoTree = getVar[Coll[Coll[Byte]]](1).get(1)
       val raffleGoal = inactiveRaffle.R4[Coll[Long]].get(4)
       val winnersSharePercent = inactiveRaffle.R4[Coll[Long]].get(0)
       val projectPercent = 1000L - (winnersSharePercent + serviceFeePercent + implementerFeePercent)
@@ -83,7 +83,7 @@
 
         // Correct InactiveRaffle format
         // R4: [WinnersPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, Deadline, TxFee]
-        // R5: [ServiceErgoTreeHash, ImplementerErgoTreeHash, CreatorErgoTreeHash]
+        // R5: [ServiceErgoTreeHash, ImplementerErgoTreeHash, ProjectErgoTreeHash]
         // R6: [Name, Description, Pictures(optional)]
         // R7: [TicketId, WinnersPercentListHash]
         // R8: WinnersCount
@@ -100,7 +100,7 @@
         inactiveRaffle.R5[Coll[Coll[Byte]]].get.size == 3,
         inactiveRaffle.R5[Coll[Coll[Byte]]].get(0) == serviceFeeErgoTreeHash,
         inactiveRaffle.R5[Coll[Coll[Byte]]].get(1) == blake2b256(implementerErgoTree),
-        inactiveRaffle.R5[Coll[Coll[Byte]]].get(2) == blake2b256(creatorErgoTree),
+        inactiveRaffle.R5[Coll[Coll[Byte]]].get(2) == blake2b256(projectErgoTree),
         inactiveRaffle.R6[Coll[Coll[Byte]]].get.size >= 2,
         inactiveRaffle.R7[Coll[Coll[Byte]]].get(0) == SELF.id, // Storing TicketId to match with TicketRepo
         inactiveRaffle.R7[Coll[Coll[Byte]]].get(1) == blake2b256(winnersPercentBytes),

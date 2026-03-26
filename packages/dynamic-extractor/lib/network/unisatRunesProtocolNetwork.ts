@@ -57,7 +57,7 @@ export class UnisatRunesProtocolNetwork {
         UnisatResponse<UnisatTxRunes>
       >(`/v1/indexer/runes/event?txid=${txId}`);
       this.logger.debug(
-        `requested 'indexer/runes/event' filtering txId [${txId}]. Response: ${JsonBigInt.stringify(response.data)}`,
+        `requested 'v1/indexer/runes/event' filtering txId [${txId}]. Response: ${JsonBigInt.stringify(response.data)}`,
       );
 
       txRunes = response.data.data;

@@ -16,7 +16,6 @@ import * as testUtils from '../testUtils';
 
 interface RaffleTicketTestInterface {
   boxFactory: testUtils.RaffleBoxFactory;
-  creator: KeyedMockChainParty;
   someoneWallet: KeyedMockChainParty;
 
   anotherOne: KeyedMockChainParty;
@@ -56,13 +55,9 @@ const provideRaffleTicketTestRequirements = (
     ) as ScriptNamesType[],
   );
   boxFactory.chain.setTip(10);
-  const { creator, someone, another } = boxFactory.createPartners({
-    creator: testUtils.TestConstants.CREATOR_DEFAULT_BALANCE,
+  const { someone, another } = boxFactory.createPartners({
     someone: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
     another: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
-  });
-  creator.addBalance({
-    tokens: [{ tokenId: testUtils.TestConstants.X_TOKEN_ID, amount: 100n }],
   });
 
   const ticketRedeemBox = boxFactory.createTicketRedeemBoxMock(
@@ -132,7 +127,6 @@ const provideRaffleTicketTestRequirements = (
     boxFactory: boxFactory,
     someoneWallet: someone,
     anotherOne: another,
-    creator: creator,
     ticketRedeemBox: ticketRedeemBox,
     ticketBox: ticketBox,
     ticketRedeemOutputBox: ticketRedeemOutputBox,

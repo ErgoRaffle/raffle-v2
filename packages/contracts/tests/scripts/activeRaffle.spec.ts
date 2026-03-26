@@ -17,7 +17,7 @@ const ARBITRARY_TOKEN_ID = '10'.repeat(32);
 interface ActiveRaffleTestInterface {
   boxFactory: testUtils.RaffleBoxFactory;
   donatorWallet: KeyedMockChainParty;
-  creatorWallet: KeyedMockChainParty;
+  projectWallet: KeyedMockChainParty;
   implementerWallet: KeyedMockChainParty;
   someoneWallet: KeyedMockChainParty;
   activeRaffleBoxForDonate: ErgoUnsignedInput;
@@ -71,8 +71,8 @@ const provideActiveRaffleEndTestRequirements = (
   const implementerFeePercent = 100n;
   const serviceFeePercent = 200n;
 
-  const { creator, implementer, someone, donator } = boxFactory.createPartners({
-    creator: testUtils.TestConstants.CREATOR_DEFAULT_BALANCE,
+  const { project, implementer, someone, donator } = boxFactory.createPartners({
+    project: testUtils.TestConstants.ORGANIZER_DEFAULT_BALANCE,
     implementer: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
     someone: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
     donator: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
@@ -86,9 +86,9 @@ const provideActiveRaffleEndTestRequirements = (
 
   // Created activeRaffle & raffleDetails input boxes
   const activeRaffleBoxForDonate = boxFactory.createActiveRaffleBoxMock(
-    creator.ergoTree,
+    project.ergoTree,
     implementer.ergoTree,
-    creator.ergoTree,
+    project.ergoTree,
     winnersCount,
     serviceFeePercent,
     collectingTokenId !== undefined
@@ -110,9 +110,9 @@ const provideActiveRaffleEndTestRequirements = (
   });
 
   const activeRaffleBoxForSuccessEnd = boxFactory.createActiveRaffleBoxMock(
-    creator.ergoTree,
+    project.ergoTree,
     implementer.ergoTree,
-    creator.ergoTree,
+    project.ergoTree,
     winnersCount,
     serviceFeePercent,
     collectingTokenForSuccess,
@@ -125,15 +125,15 @@ const provideActiveRaffleEndTestRequirements = (
   );
   activeRaffleBoxForSuccessEnd.setContextExtension({
     0: SColl(SColl(SByte), [
-      Array.from(Buffer.from(creator.ergoTree, 'hex')),
+      Array.from(Buffer.from(project.ergoTree, 'hex')),
       Array.from(Buffer.from(implementer.ergoTree, 'hex')),
     ]),
   });
 
   const activeRaffleBoxForFailureEnd = boxFactory.createActiveRaffleBoxMock(
-    creator.ergoTree,
+    project.ergoTree,
     implementer.ergoTree,
-    creator.ergoTree,
+    project.ergoTree,
     winnersCount,
     serviceFeePercent,
     collectingTokenId !== undefined
@@ -189,7 +189,7 @@ const provideActiveRaffleEndTestRequirements = (
             amount: (totalRaised * serviceFeePercent) / 1000n,
           },
         ],
-    blake2b256(Buffer.from(creator.ergoTree, 'hex')),
+    blake2b256(Buffer.from(project.ergoTree, 'hex')),
   );
   const implementerFeeBox = boxFactory.createSafePayOutputBox(
     collectingTokenId === undefined
@@ -210,7 +210,7 @@ const provideActiveRaffleEndTestRequirements = (
   return {
     boxFactory: boxFactory,
     donatorWallet: donator,
-    creatorWallet: creator,
+    projectWallet: project,
     implementerWallet: implementer,
     someoneWallet: someone,
     activeRaffleBoxForDonate: activeRaffleBoxForDonate,
@@ -252,9 +252,9 @@ describe('ActiveRaffle', () => {
 
       const activeRaffleOutputBox =
         activeRaffleTest.boxFactory.createActiveRaffleOutputBox(
-          activeRaffleTest.creatorWallet.ergoTree,
+          activeRaffleTest.projectWallet.ergoTree,
           activeRaffleTest.implementerWallet.ergoTree,
-          activeRaffleTest.creatorWallet.ergoTree,
+          activeRaffleTest.projectWallet.ergoTree,
           1,
           serviceFeePercent,
           undefined,
@@ -309,9 +309,9 @@ describe('ActiveRaffle', () => {
       const serviceFeePercent = 200n;
       const activeRaffleOutputBox =
         activeRaffleTokenGoalTest.boxFactory.createActiveRaffleOutputBox(
-          activeRaffleTokenGoalTest.creatorWallet.ergoTree,
+          activeRaffleTokenGoalTest.projectWallet.ergoTree,
           activeRaffleTokenGoalTest.implementerWallet.ergoTree,
-          activeRaffleTokenGoalTest.creatorWallet.ergoTree,
+          activeRaffleTokenGoalTest.projectWallet.ergoTree,
           1,
           serviceFeePercent,
           {
@@ -369,9 +369,9 @@ describe('ActiveRaffle', () => {
       const serviceFeePercent = 200n;
       const activeRaffleOutputBox =
         activeRaffleTest.boxFactory.createActiveRaffleOutputBox(
-          activeRaffleTest.creatorWallet.ergoTree,
+          activeRaffleTest.projectWallet.ergoTree,
           activeRaffleTest.implementerWallet.ergoTree,
-          activeRaffleTest.creatorWallet.ergoTree,
+          activeRaffleTest.projectWallet.ergoTree,
           1,
           serviceFeePercent,
           undefined,
@@ -426,9 +426,9 @@ describe('ActiveRaffle', () => {
       const serviceFeePercent = 200n;
       const activeRaffleOutputBox =
         activeRaffleTokenGoalTest.boxFactory.createActiveRaffleOutputBox(
-          activeRaffleTokenGoalTest.creatorWallet.ergoTree,
+          activeRaffleTokenGoalTest.projectWallet.ergoTree,
           activeRaffleTokenGoalTest.implementerWallet.ergoTree,
-          activeRaffleTokenGoalTest.creatorWallet.ergoTree,
+          activeRaffleTokenGoalTest.projectWallet.ergoTree,
           1,
           serviceFeePercent,
           {
@@ -485,9 +485,9 @@ describe('ActiveRaffle', () => {
       const serviceFeePercent = 200n;
       const activeRaffleOutputBox =
         activeRaffleTest.boxFactory.createActiveRaffleOutputBox(
-          activeRaffleTest.creatorWallet.ergoTree,
+          activeRaffleTest.projectWallet.ergoTree,
           activeRaffleTest.implementerWallet.ergoTree,
-          activeRaffleTest.creatorWallet.ergoTree,
+          activeRaffleTest.projectWallet.ergoTree,
           1,
           serviceFeePercent,
           undefined,
@@ -542,9 +542,9 @@ describe('ActiveRaffle', () => {
       const serviceFeePercent = 200n;
       const activeRaffleOutputBox =
         activeRaffleTest.boxFactory.createActiveRaffleOutputBox(
-          activeRaffleTest.creatorWallet.ergoTree,
+          activeRaffleTest.projectWallet.ergoTree,
           'invalid implementer address',
-          activeRaffleTest.creatorWallet.ergoTree,
+          activeRaffleTest.projectWallet.ergoTree,
           1,
           serviceFeePercent,
           undefined,
@@ -607,9 +607,9 @@ describe('ActiveRaffle', () => {
       const serviceFeePercent = 200n;
       const activeRaffleOutputBox =
         activeRaffleTest.boxFactory.createActiveRaffleOutputBox(
-          activeRaffleTest.creatorWallet.ergoTree,
+          activeRaffleTest.projectWallet.ergoTree,
           activeRaffleTest.implementerWallet.ergoTree,
-          activeRaffleTest.creatorWallet.ergoTree,
+          activeRaffleTest.projectWallet.ergoTree,
           1,
           serviceFeePercent,
           undefined,
@@ -665,9 +665,9 @@ describe('ActiveRaffle', () => {
       const serviceFeePercent = 200n;
       const activeRaffleOutputBox =
         activeRaffleTokenGoalTest.boxFactory.createActiveRaffleOutputBox(
-          activeRaffleTokenGoalTest.creatorWallet.ergoTree,
+          activeRaffleTokenGoalTest.projectWallet.ergoTree,
           activeRaffleTokenGoalTest.implementerWallet.ergoTree,
-          activeRaffleTokenGoalTest.creatorWallet.ergoTree,
+          activeRaffleTokenGoalTest.projectWallet.ergoTree,
           1,
           serviceFeePercent,
           {
@@ -725,9 +725,9 @@ describe('ActiveRaffle', () => {
       const serviceFeePercent = 200n;
       const activeRaffleOutputBox =
         activeRaffleTest.boxFactory.createActiveRaffleOutputBox(
-          activeRaffleTest.creatorWallet.ergoTree,
+          activeRaffleTest.projectWallet.ergoTree,
           activeRaffleTest.implementerWallet.ergoTree,
-          activeRaffleTest.creatorWallet.ergoTree,
+          activeRaffleTest.projectWallet.ergoTree,
           1,
           serviceFeePercent,
           undefined,
@@ -788,9 +788,9 @@ describe('ActiveRaffle', () => {
       const serviceFeePercent = 200n;
       const activeRaffleOutputBox =
         activeRaffleTest.boxFactory.createActiveRaffleOutputBox(
-          activeRaffleTest.creatorWallet.ergoTree,
+          activeRaffleTest.projectWallet.ergoTree,
           activeRaffleTest.implementerWallet.ergoTree,
-          activeRaffleTest.creatorWallet.ergoTree,
+          activeRaffleTest.projectWallet.ergoTree,
           1,
           serviceFeePercent,
           undefined,
@@ -846,9 +846,9 @@ describe('ActiveRaffle', () => {
       const serviceFeePercent = 200n;
       const activeRaffleOutputBox =
         activeRaffleTest.boxFactory.createActiveRaffleOutputBox(
-          activeRaffleTest.creatorWallet.ergoTree,
+          activeRaffleTest.projectWallet.ergoTree,
           activeRaffleTest.implementerWallet.ergoTree,
-          activeRaffleTest.creatorWallet.ergoTree,
+          activeRaffleTest.projectWallet.ergoTree,
           1,
           serviceFeePercent,
           undefined,
@@ -920,7 +920,7 @@ describe('ActiveRaffle', () => {
           activeRaffleTest.activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           activeRaffleTest.oracleBox.boxId.toString(),
           blake2b256(
-            Buffer.from(activeRaffleTest.creatorWallet.ergoTree, 'hex'),
+            Buffer.from(activeRaffleTest.projectWallet.ergoTree, 'hex'),
           ),
           [],
           totalSoldTickets,
@@ -988,7 +988,7 @@ describe('ActiveRaffle', () => {
           activeRaffleTokenGoalTest.oracleBox.boxId.toString(),
           blake2b256(
             Buffer.from(
-              activeRaffleTokenGoalTest.creatorWallet.ergoTree,
+              activeRaffleTokenGoalTest.projectWallet.ergoTree,
               'hex',
             ),
           ),
@@ -1066,7 +1066,7 @@ describe('ActiveRaffle', () => {
           activeRaffleTest.activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           oracleBox.boxId.toString(),
           blake2b256(
-            Buffer.from(activeRaffleTest.creatorWallet.ergoTree, 'hex'),
+            Buffer.from(activeRaffleTest.projectWallet.ergoTree, 'hex'),
           ),
           [],
           totalSoldTickets,
@@ -1141,7 +1141,7 @@ describe('ActiveRaffle', () => {
           activeRaffleTest.activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           oracleBox.boxId.toString(),
           blake2b256(
-            Buffer.from(activeRaffleTest.creatorWallet.ergoTree, 'hex'),
+            Buffer.from(activeRaffleTest.projectWallet.ergoTree, 'hex'),
           ),
           [],
           totalSoldTickets,
@@ -1209,7 +1209,7 @@ describe('ActiveRaffle', () => {
           activeRaffleTest.activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           activeRaffleTest.oracleBox.boxId.toString(),
           blake2b256(
-            Buffer.from(activeRaffleTest.creatorWallet.ergoTree, 'hex'),
+            Buffer.from(activeRaffleTest.projectWallet.ergoTree, 'hex'),
           ),
           [],
           totalSoldTickets,
@@ -1249,7 +1249,7 @@ describe('ActiveRaffle', () => {
         .configureSelector((selector) => {
           selector.defineStrategy((inputs) => inputs);
         })
-        .sendChangeTo(activeRaffleTest.creatorWallet.address.toString())
+        .sendChangeTo(activeRaffleTest.projectWallet.address.toString())
         .payFee(testUtils.TestConstants.FEE)
         .build();
 
@@ -1287,7 +1287,7 @@ describe('ActiveRaffle', () => {
           activeRaffleTest.activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           activeRaffleTest.oracleBox.boxId.toString(),
           blake2b256(
-            Buffer.from(activeRaffleTest.creatorWallet.ergoTree, 'hex'),
+            Buffer.from(activeRaffleTest.projectWallet.ergoTree, 'hex'),
           ),
           [],
           totalSoldTickets,
@@ -1361,7 +1361,7 @@ describe('ActiveRaffle', () => {
           activeRaffleTest.activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           activeRaffleTest.oracleBox.boxId.toString(),
           blake2b256(
-            Buffer.from(activeRaffleTest.creatorWallet.ergoTree, 'hex'),
+            Buffer.from(activeRaffleTest.projectWallet.ergoTree, 'hex'),
           ),
           [],
           totalSoldTickets,
@@ -1380,7 +1380,7 @@ describe('ActiveRaffle', () => {
         BigInt((totalRaised * invalidServiceFeePercent) / 1000n) +
           testUtils.TestConstants.FEE * 2n,
         [],
-        blake2b256(Buffer.from(activeRaffleTest.creatorWallet.ergoTree, 'hex')),
+        blake2b256(Buffer.from(activeRaffleTest.projectWallet.ergoTree, 'hex')),
       );
 
       const implementerFeeBox =
@@ -1449,7 +1449,7 @@ describe('ActiveRaffle', () => {
           ],
           blake2b256(
             Buffer.from(
-              activeRaffleTokenGoalTest.creatorWallet.ergoTree,
+              activeRaffleTokenGoalTest.projectWallet.ergoTree,
               'hex',
             ),
           ),
@@ -1485,7 +1485,7 @@ describe('ActiveRaffle', () => {
           activeRaffleTokenGoalTest.oracleBox.boxId.toString(),
           blake2b256(
             Buffer.from(
-              activeRaffleTokenGoalTest.creatorWallet.ergoTree,
+              activeRaffleTokenGoalTest.projectWallet.ergoTree,
               'hex',
             ),
           ),
@@ -1555,7 +1555,7 @@ describe('ActiveRaffle', () => {
           // set invalid seed
           'invalid seed',
           blake2b256(
-            Buffer.from(activeRaffleTest.creatorWallet.ergoTree, 'hex'),
+            Buffer.from(activeRaffleTest.projectWallet.ergoTree, 'hex'),
           ),
           [],
           totalSoldTickets,
@@ -1623,7 +1623,7 @@ describe('ActiveRaffle', () => {
           activeRaffleTest.activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           activeRaffleTest.oracleBox.boxId.toString(),
           blake2b256(
-            Buffer.from(activeRaffleTest.creatorWallet.ergoTree, 'hex'),
+            Buffer.from(activeRaffleTest.projectWallet.ergoTree, 'hex'),
           ),
           // set invalid selected winner list
           [0n],
@@ -1692,7 +1692,7 @@ describe('ActiveRaffle', () => {
           activeRaffleTest.activeRaffleBoxForSuccessEnd.assets[0].tokenId,
           activeRaffleTest.oracleBox.boxId.toString(),
           blake2b256(
-            Buffer.from(activeRaffleTest.creatorWallet.ergoTree, 'hex'),
+            Buffer.from(activeRaffleTest.projectWallet.ergoTree, 'hex'),
           ),
           [],
           totalSoldTickets,

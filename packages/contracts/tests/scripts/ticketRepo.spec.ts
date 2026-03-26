@@ -8,7 +8,7 @@ import * as testUtils from '../testUtils';
 
 interface TicketRepoTestInterface {
   boxFactory: testUtils.RaffleBoxFactory;
-  creator: KeyedMockChainParty;
+  project: KeyedMockChainParty;
   someoneWallet: KeyedMockChainParty;
   ticketRepoInputBox: ErgoUnsignedInput;
   inactiveRaffleInputBox: ErgoUnsignedInput;
@@ -33,16 +33,16 @@ const provideTicketRepoTestRequirements = (winnersCount: number = 1) => {
       (value) => value != 'ticketRepo',
     ) as ScriptNamesType[],
   );
-  const { creator, someone } = boxFactory.createPartners({
-    Creator: testUtils.TestConstants.CREATOR_DEFAULT_BALANCE,
+  const { project, someone } = boxFactory.createPartners({
+    project: testUtils.TestConstants.ORGANIZER_DEFAULT_BALANCE,
     Someone: testUtils.TestConstants.UNKNOWN_WALLET_DEFAULT_BALANCE,
   });
 
   const ticketRepoInputBox = boxFactory.createTicketRepoBoxMock();
   const inactiveRaffleInputBox = boxFactory.createInactiveRaffleBoxMock(
-    creator.ergoTree,
+    project.ergoTree,
     someone.ergoTree,
-    creator.ergoTree,
+    project.ergoTree,
     winnersCount,
     undefined,
     undefined,
@@ -56,7 +56,7 @@ const provideTicketRepoTestRequirements = (winnersCount: number = 1) => {
   return {
     boxFactory: boxFactory,
     someoneWallet: someone,
-    creator: creator,
+    project: project,
     ticketRepoInputBox: ticketRepoInputBox,
     inactiveRaffleInputBox: inactiveRaffleInputBox,
   };
@@ -85,8 +85,8 @@ describe('ticketRepo', () => {
     }) => {
       const activeRaffleOutputBox =
         ticketRepoBy1WinnerTestRequirements.boxFactory.createActiveRaffleOutputBox(
-          ticketRepoBy1WinnerTestRequirements.creator.ergoTree,
-          ticketRepoBy1WinnerTestRequirements.creator.ergoTree,
+          ticketRepoBy1WinnerTestRequirements.project.ergoTree,
+          ticketRepoBy1WinnerTestRequirements.project.ergoTree,
           ticketRepoBy1WinnerTestRequirements.someoneWallet.ergoTree,
         );
       const raffleDetailsOutputBox =
@@ -116,13 +116,13 @@ describe('ticketRepo', () => {
           ...winnersBoxes,
         ])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(ticketRepoBy1WinnerTestRequirements.creator.address)
+        .sendChangeTo(ticketRepoBy1WinnerTestRequirements.project.address)
         .build();
 
       const res = ticketRepoBy1WinnerTestRequirements.boxFactory.chain.execute(
         transaction,
         {
-          signers: [ticketRepoBy1WinnerTestRequirements.creator],
+          signers: [ticketRepoBy1WinnerTestRequirements.project],
         },
       );
       // Check execution result
@@ -143,8 +143,8 @@ describe('ticketRepo', () => {
     }) => {
       const activeRaffleOutputBox =
         ticketRepoBy5WinnerTestRequirements.boxFactory.createActiveRaffleOutputBox(
-          ticketRepoBy5WinnerTestRequirements.creator.ergoTree,
-          ticketRepoBy5WinnerTestRequirements.creator.ergoTree,
+          ticketRepoBy5WinnerTestRequirements.project.ergoTree,
+          ticketRepoBy5WinnerTestRequirements.project.ergoTree,
           ticketRepoBy5WinnerTestRequirements.someoneWallet.ergoTree,
           5,
         );
@@ -171,13 +171,13 @@ describe('ticketRepo', () => {
           ),
         ])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(ticketRepoBy5WinnerTestRequirements.creator.address)
+        .sendChangeTo(ticketRepoBy5WinnerTestRequirements.project.address)
         .build();
 
       const res = ticketRepoBy5WinnerTestRequirements.boxFactory.chain.execute(
         transaction,
         {
-          signers: [ticketRepoBy5WinnerTestRequirements.creator],
+          signers: [ticketRepoBy5WinnerTestRequirements.project],
         },
       );
       // Check execution result
@@ -198,8 +198,8 @@ describe('ticketRepo', () => {
     }) => {
       const activeRaffleOutputBox =
         ticketRepoBy1WinnerTestRequirements.boxFactory.createActiveRaffleOutputBox(
-          ticketRepoBy1WinnerTestRequirements.creator.ergoTree,
-          ticketRepoBy1WinnerTestRequirements.creator.ergoTree,
+          ticketRepoBy1WinnerTestRequirements.project.ergoTree,
+          ticketRepoBy1WinnerTestRequirements.project.ergoTree,
           ticketRepoBy1WinnerTestRequirements.someoneWallet.ergoTree,
         );
       const raffleDetailsOutputBox =
@@ -217,7 +217,7 @@ describe('ticketRepo', () => {
       // Replace Ticket-Token with another token
       const extraInputBox = mockUTxO({
         value: testUtils.TestConstants.FEE,
-        ergoTree: ticketRepoBy1WinnerTestRequirements.creator.ergoTree,
+        ergoTree: ticketRepoBy1WinnerTestRequirements.project.ergoTree,
         assets: [
           {
             tokenId: '12'.repeat(32),
@@ -244,13 +244,13 @@ describe('ticketRepo', () => {
           ...winnersOutputBoxes,
         ])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(ticketRepoBy1WinnerTestRequirements.creator.address)
+        .sendChangeTo(ticketRepoBy1WinnerTestRequirements.project.address)
         .build();
 
       expect(() =>
         ticketRepoBy1WinnerTestRequirements.boxFactory.chain.execute(
           transaction,
-          { signers: [ticketRepoBy1WinnerTestRequirements.creator] },
+          { signers: [ticketRepoBy1WinnerTestRequirements.project] },
         ),
       ).toThrowError();
     });
@@ -269,8 +269,8 @@ describe('ticketRepo', () => {
     }) => {
       const activeRaffleOutputBox =
         ticketRepoBy1WinnerTestRequirements.boxFactory.createActiveRaffleOutputBox(
-          ticketRepoBy1WinnerTestRequirements.creator.ergoTree,
-          ticketRepoBy1WinnerTestRequirements.creator.ergoTree,
+          ticketRepoBy1WinnerTestRequirements.project.ergoTree,
+          ticketRepoBy1WinnerTestRequirements.project.ergoTree,
           ticketRepoBy1WinnerTestRequirements.someoneWallet.ergoTree,
           1,
           undefined,
@@ -315,7 +315,7 @@ describe('ticketRepo', () => {
       expect(() =>
         ticketRepoBy1WinnerTestRequirements.boxFactory.chain.execute(
           transaction,
-          { signers: [ticketRepoBy1WinnerTestRequirements.creator] },
+          { signers: [ticketRepoBy1WinnerTestRequirements.project] },
         ),
       ).toThrowError();
     });
@@ -335,9 +335,9 @@ describe('ticketRepo', () => {
       // Replace Ticket-Token id with invalid id
       const inactiveRaffleInputBox =
         ticketRepoBy1WinnerTestRequirements.boxFactory.createInactiveRaffleBoxMock(
-          ticketRepoBy1WinnerTestRequirements.creator.ergoTree,
+          ticketRepoBy1WinnerTestRequirements.project.ergoTree,
           ticketRepoBy1WinnerTestRequirements.someoneWallet.ergoTree,
-          ticketRepoBy1WinnerTestRequirements.creator.ergoTree,
+          ticketRepoBy1WinnerTestRequirements.project.ergoTree,
           1,
           undefined,
           undefined,
@@ -349,7 +349,7 @@ describe('ticketRepo', () => {
         );
       const extraInputBox = mockUTxO({
         value: testUtils.TestConstants.FEE,
-        ergoTree: ticketRepoBy1WinnerTestRequirements.creator.ergoTree,
+        ergoTree: ticketRepoBy1WinnerTestRequirements.project.ergoTree,
         assets: [
           {
             tokenId: '1234'.repeat(16),
@@ -360,8 +360,8 @@ describe('ticketRepo', () => {
 
       const activeRaffleOutputBox =
         ticketRepoBy1WinnerTestRequirements.boxFactory.createActiveRaffleOutputBox(
-          ticketRepoBy1WinnerTestRequirements.creator.ergoTree,
-          ticketRepoBy1WinnerTestRequirements.creator.ergoTree,
+          ticketRepoBy1WinnerTestRequirements.project.ergoTree,
+          ticketRepoBy1WinnerTestRequirements.project.ergoTree,
           ticketRepoBy1WinnerTestRequirements.someoneWallet.ergoTree,
         );
       const raffleDetailsOutputBox =
@@ -389,13 +389,13 @@ describe('ticketRepo', () => {
           ...winnersOutputBoxes,
         ])
         .payFee(testUtils.TestConstants.FEE)
-        .sendChangeTo(ticketRepoBy1WinnerTestRequirements.creator.address)
+        .sendChangeTo(ticketRepoBy1WinnerTestRequirements.project.address)
         .build();
 
       expect(() =>
         ticketRepoBy1WinnerTestRequirements.boxFactory.chain.execute(
           transaction,
-          { signers: [ticketRepoBy1WinnerTestRequirements.creator] },
+          { signers: [ticketRepoBy1WinnerTestRequirements.project] },
         ),
       ).toThrowError();
     });
@@ -415,8 +415,8 @@ describe('ticketRepo', () => {
   }) => {
     const activeRaffleOutputBox =
       ticketRepoBy1WinnerTestRequirements.boxFactory.createActiveRaffleOutputBox(
-        ticketRepoBy1WinnerTestRequirements.creator.ergoTree,
-        ticketRepoBy1WinnerTestRequirements.creator.ergoTree,
+        ticketRepoBy1WinnerTestRequirements.project.ergoTree,
+        ticketRepoBy1WinnerTestRequirements.project.ergoTree,
         ticketRepoBy1WinnerTestRequirements.someoneWallet.ergoTree,
       );
 
@@ -450,7 +450,7 @@ describe('ticketRepo', () => {
         ...winnerBoxes,
       ])
       .payFee(testUtils.TestConstants.FEE)
-      .sendChangeTo(ticketRepoBy1WinnerTestRequirements.creator.address)
+      .sendChangeTo(ticketRepoBy1WinnerTestRequirements.project.address)
       .burnTokens({
         tokenId: activeRaffleOutputBox.assets.at(1).tokenId!.toString(),
         amount: 1n,
@@ -461,7 +461,7 @@ describe('ticketRepo', () => {
     expect(() =>
       ticketRepoBy1WinnerTestRequirements.boxFactory.chain.execute(
         transaction,
-        { signers: [ticketRepoBy1WinnerTestRequirements.creator] },
+        { signers: [ticketRepoBy1WinnerTestRequirements.project] },
       ),
     ).toThrowError();
   });

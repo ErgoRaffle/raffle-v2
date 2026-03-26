@@ -4,7 +4,7 @@ import { InputExtension, OutputBox } from '@rosen-bridge/scanner-interfaces';
 
 import {
   bigIntToUint8Array,
-  creatorWallet,
+  projectWallet,
   implementerWallet,
   serviceWallet,
 } from '../../utils.mock';
@@ -42,7 +42,7 @@ export const sampleInactiveRaffleBoxes: OutputBox[] = [
           blake2b256(Buffer.from(implementerWallet.ergoTree.toString(), 'hex')),
         ),
         Array.from(
-          blake2b256(Buffer.from(creatorWallet.ergoTree.toString(), 'hex')),
+          blake2b256(Buffer.from(projectWallet.ergoTree.toString(), 'hex')),
         ),
       ]).toHex(),
       R6: SColl(SColl(SByte), [
@@ -75,8 +75,8 @@ export const sampleInactiveRaffleExtractedData = {
     'MzMzMzMzMzMzMzMzMzMzMzMzMge8trSPEi5LKmV26w9zy4pvrbGAREDHFDs8o74DhqB5gECgEB' +
     'AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ==',
   raffleId: '3333333333333333333333333333333333333333333333333333333333333333',
-  creatorErgoTree: creatorWallet.ergoTree.toString(),
-  implementorErgoTree: implementerWallet.ergoTree.toString(),
+  projectErgoTree: projectWallet.ergoTree.toString(),
+  implementerErgoTree: implementerWallet.ergoTree.toString(),
   serviceErgoTree: serviceWallet.ergoTree.toString(),
   deadline: 1000,
   goal: 1000000n,
@@ -93,7 +93,7 @@ export const sampleInactiveRaffleExtensions: InputExtension[] = [
     '0': SColl(SLong, [200n, 200n, 200n, 200n, 200n]).toHex(),
     '1': SColl(SColl(SByte), [
       Array.from(Buffer.from(implementerWallet.ergoTree.toString(), 'hex')),
-      Array.from(Buffer.from(creatorWallet.ergoTree.toString(), 'hex')),
+      Array.from(Buffer.from(projectWallet.ergoTree.toString(), 'hex')),
     ]).toHex(),
   },
   {},
