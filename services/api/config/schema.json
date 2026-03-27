@@ -88,7 +88,7 @@
     "children": {
       "type": {
         "type": "string",
-        "default": "postgres",
+        "default": "sqlite",
         "validations": [
           { "required": true, "error": "database type must be specified" },
           { "choices": ["sqlite", "postgres"] }
@@ -96,7 +96,6 @@
       },
       "host": {
         "type": "string",
-        "default": "localhost",
         "validations": [
           {
             "required": true,
@@ -107,7 +106,6 @@
       },
       "port": {
         "type": "number",
-        "default": 5432,
         "validations": [
           {
             "required": true,
@@ -116,11 +114,28 @@
           }
         ]
       },
-      "username": { "type": "string", "default": "postgres" },
-      "password": { "type": "string", "default": "" },
+      "username": {
+        "type": "string",
+        "validations": [
+          {
+            "required": true,
+            "when": { "path": "database.type", "value": "postgres" },
+            "error": "username for the \"postgres\" database must be specified"
+          }
+        ]
+      },
+      "password": {
+        "type": "string",
+        "validations": [
+          {
+            "required": true,
+            "when": { "path": "database.type", "value": "postgres" },
+            "error": "password for the \"postgres\" database must be specified"
+          }
+        ]
+      },
       "name": {
         "type": "string",
-        "default": "raffle_v2",
         "validations": [
           {
             "required": true,
@@ -131,6 +146,7 @@
       },
       "path": {
         "type": "string",
+        "default": "./db.sqlite3",
         "validations": [
           {
             "required": true,

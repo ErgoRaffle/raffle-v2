@@ -6,10 +6,10 @@ import {
   ServiceStatus,
 } from '@rosen-bridge/service-manager';
 
-import packageJson from '../../package.json' with { type: 'json' };
-import * as ConfigTypes from '../types/configs';
-import { DbService } from './dbService';
-import { registerHealthRoute } from './routes/health';
+import packageJson from '../../../package.json' with { type: 'json' };
+import * as ConfigTypes from '../../types/configs';
+import { DbService } from '../dbService';
+import { registerAllRoutes } from './routes';
 
 export class ApiService extends AbstractService {
   name = 'ApiService';
@@ -63,10 +63,10 @@ export class ApiService extends AbstractService {
           description: 'API for Ergo Raffle operations',
           version: packageJson.version,
         },
-        { logger: true },
+        { logger: false },
       );
 
-      registerHealthRoute(this.fastify);
+      registerAllRoutes(this.fastify, this.logger.child('registerAllRoutes'));
 
       await this.fastify.listen({
         host: this.apiConfig.host,
