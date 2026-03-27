@@ -1,4 +1,4 @@
-import { ErgoAddress, Box } from '@fleet-sdk/core';
+import { ErgoAddress } from '@fleet-sdk/core';
 import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 import {
   AbstractErgoBoxExtractor,
@@ -101,9 +101,7 @@ export class GiftExtractor extends AbstractErgoBoxExtractor<
       raffleId: txExtra?.raffleId || '',
       donatorErgoTree: donatorErgoTree,
       winnerIndex: index,
-      serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(
-        'base64',
-      ),
+      serialized: Buffer.from(serializeBox(box).toBytes()).toString('base64'),
     };
 
     return data;

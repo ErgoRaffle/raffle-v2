@@ -5,17 +5,21 @@ import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { OutputBox, InputExtension } from '@rosen-bridge/scanner-interfaces';
 
-import { TicketAction } from '../actions/ticket';
-import { TicketEntity } from '../entities';
-import { ExtractorInitOptions, TicketBoxInterface } from '../interfaces/types';
+import { DonationProxyAction } from '../actions/donationProxy';
+import { DonationProxyEntity } from '../entities';
+import {
+  DonationProxyBoxInterface,
+  ExtractorInitOptions,
+} from '../interfaces/types';
 
-export class TicketExtractor extends AbstractErgoBoxExtractor<
-  TicketBoxInterface,
-  TicketEntity
+export class DonationProxyExtractor extends AbstractErgoBoxExtractor<
+  DonationProxyBoxInterface,
+  DonationProxyEntity
 > {
-  readonly actions: TicketAction;
+  readonly actions: DonationProxyAction;
   private readonly id: string;
   private readonly ergoTree: string;
+  private readonly address: string;
 
   constructor(
     dataSource: DataSource,
@@ -25,10 +29,9 @@ export class TicketExtractor extends AbstractErgoBoxExtractor<
   ) {
     super({ active: true, ...initializeOptions }, logger);
     this.id = id;
-    this.ergoTree = ErgoAddress.fromBase58(
-      initializeOptions.address,
-    ).ergoTree.toString();
-    this.actions = new TicketAction(dataSource, logger);
+    this.address = initializeOptions.address;
+    this.ergoTree = ErgoAddress.fromBase58(this.address).ergoTree.toString();
+    this.actions = new DonationProxyAction(dataSource, logger);
   }
 
   /**
@@ -45,12 +48,15 @@ export class TicketExtractor extends AbstractErgoBoxExtractor<
     try {
       return (
         box.ergoTree == this.ergoTree &&
+        box.additionalRegisters.R4 != undefined &&
+        (SConstant.from(box.additionalRegisters.R4).data as bigint[]).length ==
+          4 &&
         box.additionalRegisters.R5 != undefined &&
-        (SConstant.from(box.additionalRegisters.R5).data as bigint[]).length ==
-          4
+        (SConstant.from(box.additionalRegisters.R5).data as Uint8Array[])
+          .length == 2
       );
     } catch (err) {
-      this.logger.error(`TicketExtractor Error: ${err}`);
+      this.logger.error(`DonationProxyExtractor Error: ${err}`);
       return false;
     }
   };
@@ -63,31 +69,34 @@ export class TicketExtractor extends AbstractErgoBoxExtractor<
   extractBoxData = (
     box: OutputBox,
     inputExtensions: InputExtension[],
-  ): TicketBoxInterface | undefined => {
+  ): DonationProxyBoxInterface | undefined => {
+    const r4Register = SConstant.from(box.additionalRegisters!.R4!)
+      .data as bigint[];
+    const r5Register = SConstant.from(box.additionalRegisters!.R5!)
+      .data as Uint8Array[];
     let donatorErgoTree = '';
     try {
-      donatorErgoTree = Buffer.from(
-        (SConstant.from(inputExtensions[0]['0']).data as Uint8Array[])[0],
-      ).toString('hex');
+      const extensionData = SConstant.from(inputExtensions[0]['0'])
+        .data as Uint8Array;
+      donatorErgoTree = Buffer.from(extensionData).toString('hex');
     } catch (err) {
       this.logger.warn(
-        `TicketExtractor failed on extracting data due to invalid or missing inputExtension: ${err}`,
+        `DonationProxyExtractor failed on extracting data due to invalid or missing inputExtension: ${err}`,
       );
       return undefined;
     }
-    const r5Register = SConstant.from(box.additionalRegisters.R5!)
-      .data as bigint[];
 
-    const data = {
+    return {
       identifier: box.boxId.toString(),
       txId: box.transactionId,
-      raffleId: box.assets[0].tokenId,
+      address: this.address,
+      expirationHeight: Number(r4Register[0]),
+      raffleDeadline: Number(r4Register[1]),
+      ticketCount: Number(r4Register[2]),
+      txFee: r4Register[3],
+      raffleId: Buffer.from(r5Register[0]).toString('hex'),
       donatorErgoTree: donatorErgoTree,
-      rangeStart: r5Register[0],
-      rangeEnd: r5Register[1],
       serialized: Buffer.from(serializeBox(box).toBytes()).toString('base64'),
     };
-
-    return data;
   };
 }

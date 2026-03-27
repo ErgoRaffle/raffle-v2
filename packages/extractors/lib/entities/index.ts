@@ -11,3 +11,6 @@ export { GiftRedeemEntity } from './giftRedeem';
 export { SuccessRaffleEntity } from './successRaffle';
 export { TicketRedeemEntity } from './ticketRedeem';
 export { SafePayEntity } from './safePay';
+export { DonationProxyEntity } from './donationProxy';
+export { CreationProxyEntity } from './creationProxy';
+export { AddGiftProxyEntity } from './addGiftProxy';

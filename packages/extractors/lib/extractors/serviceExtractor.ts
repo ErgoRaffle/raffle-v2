@@ -1,4 +1,4 @@
-import { ErgoAddress, Box } from '@fleet-sdk/core';
+import { ErgoAddress } from '@fleet-sdk/core';
 import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 import {
   AbstractErgoBoxExtractor,
@@ -74,9 +74,7 @@ export class ServiceExtractor extends AbstractErgoBoxExtractor<
     const data = {
       identifier: box.boxId.toString(),
       txId: box.transactionId,
-      serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(
-        'base64',
-      ),
+      serialized: Buffer.from(serializeBox(box).toBytes()).toString('base64'),
       serviceFeePercent: Number(R4Serialized[0]),
       implementerFeePercent: Number(R4Serialized[1]),
       creationFee: R4Serialized[2],
