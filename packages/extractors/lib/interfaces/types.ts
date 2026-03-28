@@ -13,6 +13,7 @@ export interface ServiceBoxInterface extends AbstractEntityData {
   serviceFeePercent: number;
   implementerFeePercent: number;
   creationFee: bigint;
+  txFee: bigint;
 }
 
 export interface InactiveRaffleBoxInterface extends AbstractRaffleBoxInterface {

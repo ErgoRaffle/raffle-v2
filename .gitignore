@@ -151,3 +151,5 @@ packages/try/
 .devcontainer/
 local.yml
 local.yaml
+
+.DS_Store

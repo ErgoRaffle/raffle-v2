@@ -211,6 +211,7 @@ export class Migration1774542753390 implements MigrationInterface {
                 "serviceFeePercent" integer NOT NULL,
                 "implementerFeePercent" integer NOT NULL,
                 "creationFee" bigint NOT NULL,
+                "txFee" bigint NOT NULL,
                 CONSTRAINT "UQ_66bed30d3a894f96ccaaae03d8b" UNIQUE ("identifier", "extractor")
             )
         `);
