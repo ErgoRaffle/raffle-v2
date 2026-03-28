@@ -1,4 +1,4 @@
-import { ErgoAddress, Box } from '@fleet-sdk/core';
+import { ErgoAddress } from '@fleet-sdk/core';
 import { serializeBox } from '@fleet-sdk/serializer';
 import { AbstractErgoBoxExtractor } from '@rosen-bridge/abstract-extractor';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
@@ -57,9 +57,7 @@ export class TicketRepoExtractor extends AbstractErgoBoxExtractor<
       identifier: box.boxId.toString(),
       txId: box.transactionId,
       raffleId: raffleId,
-      serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(
-        'base64',
-      ),
+      serialized: Buffer.from(serializeBox(box).toBytes()).toString('base64'),
       type: RaffleBoxType.TicketRepo,
     };
 
