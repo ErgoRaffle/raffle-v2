@@ -126,7 +126,7 @@ export class InitializerService extends AbstractService {
 
     // Initialize donation service
     this.logger.debug('Initializing donation service');
-    await DonationService.init(configs.donation, donationLogger);
+    await DonationService.init(configs.donation, configs.ergo, donationLogger);
     this.logger.debug('Donation service initialized');
   };
 

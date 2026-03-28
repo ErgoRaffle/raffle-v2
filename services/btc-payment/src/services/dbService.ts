@@ -225,9 +225,10 @@ export class DbService extends AbstractService {
   updateDonationStatus = async (
     id: number,
     status: DonationStatus,
+    donationTxId?: string,
   ): Promise<void> => {
     await this.dataSource
       .getRepository(DonationParamsEntity)
-      .update({ id }, { status });
+      .update({ id }, { status, donationTxId });
   };
 }

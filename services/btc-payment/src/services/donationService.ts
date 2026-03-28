@@ -1,22 +1,35 @@
+import { Amount, Box } from '@fleet-sdk/common';
+import { ErgoHDKey } from '@fleet-sdk/wallet';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import JsonBigInt from '@rosen-bridge/json-bigint';
 import {
   Dependency,
   PeriodicTaskService,
   ServiceStatus,
 } from '@rosen-bridge/service-manager';
 
+import { ActiveRaffleBuilder } from '@ergo-raffle/boxes';
+import { raffleInfo } from '@ergo-raffle/contracts';
 import {
   DonationParamsEntity,
   DonationStatus,
 } from '@ergo-raffle/request-params';
+import { DonateTxBuilder } from '@ergo-raffle/transactions';
 
-import { Donation as DonationConfig } from '../types/configs';
+import { ErgoNodeNetwork, FleetBoxSelection, signTransaction } from '../ergo';
+import {
+  Donation as DonationConfig,
+  Ergo as ErgoConfig,
+} from '../types/configs';
 import { DbService } from './dbService';
 import { ScannerService } from './scannerService';
+import { TxPotService } from './txPotService';
 
 export class DonationService extends PeriodicTaskService {
   name = 'DonationService';
   private static instance: DonationService;
+  private readonly ergoNodeNetwork: ErgoNodeNetwork;
+  private readonly selector: FleetBoxSelection;
   protected dependencies: Dependency[] = [
     {
       serviceName: DbService.name,
@@ -30,19 +43,23 @@ export class DonationService extends PeriodicTaskService {
 
   private constructor(
     private readonly config: DonationConfig,
+    private readonly ergoConfig: ErgoConfig,
     logger?: AbstractLogger,
   ) {
     super(logger);
+    this.selector = new FleetBoxSelection(this.logger);
+    this.ergoNodeNetwork = new ErgoNodeNetwork(this.ergoConfig.nodeUrl, logger);
   }
 
   static readonly init = async (
     config: DonationConfig,
+    ergoConfig: ErgoConfig,
     logger?: AbstractLogger,
   ) => {
     if (this.instance != undefined) {
       return;
     }
-    this.instance = new DonationService(config, logger);
+    this.instance = new DonationService(config, ergoConfig, logger);
   };
 
   static readonly getInstance = (): DonationService => {
@@ -211,11 +228,159 @@ export class DonationService extends PeriodicTaskService {
   };
 
   /**
+   * Finds the latest unspent active raffle box for the given raffleId.
+   *
+   * Iterates over unspent boxes at the activeRaffle address, selects the box
+   * whose first token is the raffleLicense and whose second token matches
+   * raffleId, then tracks it through any signed/sent TxPot transactions to
+   * return the most up-to-date unspent version.
+   *
+   * @param raffleId - The raffle token id used as the ticket token in the box
+   * @returns The latest unspent active raffle box, or null if not found or
+   *   fully spent with no matching output
+   */
+  private getLastActiveRaffleBox = async (
+    raffleId: string,
+  ): Promise<Box<Amount> | null> => {
+    for await (const box of this.ergoNodeNetwork.unspentBoxesByAddressIterator(
+      raffleInfo.addresses.activeRaffle,
+    )) {
+      if (
+        box.assets[0]?.tokenId === raffleInfo.tokens.raffleLicense &&
+        box.assets[1]?.tokenId === raffleId
+      ) {
+        return TxPotService.getInstance().trackToLatestUnspentBox(box);
+      }
+    }
+    return null;
+  };
+
+  /**
+   * Async generator that iterates unspent wallet boxes, resolving each through
+   * TxPot to skip boxes already spent in pending transactions and yield their
+   * latest unspent descendants.
+   */
+  private async *walletBoxIterator(
+    walletAddress: string,
+  ): AsyncGenerator<Box<Amount>> {
+    for await (const box of this.ergoNodeNetwork.unspentBoxesByAddressIterator(
+      walletAddress,
+    )) {
+      this.logger.debug(`Processing box with id ${box.boxId}`);
+      const lastBox =
+        await TxPotService.getInstance().trackToLatestUnspentBox(box);
+      if (lastBox === null) {
+        this.logger.debug(`Box [${box.boxId}] was spent in TxPot, skipping`);
+        continue;
+      }
+      this.logger.debug(`Resolved box [${box.boxId}] → [${lastBox.boxId}]`);
+      yield lastBox;
+    }
+  }
+
+  /**
    * Create a donation transaction for the specified raffle.
+   *
+   * Steps:
+   *  1. Resolve the latest unspent active raffle box via getLastActiveRaffleBox
+   *  2. Read ticket price and raffle type (ERG-goal vs token-goal) from the box
+   *  3. Select wallet UTXOs via FleetBoxSelection covering required ERG and tokens
+   *  4. Build the transaction with DonateTxBuilder
+   *  5. Sign with the service wallet key and register in TxPot
    */
   private createDonationTransaction = async (
-    donation: DonationParamsEntity, // eslint-disable-line @typescript-eslint/no-unused-vars
+    donation: DonationParamsEntity,
   ): Promise<void> => {
-    // TODO create donation transaction using the proxy factory
+    this.logger.info(
+      `Creating donation transaction for request id=${donation.id} on raffle [${donation.raffleId}]`,
+    );
+
+    const activeRaffleBox = await this.getLastActiveRaffleBox(
+      donation.raffleId,
+    );
+    if (!activeRaffleBox) {
+      throw new Error(
+        `Active raffle box not found for raffle [${donation.raffleId}]`,
+      );
+    }
+
+    const activeRaffleBuilder = ActiveRaffleBuilder.fromBox(activeRaffleBox);
+    const ticketPrice = activeRaffleBuilder.getTicketPrice();
+    const collectingTokenId = activeRaffleBuilder.getCollectingTokenId();
+    const txFee = this.ergoConfig.fee;
+    const ticketCount = BigInt(donation.ticketCount);
+
+    // For token-goal raffles the ticket cost is paid in the collecting token;
+    // for ERG-goal raffles it is paid in ERG.  Both cases need ERG to cover fees.
+    const requiredAssets = {
+      nativeToken:
+        collectingTokenId != null
+          ? txFee * 5n
+          : ticketPrice * ticketCount + txFee * 5n,
+      tokens:
+        collectingTokenId != null
+          ? [{ id: collectingTokenId, value: ticketPrice * ticketCount }]
+          : [],
+    };
+    this.logger.debug(
+      `Required assets for donation request id=${donation.id} on raffle [${donation.raffleId}]: ${JsonBigInt.stringify(requiredAssets)}`,
+    );
+
+    const walletKey = ErgoHDKey.fromMnemonicSync(this.ergoConfig.mnemonic);
+    const walletAddress = walletKey.address.toString();
+
+    const result = await this.selector.getCoveringBoxes(
+      requiredAssets,
+      [],
+      new Map(),
+      this.walletBoxIterator(walletAddress),
+    );
+
+    if (!result.covered) {
+      throw new Error(
+        `Insufficient wallet funds to cover donation for raffle [${donation.raffleId}], required assets: ${JsonBigInt.stringify(requiredAssets)}, uncovered assets: ${JsonBigInt.stringify(result.uncoveredAssets)}`,
+      );
+    }
+    this.logger.debug(
+      `Selected wallet boxes for donation request id=${donation.id} on raffle [${donation.raffleId}]: ${result.boxes.map((box) => box.boxId).join(', ')}`,
+    );
+
+    const walletUtxos = result.boxes;
+
+    const chainHeight = await this.ergoNodeNetwork.getHeight();
+
+    const unsignedTx = new DonateTxBuilder()
+      .setActiveRaffle(activeRaffleBox)
+      .setDonatorUtxos(walletUtxos)
+      .setDonatorAddress(donation.donatorAddress)
+      .setDonationTicketCount(BigInt(donation.ticketCount))
+      .setChainHeight(chainHeight)
+      .setTxFee(txFee)
+      .build();
+
+    this.logger.info(
+      `Donation transaction for raffle [${donation.raffleId}] built (txId: [${unsignedTx.id}], ticketCount: ${donation.ticketCount})`,
+    );
+
+    const signedTx = await signTransaction(
+      this.ergoNodeNetwork,
+      unsignedTx,
+      walletKey,
+    );
+
+    this.logger.debug(
+      `Donation transaction for raffle [${donation.raffleId}] signed (txJson: [${JsonBigInt.stringify(signedTx)}])`,
+    );
+
+    // TODO: Send the signed transaction to background job service using the API
+
+    await DbService.getInstance().updateDonationStatus(
+      donation.id,
+      DonationStatus.InProgress,
+      signedTx.id,
+    );
+    this.logger.info(
+      `Donation transaction [${signedTx.id}] submitted to TxPot for request id=${donation.id} on raffle [${donation.raffleId}]. Status updated to InProgress`,
+    );
   };
 }
