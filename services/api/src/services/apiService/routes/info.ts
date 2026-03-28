@@ -1,37 +1,27 @@
 import { FastifyWithZod } from '@rosen-bridge/fastify-enhanced';
-import { z } from 'zod';
 
 import packageJson from '../../../../package.json' with { type: 'json' };
 import { DbService } from '../../dbService';
-
-const infoResponseSchema = z.object({
-  version: z.string(),
-  fee: z.object({
-    tx: z.bigint(),
-    service: z.number(),
-    implementer: z.number(),
-    creation: z.bigint(),
-  }),
-  height: z.number(),
-});
-
-const errorResponseSchema = z.object({
-  message: z.string(),
-});
+import {
+  blockchainInfoResponseSchema,
+  errorResponseSchema,
+  versionResponseSchema,
+} from '../schema';
 
 /**
- * Registers the GET /info route
- * @param fastify - Fastify instance
+ * Registers the GET /info/blockchain route which returns blockchain-related
+ * service information including fee parameters and last scanned height
+ * @param fastify - Fastify instance with Zod schema support
  */
-export const registerInfoRoute = (fastify: FastifyWithZod) => {
+const registerBlockchainInfoRoute = (fastify: FastifyWithZod) => {
   fastify.get(
-    '/info',
+    '/info/blockchain',
     {
       schema: {
-        description: 'Returns service information',
+        description: 'Returns service blockchain related information',
         tags: ['Info'],
         response: {
-          200: infoResponseSchema,
+          200: blockchainInfoResponseSchema,
           500: errorResponseSchema,
         },
       },
@@ -45,7 +35,6 @@ export const registerInfoRoute = (fastify: FastifyWithZod) => {
         .getLastScannedHeight();
       if (lastService) {
         return reply.status(200).send({
-          version: packageJson.version,
           height: lastHeight,
           fee: {
             tx: lastService.txFee,
@@ -61,3 +50,38 @@ export const registerInfoRoute = (fastify: FastifyWithZod) => {
     },
   );
 };
+
+/**
+ * Registers the GET /info/version route which returns the current service version
+ * @param fastify - Fastify instance with Zod schema support
+ */
+const registerVersionRoute = (fastify: FastifyWithZod) => {
+  fastify.get(
+    '/info/version',
+    {
+      schema: {
+        description: 'Returns service version',
+        tags: ['Info'],
+        response: {
+          200: versionResponseSchema,
+        },
+      },
+    },
+    async (request, reply) => {
+      return reply.status(200).send({
+        version: packageJson.version,
+      });
+    },
+  );
+};
+
+/**
+ * Registers all info-related routes on the given Fastify instance
+ * @param fastify - Fastify instance with Zod schema support
+ */
+const registerInfoRoutes = (fastify: FastifyWithZod) => {
+  registerVersionRoute(fastify);
+  registerBlockchainInfoRoute(fastify);
+};
+
+export { registerInfoRoutes };
