@@ -1,8 +1,8 @@
 {
-  "name": "btc-payment",
+  "name": "@ergo-raffle/api",
   "version": "0.0.0",
   "private": true,
-  "description": "Manages direct ptc payments for ErgoRaffle",
+  "description": "Api service for ErgoRaffle",
   "repository": {
     "type": "git",
     "url": "https://github.com/ErgoRaffle/raffle-v2"
@@ -16,24 +16,18 @@
     "CHANGELOG.md"
   ],
   "scripts": {
-    "coverage": "npm run test -- --coverage",
     "lint": "eslint --fix . && npm run prettify",
     "lint:check": "eslint . && npm run prettify:check",
     "prettify": "prettier --write . --ignore-path ../../.gitignore",
     "prettify:check": "prettier --check . --ignore-path ../../.gitignore",
-    "config:generate:types": "cross-env NODE_OPTIONS=\"--import tsx\" npx @rosen-bridge/config generate-ts-types --schema ./config/schema.json --output ./src/types/configs.ts --root-type BtcPaymentConfig",
+    "config:generate:types": "cross-env NODE_OPTIONS=\"--import tsx\" npx @rosen-bridge/config generate-ts-types --schema ./config/schema.json --output ./src/types/configs.ts --root-type ApiConfig",
     "config:generate:defaults": "cross-env NODE_OPTIONS=\"--import tsx\" npx @rosen-bridge/config generate-default --schema ./config/schema.json --output ./config/default.yml --format yaml",
     "start": "tsx ./src/index.ts",
     "start:dev": "tsx watch ./src/index.ts",
-    "test": "cross-env NODE_OPTIONS=\"--import tsx\" vitest",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@ergo-raffle/data-source": "^0.0.0",
-    "@ergo-raffle/dynamic-extractor": "^0.0.0",
-    "@ergo-raffle/extractors": "^0.0.0",
-    "@rosen-bridge/bitcoin-scanner": "^1.0.1",
-    "@ergo-raffle/request-params": "^0.0.0",
     "@rosen-bridge/abstract-logger": "^4.0.0",
     "@rosen-bridge/callback-logger": "^2.0.0",
     "@rosen-bridge/config": "^1.2.0",
@@ -41,11 +35,7 @@
     "@rosen-bridge/fastify-enhanced": "^2.0.1",
     "@rosen-bridge/service-manager": "^1.0.2",
     "@rosen-bridge/winston-logger": "^3.0.0",
-    "bip32": "^5.0.1",
-    "bip39": "^3.1.0",
-    "bitcoinjs-lib": "^6.1.7",
     "config": "^3.3.7",
-    "tiny-secp256k1": "^2.2.4",
     "zod": "^3.25.76"
   },
   "devDependencies": {
