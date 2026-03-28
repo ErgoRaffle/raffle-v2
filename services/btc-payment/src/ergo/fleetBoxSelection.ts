@@ -16,6 +16,9 @@ export class FleetBoxSelection extends AbstractBoxSelection<Box<Amount>> {
 
   /**
    * Extract box id and asset balances from Fleet box.
+   *
+   * @param box
+   * @returns Box id plus native and token amounts.
    */
   getBoxInfo = (box: Box<Amount>): BoxInfo => {
     return {

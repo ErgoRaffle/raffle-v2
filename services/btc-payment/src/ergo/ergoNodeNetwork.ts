@@ -22,7 +22,9 @@ export class ErgoNodeNetwork {
   }
 
   /**
-   * get current block height
+   * Returns the node's last full block height.
+   *
+   * @returns Current chain height as reported by the node.
    */
   getHeight = async (): Promise<number> => {
     const nodeInfo = await this.client.getNodeInfo();
@@ -33,7 +35,9 @@ export class ErgoNodeNetwork {
   };
 
   /**
-   * get current blockchain parameters (used for transaction signing)
+   * Returns consensus parameters from the node (used when building provers and signing).
+   *
+   * @returns Blockchain parameters object for the active network.
    */
   getBlockchainParameters = async (): Promise<BlockchainParameters> => {
     const nodeInfo = await this.client.getNodeInfo();
@@ -45,7 +49,9 @@ export class ErgoNodeNetwork {
   };
 
   /**
-   * get current state context using last ten block headers (used for signing)
+   * Builds signing context from the last ten block headers (sigma pre-header and last headers).
+   *
+   * @returns State context passed to the transaction prover.
    */
   getStateContext = async (): Promise<BlockchainStateContext> => {
     const lastBlocks = await this.client.getLastHeaders(10);
@@ -73,11 +79,12 @@ export class ErgoNodeNetwork {
   };
 
   /**
-   * get unspent boxes of an address while considering current mempool state
-   * mempool outputs are returned first and any box spent in mempool is excluded
+   * Fetches unspent boxes of an address while considering current mempool state
+   * Boxes spent in mempool are excluded
    * @param address
    * @param limit
    * @param offset
+   * @returns Fleet `ErgoBox` instances for this page.
    */
   getUnspentBoxesByAddress = async (
     address: string,
@@ -109,8 +116,9 @@ export class ErgoNodeNetwork {
   };
 
   /**
-   * iterate over unspent boxes of an address in pages of API_LIMIT (100)
+   * Iterates over unspent boxes of an address in pages of API_LIMIT (100)
    * @param address
+   * @returns Each unspent box from successive node pages until exhausted.
    */
   async *unspentBoxesByAddressIterator(
     address: string,

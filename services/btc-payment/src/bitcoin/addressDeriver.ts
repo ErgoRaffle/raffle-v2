@@ -14,7 +14,12 @@ export class AddressDeriver {
   private chainType: number;
   private network: bitcoin.Network;
 
-  constructor(private readonly bitcoinConfig: ConfigTypes.Bitcoin) {
+  /**
+   * Builds the BIP32 root from the bitcoin mnemonic and network type
+   *
+   * @param bitcoinConfig - Bitcoin mnemonic and network type
+   */
+  constructor(bitcoinConfig: ConfigTypes.Bitcoin) {
     const seed = bip39.mnemonicToSeedSync(bitcoinConfig.mnemonic);
     this.network =
       bitcoinConfig.network === 'mainnet'
@@ -25,9 +30,10 @@ export class AddressDeriver {
   }
 
   /**
-   * Derive a Taproot Bitcoin address from the config mnemonic and index
-   * @param index - The index of the address to derive
-   * @returns
+   * Derives a Taproot (BIP86) receive address at `m/86'/coin'/0'/0/{index}`.
+   *
+   * @param index - Sequential donation index
+   * @returns Bech32m Taproot address string
    */
   public deriveAddress = (index: number): string => {
     const child = this.root.derivePath(

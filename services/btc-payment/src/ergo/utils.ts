@@ -7,12 +7,12 @@ import { ProverBuilder$ } from 'sigmastate-js/main';
 import { ErgoNodeNetwork } from '../ergo';
 
 /**
- * Signs an unsigned Ergo transaction with the given HD key using
- * sigmastate-js's ProverBuilder.
- * @param network - The Ergo node network instance used to fetch signing context
- * @param unsigned - The unsigned transaction to sign
- * @param key - The HD key whose Dlog secret is used to sign wallet inputs
- * @returns The signed transaction
+ * Signs an unsigned Ergo transaction with the given HD key using sigmastate-js `ProverBuilder`.
+ *
+ * @param network - Ergo node client used to load blockchain parameters and signing context.
+ * @param unsigned - Unsigned transaction to reduce and sign.
+ * @param key - HD key whose Dlog secret signs wallet inputs.
+ * @returns The signed Ergo transaction.
  */
 export const signTransaction = async (
   network: ErgoNodeNetwork,

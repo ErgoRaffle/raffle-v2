@@ -30,8 +30,10 @@ export class TxPotService extends AbstractService {
   }
 
   /**
-   * initializes the singleton instance of TxPotService
+   * Initializes the singleton TxPotService (no-op if already initialized).
    *
+   * @param dataSource
+   * @param logger
    */
   static init = (dataSource: DataSource, logger?: AbstractLogger) => {
     if (this.instance != undefined) {
@@ -41,11 +43,9 @@ export class TxPotService extends AbstractService {
   };
 
   /**
-   * returns the singleton instance of TxPotService
+   * Returns the singleton TxPotService instance.
    *
-   * @static
-   * @return {TxPotService}
-   * @memberof TxPotService
+   * @returns The initialized TxPotService.
    */
   static getInstance = (): TxPotService => {
     if (!this.instance) {
@@ -55,15 +55,9 @@ export class TxPotService extends AbstractService {
   };
 
   /**
-   * starts the service. following steps are performed:
-   *  - TxPot is setup and Ergo chain is registered
-   *  - TxPot update job is executed and scheduled
-   *  - service status is set to running
+   * Marks TxPotService as running
    *
-   * @protected
-   * @return {Promise<boolean>} true if service started successfully, otherwise
-   * false
-   * @memberof TxPotService
+   * @returns True when the service has entered the running state.
    */
   protected start = async (): Promise<boolean> => {
     this.setStatus(ServiceStatus.running);
@@ -72,26 +66,13 @@ export class TxPotService extends AbstractService {
   };
 
   /**
-   * stops the service. following steps are performed:
-   *  - ths scheduled job is stopped
-   *  - service's status is set to dormant
+   * Sets TxPotService status to dormant.
    *
-   * @protected
-   * @return {Promise<boolean>} true if service stopped successfully, otherwise
-   * false
-   * @memberof TxPotService
+   * @returns True when shutdown completed.
    */
   protected stop = async (): Promise<boolean> => {
     this.setStatus(ServiceStatus.dormant);
     return true;
-  };
-
-  /**
-   * Returns the TxPot instance
-   * @returns TxPot instance
-   */
-  getTxPot = (): TxPot => {
-    return TxPot.getInstance();
   };
 
   /**
@@ -103,9 +84,9 @@ export class TxPotService extends AbstractService {
    * selected and the process repeats. Returns null when the box is spent but
    * no output with the same address exists in the spending transaction.
    *
-   * @param box - The box to track
+   * @param box - Box to track through signed and sent TxPot transactions.
    * @returns The latest unspent box with the same address, or null if the
-   *   chain of spending transactions yields no matching output
+   *   chain of spending transactions yields no matching output.
    */
   trackToLatestUnspentBox = async (
     box: Box<Amount>,

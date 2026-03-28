@@ -30,6 +30,7 @@ export class DonationService extends PeriodicTaskService {
   private static instance: DonationService;
   private readonly ergoNodeNetwork: ErgoNodeNetwork;
   private readonly selector: FleetBoxSelection;
+
   protected dependencies: Dependency[] = [
     {
       serviceName: DbService.name,
@@ -51,6 +52,13 @@ export class DonationService extends PeriodicTaskService {
     this.ergoNodeNetwork = new ErgoNodeNetwork(this.ergoConfig.nodeUrl, logger);
   }
 
+  /**
+   * Initializes the singleton DonationService (no-op if already initialized).
+   *
+   * @param config - Donation processing interval, timeouts, and confirmation settings.
+   * @param ergoConfig - Ergo node and wallet configuration.
+   * @param logger - Optional logger for this service.
+   */
   static readonly init = async (
     config: DonationConfig,
     ergoConfig: ErgoConfig,
@@ -62,6 +70,11 @@ export class DonationService extends PeriodicTaskService {
     this.instance = new DonationService(config, ergoConfig, logger);
   };
 
+  /**
+   * Returns the singleton DonationService instance.
+   *
+   * @returns The initialized DonationService.
+   */
   static readonly getInstance = (): DonationService => {
     if (!this.instance) {
       throw new Error('DonationService instance is not initialized yet');
@@ -84,10 +97,12 @@ export class DonationService extends PeriodicTaskService {
   };
 
   /**
-   * Returns the tasks for the DonationService.
-   * - processDonationTimeouts: Update old pending donation requests to timed out.
-   * - processDonations: Process confirmed and filled donations.
-   * @returns The tasks for the DonationService.
+   * Returns periodic tasks: donation timeout handling and donation processing.
+   *
+   * - `processDonationTimeouts`: marks stale pending requests as timed out.
+   * - `processDonations`: verifies BTC-side payment and builds Ergo donations when ready.
+   *
+   * @returns Task definitions with interval from `config.interval`.
    */
   protected getTasks = () => {
     const intervalMs = this.config.interval * 1000;
@@ -126,7 +141,8 @@ export class DonationService extends PeriodicTaskService {
   };
 
   /**
-   * Mark pending donation requests as timed out when they have passed the deadline.
+   * Marks pending donation requests as timed out when older than `config.requestTimeout`
+   * relative to the latest scanned Bitcoin block time.
    */
   private processDonationTimeouts = async (): Promise<void> => {
     const db = DbService.getInstance();
@@ -169,8 +185,8 @@ export class DonationService extends PeriodicTaskService {
   };
 
   /**
-   * Query ongoing donation requests, check satisfaction and confirmation via dynamic boxes,
-   * then create donation transaction and mark completed when ready.
+   * For each pending donation, verifies confirmed dynamic box totals and, when sufficient,
+   * builds and signs the Ergo donation transaction and updates status.
    */
   private processDonations = async (): Promise<void> => {
     const db = DbService.getInstance();
@@ -256,9 +272,11 @@ export class DonationService extends PeriodicTaskService {
   };
 
   /**
-   * Async generator that iterates unspent wallet boxes, resolving each through
-   * TxPot to skip boxes already spent in pending transactions and yield their
-   * latest unspent descendants.
+   * Iterates unspent wallet boxes from the node, resolving each through TxPot so only
+   * the latest unspent descendant per chain is yielded (skips fully spent inputs).
+   *
+   * @param walletAddress - Base58 Ergo address whose UTXOs to enumerate.
+   * @yields Tracked unspent `Box` instances suitable for input selection.
    */
   private async *walletBoxIterator(
     walletAddress: string,
@@ -279,14 +297,15 @@ export class DonationService extends PeriodicTaskService {
   }
 
   /**
-   * Create a donation transaction for the specified raffle.
+   * Builds and signs a donation transaction for one pending request and records it in TxPot.
    *
    * Steps:
-   *  1. Resolve the latest unspent active raffle box via getLastActiveRaffleBox
-   *  2. Read ticket price and raffle type (ERG-goal vs token-goal) from the box
-   *  3. Select wallet UTXOs via FleetBoxSelection covering required ERG and tokens
-   *  4. Build the transaction with DonateTxBuilder
-   *  5. Sign with the service wallet key and register in TxPot
+   * 1. Resolve the latest unspent active raffle box via `getLastActiveRaffleBox`.
+   * 2. Read ticket price and raffle type (ERG-goal vs token-goal) from the box.
+   * 3. Select wallet UTXOs via `FleetBoxSelection` covering required ERG and tokens.
+   * 4. Build with `DonateTxBuilder`, sign, and persist status as in-progress with tx id.
+   *
+   * @param donation - Pending donation entity (raffle, tickets, addresses, amounts).
    */
   private createDonationTransaction = async (
     donation: DonationParamsEntity,
