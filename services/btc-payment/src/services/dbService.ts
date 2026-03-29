@@ -7,18 +7,22 @@ import {
 } from '@rosen-bridge/service-manager';
 
 import { createDataSource } from '@ergo-raffle/data-source';
-import { InactiveRaffleEntity } from '@ergo-raffle/extractors';
-import {
-  DonationParamsEntity,
-  DonationStatus,
-} from '@ergo-raffle/request-params';
 
+import BlockAction from '../actions/block';
+import DonationAction from '../actions/donation';
+import DynamicBoxAction from '../actions/dynamicBox';
+import RaffleAction from '../actions/raffle';
 import * as ConfigTypes from '../types/configs';
 
 export class DbService extends AbstractService {
   name = 'DbService';
   private static instance: DbService;
   readonly dataSource: DataSource;
+
+  private raffleAction?: RaffleAction;
+  private donationAction?: DonationAction;
+  private blockAction?: BlockAction;
+  private dynamicBoxAction?: DynamicBoxAction;
 
   private constructor(
     dbConfigs: ConfigTypes.Database,
@@ -29,12 +33,7 @@ export class DbService extends AbstractService {
   }
 
   /**
-   * initializes the singleton instance of DbService
-   *
-   * @static
-   * @param {ConfigTypes.Database} dbConfigs
-   * @param {AbstractLogger} [logger]
-   * @memberof DbService
+   * Initializes the singleton instance of DbService
    */
   static init = (dbConfigs: ConfigTypes.Database, logger?: AbstractLogger) => {
     if (this.instance != undefined) {
@@ -44,15 +43,11 @@ export class DbService extends AbstractService {
   };
 
   /**
-   * return the singleton instance of DBService
-   *
-   * @static
-   * @return {DbService}
-   * @memberof DbService
+   * Returns the singleton instance of DbService
    */
   static getInstance = (): DbService => {
     if (!this.instance) {
-      throw new Error('DbService instances is not initialized yet');
+      throw new Error('DbService instance is not initialized yet');
     }
     return this.instance;
   };
@@ -64,11 +59,23 @@ export class DbService extends AbstractService {
       this.setStatus(ServiceStatus.started);
       this.logger.debug('Initializing data source');
       await this.dataSource.initialize();
-      this.logger.debug('data source initialized');
+      this.logger.debug('Data source initialized');
 
-      this.logger.debug('running data source migrations');
+      this.logger.debug('Running data source migrations');
       await this.dataSource.runMigrations();
-      this.logger.debug('data source migrations completed');
+      this.logger.debug('Data source migrations completed');
+
+      this.raffleAction = new RaffleAction(this.dataSource);
+      this.logger.debug('Raffle action initialized');
+      this.donationAction = new DonationAction(this.dataSource);
+      this.logger.debug('Donation action initialized');
+      this.blockAction = new BlockAction(this.dataSource);
+      this.logger.debug('Block action initialized');
+      this.dynamicBoxAction = new DynamicBoxAction(
+        this.dataSource,
+        this.logger,
+      );
+      this.logger.debug('DynamicBox action initialized');
 
       this.setStatus(ServiceStatus.running);
     } catch (e) {
@@ -83,85 +90,31 @@ export class DbService extends AbstractService {
 
   protected stop = async (): Promise<boolean> => {
     await this.dataSource.destroy();
+    this.raffleAction = undefined;
+    this.donationAction = undefined;
+    this.blockAction = undefined;
+    this.dynamicBoxAction = undefined;
     this.setStatus(ServiceStatus.dormant);
     return true;
   };
 
-  /**
-   * Get the raffle entity by raffle id
-   * @param raffleId - The raffle id
-   * @returns The raffle entity
-   */
-  getRaffleData = (raffleId: string): Promise<InactiveRaffleEntity | null> => {
-    return this.dataSource.getRepository(InactiveRaffleEntity).findOne({
-      where: {
-        raffleId: raffleId,
-      },
-    });
+  getRaffleAction = (): RaffleAction => {
+    if (this.raffleAction) return this.raffleAction;
+    throw new Error('Service has not started');
   };
 
-  /**
-   * Get the last donation params id
-   * @returns The last donation params id
-   */
-  getLastDonationParamsId = async (): Promise<number> => {
-    const data = await this.dataSource
-      .getRepository(DonationParamsEntity)
-      .findOne({
-        order: { id: 'DESC' },
-      });
-    return data?.id || 0;
+  getDonationAction = (): DonationAction => {
+    if (this.donationAction) return this.donationAction;
+    throw new Error('Service has not started');
   };
 
-  /**
-   * Save the donation params
-   * @param donationParams - The donation params
-   */
-  saveDonationParams = async (
-    donationParams: Omit<
-      DonationParamsEntity,
-      | 'id'
-      | 'timestamp'
-      | 'tokenId'
-      | 'tokenAmount'
-      | 'requiredValue'
-      | 'status'
-    >,
-  ): Promise<DonationParamsEntity> => {
-    const raffleData = await this.getRaffleData(donationParams.raffleId);
-    if (!raffleData) {
-      throw new Error('Raffle not found');
-    }
-    // TODO: Consider a fee for the transaction fees
-    const donationAmount =
-      BigInt(donationParams.ticketCount) * raffleData.ticketPrice;
+  getBlockAction = (): BlockAction => {
+    if (this.blockAction) return this.blockAction;
+    throw new Error('Service has not started');
+  };
 
-    // Insert the donation params to get the generated ID
-    const savedParams = await this.dataSource
-      .getRepository(DonationParamsEntity)
-      .insert({
-        ...donationParams,
-        // TODO: Use the btc-side token id using the token map data
-        tokenId: raffleData.collectingTokenId || 'erg',
-        tokenAmount: donationAmount,
-        timestamp: Date.now(),
-        status: DonationStatus.Pending,
-      });
-
-    // Get the generated ID
-    const generatedId = savedParams.identifiers[0].id;
-
-    // Fetch the complete entity
-    const savedEntity = await this.dataSource
-      .getRepository(DonationParamsEntity)
-      .findOne({
-        where: { id: generatedId },
-      });
-
-    if (!savedEntity) {
-      throw new Error('Failed to retrieve saved donation params');
-    }
-
-    return savedEntity;
+  getDynamicBoxAction = (): DynamicBoxAction => {
+    if (this.dynamicBoxAction) return this.dynamicBoxAction;
+    throw new Error('Service has not started');
   };
 }

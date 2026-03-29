@@ -7,8 +7,9 @@ import {
 
 export enum DonationStatus {
   Pending = 'pending',
+  InProgress = 'in_progress',
   Completed = 'completed',
-  Timedout = 'timedout',
+  TimedOut = 'timed_out',
 }
 
 @Entity('donation_params')
@@ -23,13 +24,13 @@ export class DonationParamsEntity {
   ticketCount: number;
 
   @Column({ type: 'varchar' })
-  tokenId?: string;
+  tokenId: string;
 
   @Column({
     type: 'bigint',
     transformer: new BigIntValueTransformer(),
   })
-  tokenAmount?: bigint;
+  tokenAmount: bigint;
 
   @Column({ type: 'varchar' })
   donatorAddress: string;

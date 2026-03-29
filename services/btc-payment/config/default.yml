@@ -26,3 +26,7 @@ bitcoin:
   runes:
     unisat:
       url: https://open-api.unisat.io
+donation:
+  interval: 60
+  requiredConfirmations: 2
+  requestTimeout: 3600

@@ -310,5 +310,43 @@
         }
       }
     }
+  },
+  "donation": {
+    "type": "object",
+    "children": {
+      "interval": {
+        "type": "number",
+        "default": 60,
+        "description": "donation service interval in seconds",
+        "validations": [
+          {
+            "required": true,
+            "error": "donation service interval must be specified"
+          }
+        ]
+      },
+      "requiredConfirmations": {
+        "type": "number",
+        "default": 2,
+        "description": "required Bitcoin block confirmations before creating donation tx",
+        "validations": [
+          {
+            "required": true,
+            "error": "required confirmations must be specified"
+          }
+        ]
+      },
+      "requestTimeout": {
+        "type": "number",
+        "default": 3600,
+        "description": "donation request timeout in seconds; pending requests older than this are marked timed out",
+        "validations": [
+          {
+            "required": true,
+            "error": "donation request timeout must be specified"
+          }
+        ]
+      }
+    }
   }
 }

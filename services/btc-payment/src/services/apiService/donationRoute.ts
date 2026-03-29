@@ -11,6 +11,7 @@ export const registerDonationRoute = (
   fastify: FastifyWithZod,
   logger: AbstractLogger,
   addressDeriver: AddressDeriver,
+  addWatchingAddress: (address: string, tokenId: string) => void,
 ) => {
   fastify.post(
     '/api/donation',
@@ -32,26 +33,25 @@ export const registerDonationRoute = (
           `Donation requested: ${ticketCount} tickets for raffle ${raffleId}`,
         );
 
-        const lastDonationParamsId =
-          await DbService.getInstance().getLastDonationParamsId();
+        const donationAction = DbService.getInstance().getDonationAction();
+        const lastDonationParamsId = await donationAction.getLastId();
         const bitcoinAddress =
           await addressDeriver.deriveAddress(lastDonationParamsId);
 
-        // Save donation params to database
-        const savedDonationParams =
-          await DbService.getInstance().saveDonationParams({
-            raffleId,
-            ticketCount,
-            donatorAddress,
-            bitcoinAddress,
-          });
+        const savedDonationParams = await donationAction.save({
+          raffleId,
+          ticketCount,
+          donatorAddress,
+          bitcoinAddress,
+        });
+        await addWatchingAddress(bitcoinAddress, savedDonationParams.tokenId);
 
         return {
           success: true,
           message: 'Donation request received',
           data: {
-            requiredTokenId: savedDonationParams.tokenId?.toString(),
-            requiredTokenCount: savedDonationParams.tokenAmount?.toString(),
+            requiredTokenId: savedDonationParams.tokenId.toString(),
+            requiredTokenCount: savedDonationParams.tokenAmount.toString(),
             bitcoinAddress,
           },
         };

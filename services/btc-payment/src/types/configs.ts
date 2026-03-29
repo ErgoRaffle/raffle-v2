@@ -1,4 +1,5 @@
 export interface BtcPaymentConfig {
+  donation: Donation;
   bitcoin: Bitcoin;
   ergo: Ergo;
   api: Api;
@@ -59,4 +60,10 @@ export interface BitcoinRpc {
   timeout: number;
   username?: string;
   password?: string;
+}
+
+export interface Donation {
+  interval: number;
+  requiredConfirmations: number;
+  requestTimeout: number;
 }
