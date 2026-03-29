@@ -1,10 +1,10 @@
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { FastifyWithZod } from '@rosen-bridge/fastify-enhanced';
 
-import { registerHealthRoute } from './health';
+import { registerInfoRoutes } from './info';
 
 const registerAllRoutes = (fastify: FastifyWithZod, logger: AbstractLogger) => {
-  registerHealthRoute(fastify);
+  registerInfoRoutes(fastify);
   logger.debug('All routes are registered');
 };
 
