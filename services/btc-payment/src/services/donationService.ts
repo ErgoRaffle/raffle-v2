@@ -52,19 +52,8 @@ export class DonationService extends PeriodicTaskService {
     return this.instance;
   };
 
-  /**
-   * Logs the start of the DonationService.
-   */
-  protected preStart = async (): Promise<void> => {
-    this.logger.debug('Starting DonationService');
-  };
-
-  /**
-   * Logs the stop of the DonationService.
-   */
-  protected postStop = async (): Promise<void> => {
-    this.logger.info('DonationService stopped');
-  };
+  protected preStart = async (): Promise<void> => {};
+  protected postStop = async (): Promise<void> => {};
 
   /**
    * Returns the tasks for the DonationService.
@@ -112,8 +101,8 @@ export class DonationService extends PeriodicTaskService {
    * Mark pending donation requests as timed out when they have passed the deadline.
    */
   private processDonationTimeouts = async (): Promise<void> => {
-    const db = DbService.getInstance();
-    const ongoing = await db.getOngoingDonationRequests();
+    const donationAction = DbService.getInstance().getDonationAction();
+    const ongoing = await donationAction.getOngoing();
     if (ongoing.length === 0) {
       this.logger.debug('No ongoing donation requests, skipping timeout check');
       return;
@@ -124,7 +113,10 @@ export class DonationService extends PeriodicTaskService {
       try {
         const ageSeconds = nowSeconds - donation.timestamp;
         if (ageSeconds >= this.config.requestTimeout) {
-          await db.updateDonationStatus(donation.id, DonationStatus.TimedOut);
+          await donationAction.updateStatus(
+            donation.id,
+            DonationStatus.TimedOut,
+          );
           this.logger.info(
             `Donation request id=${donation.id} timed out (age=${ageSeconds}s, raffleId=${donation.raffleId})`,
           );
@@ -146,7 +138,8 @@ export class DonationService extends PeriodicTaskService {
    */
   private processDonations = async (): Promise<void> => {
     const db = DbService.getInstance();
-    const ongoing = await db.getOngoingDonationRequests();
+    const donationAction = db.getDonationAction();
+    const ongoing = await donationAction.getOngoing();
     if (ongoing.length === 0) {
       this.logger.debug(
         'No ongoing donation requests, skipping donation check',
@@ -154,9 +147,9 @@ export class DonationService extends PeriodicTaskService {
       return;
     }
 
-    const latestHeight = await db.getLatestBlockHeight(
-      ScannerService.getInstance().getBitcoinScannerName(),
-    );
+    const latestHeight = await db
+      .getBlockAction()
+      .getLatestHeight(ScannerService.getInstance().getBitcoinScannerName());
     if (latestHeight === null) {
       this.logger.debug('No blocks stored yet, skipping donation check');
       return;
@@ -168,11 +161,13 @@ export class DonationService extends PeriodicTaskService {
       try {
         const tokenId = donation.tokenId;
         const tokenAmount = donation.tokenAmount;
-        const confirmedSum = await db.getConfirmedDynamicBoxSum(
-          donation.bitcoinAddress,
-          tokenId,
-          minConfirmedHeight,
-        );
+        const confirmedSum = await db
+          .getDynamicBoxAction()
+          .getConfirmedSum(
+            donation.bitcoinAddress,
+            tokenId,
+            minConfirmedHeight,
+          );
 
         if (confirmedSum < tokenAmount) {
           this.logger.info(
@@ -186,7 +181,10 @@ export class DonationService extends PeriodicTaskService {
         );
 
         await this.createDonationTransaction(donation);
-        await db.updateDonationStatus(donation.id, DonationStatus.Completed);
+        await donationAction.updateStatus(
+          donation.id,
+          DonationStatus.Completed,
+        );
       } catch (err) {
         this.logger.error(
           `Error processing donation id=${donation.id}: ${err}`,

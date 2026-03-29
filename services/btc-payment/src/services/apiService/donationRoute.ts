@@ -33,19 +33,17 @@ export const registerDonationRoute = (
           `Donation requested: ${ticketCount} tickets for raffle ${raffleId}`,
         );
 
-        const lastDonationParamsId =
-          await DbService.getInstance().getLastDonationParamsId();
+        const donationAction = DbService.getInstance().getDonationAction();
+        const lastDonationParamsId = await donationAction.getLastId();
         const bitcoinAddress =
           await addressDeriver.deriveAddress(lastDonationParamsId);
 
-        // Save donation params to database
-        const savedDonationParams =
-          await DbService.getInstance().saveDonationParams({
-            raffleId,
-            ticketCount,
-            donatorAddress,
-            bitcoinAddress,
-          });
+        const savedDonationParams = await donationAction.save({
+          raffleId,
+          ticketCount,
+          donatorAddress,
+          bitcoinAddress,
+        });
         await addWatchingAddress(bitcoinAddress, savedDonationParams.tokenId);
 
         return {
