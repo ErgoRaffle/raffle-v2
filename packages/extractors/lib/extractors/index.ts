@@ -12,3 +12,6 @@ export * from './giftRedeem';
 export * from './successRaffle';
 export * from './ticketRedeem';
 export * from './safePayExtractor';
+export * from './donationProxy';
+export * from './creationProxy';
+export * from './addGiftProxy';

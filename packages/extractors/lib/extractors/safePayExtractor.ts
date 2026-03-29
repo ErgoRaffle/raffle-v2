@@ -1,4 +1,4 @@
-import { ErgoAddress, Box } from '@fleet-sdk/core';
+import { ErgoAddress } from '@fleet-sdk/core';
 import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 import {
   AbstractErgoBoxExtractor,
@@ -117,9 +117,7 @@ export class SafePayExtractor extends AbstractErgoBoxExtractor<
       identifier: box.boxId.toString(),
       txId: box.transactionId,
       recipient,
-      serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(
-        'base64',
-      ),
+      serialized: Buffer.from(serializeBox(box).toBytes()).toString('base64'),
     };
 
     return data;

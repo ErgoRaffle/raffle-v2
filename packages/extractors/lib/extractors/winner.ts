@@ -1,4 +1,4 @@
-import { ErgoAddress, Box } from '@fleet-sdk/core';
+import { ErgoAddress } from '@fleet-sdk/core';
 import { SConstant, serializeBox } from '@fleet-sdk/serializer';
 import { AbstractErgoBoxExtractor } from '@rosen-bridge/abstract-extractor';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
@@ -75,9 +75,7 @@ export class WinnerExtractor extends AbstractErgoBoxExtractor<
       raffleId: box.assets![0].tokenId,
       index: index,
       rewardPercent: Number(R4Serialized[0]),
-      serialized: Buffer.from(serializeBox(box as Box).toBytes()).toString(
-        'base64',
-      ),
+      serialized: Buffer.from(serializeBox(box).toBytes()).toString('base64'),
     };
 
     return data;

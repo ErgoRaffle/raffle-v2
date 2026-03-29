@@ -149,3 +149,7 @@ packages/try/
 
 # docker
 .devcontainer/
+local.yml
+local.yaml
+
+.DS_Store

@@ -3,37 +3,124 @@ import {
   QueryRunner,
 } from '@rosen-bridge/extended-typeorm';
 
-export class Sqlite1765798898052 implements MigrationInterface {
-  name = 'Sqlite1765798898052';
+export class Migration1774542753390 implements MigrationInterface {
+  name = 'Migration1774542753390';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-            CREATE TABLE "service" (
+            CREATE TABLE "add_gift_proxy" (
                 "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-                "identifier" varchar NOT NULL,
                 "block" varchar NOT NULL,
                 "height" integer NOT NULL,
+                "extractor" varchar NOT NULL,
+                "identifier" varchar NOT NULL,
+                "serialized" varchar NOT NULL,
                 "spendBlock" varchar,
                 "spendHeight" integer,
-                "extractor" varchar NOT NULL,
-                "serialized" varchar NOT NULL,
                 "txId" varchar NOT NULL,
-                "serviceFeePercent" integer NOT NULL,
-                "implementerFeePercent" integer NOT NULL,
-                "creationFee" bigint NOT NULL,
-                CONSTRAINT "UQ_f5398b3f54b5cea829d8f349de0" UNIQUE ("identifier", "extractor")
+                "address" varchar NOT NULL,
+                "expirationHeight" integer NOT NULL,
+                "raffleDeadline" integer NOT NULL,
+                "winnerIndex" integer NOT NULL,
+                "txFee" bigint NOT NULL,
+                "raffleId" varchar NOT NULL,
+                "giftGiverErgoTree" varchar NOT NULL,
+                CONSTRAINT "UQ_fda636f4a4491d2549e0b8dcef3" UNIQUE ("identifier", "extractor")
+            )
+        `);
+    await queryRunner.query(`
+            CREATE TABLE "creation_proxy" (
+                "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+                "block" varchar NOT NULL,
+                "height" integer NOT NULL,
+                "extractor" varchar NOT NULL,
+                "identifier" varchar NOT NULL,
+                "serialized" varchar NOT NULL,
+                "spendBlock" varchar,
+                "spendHeight" integer,
+                "txId" varchar NOT NULL,
+                "address" varchar NOT NULL,
+                "expirationHeight" integer NOT NULL,
+                "raffleDeadline" integer NOT NULL,
+                "winnersPercent" integer NOT NULL,
+                "ticketPrice" bigint NOT NULL,
+                "goal" bigint NOT NULL,
+                "txFee" bigint NOT NULL,
+                "implementerErgoTree" varchar NOT NULL,
+                "creatorErgoTree" varchar NOT NULL,
+                "winnersPercentList" varchar NOT NULL,
+                "collectingTokenId" varchar NOT NULL,
+                "name" varchar NOT NULL,
+                "description" varchar NOT NULL,
+                "pictures" text NOT NULL,
+                "winnerCount" integer NOT NULL,
+                CONSTRAINT "UQ_dc8a55846404e70e4bc1c0ecd9d" UNIQUE ("identifier", "extractor")
+            )
+        `);
+    await queryRunner.query(`
+            CREATE TABLE "donation_proxy" (
+                "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+                "block" varchar NOT NULL,
+                "height" integer NOT NULL,
+                "extractor" varchar NOT NULL,
+                "identifier" varchar NOT NULL,
+                "serialized" varchar NOT NULL,
+                "spendBlock" varchar,
+                "spendHeight" integer,
+                "txId" varchar NOT NULL,
+                "address" varchar NOT NULL,
+                "expirationHeight" integer NOT NULL,
+                "raffleDeadline" integer NOT NULL,
+                "ticketCount" integer NOT NULL,
+                "txFee" bigint NOT NULL,
+                "raffleId" varchar NOT NULL,
+                "donatorErgoTree" varchar NOT NULL,
+                CONSTRAINT "UQ_baf9bc9a4c9d9dd1e7088aeffa8" UNIQUE ("identifier", "extractor")
+            )
+        `);
+    await queryRunner.query(`
+            CREATE TABLE "gift" (
+                "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+                "block" varchar NOT NULL,
+                "height" integer NOT NULL,
+                "extractor" varchar NOT NULL,
+                "identifier" varchar NOT NULL,
+                "serialized" varchar NOT NULL,
+                "spendBlock" varchar,
+                "spendHeight" integer,
+                "txId" varchar NOT NULL,
+                "raffleId" varchar NOT NULL,
+                "donatorErgoTree" varchar NOT NULL,
+                "winnerIndex" integer NOT NULL,
+                CONSTRAINT "UQ_a1f3a095e9fa0da75bcb55f3beb" UNIQUE ("identifier", "extractor")
+            )
+        `);
+    await queryRunner.query(`
+            CREATE TABLE "gift_redeem" (
+                "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+                "block" varchar NOT NULL,
+                "height" integer NOT NULL,
+                "extractor" varchar NOT NULL,
+                "identifier" varchar NOT NULL,
+                "serialized" varchar NOT NULL,
+                "spendBlock" varchar,
+                "spendHeight" integer,
+                "txId" varchar NOT NULL,
+                "raffleId" varchar NOT NULL,
+                "step" integer NOT NULL,
+                CONSTRAINT "UQ_3ccbdfb6201479cf48a9d8e287a" UNIQUE ("identifier", "extractor")
             )
         `);
     await queryRunner.query(`
             CREATE TABLE "inactive_raffle" (
                 "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-                "identifier" varchar NOT NULL,
                 "block" varchar NOT NULL,
                 "height" integer NOT NULL,
+                "extractor" varchar NOT NULL,
+                "identifier" varchar NOT NULL,
+                "serialized" varchar NOT NULL,
                 "spendBlock" varchar,
                 "spendHeight" integer,
-                "extractor" varchar NOT NULL,
-                "serialized" varchar NOT NULL,
                 "txId" varchar NOT NULL,
                 "raffleId" varchar NOT NULL,
                 "serviceErgoTree" varchar NOT NULL,
@@ -48,59 +135,24 @@ export class Sqlite1765798898052 implements MigrationInterface {
                 "winnersPercentList" varchar NOT NULL,
                 "txFee" bigint NOT NULL,
                 "collectingTokenId" varchar,
-                CONSTRAINT "UQ_4a8f47d5384df37b669cdbb33b6" UNIQUE ("identifier", "extractor")
-            )
-        `);
-    await queryRunner.query(`
-            CREATE TABLE "raffle_box" (
-                "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-                "identifier" varchar NOT NULL,
-                "block" varchar NOT NULL,
-                "height" integer NOT NULL,
-                "spendBlock" varchar,
-                "spendHeight" integer,
-                "extractor" varchar NOT NULL,
-                "serialized" varchar NOT NULL,
-                "txId" varchar NOT NULL,
-                "raffleId" varchar NOT NULL,
-                "type" varchar CHECK(
-                    "type" IN ('ticket_repo', 'gift_token_repo', 'active_raffle')
-                ) NOT NULL,
-                CONSTRAINT "UQ_f00bcdc511b61e73ffb42ddacb8" UNIQUE ("identifier", "extractor")
-            )
-        `);
-    await queryRunner.query(`
-            CREATE TABLE "winner" (
-                "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-                "identifier" varchar NOT NULL,
-                "block" varchar NOT NULL,
-                "height" integer NOT NULL,
-                "spendBlock" varchar,
-                "spendHeight" integer,
-                "extractor" varchar NOT NULL,
-                "serialized" varchar NOT NULL,
-                "txId" varchar NOT NULL,
-                "raffleId" varchar NOT NULL,
-                "index" integer NOT NULL,
-                "rewardPercent" integer NOT NULL,
-                CONSTRAINT "UQ_5b52f300111033e04538ab65c52" UNIQUE ("identifier", "extractor")
+                CONSTRAINT "UQ_c2e3e341f40b8c89661d703a087" UNIQUE ("identifier", "extractor")
             )
         `);
     await queryRunner.query(`
             CREATE TABLE "raffle_details" (
                 "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-                "identifier" varchar NOT NULL,
                 "block" varchar NOT NULL,
                 "height" integer NOT NULL,
+                "extractor" varchar NOT NULL,
+                "identifier" varchar NOT NULL,
+                "serialized" varchar NOT NULL,
                 "spendBlock" varchar,
                 "spendHeight" integer,
-                "extractor" varchar NOT NULL,
-                "serialized" varchar NOT NULL,
                 "txId" varchar NOT NULL,
                 "raffleId" varchar NOT NULL,
                 "name" varchar NOT NULL,
                 "description" varchar NOT NULL,
-                CONSTRAINT "UQ_56b3b23b4ea44ddef3ca2c1286a" UNIQUE ("identifier", "extractor")
+                CONSTRAINT "UQ_109f63f620bd465691539f77314" UNIQUE ("identifier", "extractor")
             )
         `);
     await queryRunner.query(`
@@ -113,122 +165,142 @@ export class Sqlite1765798898052 implements MigrationInterface {
             )
         `);
     await queryRunner.query(`
-            CREATE TABLE "gift" (
+            CREATE TABLE "raffle_box" (
                 "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-                "identifier" varchar NOT NULL,
                 "block" varchar NOT NULL,
                 "height" integer NOT NULL,
+                "extractor" varchar NOT NULL,
+                "identifier" varchar NOT NULL,
+                "serialized" varchar NOT NULL,
                 "spendBlock" varchar,
                 "spendHeight" integer,
-                "extractor" varchar NOT NULL,
-                "serialized" varchar NOT NULL,
                 "txId" varchar NOT NULL,
                 "raffleId" varchar NOT NULL,
-                "donatorErgoTree" varchar NOT NULL,
-                "winnerIndex" integer NOT NULL,
-                CONSTRAINT "UQ_8807a70363dedcaa939f3980449" UNIQUE ("identifier", "extractor")
+                "type" varchar CHECK(
+                    "type" IN ('ticket_repo', 'gift_token_repo', 'active_raffle')
+                ) NOT NULL,
+                CONSTRAINT "UQ_fd4e7f56c331657543469ee7fd0" UNIQUE ("identifier", "extractor")
+            )
+        `);
+    await queryRunner.query(`
+            CREATE TABLE "safe_pay" (
+                "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+                "block" varchar NOT NULL,
+                "height" integer NOT NULL,
+                "extractor" varchar NOT NULL,
+                "identifier" varchar NOT NULL,
+                "serialized" varchar NOT NULL,
+                "spendBlock" varchar,
+                "spendHeight" integer,
+                "txId" varchar NOT NULL,
+                "recipient" varchar NOT NULL,
+                CONSTRAINT "UQ_115a113db9ef5a803eb2afb958e" UNIQUE ("identifier", "extractor")
+            )
+        `);
+    await queryRunner.query(`
+            CREATE TABLE "service" (
+                "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+                "block" varchar NOT NULL,
+                "height" integer NOT NULL,
+                "extractor" varchar NOT NULL,
+                "identifier" varchar NOT NULL,
+                "serialized" varchar NOT NULL,
+                "spendBlock" varchar,
+                "spendHeight" integer,
+                "txId" varchar NOT NULL,
+                "serviceFeePercent" integer NOT NULL,
+                "implementerFeePercent" integer NOT NULL,
+                "creationFee" bigint NOT NULL,
+                "txFee" bigint NOT NULL,
+                CONSTRAINT "UQ_66bed30d3a894f96ccaaae03d8b" UNIQUE ("identifier", "extractor")
+            )
+        `);
+    await queryRunner.query(`
+            CREATE TABLE "success_raffle" (
+                "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+                "block" varchar NOT NULL,
+                "height" integer NOT NULL,
+                "extractor" varchar NOT NULL,
+                "identifier" varchar NOT NULL,
+                "serialized" varchar NOT NULL,
+                "spendBlock" varchar,
+                "spendHeight" integer,
+                "txId" varchar NOT NULL,
+                "raffleId" varchar NOT NULL,
+                "selectedWinnersList" varchar NOT NULL,
+                "step" integer NOT NULL,
+                CONSTRAINT "UQ_c34631dd663f78714c38ba64ac4" UNIQUE ("identifier", "extractor")
             )
         `);
     await queryRunner.query(`
             CREATE TABLE "ticket" (
                 "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-                "identifier" varchar NOT NULL,
                 "block" varchar NOT NULL,
                 "height" integer NOT NULL,
+                "extractor" varchar NOT NULL,
+                "identifier" varchar NOT NULL,
+                "serialized" varchar NOT NULL,
                 "spendBlock" varchar,
                 "spendHeight" integer,
-                "extractor" varchar NOT NULL,
-                "serialized" varchar NOT NULL,
                 "txId" varchar NOT NULL,
                 "raffleId" varchar NOT NULL,
                 "donatorErgoTree" varchar NOT NULL,
                 "rangeStart" bigint NOT NULL,
                 "rangeEnd" bigint NOT NULL,
-                CONSTRAINT "UQ_bbe68508e13d66e3f552a71b384" UNIQUE ("identifier", "extractor")
+                CONSTRAINT "UQ_aa9ea2c083381587c20d963a122" UNIQUE ("identifier", "extractor")
+            )
+        `);
+    await queryRunner.query(`
+            CREATE TABLE "ticket_redeem" (
+                "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+                "block" varchar NOT NULL,
+                "height" integer NOT NULL,
+                "extractor" varchar NOT NULL,
+                "identifier" varchar NOT NULL,
+                "serialized" varchar NOT NULL,
+                "spendBlock" varchar,
+                "spendHeight" integer,
+                "txId" varchar NOT NULL,
+                "raffleId" varchar NOT NULL,
+                "totalSoldTicket" bigint NOT NULL,
+                "redeemedTickets" bigint NOT NULL,
+                CONSTRAINT "UQ_2bdadc72ec3dfd1be75ffcf3a22" UNIQUE ("identifier", "extractor")
+            )
+        `);
+    await queryRunner.query(`
+            CREATE TABLE "winner" (
+                "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+                "block" varchar NOT NULL,
+                "height" integer NOT NULL,
+                "extractor" varchar NOT NULL,
+                "identifier" varchar NOT NULL,
+                "serialized" varchar NOT NULL,
+                "spendBlock" varchar,
+                "spendHeight" integer,
+                "txId" varchar NOT NULL,
+                "raffleId" varchar NOT NULL,
+                "index" integer NOT NULL,
+                "rewardPercent" integer NOT NULL,
+                CONSTRAINT "UQ_36fc5486912c1b246171926e467" UNIQUE ("identifier", "extractor")
             )
         `);
     await queryRunner.query(`
             CREATE TABLE "winner_prize" (
                 "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-                "identifier" varchar NOT NULL,
                 "block" varchar NOT NULL,
                 "height" integer NOT NULL,
+                "extractor" varchar NOT NULL,
+                "identifier" varchar NOT NULL,
+                "serialized" varchar NOT NULL,
                 "spendBlock" varchar,
                 "spendHeight" integer,
-                "extractor" varchar NOT NULL,
-                "serialized" varchar NOT NULL,
                 "txId" varchar NOT NULL,
                 "raffleId" varchar NOT NULL,
                 "winnerTicketIndex" varchar NOT NULL,
                 "giftCount" integer NOT NULL,
                 "winnerIndex" integer NOT NULL,
                 "unwrappedGiftCount" integer NOT NULL,
-                CONSTRAINT "UQ_40b396281b1862b726dec60d004" UNIQUE ("identifier", "extractor")
-            )
-        `);
-    await queryRunner.query(`
-            CREATE TABLE "gift_redeem" (
-                "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-                "identifier" varchar NOT NULL,
-                "block" varchar NOT NULL,
-                "height" integer NOT NULL,
-                "spendBlock" varchar,
-                "spendHeight" integer,
-                "extractor" varchar NOT NULL,
-                "serialized" varchar NOT NULL,
-                "txId" varchar NOT NULL,
-                "raffleId" varchar NOT NULL,
-                "step" integer NOT NULL,
-                CONSTRAINT "UQ_05196092114924cb259bf14225f" UNIQUE ("identifier", "extractor")
-            )
-        `);
-    await queryRunner.query(`
-            CREATE TABLE "success_raffle" (
-                "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-                "identifier" varchar NOT NULL,
-                "block" varchar NOT NULL,
-                "height" integer NOT NULL,
-                "spendBlock" varchar,
-                "spendHeight" integer,
-                "extractor" varchar NOT NULL,
-                "serialized" varchar NOT NULL,
-                "txId" varchar NOT NULL,
-                "raffleId" varchar NOT NULL,
-                "selectedWinnersList" varchar NOT NULL,
-                "step" integer NOT NULL,
-                CONSTRAINT "UQ_0ed7139d373997bb0e225f9361b" UNIQUE ("identifier", "extractor")
-            )
-        `);
-    await queryRunner.query(`
-            CREATE TABLE "ticket_redeem" (
-                "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-                "identifier" varchar NOT NULL,
-                "block" varchar NOT NULL,
-                "height" integer NOT NULL,
-                "spendBlock" varchar,
-                "spendHeight" integer,
-                "extractor" varchar NOT NULL,
-                "serialized" varchar NOT NULL,
-                "txId" varchar NOT NULL,
-                "raffleId" varchar NOT NULL,
-                "totalSoldTicket" bigint NOT NULL,
-                "redeemedTickets" bigint NOT NULL,
-                CONSTRAINT "UQ_a27c93626c8e7726ff26215b9fe" UNIQUE ("identifier", "extractor")
-            )
-        `);
-    await queryRunner.query(`
-            CREATE TABLE "safe_pay" (
-                "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-                "identifier" varchar NOT NULL,
-                "block" varchar NOT NULL,
-                "height" integer NOT NULL,
-                "spendBlock" varchar,
-                "spendHeight" integer,
-                "extractor" varchar NOT NULL,
-                "serialized" varchar NOT NULL,
-                "txId" varchar NOT NULL,
-                "recipient" varchar NOT NULL,
-                CONSTRAINT "UQ_b5ebf734c46db80ec6757d2ab3f" UNIQUE ("identifier", "extractor")
+                CONSTRAINT "UQ_1c3eb64d3ed8435c9eb69d41005" UNIQUE ("identifier", "extractor")
             )
         `);
     await queryRunner.query(`
@@ -298,25 +370,28 @@ export class Sqlite1765798898052 implements MigrationInterface {
             DROP TABLE "temporary_picture"
         `);
     await queryRunner.query(`
-            DROP TABLE "safe_pay"
+            DROP TABLE "winner_prize"
+        `);
+    await queryRunner.query(`
+            DROP TABLE "winner"
         `);
     await queryRunner.query(`
             DROP TABLE "ticket_redeem"
         `);
     await queryRunner.query(`
-            DROP TABLE "success_raffle"
-        `);
-    await queryRunner.query(`
-            DROP TABLE "gift_redeem"
-        `);
-    await queryRunner.query(`
-            DROP TABLE "winner_prize"
-        `);
-    await queryRunner.query(`
             DROP TABLE "ticket"
         `);
     await queryRunner.query(`
-            DROP TABLE "gift"
+            DROP TABLE "success_raffle"
+        `);
+    await queryRunner.query(`
+            DROP TABLE "service"
+        `);
+    await queryRunner.query(`
+            DROP TABLE "safe_pay"
+        `);
+    await queryRunner.query(`
+            DROP TABLE "raffle_box"
         `);
     await queryRunner.query(`
             DROP TABLE "picture"
@@ -325,16 +400,22 @@ export class Sqlite1765798898052 implements MigrationInterface {
             DROP TABLE "raffle_details"
         `);
     await queryRunner.query(`
-            DROP TABLE "winner"
-        `);
-    await queryRunner.query(`
-            DROP TABLE "raffle_box"
-        `);
-    await queryRunner.query(`
             DROP TABLE "inactive_raffle"
         `);
     await queryRunner.query(`
-            DROP TABLE "service"
+            DROP TABLE "gift_redeem"
+        `);
+    await queryRunner.query(`
+            DROP TABLE "gift"
+        `);
+    await queryRunner.query(`
+            DROP TABLE "donation_proxy"
+        `);
+    await queryRunner.query(`
+            DROP TABLE "creation_proxy"
+        `);
+    await queryRunner.query(`
+            DROP TABLE "add_gift_proxy"
         `);
   }
 }
