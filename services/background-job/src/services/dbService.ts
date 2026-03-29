@@ -27,6 +27,9 @@ import {
   TicketRedeemEntity,
   SafePayEntity,
   ServiceEntity,
+  DonationProxyEntity,
+  CreationProxyEntity,
+  AddGiftProxyEntity,
 } from '@ergo-raffle/extractors';
 
 export class DbService extends AbstractService {
@@ -293,6 +296,48 @@ export class DbService extends AbstractService {
     return this.dataSource.getRepository(SafePayEntity).find({
       where: {
         ...(identifier ? { identifier } : {}),
+        spendBlock: IsNull(),
+      },
+    });
+  };
+
+  /**
+   * Get the unspent donation proxy boxes
+   * @param boxId - The box id
+   * @returns The donation proxy boxes
+   */
+  getDonationProxyBoxes = (boxId?: string): Promise<DonationProxyEntity[]> => {
+    return this.dataSource.getRepository(DonationProxyEntity).find({
+      where: {
+        ...(boxId ? { identifier: boxId } : {}),
+        spendBlock: IsNull(),
+      },
+    });
+  };
+
+  /**
+   * Get the unspent creation proxy boxes
+   * @param boxId - The box id
+   * @returns The creation proxy boxes
+   */
+  getCreationProxyBoxes = (boxId?: string): Promise<CreationProxyEntity[]> => {
+    return this.dataSource.getRepository(CreationProxyEntity).find({
+      where: {
+        ...(boxId ? { identifier: boxId } : {}),
+        spendBlock: IsNull(),
+      },
+    });
+  };
+
+  /**
+   * Get the unspent add-gift proxy boxes
+   * @param boxId - The box id
+   * @returns The add-gift proxy boxes
+   */
+  getAddGiftProxyBoxes = (boxId?: string): Promise<AddGiftProxyEntity[]> => {
+    return this.dataSource.getRepository(AddGiftProxyEntity).find({
+      where: {
+        ...(boxId ? { identifier: boxId } : {}),
         spendBlock: IsNull(),
       },
     });

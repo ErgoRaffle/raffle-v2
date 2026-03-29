@@ -1,5 +1,6 @@
 export const ERGO_CHAIN_NAME = 'ergo';
 export const ERGO_BLOCK_TIME = 120;
+export const ERG_TOKEN_ID = 'erg';
 
 export const TICKET_TOKEN_COUNT = BigInt(1e18);
 

@@ -24,6 +24,9 @@ import {
   SuccessRaffleExtractor,
   TicketRedeemExtractor,
   SafePayExtractor,
+  AddGiftProxyExtractor,
+  DonationProxyExtractor,
+  CreationProxyExtractor,
 } from '@ergo-raffle/extractors';
 
 import { configs } from '../config';
@@ -57,7 +60,7 @@ export class ScannerService extends AbstractService {
       network: new ErgoNodeNetwork(this.scannerConfig.node.url),
       initialHeight: this.scannerConfig.node.initialHeight,
       dataSource: DbService.getInstance().dataSource,
-      logger: DefaultLogger.getInstance().child('raffle-scanner'),
+      logger: DefaultLogger.getInstance().child('ergoScanner'),
     });
   }
 
@@ -77,7 +80,7 @@ export class ScannerService extends AbstractService {
         active: false,
       },
       raffleInfo.tokens.serviceNft,
-      DefaultLogger.getInstance().child('raffle-service-extractor'),
+      DefaultLogger.getInstance().child('serviceExtractor'),
     );
     await this.ergoScanner.registerExtractor(raffleServiceExtractor);
 
@@ -92,7 +95,7 @@ export class ScannerService extends AbstractService {
       },
       configs.addresses.serviceFeeAddress,
       raffleInfo.tokens.raffleLicense,
-      DefaultLogger.getInstance().child('raffle-inactiveRaffle-extractor'),
+      DefaultLogger.getInstance().child('inactiveRaffleExtractor'),
     );
     await this.ergoScanner.registerExtractor(inactiveRaffleExtractor);
 
@@ -105,7 +108,7 @@ export class ScannerService extends AbstractService {
         address: raffleInfo.addresses.ticketRepo,
         active: false,
       },
-      DefaultLogger.getInstance().child('raffle-ticketRepo-extractor'),
+      DefaultLogger.getInstance().child('ticketRepoExtractor'),
     );
     await this.ergoScanner.registerExtractor(ticketRepoExtractor);
 
@@ -119,7 +122,7 @@ export class ScannerService extends AbstractService {
         active: false,
       },
       raffleInfo.tokens.raffleLicense,
-      DefaultLogger.getInstance().child('raffle-activeRaffle-extractor'),
+      DefaultLogger.getInstance().child('activeRaffleExtractor'),
     );
     await this.ergoScanner.registerExtractor(activeRaffleExtractor);
 
@@ -132,7 +135,7 @@ export class ScannerService extends AbstractService {
         address: raffleInfo.addresses.giftTokenRepo,
         active: false,
       },
-      DefaultLogger.getInstance().child('raffle-giftTokenRepo-extractor'),
+      DefaultLogger.getInstance().child('giftTokenRepoExtractor'),
     );
     await this.ergoScanner.registerExtractor(giftTokenRepoExtractor);
 
@@ -145,7 +148,7 @@ export class ScannerService extends AbstractService {
         address: raffleInfo.addresses.winner,
         active: false,
       },
-      DefaultLogger.getInstance().child('raffle-winner-extractor'),
+      DefaultLogger.getInstance().child('winnerExtractor'),
     );
     await this.ergoScanner.registerExtractor(winnerExtractor);
 
@@ -158,7 +161,7 @@ export class ScannerService extends AbstractService {
         address: raffleInfo.addresses.raffleDetails,
         active: false,
       },
-      DefaultLogger.getInstance().child('raffle-details-extractor'),
+      DefaultLogger.getInstance().child('raffleDetailsExtractor'),
     );
     await this.ergoScanner.registerExtractor(raffleDetailsExtractor);
 
@@ -171,7 +174,7 @@ export class ScannerService extends AbstractService {
         address: raffleInfo.addresses.gift,
         active: false,
       },
-      DefaultLogger.getInstance().child('raffle-gift-extractor'),
+      DefaultLogger.getInstance().child('giftExtractor'),
     );
     await this.ergoScanner.registerExtractor(giftExtractor);
 
@@ -184,7 +187,7 @@ export class ScannerService extends AbstractService {
         address: raffleInfo.addresses.ticket,
         active: false,
       },
-      DefaultLogger.getInstance().child('raffle-ticket-extractor'),
+      DefaultLogger.getInstance().child('ticketExtractor'),
     );
     await this.ergoScanner.registerExtractor(ticketExtractor);
 
@@ -197,7 +200,7 @@ export class ScannerService extends AbstractService {
         address: raffleInfo.addresses.winnerPrize,
         active: false,
       },
-      DefaultLogger.getInstance().child('raffle-winnerPrize-extractor'),
+      DefaultLogger.getInstance().child('winnerPrizeExtractor'),
     );
     await this.ergoScanner.registerExtractor(winnerPrize);
 
@@ -211,7 +214,7 @@ export class ScannerService extends AbstractService {
         active: false,
       },
       raffleInfo.tokens.raffleLicense,
-      DefaultLogger.getInstance().child('raffle-giftRedeem-extractor'),
+      DefaultLogger.getInstance().child('giftRedeemExtractor'),
     );
     await this.ergoScanner.registerExtractor(giftRedeem);
 
@@ -225,7 +228,7 @@ export class ScannerService extends AbstractService {
         active: false,
       },
       raffleInfo.tokens.raffleLicense,
-      DefaultLogger.getInstance().child('raffle-successRaffle-extractor'),
+      DefaultLogger.getInstance().child('successRaffleExtractor'),
     );
     await this.ergoScanner.registerExtractor(successRaffle);
 
@@ -239,7 +242,7 @@ export class ScannerService extends AbstractService {
         active: false,
       },
       raffleInfo.tokens.raffleLicense,
-      DefaultLogger.getInstance().child('raffle-ticketRedeem-extractor'),
+      DefaultLogger.getInstance().child('ticketRedeemExtractor'),
     );
     await this.ergoScanner.registerExtractor(ticketRedeem);
 
@@ -253,9 +256,48 @@ export class ScannerService extends AbstractService {
         active: false,
       },
       raffleInfo.addresses.successRaffle,
-      DefaultLogger.getInstance().child('raffle-safePay-extractor'),
+      DefaultLogger.getInstance().child('safePayExtractor'),
     );
     await this.ergoScanner.registerExtractor(safePayExtractor);
+
+    const addGiftProxyExtractor = new AddGiftProxyExtractor(
+      DbService.getInstance().dataSource,
+      'AddGiftProxy',
+      {
+        type: ErgoNetworkType.Node,
+        url: this.scannerConfig.node.url,
+        address: raffleInfo.addresses.addGiftProxy,
+        active: false,
+      },
+      DefaultLogger.getInstance().child('addGiftProxyExtractor'),
+    );
+    await this.ergoScanner.registerExtractor(addGiftProxyExtractor);
+
+    const donationProxyExtractor = new DonationProxyExtractor(
+      DbService.getInstance().dataSource,
+      'DonationProxy',
+      {
+        type: ErgoNetworkType.Node,
+        url: this.scannerConfig.node.url,
+        address: raffleInfo.addresses.donationProxy,
+        active: false,
+      },
+      DefaultLogger.getInstance().child('donationProxyExtractor'),
+    );
+    await this.ergoScanner.registerExtractor(donationProxyExtractor);
+
+    const creationProxyExtractor = new CreationProxyExtractor(
+      DbService.getInstance().dataSource,
+      'CreationProxy',
+      {
+        type: ErgoNetworkType.Node,
+        url: this.scannerConfig.node.url,
+        address: raffleInfo.addresses.creationProxy,
+        active: false,
+      },
+      DefaultLogger.getInstance().child('creationProxyExtractor'),
+    );
+    await this.ergoScanner.registerExtractor(creationProxyExtractor);
   };
 
   /**
