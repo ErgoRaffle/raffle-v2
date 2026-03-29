@@ -190,6 +190,16 @@
   "ergo": {
     "type": "object",
     "children": {
+      "mnemonic": {
+        "type": "string",
+        "description": "Ergo wallet mnemonic",
+        "validations": [
+          {
+            "required": true,
+            "error": "Ergo wallet mnemonic must be specified"
+          }
+        ]
+      },
       "fee": {
         "type": "bigint",
         "default": 1500000,
@@ -198,6 +208,16 @@
           {
             "required": true,
             "error": "ergo transaction fee must be specified"
+          }
+        ]
+      },
+      "nodeUrl": {
+        "type": "string",
+        "description": "Ergo node URL",
+        "validations": [
+          {
+            "required": true,
+            "error": "Ergo node URL must be specified"
           }
         ]
       }

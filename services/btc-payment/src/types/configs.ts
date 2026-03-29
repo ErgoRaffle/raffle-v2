@@ -34,7 +34,9 @@ export interface Api {
 }
 
 export interface Ergo {
+  mnemonic: string;
   fee: bigint;
+  nodeUrl: string;
 }
 
 export interface Bitcoin {

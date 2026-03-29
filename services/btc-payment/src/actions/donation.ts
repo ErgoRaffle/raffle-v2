@@ -89,10 +89,15 @@ class DonationAction {
    * Update donation request status.
    * @param id - The donation request id
    * @param status - The new status
+   * @param donationTxId - The donation transaction id
    * @returns The updated donation request
    */
-  updateStatus = async (id: number, status: DonationStatus): Promise<void> => {
-    await this.repository.update({ id }, { status });
+  updateStatus = async (
+    id: number,
+    status: DonationStatus,
+    donationTxId?: string,
+  ): Promise<void> => {
+    await this.repository.update({ id }, { status, donationTxId });
   };
 }
 
