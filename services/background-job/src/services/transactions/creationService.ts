@@ -104,13 +104,25 @@ export class CreationService extends AbstractTxService {
       return;
     }
 
-    if (!(await this.isCoveringRequest(proxyBox, creationProxyEntity))) {
+    if (
+      creationProxyEntity.expirationHeight < (await this.network.getHeight())
+    ) {
       this.logger.info(
-        `Proxy boxes are not covering the request, redeeming proxy boxes and skipping creation transaction`,
+        `Creation proxy box ${proxyBox.boxId} has expired, redeeming proxy box and skipping creation transaction`,
       );
       await this.redeemProxy(proxyBox, creationProxyEntity);
       return;
     }
+
+    if (!(await this.isCoveringRequest(proxyBox, creationProxyEntity))) {
+      this.logger.info(
+        `Proxy boxes are not covering the request, skipping creation transaction and waiting for proxy box expiration`,
+      );
+      return;
+    }
+    this.logger.debug(
+      `Creation proxy box ${proxyBox.boxId} is covering the request, building creation transaction`,
+    );
 
     const serviceBox = await findServiceBox(unspentBoxes);
     if (!serviceBox) {

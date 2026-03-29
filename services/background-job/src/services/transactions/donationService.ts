@@ -174,13 +174,25 @@ export class DonationService extends AbstractTxService {
       return;
     }
 
-    if (!(await this.isCoveringRequest(proxyBox, donationProxyEntity))) {
+    if (
+      donationProxyEntity.expirationHeight < (await this.network.getHeight())
+    ) {
       this.logger.info(
-        `Proxy box ${proxyBox.boxId} is not covering the request, redeeming proxy box and skipping donation transaction`,
+        `Donation proxy box ${proxyBox.boxId} has expired, redeeming proxy box and skipping donation transaction`,
       );
       await this.redeemProxy(proxyBox, donationProxyEntity);
       return;
     }
+
+    if (!(await this.isCoveringRequest(proxyBox, donationProxyEntity))) {
+      this.logger.info(
+        `Proxy box ${proxyBox.boxId} is not covering the request, skipping donation transaction and waiting for proxy box expiration`,
+      );
+      return;
+    }
+    this.logger.debug(
+      `Donation proxy box ${proxyBox.boxId} is covering the request, building donation transaction`,
+    );
 
     // Find the active raffle box
     const activeRaffleBox = await findActiveRaffle(

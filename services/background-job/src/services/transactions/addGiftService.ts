@@ -92,14 +92,23 @@ export class AddGiftService extends AbstractTxService {
       );
       return;
     }
-
-    if (!this.isCoveringRequest(proxyBox, addGiftEntity)) {
+    if (addGiftEntity.expirationHeight < (await this.network.getHeight())) {
       this.logger.info(
-        `Proxy boxes are not covering the request, redeeming proxy boxes and skipping add gift transaction`,
+        `AddGift proxy box ${proxyBox.boxId} has expired, redeeming proxy box and skipping add gift transaction`,
       );
       await this.redeemProxy(proxyBox, addGiftEntity);
       return;
     }
+
+    if (!this.isCoveringRequest(proxyBox, addGiftEntity)) {
+      this.logger.info(
+        `Proxy boxes are not covering the request, skipping add gift transaction and waiting for proxy box expiration`,
+      );
+      return;
+    }
+    this.logger.debug(
+      `AddGift proxy box ${proxyBox.boxId} is covering the request, building add gift transaction`,
+    );
 
     const winnerBox = await findWinner(
       unspentBoxes,
