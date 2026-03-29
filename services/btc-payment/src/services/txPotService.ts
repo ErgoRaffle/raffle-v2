@@ -61,7 +61,6 @@ export class TxPotService extends AbstractService {
    */
   protected start = async (): Promise<boolean> => {
     this.setStatus(ServiceStatus.running);
-    this.logger.info('TxPotService started');
     return true;
   };
 

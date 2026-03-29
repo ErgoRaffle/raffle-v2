@@ -21,7 +21,7 @@ export class Migration1772393782627 implements MigrationInterface {
                 "bitcoinAddress" character varying NOT NULL,
                 "timestamp" integer NOT NULL,
                 "status" "public"."donation_params_status_enum" NOT NULL,
-                "donationTxId" character varying NOT NULL,
+                "donationTxId" character varying,
                 CONSTRAINT "PK_e40e6a1cd95b87179d0f920850f" PRIMARY KEY ("id")
             )
         `);
