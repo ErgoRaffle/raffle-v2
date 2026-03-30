@@ -7,30 +7,23 @@ import {
 } from '@rosen-bridge/service-manager';
 
 import packageJson from '../../../package.json' with { type: 'json' };
-import { AddressDeriver } from '../../bitcoin/addressDeriver';
-import { configs } from '../../configs';
 import * as ConfigTypes from '../../types/configs';
 import { DbService } from '../dbService';
 import { ScannerService } from '../scannerService';
-import { registerDonationRoute } from './donationRoute';
+import { registerHealthRoute } from './healthRoute';
 
 export class ApiService extends AbstractService {
   name = 'ApiService';
   private static instance?: ApiService;
   private fastify?: FastifyWithZod;
-  private addressDeriver: AddressDeriver;
 
   private constructor(
     private apiConfig: ConfigTypes.Api,
     logger?: AbstractLogger,
   ) {
     super(logger);
-    this.addressDeriver = new AddressDeriver(configs.bitcoin);
   }
 
-  /**
-   * Initialitypeses the singleton instance of ApiService
-   */
   static init = (apiConfig: ConfigTypes.Api, logger?: AbstractLogger) => {
     if (this.instance != undefined) {
       return;
@@ -38,12 +31,9 @@ export class ApiService extends AbstractService {
     this.instance = new ApiService(apiConfig, logger);
   };
 
-  /**
-   * Returns the singleton instance of ApiService
-   */
   static getInstance = (): ApiService => {
     if (!this.instance) {
-      throw new Error('ApiService instance is not initialitypesed yet');
+      throw new Error('ApiService instance is not initialized yet');
     }
     return this.instance;
   };
@@ -59,23 +49,19 @@ export class ApiService extends AbstractService {
     },
   ];
 
-  /**
-   * Starts the service: initialitypeses Fastify with Swagger and starts the server
-   */
   protected start = async (): Promise<boolean> => {
     try {
       this.setStatus(ServiceStatus.started);
       this.fastify = await makeFastify(
         {
           path: '/swagger',
-          title: 'BTC Payment API',
-          description: 'API for ErgoRaffle BTC payment operations',
+          title: 'Ergo Raffle Background Job API',
+          description: 'API for Ergo Raffle background job service',
           version: packageJson.version,
         },
         { logger: true },
       );
 
-      // Register routes
       await this.registerRoutes();
 
       await this.fastify.listen({
@@ -94,9 +80,6 @@ export class ApiService extends AbstractService {
     return true;
   };
 
-  /**
-   * Stops the service: closes the Fastify server
-   */
   protected stop = async (): Promise<boolean> => {
     try {
       await this.fastify?.close();
@@ -111,16 +94,8 @@ export class ApiService extends AbstractService {
     return true;
   };
 
-  /**
-   * Registers all API routes with their schemas
-   */
   private registerRoutes = async (): Promise<void> => {
     if (!this.fastify) return;
-    registerDonationRoute(
-      this.fastify,
-      this.logger.child('donationRoute'),
-      this.addressDeriver,
-      ScannerService.getInstance().addDynamicAddress,
-    );
+    registerHealthRoute(this.fastify);
   };
 }

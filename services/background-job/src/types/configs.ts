@@ -1,5 +1,6 @@
 export interface BackgroundJobConfig {
   addresses: Addresses;
+  api: Api;
   boxLookup: BoxLookup;
   notification: Notification;
   healthCheck: HealthCheck;
@@ -8,6 +9,11 @@ export interface BackgroundJobConfig {
   scanner: Scanner;
   database: Database;
   logs: Logs[];
+}
+
+export interface Api {
+  host: string;
+  port: number;
 }
 
 export interface Logs {

@@ -9,6 +9,7 @@ import {
 
 import { configs } from '../config';
 import dataSource from '../dataSource';
+import { ApiService } from './apiService';
 import { BoxLookupService } from './boxLookup/boxLookupService';
 import { DbService } from './dbService';
 import { HealthCheckService } from './healthCheckService';
@@ -88,6 +89,10 @@ export class InitializerService extends AbstractService {
     },
     {
       serviceName: BoxLookupService.name,
+      allowedStatuses: [ServiceStatus.running],
+    },
+    {
+      serviceName: ApiService.name,
       allowedStatuses: [ServiceStatus.running],
     },
     {
@@ -244,6 +249,9 @@ export class InitializerService extends AbstractService {
     this.logger.debug('Box lookup service initialized');
 
     // Initialize API service
+    this.logger.debug('Initializing API service');
+    const apiLogger = defaultLogger.child('ApiService');
+    ApiService.init(configs.api, apiLogger);
     this.logger.debug('API service initialized');
 
     // Initialize all transaction services
@@ -288,6 +296,7 @@ export class InitializerService extends AbstractService {
     this.serviceManager.register(TxPotService.getInstance());
     this.serviceManager.register(HealthCheckService.getInstance());
     this.serviceManager.register(BoxLookupService.getInstance());
+    this.serviceManager.register(ApiService.getInstance());
     this.serviceManager.register(ActivationService.getInstance());
     this.serviceManager.register(GiftTokenReceiptService.getInstance());
     // TODO: Fix Action Services
