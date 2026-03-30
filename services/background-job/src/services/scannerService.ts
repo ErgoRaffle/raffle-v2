@@ -77,7 +77,7 @@ export class ScannerService extends AbstractService {
         type: ErgoNetworkType.Node,
         url: this.scannerConfig.node.url,
         address: raffleInfo.addresses.service,
-        active: false,
+        active: true,
       },
       raffleInfo.tokens.serviceNft,
       DefaultLogger.getInstance().child('serviceExtractor'),

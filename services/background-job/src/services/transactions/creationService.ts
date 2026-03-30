@@ -152,7 +152,7 @@ export class CreationService extends AbstractTxService {
         creationProxyEntity.winnersPercentList.split(',').map(BigInt),
       )
       .setImplementerErgoTree(creationProxyEntity.implementerErgoTree)
-      .setOrganizerErgoTree(creationProxyEntity.creatorErgoTree)
+      .setOrganizerErgoTree(creationProxyEntity.organizerErgoTree)
       .setInactiveRaffleValue(proxyBox.value - creationProxyEntity.txFee * 4n)
       .setChainHeight(chainHeight)
       .setTxFee(configs.ergo.fee)
@@ -247,17 +247,17 @@ export class CreationService extends AbstractTxService {
     box: ErgoBox,
     entity: CreationProxyEntity,
   ): Promise<void> => {
-    const creatorAddress = ErgoAddress.fromErgoTree(
-      entity.creatorErgoTree,
+    const organizerAddress = ErgoAddress.fromErgoTree(
+      entity.organizerErgoTree,
     ).toString();
     const redeemTx = new TransactionBuilder(await this.network.getHeight())
       .from([box])
       .payFee(entity.txFee)
-      .sendChangeTo(creatorAddress)
+      .sendChangeTo(organizerAddress)
       .build();
     await signAndAddTx(this.network, redeemTx, TxType.RedeemProxy);
     this.logger.info(
-      `Proxy box ${box.boxId} has been redeemed to ${creatorAddress} (txId: [${redeemTx.id}])`,
+      `Proxy box ${box.boxId} has been redeemed to ${organizerAddress} (txId: [${redeemTx.id}])`,
     );
   };
 }

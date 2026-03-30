@@ -45,7 +45,8 @@ export interface CreationProxyBoxInterface extends AbstractEntityData {
   goal: bigint;
   txFee: bigint;
   implementerErgoTree: string;
-  creatorErgoTree: string;
+  organizerErgoTree: string;
+  projectErgoTree: string;
   winnersPercentList: string;
   collectingTokenId: string;
   name: string;

@@ -121,7 +121,7 @@ export class AddGiftService extends AbstractTxService {
       );
       return;
     }
-    this.logger.info(
+    this.logger.debug(
       `Winner box found with id [${winnerBox.boxId}], building add gift transaction`,
     );
 
