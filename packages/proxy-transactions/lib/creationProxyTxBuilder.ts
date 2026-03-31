@@ -386,12 +386,13 @@ export class CreationProxyTxBuilder {
 
     // The first input is the fee box that contains the winners percentage list and the implementer and creator ErgoTrees.
     const firstInput = new ErgoUnsignedInput(selectedFeeBoxes[0]!);
+    const projectErgoTree = this.projectErgoTree ?? this.organizerErgoTree!;
     firstInput.setContextExtension({
       0: SColl(SLong, this.winnersPercentList!),
       1: SColl(SColl(SByte), [
         Array.from(Buffer.from(this.implementerErgoTree!, 'hex')),
         Array.from(Buffer.from(this.organizerErgoTree!, 'hex')),
-        Array.from(Buffer.from(this.projectErgoTree!, 'hex')),
+        Array.from(Buffer.from(projectErgoTree, 'hex')),
       ]),
     });
     const proxyBox = this.buildCreationProxyBox();
