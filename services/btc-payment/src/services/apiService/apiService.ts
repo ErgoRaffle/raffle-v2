@@ -11,6 +11,7 @@ import { AddressDeriver } from '../../bitcoin/addressDeriver';
 import { configs } from '../../configs';
 import * as ConfigTypes from '../../types/configs';
 import { DbService } from '../dbService';
+import { ScannerService } from '../scannerService';
 import { registerDonationRoute } from './donationRoute';
 
 export class ApiService extends AbstractService {
@@ -50,6 +51,10 @@ export class ApiService extends AbstractService {
   protected dependencies: Dependency[] = [
     {
       serviceName: DbService.name,
+      allowedStatuses: [ServiceStatus.running],
+    },
+    {
+      serviceName: ScannerService.name,
       allowedStatuses: [ServiceStatus.running],
     },
   ];
@@ -115,6 +120,7 @@ export class ApiService extends AbstractService {
       this.fastify,
       this.logger.child('donationRoute'),
       this.addressDeriver,
+      ScannerService.getInstance().addDynamicAddress,
     );
   };
 }

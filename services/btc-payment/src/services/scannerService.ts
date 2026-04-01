@@ -141,4 +141,11 @@ export class ScannerService extends PeriodicTaskService {
   removeDynamicAddress = (address: string) => {
     this.dynamicExtractor.removeAddress(address);
   };
+
+  /**
+   * Get the name of the Bitcoin scanner.
+   */
+  getBitcoinScannerName = (): string => {
+    return this.bitcoinScanner.name();
+  };
 }

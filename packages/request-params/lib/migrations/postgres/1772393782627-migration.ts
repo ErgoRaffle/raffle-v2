@@ -8,7 +8,7 @@ export class Migration1772393782627 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-            CREATE TYPE "public"."donation_params_status_enum" AS ENUM('pending', 'completed', 'timedout')
+            CREATE TYPE "public"."donation_params_status_enum" AS ENUM('pending', 'in_progress', 'completed', 'timed_out')
         `);
     await queryRunner.query(`
             CREATE TABLE "donation_params" (
@@ -21,6 +21,7 @@ export class Migration1772393782627 implements MigrationInterface {
                 "bitcoinAddress" character varying NOT NULL,
                 "timestamp" integer NOT NULL,
                 "status" "public"."donation_params_status_enum" NOT NULL,
+                "donationTxId" character varying,
                 CONSTRAINT "PK_e40e6a1cd95b87179d0f920850f" PRIMARY KEY ("id")
             )
         `);
