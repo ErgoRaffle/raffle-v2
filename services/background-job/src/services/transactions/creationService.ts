@@ -1,4 +1,4 @@
-import { ErgoAddress, ErgoBox, TransactionBuilder } from '@fleet-sdk/core';
+import { ErgoBox, OutputBuilder, TransactionBuilder } from '@fleet-sdk/core';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 
 import { raffleInfo } from '@ergo-raffle/contracts';
@@ -247,17 +247,23 @@ export class CreationService extends AbstractTxService {
     box: ErgoBox,
     entity: CreationProxyEntity,
   ): Promise<void> => {
-    const organizerAddress = ErgoAddress.fromErgoTree(
+    const organizerRefundBox = new OutputBuilder(
+      BigInt(box.value) - entity.txFee,
       entity.organizerErgoTree,
-    ).toString();
+    ).addTokens(
+      box.assets.map((asset) => ({
+        tokenId: asset.tokenId,
+        amount: BigInt(asset.amount),
+      })),
+    );
     const redeemTx = new TransactionBuilder(await this.network.getHeight())
       .from([box])
+      .to([organizerRefundBox])
       .payFee(entity.txFee)
-      .sendChangeTo(organizerAddress)
       .build();
     await signAndAddTx(this.network, redeemTx, TxType.RedeemProxy);
     this.logger.info(
-      `Proxy box ${box.boxId} has been redeemed to ${organizerAddress} (txId: [${redeemTx.id}])`,
+      `Proxy box ${box.boxId} has been redeemed to ${entity.organizerErgoTree} (txId: [${redeemTx.id}])`,
     );
   };
 }
