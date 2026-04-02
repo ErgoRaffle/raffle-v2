@@ -17,8 +17,8 @@ export class Migration1772390164875 implements MigrationInterface {
                 "donatorAddress" varchar NOT NULL,
                 "bitcoinAddress" varchar NOT NULL,
                 "timestamp" integer NOT NULL,
-                "status" varchar CHECK("status" IN ('pending', 'in_progress', 'completed', 'timed_out')) NOT NULL
                 "donationTxId" varchar,
+                "status" varchar CHECK("status" IN ('pending', 'in_progress', 'completed', 'timed_out')) NOT NULL
             )
         `);
   }

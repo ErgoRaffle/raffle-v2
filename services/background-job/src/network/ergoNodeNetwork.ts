@@ -13,7 +13,7 @@ import {
   BlockchainParameters,
 } from 'sigmastate-js/main';
 
-import { TX_FETCHING_PAGE_SIZE } from '../constants';
+import { FETCH_PAGE_SIZE } from '../constants';
 import { FailedError } from './error';
 import handleApiError from './utils';
 
@@ -95,8 +95,8 @@ class ErgoNodeNetwork {
 
     while (true) {
       const txsPage = await this.client.getUnconfirmedTransactions({
-        offset: currentPage * TX_FETCHING_PAGE_SIZE,
-        limit: TX_FETCHING_PAGE_SIZE,
+        offset: currentPage * FETCH_PAGE_SIZE,
+        limit: FETCH_PAGE_SIZE,
       });
 
       if (txsPage.length) {
@@ -243,6 +243,74 @@ class ErgoNodeNetwork {
         }),
     );
   };
+
+  /**
+   * Fetches unspent boxes of an address while considering current mempool state
+   * Boxes spent in mempool are excluded
+   * @param address
+   * @param limit
+   * @param offset
+   * @returns Fleet `ErgoBox` instances for this page.
+   */
+  getUnspentBoxesByAddress = async (
+    address: string,
+    limit: number,
+    offset: number,
+  ): Promise<ErgoBox[]> => {
+    const boxes = await this.client.getBoxesByAddressUnspent(address, {
+      limit,
+      offset,
+      includeUnconfirmed: true,
+      excludeMempoolSpent: true,
+      sortDirection: 'desc',
+    });
+
+    this.logger.debug(
+      `requested 'getBoxesByAddressUnspent' for address [${address}]. returned ${boxes.length} boxes`,
+    );
+
+    return boxes.map(
+      (box) =>
+        new ErgoBox({
+          ...box,
+          assets: box.assets ?? [],
+          boxId: box.boxId ?? '',
+          index: box.index ?? 0,
+          transactionId: box.transactionId ?? '',
+        }),
+    );
+  };
+
+  /**
+   * Iterates over unspent boxes of an address in pages of API_LIMIT (100)
+   * @param address
+   * @returns Each unspent box from successive node pages until exhausted.
+   */
+  async *unspentBoxesByAddressIterator(
+    address: string,
+  ): AsyncGenerator<ErgoBox> {
+    let offset = 0;
+
+    while (true) {
+      const boxes = await this.getUnspentBoxesByAddress(
+        address,
+        FETCH_PAGE_SIZE,
+        offset,
+      );
+
+      if (boxes.length === 0) {
+        return;
+      }
+
+      yield* boxes;
+
+      if (boxes.length < FETCH_PAGE_SIZE) {
+        return;
+      }
+
+      offset += FETCH_PAGE_SIZE;
+    }
+  }
 }
 
 export default ErgoNodeNetwork;

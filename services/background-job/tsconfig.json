@@ -11,6 +11,7 @@
     { "path": "../../packages/boxes" },
     { "path": "../../packages/transactions" },
     { "path": "../../packages/box-lookup" },
-    { "path": "../../packages/data-source" }
+    { "path": "../../packages/data-source" },
+    { "path": "../../packages/fleet-box-selection" }
   ]
 }

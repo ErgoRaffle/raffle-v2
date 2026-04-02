@@ -4,7 +4,7 @@ export const ERG_TOKEN_ID = 'erg';
 
 export const TICKET_TOKEN_COUNT = BigInt(1e18);
 
-export const TX_FETCHING_PAGE_SIZE = 50;
+export const FETCH_PAGE_SIZE = 50;
 
 export const TICKET_TOKEN_NAME_PREFIX = 'ErgoRaffle-v2: ';
 export const TICKET_TOKEN_DESCRIPTION_PREFIX =

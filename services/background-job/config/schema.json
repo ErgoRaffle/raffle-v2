@@ -357,5 +357,32 @@
         ]
       }
     }
+  },
+  "init": {
+    "type": "object",
+    "children": {
+      "enabeled": {
+        "type": "boolean",
+        "default": false,
+        "description": "enable one-time service box initialization",
+        "validations": [
+          {
+            "required": true,
+            "error": "init enabled must be specified"
+          }
+        ]
+      },
+      "mnemonic": {
+        "type": "string",
+        "description": "mnemonic used for signing service box initialization transaction",
+        "validations": [
+          {
+            "required": true,
+            "when": { "path": "init.enabeled", "value": true },
+            "error": "init mnemonic must be specified when init is enabled"
+          }
+        ]
+      }
+    }
   }
 }

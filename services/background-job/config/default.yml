@@ -30,3 +30,5 @@ healthCheck:
   criticalBlockGap: 10
 boxLookup:
   updateInterval: 60
+init:
+  enabeled: false
