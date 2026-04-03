@@ -25,7 +25,7 @@ import { CreationTxBuilder } from '@ergo-raffle/transactions';
 const builder = new CreationTxBuilder()
   .setServiceBox(serviceBox) // required input box
   .setFeeBoxes([feeBox1, feeBox2]) // input boxes to cover transaction fees
-  .setCreatorAddress(creatorAddress) // base58 address
+  .setOrganizerAddress(creatorAddress) // base58 address
   .setImplementerAddress(implementerAddress)
   .setWinnersCount(3)
   .setDeadline(BigInt(12345678))

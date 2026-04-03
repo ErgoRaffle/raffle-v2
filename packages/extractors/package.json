@@ -5,7 +5,7 @@
   "description": "Raffle v2 related extractors",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ErgoRaffle/raffle-v2"
+    "url": "git+https://github.com/ErgoRaffle/raffle-v2"
   },
   "license": "MIT",
   "author": "Ergo Raffle Team",

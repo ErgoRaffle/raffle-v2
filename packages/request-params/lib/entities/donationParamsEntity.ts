@@ -44,6 +44,6 @@ export class DonationParamsEntity {
   @Column({ type: 'simple-enum', enum: DonationStatus })
   status: DonationStatus;
 
-  @Column({ type: 'string', nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   donationTxId?: string;
 }

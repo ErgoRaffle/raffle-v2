@@ -17,7 +17,7 @@ import { configs } from '../config';
 import ErgoNodeNetwork from '../network/ergoNodeNetwork';
 import { TxPotService } from '../services/txPotService';
 import { BoxValue } from '../types/box';
-import { TxType } from './types';
+import { TxType } from '../types/transaction';
 
 const logger = DefaultLogger.getInstance().child(import.meta.url);
 

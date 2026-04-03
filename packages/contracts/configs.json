@@ -2,10 +2,10 @@
   "giftTokenCount": 2000,
   "ticketExpirationHeight": 100,
   "tokens": {
-    "oracleTokenId": "1cb35150d2d36666a796018f32f7243d993abb83460373b61c6864de541e1825",
-    "serviceNft": "08afaa4d880a4478684574864475f5019cca7388d48f9fd6134cb1698b2e9f39",
-    "raffleLicense": "0b11e85b59888242efdef5d633c01520f30a40bda8f94aef3c99b6496651b29c",
-    "ownerNft": "03ded78892e09666c50822a161ed424b4f5b567ae374f6d7376b77d569d9e33a",
-    "ticketCollectorNft": "22211bdba82c0251fed0a1301be40ae379790db99d769f291dceacdbc6a2fa7c"
+    "oracleTokenId": "1775d3848fecd1f796c2b0e460ab69b2064fd3434ae44c5e5d5f25b29480852d",
+    "serviceNft": "df0ec7bdf63d9997fcaf1ac3dbc013f4efecaa22128c187f32051bffe9540e8b",
+    "raffleLicense": "9c1e469dbac70501638abb20504dfe838c07a71b6df8e0778cb1e4a3ea4d4748",
+    "ownerNft": "41bb96f6d9e841a6947527fb73e03b76f2504ca192e7bf5190e0dc0c96548ff9",
+    "ticketCollectorNft": "c47091274750383f3c3f493f9ce42bcfbd486a7aa10d2ddcb872dbc922cbfdae"
   }
 }

@@ -5,7 +5,7 @@
   "description": "A package to manage raffle boxes creation and utilization",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ErgoRaffle/raffle-v2"
+    "url": "git+https://github.com/ErgoRaffle/raffle-v2"
   },
   "license": "MIT",
   "author": "Ergo Raffle Team",

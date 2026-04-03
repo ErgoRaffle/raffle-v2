@@ -86,7 +86,8 @@ export class CreationProxyExtractor extends AbstractErgoBoxExtractor<
       .slice(2)
       .map((pic) => Buffer.from(pic).toString());
     let implementerErgoTree = '';
-    let creatorErgoTree = '';
+    let organizerErgoTree = '';
+    let projectErgoTree = '';
     let winnersPercentList = '';
     try {
       winnersPercentList = (
@@ -95,7 +96,8 @@ export class CreationProxyExtractor extends AbstractErgoBoxExtractor<
       const ergoTrees = SConstant.from(inputExtensions[0]['1'])
         .data as Uint8Array[];
       implementerErgoTree = Buffer.from(ergoTrees[0]).toString('hex');
-      creatorErgoTree = Buffer.from(ergoTrees[1]).toString('hex');
+      organizerErgoTree = Buffer.from(ergoTrees[1]).toString('hex');
+      projectErgoTree = Buffer.from(ergoTrees[2]).toString('hex');
     } catch (err) {
       this.logger.warn(
         `CreationProxyExtractor failed on extracting data due to invalid or missing inputExtension: ${err}`,
@@ -114,7 +116,8 @@ export class CreationProxyExtractor extends AbstractErgoBoxExtractor<
       goal: r4Register[4],
       txFee: r4Register[5],
       implementerErgoTree: implementerErgoTree,
-      creatorErgoTree: creatorErgoTree,
+      organizerErgoTree: organizerErgoTree,
+      projectErgoTree: projectErgoTree,
       winnersPercentList: winnersPercentList,
       collectingTokenId: box.assets.length > 0 ? box.assets[0].tokenId : 'erg',
       name: Buffer.from(r6Register[0]).toString(),

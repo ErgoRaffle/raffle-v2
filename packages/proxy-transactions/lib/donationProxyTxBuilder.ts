@@ -13,8 +13,7 @@ import {
 import { blake2b256 } from '@fleet-sdk/crypto';
 
 import { raffleInfo } from '@ergo-raffle/contracts';
-
-import { FleetBoxSelection } from './fleetBoxSelection';
+import { FleetBoxSelection } from '@ergo-raffle/fleet-box-selection';
 
 /**
  * Builder class for donation proxy funding transactions.
