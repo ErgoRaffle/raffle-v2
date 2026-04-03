@@ -14,17 +14,16 @@ import {
 import { blake2b256 } from '@fleet-sdk/crypto';
 
 import { raffleInfo } from '@ergo-raffle/contracts';
-
-import { FleetBoxSelection } from './fleetBoxSelection';
+import { FleetBoxSelection } from '@ergo-raffle/fleet-box-selection';
 
 /**
  * Builder class for creation proxy funding transactions.
  */
 export class CreationProxyTxBuilder {
   private feeBoxes?: Iterator<Box<Amount>>;
-  private creatorErgoTree?: string;
+  private organizerErgoTree?: string;
   private implementerErgoTree?: string;
-
+  private projectErgoTree?: string;
   private creationFee?: bigint;
   private name?: string;
   private description?: string;
@@ -51,22 +50,42 @@ export class CreationProxyTxBuilder {
   };
 
   /**
-   * Set the creator address (also used as change address).
-   * @param address - Creator base58 address
+   * Set the organizer address (also used as change address).
+   * @param address - Organizer base58 address
    * @returns this builder instance
    */
-  setCreatorAddress = (address: string): this => {
-    this.creatorErgoTree = ErgoAddress.fromBase58(address).ergoTree;
+  setOrganizerAddress = (address: string): this => {
+    this.organizerErgoTree = ErgoAddress.fromBase58(address).ergoTree;
     return this;
   };
 
   /**
-   * Set the creator ErgoTree directly.
-   * @param ergoTree - Creator ErgoTree in hex format
+   * Set the organizer ErgoTree directly.
+   * @param ergoTree - Organizer ErgoTree in hex format
    * @returns this builder instance
    */
-  setCreatorErgoTree = (ergoTree: string): this => {
-    this.creatorErgoTree = ergoTree;
+  setOrganizerErgoTree = (ergoTree: string): this => {
+    this.organizerErgoTree = ergoTree;
+    return this;
+  };
+
+  /**
+   * Set the project address (also used as change address).
+   * @param address - Project base58 address
+   * @returns this builder instance
+   */
+  setProjectAddress = (address: string): this => {
+    this.projectErgoTree = ErgoAddress.fromBase58(address).ergoTree;
+    return this;
+  };
+
+  /**
+   * Set the project ErgoTree directly.
+   * @param ergoTree - Project ErgoTree in hex format
+   * @returns this builder instance
+   */
+  setProjectErgoTree = (ergoTree: string): this => {
+    this.projectErgoTree = ergoTree;
     return this;
   };
 
@@ -236,7 +255,7 @@ export class CreationProxyTxBuilder {
    */
   private validate = (): void => {
     if (!this.feeBoxes) throw new Error('Fee boxes not set');
-    if (!this.creatorErgoTree) throw new Error('Creator ErgoTree not set');
+    if (!this.organizerErgoTree) throw new Error('Organizer ErgoTree not set');
     if (!this.implementerErgoTree)
       throw new Error('Implementer ErgoTree not set');
     if (!this.creationFee) throw new Error('Creation fee not set');
@@ -259,11 +278,6 @@ export class CreationProxyTxBuilder {
    * @returns OutputBuilder instance for the proxy box
    */
   private buildCreationProxyBox = (): OutputBuilder => {
-    const isErgGoal = this.collectingTokenId == null;
-    const collectingTokenBytes = isErgGoal
-      ? Array.from(Buffer.alloc(32))
-      : Array.from(Buffer.from(this.collectingTokenId!, 'hex'));
-
     const winnersPercentListHash = Array.from(
       blake2b256(
         Buffer.concat(
@@ -286,7 +300,11 @@ export class CreationProxyTxBuilder {
     const implementerHash = blake2b256(
       Buffer.from(this.implementerErgoTree!, 'hex'),
     );
-    const creatorHash = blake2b256(Buffer.from(this.creatorErgoTree!, 'hex'));
+    const organizerHash = blake2b256(
+      Buffer.from(this.organizerErgoTree!, 'hex'),
+    );
+    const projectErgoTree = this.projectErgoTree ?? this.organizerErgoTree!;
+    const projectHash = blake2b256(Buffer.from(projectErgoTree, 'hex'));
 
     let out = new OutputBuilder(
       value,
@@ -302,16 +320,16 @@ export class CreationProxyTxBuilder {
       ]).toHex(),
       R5: SColl(SColl(SByte), [
         Array.from(implementerHash),
-        Array.from(creatorHash),
+        Array.from(organizerHash),
+        Array.from(projectHash),
         winnersPercentListHash,
-        collectingTokenBytes,
       ]).toHex(),
       R6: SColl(SColl(SByte), [
         Array.from(Buffer.from(this.name!)),
         Array.from(Buffer.from(this.description!)),
         ...(this.pictures ?? []).map((p) => Array.from(Buffer.from(p))),
       ]).toHex(),
-      R7: SColl(SInt, [this.winnerCount!, isErgGoal ? 1 : 0]).toHex(),
+      R7: SInt(this.winnerCount!).toHex(),
     });
 
     if (tokens.length > 0) out = out.addTokens(tokens);
@@ -367,11 +385,13 @@ export class CreationProxyTxBuilder {
 
     // The first input is the fee box that contains the winners percentage list and the implementer and creator ErgoTrees.
     const firstInput = new ErgoUnsignedInput(selectedFeeBoxes[0]!);
+    const projectErgoTree = this.projectErgoTree ?? this.organizerErgoTree!;
     firstInput.setContextExtension({
       0: SColl(SLong, this.winnersPercentList!),
       1: SColl(SColl(SByte), [
         Array.from(Buffer.from(this.implementerErgoTree!, 'hex')),
-        Array.from(Buffer.from(this.creatorErgoTree!, 'hex')),
+        Array.from(Buffer.from(this.organizerErgoTree!, 'hex')),
+        Array.from(Buffer.from(projectErgoTree, 'hex')),
       ]),
     });
     const proxyBox = this.buildCreationProxyBox();
@@ -380,7 +400,7 @@ export class CreationProxyTxBuilder {
       .from([firstInput, ...selectedFeeBoxes.slice(1)])
       .to([proxyBox])
       .payFee(this.txFee!)
-      .sendChangeTo(this.creatorErgoTree!)
+      .sendChangeTo(this.organizerErgoTree!)
       .build();
 
     return tx;

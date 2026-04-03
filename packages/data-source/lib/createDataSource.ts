@@ -27,6 +27,9 @@ import {
   SuccessRaffleEntity,
   TicketRedeemEntity,
   SafePayEntity,
+  CreationProxyEntity,
+  DonationProxyEntity,
+  AddGiftProxyEntity,
   migrations as extractorsMigrations,
 } from '@ergo-raffle/extractors';
 import {
@@ -55,6 +58,9 @@ const ENTITIES = [
   TransactionEntity,
   DynamicBoxEntity,
   DonationParamsEntity,
+  CreationProxyEntity,
+  DonationProxyEntity,
+  AddGiftProxyEntity,
 ];
 
 const MIGRATIONS = {

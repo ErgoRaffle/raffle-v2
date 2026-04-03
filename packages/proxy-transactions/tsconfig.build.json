@@ -2,5 +2,10 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "rootDir": "./lib"
-  }
+  },
+  "references": [
+    {
+      "path": "../fleet-box-selection/tsconfig.build.json"
+    }
+  ]
 }

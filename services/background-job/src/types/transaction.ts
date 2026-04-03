@@ -15,4 +15,5 @@ export enum TxType {
   TicketRedeem = 'ticket_redeem',
   ReturnRaffleLicense = 'return_raffle_license',
   SafeWithdrawal = 'safe_withdrawal',
+  RedeemProxy = 'redeem_proxy',
 }

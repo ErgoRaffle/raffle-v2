@@ -1,229 +1,269 @@
-// import { ErgoBox } from '@fleet-sdk/core';
-// import { AbstractLogger } from '@rosen-bridge/abstract-logger';
+import { ErgoBox, OutputBuilder, TransactionBuilder } from '@fleet-sdk/core';
+import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 
-// import {
-//   ActivationTxBuilder,
-//   CreationTxBuilder,
-//   GiftTokenReceiptTxBuilder,
-// } from '@ergo-raffle/transactions';
+import { raffleInfo } from '@ergo-raffle/contracts';
+import { CreationProxyEntity } from '@ergo-raffle/extractors';
+import {
+  ActivationTxBuilder,
+  CreationTxBuilder,
+  GiftTokenReceiptTxBuilder,
+} from '@ergo-raffle/transactions';
 
-// import { configs } from '../../config';
-// import {
-//   GIFT_TOKEN_DESCRIPTION_PREFIX,
-//   GIFT_TOKEN_NAME_PREFIX,
-//   TICKET_TOKEN_DESCRIPTION_PREFIX,
-//   TICKET_TOKEN_NAME_PREFIX,
-//   TICKET_TOKEN_COUNT,
-// } from '../../constants';
-// import { findServiceBox } from '../../transactions/boxFinder';
-// import { signAndAddTx } from '../../transactions/utils';
-// import { OnSufficeCallback, Request } from '../../types';
-// import { TxType } from '../../types/transaction';
-// import { BoxLookupService } from '../boxLookup';
-// import { ScannerService } from '../scannerService';
-// import { TxPotService } from '../txPotService';
-// import { AbstractTxService } from './abstractTxService';
+import { configs } from '../../config';
+import {
+  ERG_TOKEN_ID,
+  GIFT_TOKEN_DESCRIPTION_PREFIX,
+  GIFT_TOKEN_NAME_PREFIX,
+  TICKET_TOKEN_COUNT,
+  TICKET_TOKEN_DESCRIPTION_PREFIX,
+  TICKET_TOKEN_NAME_PREFIX,
+} from '../../constants';
+import { findServiceBox } from '../../transactions/boxFinder';
+import {
+  convertDbBoxesToErgoBoxes,
+  signAndAddTx,
+} from '../../transactions/utils';
+import { OnSufficeCallback, Request } from '../../types';
+import { TxType } from '../../types/transaction';
+import { BoxLookupService } from '../boxLookup';
+import { DbService } from '../dbService';
+import { AbstractTxService } from './abstractTxService';
 
-// export class CreationService extends AbstractTxService {
-//   name = 'CreationService';
+export class CreationService extends AbstractTxService {
+  name = 'CreationService';
 
-//   constructor(nodeUrl: string, logger: AbstractLogger) {
-//     super(nodeUrl, logger);
-//   }
+  constructor(nodeUrl: string, logger: AbstractLogger) {
+    super(nodeUrl, logger);
+  }
 
-//   /**
-//    * Initialize the service
-//    * @param nodeUrl - The node url
-//    * @param logger - The logger
-//    */
-//   static init = (nodeUrl: string, logger: AbstractLogger) => {
-//     if (this.instance != undefined) return;
-//     this.instance = new CreationService(nodeUrl, logger);
-//   };
+  /**
+   * Initialize the service
+   * @param nodeUrl - The node url
+   * @param logger - The logger
+   */
+  static init = (nodeUrl: string, logger: AbstractLogger) => {
+    if (this.instance != undefined) return;
+    this.instance = new CreationService(nodeUrl, logger);
+  };
 
-//   /**
-//    * Get the instance of the service
-//    * @returns The instance of the service
-//    */
-//   static getInstance = (): CreationService => {
-//     if (!this.instance) {
-//       throw new Error(`${this.name} is not initialized`);
-//     }
-//     return this.instance as CreationService;
-//   };
+  /**
+   * Get the instance of the service
+   * @returns The instance of the service
+   */
+  static getInstance = (): CreationService => {
+    if (!this.instance) {
+      throw new Error(`${this.name} is not initialized`);
+    }
+    return this.instance as CreationService;
+  };
 
-//   /**
-//    * This service doesn't have any base requests
-//    */
-//   addBaseRequests(): void {
-//     return;
-//   }
+  /**
+   * Register a box-lookup request watching all creation proxy boxes
+   */
+  addBaseRequests(): void {
+    const boxLookupRequest: Request = {
+      address: raffleInfo.addresses.creationProxy,
+      // Should process all boxes with the creation proxy address
+      value: undefined,
+      tokens: [],
+      onSuffice: this.creationCallback,
+      getConfirmedBoxes: async () => {
+        return convertDbBoxesToErgoBoxes(
+          await DbService.getInstance().getCreationProxyBoxes(),
+        );
+      },
+    };
 
-//   /**
-//    * Generator function for a raffle creation callback
-//    * - Builds the creation transaction
-//    * - Builds the activation transaction by chaining it to the creation transaction
-//    * - Builds the gift receipt transactions by chaining it to the activation transaction
-//    * @param raffleParams - The raffle creation parameters
-//    * @returns A callback function for the creation of a raffle
-//    */
-//   private creationCallbackGenerator = (
-//     raffleParams: CreationParamsEntity,
-//   ): OnSufficeCallback => {
-//     const creationCallBack = async (
-//       boxes: ErgoBox[],
-//       unspentBoxes: ErgoBox[],
-//       requestId: number,
-//     ): Promise<void> => {
-//       const serviceBox = await findServiceBox(unspentBoxes);
-//       if (!serviceBox) {
-//         this.logger.error(
-//           `Service box not found for request id: [${requestId}], skipping raffle creation`,
-//         );
-//         return;
-//       }
-//       this.logger.debug(
-//         `Service box found with id [${serviceBox.boxId}], building creation transaction`,
-//       );
+    const requestId =
+      BoxLookupService.getInstance().addRequest(boxLookupRequest);
+    this.activeBoxLookupRequestIds.push(requestId);
+  }
 
-//       const creationTxBuilder = new CreationTxBuilder()
-//         .setServiceBox(serviceBox)
-//         .setFeeBoxes(boxes)
-//         .setRaffleName(raffleParams.name)
-//         .setRaffleDescription(raffleParams.description)
-//         .setRafflePictures(
-//           raffleParams.pictures
-//             .sort((a, b) => a.orderIndex - b.orderIndex)
-//             .map((picture) => picture.content),
-//         )
-//         .setTicketPrice(raffleParams.ticketPrice)
-//         .setGoal(raffleParams.goal)
-//         .setWinnersSharePercent(BigInt(raffleParams.winnersPercent))
-//         .setWinnersCount(raffleParams.winnerCount)
-//         .setDeadline(BigInt(raffleParams.deadline))
-//         .setWinnersPercent(
-//           raffleParams.winnersPercentList.split(',').map(BigInt),
-//         )
-//         .setImplementerAddress(raffleParams.implementerAddress)
-//         .setOrganizerAddress(raffleParams.creatorAddress)
-//         .setInactiveRaffleValue(
-//           raffleParams.requiredValue - configs.ergo.fee * 4n,
-//         )
-//         .setChainHeight(await this.network.getHeight())
-//         .setTxFee(configs.ergo.fee)
-//         .setTicketTokenName(TICKET_TOKEN_NAME_PREFIX + raffleParams.name)
-//         .setTicketTokenCount(TICKET_TOKEN_COUNT)
-//         .setTicketTokenDescription(
-//           TICKET_TOKEN_DESCRIPTION_PREFIX + raffleParams.name,
-//         );
+  /**
+   * Callback triggered when a UID group of creation proxy boxes is covering.
+   * Builds the full chain: creation → activation → gift-receipt TXs.
+   */
+  creationCallback: OnSufficeCallback = async (
+    boxes: ErgoBox[],
+    unspentBoxes: ErgoBox[],
+    requestId: number,
+  ): Promise<void> => {
+    const proxyBox = boxes[0];
+    this.logger.info(`Processing creation tx for proxy box ${proxyBox.boxId}`);
 
-//       if (raffleParams.collectingTokenId) {
-//         this.logger.debug(
-//           `Collecting token id is set, creating a token-goal raffle with token [${raffleParams.collectingTokenId}]`,
-//         );
-//         creationTxBuilder.setCollectingTokenId(raffleParams.collectingTokenId);
-//       }
-//       const creationTx = creationTxBuilder.build();
+    /* TODO: Optimize proxy transaction speed.
+    Now we have to wait for proxy box to be confirmed to get the entity
+    local/ergo/ergoraffle/raffle-v2/-/issues/128 */
+    const creationProxyEntity = (
+      await DbService.getInstance().getCreationProxyBoxes(proxyBox.boxId)
+    )[0];
+    if (!creationProxyEntity) {
+      this.logger.info(
+        `Creation proxy entity not found for proxy box ${proxyBox.boxId}, skipping creation transaction`,
+      );
+      return;
+    }
 
-//       const signedCreationTx = await signAndAddTx(
-//         this.network,
-//         creationTx,
-//         TxType.Creation,
-//       );
-//       this.logger.info(
-//         `Creation transaction for request with id [${requestId}] has been added (txId: [${creationTx.id}])`,
-//       );
+    if (
+      creationProxyEntity.expirationHeight < (await this.network.getHeight())
+    ) {
+      this.logger.info(
+        `Creation proxy box ${proxyBox.boxId} has expired, redeeming proxy box and skipping creation transaction`,
+      );
+      await this.redeemProxy(proxyBox, creationProxyEntity);
+      return;
+    }
 
-//       // Add the txpot callback
-//       const callbackId = `${TxType.Creation}-${raffleParams.id}`;
-//       this.activeTxpotCallbackIds.push([TxType.Creation, callbackId]);
-//       TxPotService.getInstance().registerCompletionCallback(
-//         TxType.Creation,
-//         callbackId,
-//         this.txpotCallBackGenerator(
-//           creationTx.id,
-//           requestId,
-//           callbackId,
-//           TxType.Creation,
-//           raffleParams.proxyAddress,
-//         ),
-//       );
-//       this.logger.debug(
-//         `Completion callback added to txpot with callback id [${callbackId}] for transaction [${creationTx.id}]`,
-//       );
+    if (!(await this.isCoveringRequest(proxyBox, creationProxyEntity))) {
+      this.logger.info(
+        `Proxy boxes are not covering the request, skipping creation transaction and waiting for proxy box expiration`,
+      );
+      return;
+    }
+    this.logger.debug(
+      `Creation proxy box ${proxyBox.boxId} is covering the request, building creation transaction`,
+    );
 
-//       // Build the activation transaction and chain it to the creation transaction
-//       const raffleId = serviceBox.boxId;
-//       const activationTxBuilder = new ActivationTxBuilder()
-//         .setInactiveRaffle(signedCreationTx.outputs[2])
-//         .setTicketRepo(signedCreationTx.outputs[1])
-//         .setTxFee(configs.ergo.fee)
-//         .setChainHeight(await this.network.getHeight())
-//         .setGiftTokenName(GIFT_TOKEN_NAME_PREFIX + raffleId.slice(0, 6))
-//         .setGiftTokenDescription(GIFT_TOKEN_DESCRIPTION_PREFIX + raffleId)
-//         .setWinnersSharePercent(
-//           raffleParams.winnersPercentList.split(',').map(BigInt),
-//         );
+    const serviceBox = await findServiceBox(unspentBoxes);
+    if (!serviceBox) {
+      this.logger.error(
+        `Service box not found, skipping creation transaction for request id [${requestId}]`,
+      );
+      return;
+    }
+    this.logger.debug(
+      `Service box found with id [${serviceBox.boxId}], building creation transaction`,
+    );
 
-//       const activationTx = await signAndAddTx(
-//         this.network,
-//         activationTxBuilder.build(),
-//         TxType.Activation,
-//       );
-//       this.logger.info(
-//         `Activation transaction for request with id [${requestId}] has been added (txId: [${activationTx.id}])`,
-//       );
+    const chainHeight = await this.network.getHeight();
 
-//       // Build the gift receipt transactions by chaining it to the activation transaction
-//       let giftTokenRepo = activationTx.outputs[2];
-//       let step = 1;
-//       for (const winnerBox of activationTx.outputs.slice(
-//         3,
-//         3 + raffleParams.winnerCount,
-//       )) {
-//         const giftReceiptTxBuilder = new GiftTokenReceiptTxBuilder()
-//           .setGiftTokenRepo(giftTokenRepo)
-//           .setWinner(winnerBox)
-//           .setTxFee(configs.ergo.fee)
-//           .setChainHeight(await this.network.getHeight());
-//         const giftReceiptTx = await signAndAddTx(
-//           this.network,
-//           giftReceiptTxBuilder.build(),
-//           TxType.GiftTokenReceipt,
-//         );
-//         this.logger.info(
-//           `Gift receipt transaction for request with id [${requestId}] has been added (txId: [${giftReceiptTx.id}]) for step [${step}]`,
-//         );
-//         giftTokenRepo = giftReceiptTx.outputs[1];
-//         step++;
-//       }
-//     };
-//     return creationCallBack;
-//   };
+    const creationTxBuilder = new CreationTxBuilder()
+      .setServiceBox(serviceBox)
+      .setFeeBoxes(boxes)
+      .setRaffleName(creationProxyEntity.name)
+      .setRaffleDescription(creationProxyEntity.description)
+      .setRafflePictures(JSON.parse(creationProxyEntity.pictures) as string[])
+      .setTicketPrice(creationProxyEntity.ticketPrice)
+      .setGoal(creationProxyEntity.goal)
+      .setWinnersSharePercent(BigInt(creationProxyEntity.winnersPercent))
+      .setWinnersCount(creationProxyEntity.winnerCount)
+      .setDeadline(BigInt(creationProxyEntity.raffleDeadline))
+      .setWinnersPercent(
+        creationProxyEntity.winnersPercentList.split(',').map(BigInt),
+      )
+      .setImplementerErgoTree(creationProxyEntity.implementerErgoTree)
+      .setOrganizerErgoTree(creationProxyEntity.organizerErgoTree)
+      .setInactiveRaffleValue(proxyBox.value - configs.ergo.fee * 2n)
+      .setChainHeight(chainHeight)
+      .setTxFee(configs.ergo.fee)
+      .setTicketTokenName(TICKET_TOKEN_NAME_PREFIX + creationProxyEntity.name)
+      .setTicketTokenCount(TICKET_TOKEN_COUNT)
+      .setTicketTokenDescription(
+        TICKET_TOKEN_DESCRIPTION_PREFIX + creationProxyEntity.name,
+      );
 
-//   /**
-//    * Create a raffle creation request and register it with the box lookup service
-//    * @param raffleParams - The raffle creation parameters
-//    * @returns The request id
-//    */
-//   public createRaffle(raffleParams: CreationParamsEntity): void {
-//     // Add the proxy address to the scanner
-//     ScannerService.getInstance().addDynamicAddress(raffleParams.proxyAddress);
+    if (creationProxyEntity.collectingTokenId !== ERG_TOKEN_ID) {
+      creationTxBuilder.setCollectingTokenId(
+        creationProxyEntity.collectingTokenId,
+      );
+    }
 
-//     // Build the box lookup request
-//     const boxLookupRequest: Request = {
-//       address: raffleParams.proxyAddress,
-//       value: raffleParams.requiredValue,
-//       tokens: raffleParams.requiredTokenId
-//         ? [{ tokenId: raffleParams.requiredTokenId, amount: 1n }]
-//         : [],
-//       onSuffice: this.creationCallbackGenerator(raffleParams),
-//       getConfirmedBoxes: async () => {
-//         // TODO: Use a specified creation proxy extractor to find the confirmed boxes
-//         return [];
-//       },
-//     };
-//     // Register the request with the box lookup service
-//     BoxLookupService.getInstance().addRequest(boxLookupRequest);
-//   }
-// }
+    const signedCreationTx = await signAndAddTx(
+      this.network,
+      creationTxBuilder.build(),
+      TxType.Creation,
+    );
+    this.logger.info(
+      `Creation transaction for request with id [${requestId}] has been added (txId: [${signedCreationTx.id}])`,
+    );
+
+    // Build the activation transaction chained to the creation transaction
+    const raffleId = serviceBox.boxId;
+    const activationTx = await signAndAddTx(
+      this.network,
+      new ActivationTxBuilder()
+        .setInactiveRaffle(signedCreationTx.outputs[2])
+        .setTicketRepo(signedCreationTx.outputs[1])
+        .setTxFee(configs.ergo.fee)
+        .setChainHeight(chainHeight)
+        .setGiftTokenName(GIFT_TOKEN_NAME_PREFIX + raffleId.slice(0, 6))
+        .setGiftTokenDescription(GIFT_TOKEN_DESCRIPTION_PREFIX + raffleId)
+        .setWinnersSharePercent(
+          creationProxyEntity.winnersPercentList.split(',').map(BigInt),
+        )
+        .build(),
+      TxType.Activation,
+    );
+    this.logger.info(
+      `Activation transaction for request with id [${requestId}] has been added (txId: [${activationTx.id}])`,
+    );
+
+    // Build the gift-receipt transactions chained to the activation transaction
+    // Activation outputs: [activeRaffle, raffleDetails, giftTokenRepo, winner1, winner2, ...]
+    let giftTokenRepo = activationTx.outputs[2];
+    for (let step = 1; step <= creationProxyEntity.winnerCount; step++) {
+      const winnerBox = activationTx.outputs[2 + step];
+      const giftReceiptTx = await signAndAddTx(
+        this.network,
+        new GiftTokenReceiptTxBuilder()
+          .setGiftTokenRepo(giftTokenRepo)
+          .setWinner(winnerBox)
+          .setTxFee(configs.ergo.fee)
+          .setChainHeight(chainHeight)
+          .build(),
+        TxType.GiftTokenReceipt,
+      );
+      this.logger.info(
+        `Gift receipt transaction [${step}/${creationProxyEntity.winnerCount}] for request with id [${requestId}] has been added (txId: [${giftReceiptTx.id}])`,
+      );
+      giftTokenRepo = giftReceiptTx.outputs[1];
+    }
+  };
+
+  /**
+   * Check if the creation proxy boxes are covering the request
+   * @param boxes - The proxy boxes for this UID group
+   * @param entity - The creation proxy entity
+   * @returns True if the boxes cover the required value
+   */
+  isCoveringRequest = (box: ErgoBox, entity: CreationProxyEntity): boolean => {
+    const requiredNanoErgs =
+      entity.txFee * BigInt(entity.winnerCount) * 5n + entity.txFee * 10n;
+    const hasEnoughValue = box.value >= requiredNanoErgs;
+
+    this.logger.debug(
+      `CreationProxy covering (ERG goal): totalValue=${box.value}, ` +
+        `required>=${requiredNanoErgs}, covering=${hasEnoughValue}`,
+    );
+    return hasEnoughValue;
+  };
+
+  /**
+   * Redeem the proxy box back to the raffle organizer
+   * @param box - The proxy box to redeem
+   * @param entity - The creation proxy entity
+   */
+  redeemProxy = async (
+    box: ErgoBox,
+    entity: CreationProxyEntity,
+  ): Promise<void> => {
+    const organizerRefundBox = new OutputBuilder(
+      BigInt(box.value) - entity.txFee,
+      entity.organizerErgoTree,
+    ).addTokens(
+      box.assets.map((asset) => ({
+        tokenId: asset.tokenId,
+        amount: BigInt(asset.amount),
+      })),
+    );
+    const redeemTx = new TransactionBuilder(await this.network.getHeight())
+      .from([box])
+      .to([organizerRefundBox])
+      .payFee(entity.txFee)
+      .build();
+    await signAndAddTx(this.network, redeemTx, TxType.RedeemProxy);
+    this.logger.info(
+      `Proxy box ${box.boxId} has been redeemed to ${entity.organizerErgoTree} (txId: [${redeemTx.id}])`,
+    );
+  };
+}

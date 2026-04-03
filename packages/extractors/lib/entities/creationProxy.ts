@@ -35,7 +35,10 @@ export class CreationProxyEntity extends AbstractErgoBoxEntity {
   implementerErgoTree: string;
 
   @Column({ type: 'varchar' })
-  creatorErgoTree: string;
+  organizerErgoTree: string;
+
+  @Column({ type: 'varchar' })
+  projectErgoTree: string;
 
   @Column({ type: 'varchar' })
   winnersPercentList: string;
