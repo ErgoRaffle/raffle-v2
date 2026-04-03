@@ -7,11 +7,12 @@ import {
 } from '@rosen-bridge/service-manager';
 import { CallbackFunction, TransactionEntity } from '@rosen-bridge/tx-pot';
 
-import ErgoNodeNetwork from '../../network/ergoNodeNetwork';
+import { ErgoNodeNetwork } from '@ergo-raffle/utils';
 import { TxType } from '../../types/transaction';
 import { BoxLookupService } from '../boxLookup';
 import { ScannerService } from '../scannerService';
 import { TxPotService } from '../txPotService';
+
 
 export abstract class AbstractTxService extends AbstractService {
   protected dependencies: Dependency[] = [

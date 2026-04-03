@@ -1,4 +1,4 @@
-import { Amount, Box } from '@fleet-sdk/common';
+import { Amount, Box, Network } from '@fleet-sdk/common';
 import { ErgoHDKey } from '@fleet-sdk/wallet';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import JsonBigInt from '@rosen-bridge/json-bigint';
@@ -16,7 +16,8 @@ import {
 } from '@ergo-raffle/request-params';
 import { DonateTxBuilder } from '@ergo-raffle/transactions';
 
-import { ErgoNodeNetwork, FleetBoxSelection, signTransaction } from '../ergo';
+import { ErgoNodeNetwork, signTransaction } from '@ergo-raffle/utils';
+import { FleetBoxSelection } from '@ergo-raffle/fleet-box-selection';
 import {
   Donation as DonationConfig,
   Ergo as ErgoConfig,
@@ -383,7 +384,8 @@ export class DonationService extends PeriodicTaskService {
     const signedTx = await signTransaction(
       this.ergoNodeNetwork,
       unsignedTx,
-      walletKey,
+      [walletKey],
+      this.ergoConfig.network == 'mainnet' ? Network.Mainnet : Network.Testnet,
     );
 
     this.logger.debug(

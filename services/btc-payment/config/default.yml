@@ -18,6 +18,7 @@ api:
   port: 3000
 ergo:
   fee: 1500000
+  network: mainnet
 bitcoin:
   network: mainnet
   rpc:
@@ -26,6 +27,8 @@ bitcoin:
   runes:
     unisat:
       url: https://open-api.unisat.io
+backgroundJob:
+  url: http://localhost:3030
 donation:
   interval: 60
   requiredConfirmations: 2

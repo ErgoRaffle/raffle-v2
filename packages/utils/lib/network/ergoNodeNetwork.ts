@@ -13,11 +13,11 @@ import {
   BlockchainParameters,
 } from 'sigmastate-js/main';
 
-import { FETCH_PAGE_SIZE } from '../constants';
+import { FETCH_PAGE_SIZE } from './constants';
 import { FailedError } from './error';
 import handleApiError from './utils';
 
-class ErgoNodeNetwork {
+export class ErgoNodeNetwork {
   private client: ReturnType<typeof ergoNodeClientFactory>;
 
   constructor(
@@ -220,28 +220,37 @@ class ErgoNodeNetwork {
   };
 
   /**
-   * get boxes by token id
-   * @param tokenId
+   * Fetches unspent boxes by token id.
+   * @param tokenId - Token id.
+   * @returns Array of unspent boxes containing the given token id.
    */
   public getUnspentBoxesByTokenId = async (
     tokenId: string,
   ): Promise<ErgoBox[]> => {
-    const boxes = await this.client.getBoxesByTokenIdUnspent(tokenId);
-    this.logger.debug(
-      `requested 'getBoxesByTokenId' for tokenId [${tokenId}]. res: ${JsonBigInt.stringify(
-        boxes,
-      )}`,
-    );
-    return boxes.map(
-      (box) =>
-        new ErgoBox({
-          ...box,
-          assets: box.assets ?? [],
-          boxId: box.boxId ?? '',
-          index: box.index ?? 0,
-          transactionId: box.transactionId ?? '',
-        }),
-    );
+    try {
+      const boxes = await this.client.getBoxesByTokenIdUnspent(tokenId);
+      this.logger.debug(
+        `requested 'getBoxesByTokenId' for tokenId [${tokenId}]. res: ${JsonBigInt.stringify(
+          boxes,
+        )}`,
+      );
+
+      return boxes.map(
+        (box) =>
+          new ErgoBox({
+            ...box,
+            assets: box.assets ?? [],
+            boxId: box.boxId ?? '',
+            index: box.index ?? 0,
+            transactionId: box.transactionId ?? '',
+          }),
+      );
+    } catch (error) {
+      return handleApiError(
+        error,
+        'Failed to get unspent boxes by token id from Ergo Node:',
+      );
+    }
   };
 
   /**
@@ -257,28 +266,35 @@ class ErgoNodeNetwork {
     limit: number,
     offset: number,
   ): Promise<ErgoBox[]> => {
-    const boxes = await this.client.getBoxesByAddressUnspent(address, {
-      limit,
-      offset,
-      includeUnconfirmed: true,
-      excludeMempoolSpent: true,
-      sortDirection: 'desc',
-    });
+    try {
+      const boxes = await this.client.getBoxesByAddressUnspent(address, {
+        limit,
+        offset,
+        includeUnconfirmed: true,
+        excludeMempoolSpent: true,
+        sortDirection: 'desc',
+      });
 
-    this.logger.debug(
-      `requested 'getBoxesByAddressUnspent' for address [${address}]. returned ${boxes.length} boxes`,
-    );
+      this.logger.debug(
+        `requested 'getBoxesByAddressUnspent' for address [${address}]. returned ${boxes.length} boxes`,
+      );
 
-    return boxes.map(
-      (box) =>
-        new ErgoBox({
-          ...box,
-          assets: box.assets ?? [],
-          boxId: box.boxId ?? '',
-          index: box.index ?? 0,
-          transactionId: box.transactionId ?? '',
-        }),
-    );
+      return boxes.map(
+        (box) =>
+          new ErgoBox({
+            ...box,
+            assets: box.assets ?? [],
+            boxId: box.boxId ?? '',
+            index: box.index ?? 0,
+            transactionId: box.transactionId ?? '',
+          }),
+      );
+    } catch (error) {
+      return handleApiError(
+        error,
+        'Failed to get unspent boxes by address from Ergo Node:',
+      );
+    }
   };
 
   /**
@@ -312,5 +328,3 @@ class ErgoNodeNetwork {
     }
   }
 }
-
-export default ErgoNodeNetwork;
