@@ -1,7 +1,7 @@
-import { Network } from '@fleet-sdk/common';
-import { TransactionBuilder } from '@fleet-sdk/core';
-import { serializeTransaction } from '@fleet-sdk/serializer';
-import { ErgoHDKey } from '@fleet-sdk/wallet';
+import './bootstrap';
+
+import { ErgoAddress, TransactionBuilder } from '@fleet-sdk/core';
+import { DefaultLogger } from '@rosen-bridge/abstract-logger';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import JsonBigInt from '@rosen-bridge/json-bigint';
 
@@ -11,7 +11,6 @@ import { FleetBoxSelection } from '@ergo-raffle/fleet-box-selection';
 
 import { configs } from './config';
 import ErgoNodeNetwork from './network/ergoNodeNetwork';
-import { signTransaction } from './transactions/utils';
 
 const DEFAULT_SERVICE_FEE_PERCENT = 30n;
 const DEFAULT_IMPLEMENTER_FEE_PERCENT = 20n;
@@ -22,21 +21,30 @@ const SERVICE_DEFAULT_VALUE = 100000000n;
 /**
  * Builds and submits a service box initialization transaction.
  * @param logger - Logger instance for initialization flow.
+ * @param ownerAddress - Base58-encoded Ergo address whose UTXOs fund the init transaction.
  * @returns Promise resolving when initialization flow ends.
  */
-export const serviceBoxInit = async (logger: AbstractLogger): Promise<void> => {
-  const network = new ErgoNodeNetwork(configs.scanner.node.url, logger);
-  const ownerKey = await ErgoHDKey.fromMnemonic(configs.init.mnemonic!);
-  const ownerAddress = ownerKey.address.toString(Network.Testnet);
-  const ownerErgoTree = ownerKey.address.ergoTree;
+export const serviceBoxInit = async (
+  logger: AbstractLogger,
+  ownerAddress: string,
+): Promise<void> => {
+  const trimmed = ownerAddress.trim();
+  if (!trimmed) {
+    throw new Error('ownerAddress is required for service box initialization');
+  }
 
-  logger.debug(`Looking for covering boxes for owner address: ${ownerAddress}`);
-  const feeBoxIterator =
-    await network.unspentBoxesByAddressIterator(ownerAddress);
+  const network = new ErgoNodeNetwork(configs.scanner.node.url, logger);
+  const owner = ErgoAddress.fromBase58(trimmed);
+  const ownerErgoTree = owner.ergoTree;
+
+  logger.debug(`Looking for covering boxes for owner address: ${owner}`);
+  const feeBoxIterator = await network.unspentBoxesByAddressIterator(
+    owner.toString(),
+  );
   const boxSelector = new FleetBoxSelection();
   const selectedBox = await boxSelector.getCoveringBoxes(
     {
-      nativeToken: SERVICE_DEFAULT_VALUE + configs.ergo.fee,
+      nativeToken: SERVICE_DEFAULT_VALUE + BigInt(configs.ergo.fee),
       tokens: [
         { id: raffleInfo.tokens.serviceNft, value: 1n },
         { id: raffleInfo.tokens.raffleLicense, value: LICENSE_TOKEN_AMOUNT },
@@ -47,7 +55,7 @@ export const serviceBoxInit = async (logger: AbstractLogger): Promise<void> => {
     feeBoxIterator,
   );
   logger.debug(
-    `Selected boxes from owner address: ${ownerAddress}: ${selectedBox.boxes?.map((box) => box.boxId)}`,
+    `Selected boxes from owner address: ${owner}: ${selectedBox.boxes?.map((box) => box.boxId)}`,
   );
 
   if (!selectedBox.covered) {
@@ -59,7 +67,7 @@ export const serviceBoxInit = async (logger: AbstractLogger): Promise<void> => {
 
   const chainHeight = await network.getHeight();
   const serviceOutput = new ServiceBuilder()
-    .setOwnerAddress(ownerAddress)
+    .setOwnerAddress(owner.toString())
     .setCreationHeight(chainHeight)
     .setValue(SERVICE_DEFAULT_VALUE)
     .setServiceFeePercent(DEFAULT_SERVICE_FEE_PERCENT)
@@ -76,16 +84,28 @@ export const serviceBoxInit = async (logger: AbstractLogger): Promise<void> => {
     .sendChangeTo(ownerErgoTree)
     .build();
 
-  const signedTx = await signTransaction(network, unsignedTx, [ownerKey]);
-  logger.debug(
-    `Signed init service box transaction: ${JsonBigInt.stringify(signedTx)}`,
-  );
-  const txBytes = Buffer.from(
-    serializeTransaction(signedTx).toBytes(),
-  ).toString('hex');
-  await network.submitTransaction(txBytes);
-
+  logger.info(`Service box init transaction built (txId: [${unsignedTx.id}])`);
   logger.info(
-    `Service box init transaction submitted (txId: [${signedTx.id}])`,
+    `ergopay: ${Buffer.from(unsignedTx.toBytes()).toString('base64')}`,
   );
 };
+
+/**
+ * Runs the initialization script.
+ * @returns Promise resolving when the initialization script finishes.
+ */
+const run = async (): Promise<void> => {
+  const ownerAddress = process.argv[2]?.trim();
+  if (!ownerAddress) {
+    console.error('Usage: npm run init -- <owner-address>');
+    process.exit(1);
+  }
+
+  const logger = DefaultLogger.getInstance().child('serviceBoxInit');
+  await serviceBoxInit(logger, ownerAddress);
+};
+
+run().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

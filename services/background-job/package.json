@@ -5,7 +5,7 @@
   "description": "Ergo-Raffle background jobs",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ErgoRaffle/raffle-v2"
+    "url": "git+https://github.com/ErgoRaffle/raffle-v2"
   },
   "license": "MIT",
   "author": "Ergo Raffle Team",
@@ -19,6 +19,7 @@
     "config:generate:defaults": "cross-env NODE_OPTIONS=\"--import tsx\" npx @rosen-bridge/config generate-default --schema ./config/schema.json --output ./config/default.yml --format yaml",
     "config:generate:types": "cross-env NODE_OPTIONS=\"--import tsx\" npx @rosen-bridge/config generate-ts-types --schema ./config/schema.json --output ./src/types/configs.ts --root-type BackgroundJobConfig",
     "coverage": "npm run test -- --coverage",
+    "init": "tsx ./src/serviceBoxInit.ts",
     "lint": "eslint --fix . && npm run prettify",
     "lint:check": "eslint . && npm run prettify:check",
     "prettify": "prettier --write . --ignore-path ../../.gitignore",

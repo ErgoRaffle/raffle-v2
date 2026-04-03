@@ -4,7 +4,7 @@
   "description": "Implements the shared data-source",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rosen-bridge/data-source.git"
+    "url": "git+https://github.com/ErgoRaffle/raffle-v2"
   },
   "license": "MIT",
   "author": "ErgoRaffle Team",

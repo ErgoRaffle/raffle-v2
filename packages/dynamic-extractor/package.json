@@ -4,7 +4,7 @@
   "description": "Dynamic bitcoin payment extractor",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ErgoRaffle/raffle-v2"
+    "url": "git+https://github.com/ErgoRaffle/raffle-v2"
   },
   "license": "MIT",
   "author": "ErgoRaffle Team",
