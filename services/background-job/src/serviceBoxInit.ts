@@ -1,9 +1,10 @@
 import './bootstrap';
 
-import { ErgoAddress, TransactionBuilder } from '@fleet-sdk/core';
+import { ErgoAddress, Network, TransactionBuilder } from '@fleet-sdk/core';
 import { DefaultLogger } from '@rosen-bridge/abstract-logger';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import JsonBigInt from '@rosen-bridge/json-bigint';
+import { ProverBuilder$ } from 'sigmastate-js/main';
 
 import { ServiceBuilder } from '@ergo-raffle/boxes';
 import { raffleInfo } from '@ergo-raffle/contracts';
@@ -85,8 +86,30 @@ export const serviceBoxInit = async (
     .build();
 
   logger.info(`Service box init transaction built (txId: [${unsignedTx.id}])`);
+
+  // Reduce the transaction (ready to be signed) and log it.
+  const eip12Tx = unsignedTx.toEIP12Object();
+  const reducedStateContext = await network.getStateContext();
+  const reducedBlockchainParams = await network.getBlockchainParameters();
+  const reducedNetwork =
+    configs.ergo.network == 'mainnet' ? Network.Mainnet : Network.Testnet;
+
+  const reducedBuilder = ProverBuilder$.create(
+    reducedBlockchainParams,
+    reducedNetwork,
+  );
+  const reducedProver = reducedBuilder.build();
+  const reducedTx = reducedProver.reduce(
+    reducedStateContext,
+    eip12Tx,
+    eip12Tx.inputs,
+    eip12Tx.dataInputs,
+    unsignedTx.burning.tokens,
+    0,
+  );
+
   logger.info(
-    `ergopay: ${Buffer.from(unsignedTx.toBytes()).toString('base64')}`,
+    `ergopay: ${Buffer.from(reducedTx.toHex(), 'hex').toString('base64')}`,
   );
 };
 
