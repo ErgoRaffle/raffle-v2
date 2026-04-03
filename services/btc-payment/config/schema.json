@@ -220,6 +220,18 @@
             "error": "Ergo node URL must be specified"
           }
         ]
+      },
+      "network": {
+        "type": "string",
+        "description": "Ergo network type",
+        "default": "mainnet",
+        "validations": [
+          {
+            "required": true,
+            "error": "Ergo network type must be specified"
+          },
+          { "choices": ["mainnet", "testnet"] }
+        ]
       }
     }
   },
@@ -328,6 +340,32 @@
             }
           }
         }
+      }
+    }
+  },
+  "backgroundJob": {
+    "type": "object",
+    "children": {
+      "url": {
+        "type": "string",
+        "default": "http://localhost:3030",
+        "description": "Background job service base URL",
+        "validations": [
+          {
+            "required": true,
+            "error": "Background job service URL must be specified"
+          }
+        ]
+      },
+      "sharedSecret": {
+        "type": "string",
+        "description": "Shared secret for authenticating with background job service",
+        "validations": [
+          {
+            "required": true,
+            "error": "Background job shared secret must be specified"
+          }
+        ]
       }
     }
   },

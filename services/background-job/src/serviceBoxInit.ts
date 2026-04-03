@@ -11,7 +11,7 @@ import { raffleInfo } from '@ergo-raffle/contracts';
 import { FleetBoxSelection } from '@ergo-raffle/fleet-box-selection';
 
 import { configs } from './config';
-import ErgoNodeNetwork from './network/ergoNodeNetwork';
+import { ErgoNodeNetwork } from '@ergo-raffle/utils';
 
 const DEFAULT_SERVICE_FEE_PERCENT = 30n;
 const DEFAULT_IMPLEMENTER_FEE_PERCENT = 20n;
