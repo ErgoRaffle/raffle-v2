@@ -10,14 +10,14 @@ import {
 
 import { ActiveRaffleBuilder } from '@ergo-raffle/boxes';
 import { raffleInfo } from '@ergo-raffle/contracts';
+import { FleetBoxSelection } from '@ergo-raffle/fleet-box-selection';
 import {
   DonationParamsEntity,
   DonationStatus,
 } from '@ergo-raffle/request-params';
 import { DonateTxBuilder } from '@ergo-raffle/transactions';
-
 import { ErgoNodeNetwork, signTransaction } from '@ergo-raffle/utils';
-import { FleetBoxSelection } from '@ergo-raffle/fleet-box-selection';
+
 import {
   Donation as DonationConfig,
   Ergo as ErgoConfig,
@@ -385,7 +385,7 @@ export class DonationService extends PeriodicTaskService {
       this.ergoNodeNetwork,
       unsignedTx,
       [walletKey],
-      this.ergoConfig.network == 'mainnet' ? Network.Mainnet : Network.Testnet,
+      raffleInfo.network === 'Mainnet' ? Network.Mainnet : Network.Testnet,
     );
 
     this.logger.debug(

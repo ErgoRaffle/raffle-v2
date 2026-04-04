@@ -37,7 +37,6 @@ export interface Ergo {
   mnemonic: string;
   fee: bigint;
   nodeUrl: string;
-  network: 'mainnet' | 'testnet';
 }
 
 export interface Bitcoin {
