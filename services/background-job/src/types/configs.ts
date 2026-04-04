@@ -49,7 +49,6 @@ export interface Txpot {
 
 export interface Ergo {
   fee: bigint;
-  network: 'mainnet' | 'testnet';
 }
 
 export interface HealthCheck {

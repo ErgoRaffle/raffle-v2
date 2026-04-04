@@ -13,7 +13,8 @@ import { DefaultLogger } from '@rosen-bridge/abstract-logger';
 import JsonBigInt from '@rosen-bridge/json-bigint';
 import { ProverBuilder$ } from 'sigmastate-js/main';
 
-import { configs } from '../config';
+import { raffleInfo } from '@ergo-raffle/contracts';
+
 import ErgoNodeNetwork from '../network/ergoNodeNetwork';
 import { TxPotService } from '../services/txPotService';
 import { BoxValue } from '../types/box';
@@ -50,7 +51,7 @@ export const signTransaction = async (
     context: await network.getStateContext(),
     parameters: await network.getBlockchainParameters(),
     network:
-      configs.ergo.network == 'mainnet' ? Network.Mainnet : Network.Testnet,
+      raffleInfo.network === 'Mainnet' ? Network.Mainnet : Network.Testnet,
     baseCost: 0,
   };
 
