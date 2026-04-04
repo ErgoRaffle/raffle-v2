@@ -181,6 +181,7 @@ program
     }
 
     const RaffleAddressesAndTokens = {
+      network: isTestnet ? 'Testnet' : 'Mainnet',
       addresses: contracts,
       tokens: tokens,
       constants: {
@@ -216,6 +217,7 @@ export const raffleInfo = ${JSON.stringify(RaffleAddressesAndTokens, null, 4)};
       './dist/index.d.ts',
       `\
 export const raffleInfo: {
+  "network": "Mainnet" | "Testnet",
   "addresses": {${addressesTypeString}
     },
     "tokens": {${tokensTypeString}

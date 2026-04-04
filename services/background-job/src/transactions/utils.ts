@@ -9,9 +9,9 @@ import { AbstractErgoEntity } from '@rosen-bridge/abstract-extractor';
 import { DefaultLogger } from '@rosen-bridge/abstract-logger';
 import JsonBigInt from '@rosen-bridge/json-bigint';
 
+import { raffleInfo } from '@ergo-raffle/contracts';
 import { ErgoNodeNetwork, signTransaction } from '@ergo-raffle/utils';
 
-import { configs } from '../config';
 import { TxPotService } from '../services/txPotService';
 import { BoxValue } from '../types/box';
 import { TxType } from '../types/transaction';
@@ -37,7 +37,7 @@ export const signAndAddTx = async (
       network,
       tx,
       [],
-      configs.ergo.network == 'mainnet' ? Network.Mainnet : Network.Testnet,
+      raffleInfo.network === 'Mainnet' ? Network.Mainnet : Network.Testnet,
     );
     await TxPotService.getInstance().addTx(signedTx, txType);
     return signedTx;

@@ -64,6 +64,7 @@ export class DonationProxyExtractor extends AbstractErgoBoxExtractor<
   /**
    * extract box data to proper format (not including spending information)
    * @param box
+   * @param inputExtensions
    * @return extracted data in proper format
    */
   extractBoxData = (

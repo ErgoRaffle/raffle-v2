@@ -1,4 +1,10 @@
-import { ErgoBox, OutputBuilder, TransactionBuilder } from '@fleet-sdk/core';
+import {
+  ErgoAddress,
+  ErgoBox,
+  Network,
+  OutputBuilder,
+  TransactionBuilder,
+} from '@fleet-sdk/core';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 
 import { raffleInfo } from '@ergo-raffle/contracts';
@@ -222,7 +228,13 @@ export class DonationService extends AbstractTxService {
     const donateTx = new DonateTxBuilder()
       .setActiveRaffle(activeRaffleBox)
       .setDonatorUtxos([proxyBox])
-      .setDonatorAddress(donationProxyEntity.address)
+      .setDonatorAddress(
+        ErgoAddress.fromErgoTree(
+          Buffer.from(donationProxyEntity.donatorErgoTree, 'hex'),
+        ).toString(
+          raffleInfo.network === 'Mainnet' ? Network.Mainnet : Network.Testnet,
+        ),
+      )
       .setDonationTicketCount(BigInt(donationProxyEntity.ticketCount))
       .setChainHeight(await this.network.getHeight())
       .setTxFee(configs.ergo.fee)

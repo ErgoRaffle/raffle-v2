@@ -9,9 +9,9 @@ import { ProverBuilder$ } from 'sigmastate-js/main';
 import { ServiceBuilder } from '@ergo-raffle/boxes';
 import { raffleInfo } from '@ergo-raffle/contracts';
 import { FleetBoxSelection } from '@ergo-raffle/fleet-box-selection';
+import { ErgoNodeNetwork } from '@ergo-raffle/utils';
 
 import { configs } from './config';
-import { ErgoNodeNetwork } from '@ergo-raffle/utils';
 
 const DEFAULT_SERVICE_FEE_PERCENT = 30n;
 const DEFAULT_IMPLEMENTER_FEE_PERCENT = 20n;
@@ -92,7 +92,7 @@ export const serviceBoxInit = async (
   const reducedStateContext = await network.getStateContext();
   const reducedBlockchainParams = await network.getBlockchainParameters();
   const reducedNetwork =
-    configs.ergo.network == 'mainnet' ? Network.Mainnet : Network.Testnet;
+    raffleInfo.network === 'Mainnet' ? Network.Mainnet : Network.Testnet;
 
   const reducedBuilder = ProverBuilder$.create(
     reducedBlockchainParams,

@@ -49,7 +49,6 @@
     "@rosen-bridge/discord-notification": "^1.0.0",
     "@rosen-bridge/ergo-scanner": "^1.0.2",
     "@rosen-bridge/extended-typeorm": "^1.0.1",
-    "@rosen-bridge/fastify-enhanced": "^2.0.1",
     "@rosen-bridge/health-check": "^8.0.0",
     "@rosen-bridge/json-bigint": "^1.1.0",
     "@rosen-bridge/scanner-interfaces": "^0.2.2",
