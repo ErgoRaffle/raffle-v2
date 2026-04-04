@@ -66,6 +66,7 @@ function mergeContextVarsAndRequiredAddress(
  * @param contextVars - variables of raffle-v2 scripts
  * @param outputsAsHex
  * @param trueScripts
+ * @param network
  * @returns object that contains compiled contracts
  */
 export function compileAll(

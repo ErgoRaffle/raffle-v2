@@ -92,7 +92,7 @@ export const serviceBoxInit = async (
   const reducedStateContext = await network.getStateContext();
   const reducedBlockchainParams = await network.getBlockchainParameters();
   const reducedNetwork =
-    configs.ergo.network == 'mainnet' ? Network.Mainnet : Network.Testnet;
+    raffleInfo.network === 'Mainnet' ? Network.Mainnet : Network.Testnet;
 
   const reducedBuilder = ProverBuilder$.create(
     reducedBlockchainParams,

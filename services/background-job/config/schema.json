@@ -253,18 +253,6 @@
             "error": "ergo node fee must be specified"
           }
         ]
-      },
-      "network": {
-        "type": "string",
-        "default": "mainnet",
-        "description": "ergo network",
-        "validations": [
-          {
-            "required": true,
-            "error": "ergo network must be specified"
-          },
-          { "choices": ["mainnet", "testnet"] }
-        ]
       }
     }
   },
