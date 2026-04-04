@@ -1,83 +1,22 @@
-import { SignedTransaction } from '@fleet-sdk/common';
 import {
   Box,
   ErgoBox,
   ErgoUnsignedTransaction,
   Network,
 } from '@fleet-sdk/core';
-import { bigintBE, hex } from '@fleet-sdk/crypto';
 import { deserializeBox } from '@fleet-sdk/serializer';
-import { ErgoHDKey } from '@fleet-sdk/wallet';
 import { AbstractErgoEntity } from '@rosen-bridge/abstract-extractor';
 import { DefaultLogger } from '@rosen-bridge/abstract-logger';
 import JsonBigInt from '@rosen-bridge/json-bigint';
-import { ProverBuilder$ } from 'sigmastate-js/main';
 
 import { raffleInfo } from '@ergo-raffle/contracts';
+import { ErgoNodeNetwork, signTransaction } from '@ergo-raffle/utils';
 
-import ErgoNodeNetwork from '../network/ergoNodeNetwork';
 import { TxPotService } from '../services/txPotService';
 import { BoxValue } from '../types/box';
 import { TxType } from '../types/transaction';
 
 const logger = DefaultLogger.getInstance().child(import.meta.url);
-
-/**
- * Signs an unsigned Ergo transaction with the provided keys.
- *
- * @param network - The network to use for the transaction.
- * @param unsigned - The unsigned Ergo transaction to sign.
- * @param keys - An array of ErgoHDKey objects containing the private keys for signing.
- * @returns A signed transaction if successful
- * @throws Throws an error if any key does not have a private key.
- */
-export const signTransaction = async (
-  network: ErgoNodeNetwork,
-  unsigned: ErgoUnsignedTransaction,
-  keys: ErgoHDKey[],
-): Promise<SignedTransaction> => {
-  // Validate that each key has a private key
-  for (const key of keys) {
-    if (!key.hasPrivateKey()) {
-      throw new Error(
-        `ErgoHDKey '${hex.encode(key.publicKey)}' must have a private key.`,
-      );
-    }
-  }
-
-  const eip12Tx = unsigned.toEIP12Object();
-
-  const params = {
-    context: await network.getStateContext(),
-    parameters: await network.getBlockchainParameters(),
-    network:
-      raffleInfo.network === 'Mainnet' ? Network.Mainnet : Network.Testnet,
-    baseCost: 0,
-  };
-
-  try {
-    const builder = ProverBuilder$.create(params.parameters, params.network);
-
-    for (const key of keys) {
-      builder.withDLogSecret(bigintBE.encode(key.privateKey as Uint8Array));
-    }
-
-    const prover = builder.build();
-
-    const reducedTx = prover.reduce(
-      params.context,
-      eip12Tx,
-      eip12Tx.inputs,
-      eip12Tx.dataInputs,
-      unsigned.burning.tokens,
-      params.baseCost,
-    );
-
-    return prover.signReduced(reducedTx, undefined);
-  } catch (e) {
-    throw new Error(`Failed to sign transaction: ${e}`);
-  }
-};
 
 /**
  * Signs a transaction and adds it to the txpot
@@ -94,7 +33,12 @@ export const signAndAddTx = async (
     logger.debug(
       `Trying to sign ${txType} transaction: ${JsonBigInt.stringify(tx.toEIP12Object())}`,
     );
-    const signedTx = await signTransaction(network, tx, []);
+    const signedTx = await signTransaction(
+      network,
+      tx,
+      [],
+      raffleInfo.network === 'Mainnet' ? Network.Mainnet : Network.Testnet,
+    );
     await TxPotService.getInstance().addTx(signedTx, txType);
     return signedTx;
   } catch (e) {

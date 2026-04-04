@@ -1,0 +1,44 @@
+{
+  "name": "@ergo-raffle/utils",
+  "version": "0.0.0",
+  "description": "Shared utility functions for ergo raffle",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ErgoRaffle/raffle-v2.git"
+  },
+  "license": "MIT",
+  "author": "ErgoRaffle Team",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsc --build tsconfig.build.json",
+    "clean": "rimraf dist && rimraf tsconfig.build.tsbuildinfo",
+    "lint": "eslint --fix . && npm run prettify",
+    "lint:check": "eslint . && npm run prettify:check",
+    "prettify": "prettier --write . --ignore-path ../../.gitignore",
+    "prettify:check": "prettier --check . --ignore-path ../../.gitignore",
+    "release": "npm run clean && npm run build && npm publish --access public",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fleet-sdk/common": "^0.10.0",
+    "@fleet-sdk/core": "^0.12.0",
+    "@fleet-sdk/crypto": "^0.11.0",
+    "@fleet-sdk/serializer": "^0.11.0",
+    "@fleet-sdk/wallet": "^0.12.0",
+    "@rosen-bridge/abstract-logger": "^4.0.0",
+    "@rosen-bridge/json-bigint": "^1.1.0",
+    "@rosen-clients/ergo-node": "^3.1.1",
+    "axios": "^1.13.2",
+    "sigmastate-js": "^0.4.6"
+  },
+  "engines": {
+    "node": ">=22.18.0",
+    "npm": "11.6.2"
+  }
+}
