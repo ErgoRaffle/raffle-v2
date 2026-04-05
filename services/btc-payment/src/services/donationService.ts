@@ -18,6 +18,7 @@ import {
 import { DonateTxBuilder } from '@ergo-raffle/transactions';
 import { ErgoNodeNetwork, signTransaction } from '@ergo-raffle/utils';
 
+import { BTC_DONATION_TX_TYPE } from '../constants';
 import {
   Donation as DonationConfig,
   Ergo as ErgoConfig,
@@ -392,7 +393,7 @@ export class DonationService extends PeriodicTaskService {
       `Donation transaction for raffle [${donation.raffleId}] signed (txJson: [${JsonBigInt.stringify(signedTx)}])`,
     );
 
-    // TODO: Send the signed transaction to background job service using the API
+    await TxPotService.getInstance().addTx(signedTx, BTC_DONATION_TX_TYPE);
 
     await DbService.getInstance()
       .getDonationAction()
