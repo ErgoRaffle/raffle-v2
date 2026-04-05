@@ -153,3 +153,6 @@ local.yml
 local.yaml
 
 .DS_Store
+
+# token map
+*tokenMap.json

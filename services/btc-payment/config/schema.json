@@ -368,5 +368,57 @@
         ]
       }
     }
+  },
+  "tokenMap": {
+    "type": "object",
+    "children": {
+      "type": {
+        "type": "string",
+        "description": "token map type: file, url",
+        "default": "file",
+        "validations": [
+          {
+            "required": true,
+            "error": "token map type must be specified"
+          },
+          { "choices": ["file", "url"] }
+        ]
+      },
+      "path": {
+        "type": "string",
+        "description": "token map path",
+        "default": "config/tokenMap.json",
+        "validations": [
+          {
+            "required": true,
+            "when": { "path": "tokenMap.type", "value": "file" },
+            "error": "token map path must be specified when type is file"
+          }
+        ]
+      },
+      "url": {
+        "type": "string",
+        "description": "token map url",
+        "validations": [
+          {
+            "required": true,
+            "when": { "path": "tokenMap.type", "value": "url" },
+            "error": "token map url must be specified when type is url"
+          }
+        ]
+      },
+      "refreshIntrval": {
+        "type": "number",
+        "default": 3600,
+        "description": "seconds between token map refreshes when type is url",
+        "validations": [
+          {
+            "required": true,
+            "when": { "path": "tokenMap.type", "value": "url" },
+            "error": "token map refresh interval must be specified when type is url"
+          }
+        ]
+      }
+    }
   }
 }

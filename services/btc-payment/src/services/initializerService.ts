@@ -12,6 +12,7 @@ import { ApiService } from './apiService';
 import { DbService } from './dbService';
 import { DonationService } from './donationService';
 import { ScannerService } from './scannerService';
+import { TokenMapService } from './tokenMapService';
 
 export class InitializerService extends AbstractService {
   name = 'InitializerService';
@@ -53,6 +54,10 @@ export class InitializerService extends AbstractService {
    * Returns the dependencies of the InitializerService
    */
   protected dependencies: Dependency[] = [
+    {
+      serviceName: TokenMapService.name,
+      allowedStatuses: [ServiceStatus.running],
+    },
     {
       serviceName: DbService.name,
       allowedStatuses: [ServiceStatus.running],
@@ -104,10 +109,16 @@ export class InitializerService extends AbstractService {
     // Create logger instances for each service
     const defaultLogger = DefaultLogger.getInstance();
 
+    const tokenMapLogger = defaultLogger.child('TokenMapService');
     const dbLogger = defaultLogger.child('DbService');
     const scannerLogger = defaultLogger.child('ScannerService');
     const apiLogger = defaultLogger.child('ApiService');
     const donationLogger = defaultLogger.child('DonationService');
+
+    // Initialize token map service
+    this.logger.debug('Initializing token map service');
+    TokenMapService.init(configs.tokenMap, tokenMapLogger);
+    this.logger.debug('Token map service initialized');
 
     // Initialize database service
     this.logger.debug('Initializing database service');
@@ -143,6 +154,7 @@ export class InitializerService extends AbstractService {
   private registerAllServices = async (): Promise<void> => {
     this.logger.debug('Registering all services with ServiceManager...');
     // Register all services
+    this.serviceManager.register(TokenMapService.getInstance());
     this.serviceManager.register(DbService.getInstance());
     this.serviceManager.register(ScannerService.getInstance());
     this.serviceManager.register(ApiService.getInstance());

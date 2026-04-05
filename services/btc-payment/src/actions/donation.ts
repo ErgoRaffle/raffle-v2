@@ -1,4 +1,6 @@
 import { DataSource, Repository } from '@rosen-bridge/extended-typeorm';
+import { TokenMap } from '@rosen-bridge/tokens';
+import { BITCOIN_CHAIN_NAME, ERG_TOKEN_ID } from 'src/constants';
 
 import { InactiveRaffleEntity } from '@ergo-raffle/extractors';
 import {
@@ -41,6 +43,7 @@ class DonationAction {
       | 'requiredValue'
       | 'status'
     >,
+    tokenMap: TokenMap,
   ): Promise<DonationParamsEntity> => {
     const raffleData = await this.raffleRepository.findOne({
       where: { raffleId: donationParams.raffleId },
@@ -52,10 +55,22 @@ class DonationAction {
     const donationAmount =
       BigInt(donationParams.ticketCount) * raffleData.ticketPrice;
 
+    const token = tokenMap.getTokenSet(
+      raffleData.collectingTokenId || ERG_TOKEN_ID,
+    );
+    if (!token) {
+      throw new Error(
+        `Token ${raffleData.collectingTokenId || ERG_TOKEN_ID} not found in token map`,
+      );
+    }
+    if (!token[BITCOIN_CHAIN_NAME]) {
+      throw new Error(
+        `Bitcoin token id not found for token ${raffleData.collectingTokenId || ERG_TOKEN_ID}`,
+      );
+    }
     const savedParams = await this.repository.insert({
       ...donationParams,
-      // TODO: Use the btc-side token id using the token map data
-      tokenId: raffleData.collectingTokenId || 'erg',
+      tokenId: token[BITCOIN_CHAIN_NAME].tokenId,
       tokenAmount: donationAmount,
       timestamp: Date.now(),
       status: DonationStatus.Pending,

@@ -12,6 +12,7 @@ import { configs } from '../../configs';
 import * as ConfigTypes from '../../types/configs';
 import { DbService } from '../dbService';
 import { ScannerService } from '../scannerService';
+import { TokenMapService } from '../tokenMapService';
 import { registerDonationRoute } from './donationRoute';
 
 export class ApiService extends AbstractService {
@@ -55,6 +56,10 @@ export class ApiService extends AbstractService {
     },
     {
       serviceName: ScannerService.name,
+      allowedStatuses: [ServiceStatus.running],
+    },
+    {
+      serviceName: TokenMapService.name,
       allowedStatuses: [ServiceStatus.running],
     },
   ];
@@ -121,6 +126,7 @@ export class ApiService extends AbstractService {
       this.logger.child('donationRoute'),
       this.addressDeriver,
       ScannerService.getInstance().addDynamicAddress,
+      TokenMapService.getInstance().getTokenMap(),
     );
   };
 }

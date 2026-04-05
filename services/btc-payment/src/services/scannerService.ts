@@ -35,7 +35,7 @@ export class ScannerService extends PeriodicTaskService {
     const { url, timeout, username, password } = this.config.rpc;
     const network = new BitcoinRpcNetwork(
       url,
-      timeout,
+      timeout * 1000, // convert to milliseconds
       username && password ? { username, password } : undefined,
     );
     this.bitcoinScanner = new BitcoinRpcScanner({

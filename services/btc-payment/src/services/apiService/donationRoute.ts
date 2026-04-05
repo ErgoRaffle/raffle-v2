@@ -1,5 +1,6 @@
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { FastifyWithZod } from '@rosen-bridge/fastify-enhanced';
+import { TokenMap } from '@rosen-bridge/tokens';
 
 import { AddressDeriver } from '../../bitcoin/addressDeriver';
 import { donationRequestSchema, donationResponseSchema } from '../../types/api';
@@ -12,6 +13,7 @@ export const registerDonationRoute = (
   logger: AbstractLogger,
   addressDeriver: AddressDeriver,
   addWatchingAddress: (address: string, tokenId: string) => void,
+  tokenMap: TokenMap,
 ) => {
   fastify.post(
     '/api/donation',
@@ -38,12 +40,15 @@ export const registerDonationRoute = (
         const bitcoinAddress =
           await addressDeriver.deriveAddress(lastDonationParamsId);
 
-        const savedDonationParams = await donationAction.save({
-          raffleId,
-          ticketCount,
-          donatorAddress,
-          bitcoinAddress,
-        });
+        const savedDonationParams = await donationAction.save(
+          {
+            raffleId,
+            ticketCount,
+            donatorAddress,
+            bitcoinAddress,
+          },
+          tokenMap,
+        );
         await addWatchingAddress(bitcoinAddress, savedDonationParams.tokenId);
 
         return {
