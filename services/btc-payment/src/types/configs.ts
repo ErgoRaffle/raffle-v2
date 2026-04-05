@@ -72,6 +72,8 @@ export interface Donation {
 }
 
 export interface TokenMap {
-  url?: string;
+  type: 'file' | 'url';
   path?: string;
+  url?: string;
+  refreshIntrval?: number;
 }

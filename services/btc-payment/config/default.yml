@@ -31,4 +31,6 @@ donation:
   requiredConfirmations: 2
   requestTimeout: 3600
 tokenMap:
+  type: file
   path: config/tokenMap.json
+  refreshIntrval: 3600

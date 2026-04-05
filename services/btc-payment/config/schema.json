@@ -372,9 +372,17 @@
   "tokenMap": {
     "type": "object",
     "children": {
-      "url": {
+      "type": {
         "type": "string",
-        "description": "token map url"
+        "description": "token map type: file, url",
+        "default": "file",
+        "validations": [
+          {
+            "required": true,
+            "error": "token map type must be specified"
+          },
+          { "choices": ["file", "url"] }
+        ]
       },
       "path": {
         "type": "string",
@@ -383,7 +391,31 @@
         "validations": [
           {
             "required": true,
-            "error": "token map path must be specified when url is not set"
+            "when": { "path": "tokenMap.type", "value": "file" },
+            "error": "token map path must be specified when type is file"
+          }
+        ]
+      },
+      "url": {
+        "type": "string",
+        "description": "token map url",
+        "validations": [
+          {
+            "required": true,
+            "when": { "path": "tokenMap.type", "value": "url" },
+            "error": "token map url must be specified when type is url"
+          }
+        ]
+      },
+      "refreshIntrval": {
+        "type": "number",
+        "default": 3600,
+        "description": "seconds between token map refreshes when type is url",
+        "validations": [
+          {
+            "required": true,
+            "when": { "path": "tokenMap.type", "value": "url" },
+            "error": "token map refresh interval must be specified when type is url"
           }
         ]
       }
