@@ -30,3 +30,5 @@ donation:
   interval: 60
   requiredConfirmations: 2
   requestTimeout: 3600
+tokenMap:
+  path: config/tokenMap.json

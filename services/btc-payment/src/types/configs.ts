@@ -1,4 +1,5 @@
 export interface BtcPaymentConfig {
+  tokenMap: TokenMap;
   donation: Donation;
   bitcoin: Bitcoin;
   ergo: Ergo;
@@ -68,4 +69,9 @@ export interface Donation {
   interval: number;
   requiredConfirmations: number;
   requestTimeout: number;
+}
+
+export interface TokenMap {
+  url?: string;
+  path?: string;
 }

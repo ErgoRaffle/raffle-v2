@@ -368,5 +368,25 @@
         ]
       }
     }
+  },
+  "tokenMap": {
+    "type": "object",
+    "children": {
+      "url": {
+        "type": "string",
+        "description": "token map url"
+      },
+      "path": {
+        "type": "string",
+        "description": "token map path",
+        "default": "config/tokenMap.json",
+        "validations": [
+          {
+            "required": true,
+            "error": "token map path must be specified when url is not set"
+          }
+        ]
+      }
+    }
   }
 }
