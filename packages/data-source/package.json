@@ -4,7 +4,7 @@
   "description": "Implements the shared data-source",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ErgoRaffle/raffle-v2"
+    "url": "git+https://github.com/ergoraffle/raffle-v2"
   },
   "license": "MIT",
   "author": "ErgoRaffle Team",
@@ -26,6 +26,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@ergo-raffle/db-views": "^0.0.0",
     "@ergo-raffle/dynamic-extractor": "0.0.0",
     "@ergo-raffle/extractors": "0.0.0",
     "@ergo-raffle/request-params": "0.0.0",

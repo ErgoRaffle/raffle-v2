@@ -4,7 +4,7 @@
   "description": "Build and manage proxy transactions",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ErgoRaffle/raffle-v2"
+    "url": "git+https://github.com/ergoraffle/raffle-v2"
   },
   "license": "MIT",
   "author": "Ergo Raffle Team",
