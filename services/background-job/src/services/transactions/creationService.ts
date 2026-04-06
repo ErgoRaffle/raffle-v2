@@ -153,6 +153,7 @@ export class CreationService extends AbstractTxService {
       )
       .setImplementerErgoTree(creationProxyEntity.implementerErgoTree)
       .setOrganizerErgoTree(creationProxyEntity.organizerErgoTree)
+      .setProjectErgoTree(creationProxyEntity.projectErgoTree)
       .setInactiveRaffleValue(proxyBox.value - configs.ergo.fee * 2n)
       .setChainHeight(chainHeight)
       .setTxFee(configs.ergo.fee)

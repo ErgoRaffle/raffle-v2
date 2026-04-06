@@ -69,8 +69,6 @@ export const registerDonationRoute = (
           data: {
             tokenAmount: tokenAmount.toString(),
             tokenId: btcTokenId,
-            requiredTokenId: savedDonationParams.tokenId.toString(),
-            requiredTokenCount: savedDonationParams.tokenAmount.toString(),
             bitcoinAddress,
           },
         };
