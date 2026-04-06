@@ -10,6 +10,10 @@ import {
 } from '@rosen-bridge/tx-pot';
 
 import {
+  RaffleView,
+  migrations as dbViewMigrations,
+} from '@ergo-raffle/db-views';
+import {
   DynamicBoxEntity,
   migrations as dynamicBoxMigrations,
 } from '@ergo-raffle/dynamic-extractor';
@@ -61,6 +65,7 @@ const ENTITIES = [
   CreationProxyEntity,
   DonationProxyEntity,
   AddGiftProxyEntity,
+  RaffleView,
 ];
 
 const MIGRATIONS = {
@@ -70,6 +75,7 @@ const MIGRATIONS = {
     ...extractorsMigrations.sqlite,
     ...requestParamsMigrations.sqlite,
     ...dynamicBoxMigrations.sqlite,
+    ...dbViewMigrations.sqlite,
   ],
   postgres: [
     ...scannerMigrations.postgres,
@@ -77,6 +83,7 @@ const MIGRATIONS = {
     ...extractorsMigrations.postgres,
     ...requestParamsMigrations.postgres,
     ...dynamicBoxMigrations.postgres,
+    ...dbViewMigrations.postgres,
   ],
 };
 
