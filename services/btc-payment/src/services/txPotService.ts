@@ -1,5 +1,8 @@
 import { Amount, Box, SignedTransaction } from '@fleet-sdk/common';
-import { deserializeTransaction } from '@fleet-sdk/serializer';
+import {
+  deserializeTransaction,
+  serializeTransaction,
+} from '@fleet-sdk/serializer';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { DataSource } from '@rosen-bridge/extended-typeorm';
 import {
@@ -9,6 +12,7 @@ import {
 } from '@rosen-bridge/service-manager';
 import { TransactionStatus, TxPot } from '@rosen-bridge/tx-pot';
 
+import * as constants from '../constants';
 import { DbService } from './dbService';
 
 export class TxPotService extends AbstractService {
@@ -72,6 +76,23 @@ export class TxPotService extends AbstractService {
   protected stop = async (): Promise<boolean> => {
     this.setStatus(ServiceStatus.dormant);
     return true;
+  };
+
+  /**
+   * Serializes and persists a signed transaction in TxPot with SIGNED status.
+   *
+   * @param tx - The signed Ergo transaction to add.
+   * @param txType - The transaction type identifier
+   */
+  addTx = async (tx: SignedTransaction, txType: string): Promise<void> => {
+    await TxPot.getInstance().addTx(
+      tx.id,
+      constants.ERGO_CHAIN_NAME,
+      txType,
+      0,
+      Buffer.from(serializeTransaction(tx).toBytes()).toString('base64'),
+      TransactionStatus.SIGNED,
+    );
   };
 
   /**
