@@ -117,4 +117,9 @@ export class DbService extends AbstractService {
     if (this.dynamicBoxAction) return this.dynamicBoxAction;
     throw new Error('Service has not started');
   };
+
+  getDataSource = (): DataSource => {
+    if (this.dataSource) return this.dataSource;
+    throw new Error('Service has not started');
+  };
 }

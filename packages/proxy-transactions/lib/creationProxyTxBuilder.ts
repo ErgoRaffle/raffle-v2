@@ -400,6 +400,9 @@ export class CreationProxyTxBuilder {
       .from([firstInput, ...selectedFeeBoxes.slice(1)])
       .to([proxyBox])
       .payFee(this.txFee!)
+      .configureSelector((selector) => {
+        selector.defineStrategy((inputs) => inputs);
+      })
       .sendChangeTo(this.organizerErgoTree!)
       .build();
 

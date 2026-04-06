@@ -175,9 +175,11 @@ export class DynamicExtractor extends AbstractExtractor<
    */
   addNewAddress = (address: string, tokenId: string) => {
     try {
-      if (!validateAddress('bitcoin', address)) {
+      try {
+        bitcoin.address.fromBech32(address);
+      } catch (error) {
         throw new Error(
-          `Invalid Bitcoin address ${address}, address will be ignored`,
+          `Invalid Bitcoin address ${address}, address will be ignored, error: ${error}`,
         );
       }
       if (this.addressWatchList.has(address)) {
