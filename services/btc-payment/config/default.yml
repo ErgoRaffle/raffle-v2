@@ -16,6 +16,10 @@ database:
 api:
   host: localhost
   port: 3000
+captcha:
+  enabled: true
+  secret: 6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe
+  url: https://www.google.com/recaptcha/api/siteverify
 ergo:
   fee: 1500000
 bitcoin:

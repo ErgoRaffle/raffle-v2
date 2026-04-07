@@ -3,12 +3,60 @@ import { FastifyWithZod } from '@rosen-bridge/fastify-enhanced';
 
 import { AddressDeriver } from '../../bitcoin/addressDeriver';
 import { BTC_TOKEN_ID, ERG_TOKEN_ID } from '../../constants';
-import { donationRequestSchema, donationResponseSchema } from '../../types/api';
+import {
+  Captcha as CaptchaConfig,
+  donationRequestSchema,
+  donationResponseSchema,
+} from '../../types';
 import { DbService } from '../dbService';
 import { TokenMapService } from '../tokenMapService';
 
-// TODO: Add captcha verification
-// local/ergo/ergoraffle/raffle-v2/-/issues/125
+/**
+ * Verifies a captcha token using the configured captcha provider endpoint.
+ *
+ * @param captchaToken - Token received from client-side captcha widget.
+ * @param captcha - Captcha config with `secret` and `url` for verification.
+ * @param logger - Route logger used for error/diagnostic logs.
+ * @returns True if token is successfully verified; otherwise false.
+ */
+const verifyCaptchaToken = async (
+  captchaToken: string,
+  captcha: CaptchaConfig,
+  logger: AbstractLogger,
+): Promise<boolean> => {
+  const secret = captcha.secret!.trim();
+  const payload = new URLSearchParams({
+    secret,
+    response: captchaToken,
+  });
+
+  const response = await fetch(captcha.url!, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: payload.toString(),
+  });
+
+  if (!response.ok) {
+    logger.warn(`Captcha verification failed with status ${response.status}`);
+    return false;
+  }
+  const verificationResult: { success?: boolean } = await response.json();
+  return verificationResult.success === true;
+};
+
+/**
+ * Registers POST /api/donation with captcha verification and donation handling.
+ *
+ * @param fastify - Fastify instance with Zod schemas.
+ * @param logger - Logger for the route.
+ * @param addressDeriver - Derives Bitcoin addresses for donations.
+ * @param addWatchingAddress - Registers an address for chain scanning.
+ * @param tokenMapService - Resolves BTC token mapping for the raffle.
+ * @param donationFee - Additional fee in satoshi included in the donation response.
+ * @param captcha - Captcha provider `secret` and verification endpoint `url`.
+ */
 export const registerDonationRoute = (
   fastify: FastifyWithZod,
   logger: AbstractLogger,
@@ -16,6 +64,7 @@ export const registerDonationRoute = (
   addWatchingAddress: (address: string, tokenId: string) => void,
   tokenMapService: TokenMapService,
   donationFee: bigint,
+  captcha: CaptchaConfig,
 ) => {
   fastify.post(
     '/api/donation',
@@ -31,7 +80,32 @@ export const registerDonationRoute = (
     },
     async (request) => {
       try {
-        const { ticketCount, raffleId, donatorAddress } = request.body;
+        const { ticketCount, raffleId, donatorAddress, captchaToken } =
+          request.body;
+
+        if (captcha.enabled) {
+          if (!captchaToken) {
+            return {
+              success: false,
+              message: 'Captcha token is required',
+              data: {},
+            };
+          }
+
+          const captchaVerified = await verifyCaptchaToken(
+            captchaToken,
+            captcha,
+            logger,
+          );
+          if (!captchaVerified) {
+            return {
+              success: false,
+              message: 'Captcha verification failed',
+              data: {},
+            };
+          }
+          logger.info('Captcha verified successfully');
+        }
 
         logger.info(
           `Donation requested: ${ticketCount} tickets for raffle ${raffleId}`,

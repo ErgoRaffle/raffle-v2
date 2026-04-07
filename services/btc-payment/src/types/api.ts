@@ -11,12 +11,17 @@ export const donationRequestSchema = types.object({
   ticketCount: types.number().positive().describe('Number of tickets to buy'),
   raffleId: types.string().min(1).describe('Raffle Id to donate to'),
   donatorAddress: types.string().min(1).describe('Donator address'),
+  captchaToken: types
+    .string()
+    .min(1)
+    .optional()
+    .describe('Captcha token when captcha validation is enabled'),
 });
 
 // Donation response data schema
 export const donationResponseDataSchema = types.object({
-  bitcoinAddress: types.string(),
-  satoshiAmount: types.string(),
+  bitcoinAddress: types.string().optional(),
+  satoshiAmount: types.string().optional(),
   tokenId: types.string().optional(),
   tokenAmount: types.string().optional(),
 });
