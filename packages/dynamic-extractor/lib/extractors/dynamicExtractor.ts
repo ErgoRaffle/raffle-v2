@@ -1,6 +1,5 @@
 import { AbstractExtractor } from '@rosen-bridge/abstract-extractor';
 import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
-import { validateAddress } from '@rosen-bridge/address-codec';
 import {
   BitcoinRpcTransaction,
   BitcoinRpcTxOutput,
@@ -204,9 +203,11 @@ export class DynamicExtractor extends AbstractExtractor<
    */
   removeAddress = (address: string) => {
     try {
-      if (!validateAddress('bitcoin', address)) {
+      try {
+        bitcoin.address.fromBech32(address);
+      } catch (error) {
         throw new Error(
-          `Invalid Bitcoin address ${address}, address will be ignored`,
+          `Invalid Bitcoin address ${address}, address will be ignored, error: ${error}`,
         );
       }
       this.addressWatchList.delete(address);
