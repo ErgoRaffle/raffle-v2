@@ -119,6 +119,7 @@ describe('Raffle', () => {
         )
         .setRaffleName('Test failed token-goal raffle')
         .setRaffleDescription('Test Raffle Description')
+        .setRaffleTags('')
         .setTicketTokenCount(100n)
         .setChainHeight(boxFactory.chain.height)
         .setTxFee(testUtils.TestConstants.FEE)

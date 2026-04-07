@@ -56,7 +56,7 @@ export class CreationProxyExtractor extends AbstractErgoBoxExtractor<
           .length == 4 &&
         box.additionalRegisters.R6 != undefined &&
         (SConstant.from(box.additionalRegisters.R6).data as Uint8Array[])
-          .length >= 2 &&
+          .length >= 3 &&
         box.additionalRegisters.R7 != undefined &&
         Number.isInteger(SConstant.from(box.additionalRegisters.R7).data)
       );
@@ -83,7 +83,7 @@ export class CreationProxyExtractor extends AbstractErgoBoxExtractor<
       .data as number;
 
     const pictures = r6Register
-      .slice(2)
+      .slice(3)
       .map((pic) => Buffer.from(pic).toString());
     let implementerErgoTree = '';
     let organizerErgoTree = '';
@@ -122,6 +122,7 @@ export class CreationProxyExtractor extends AbstractErgoBoxExtractor<
       collectingTokenId: box.assets.length > 0 ? box.assets[0].tokenId : 'erg',
       name: Buffer.from(r6Register[0]).toString(),
       description: Buffer.from(r6Register[1]).toString(),
+      tags: Buffer.from(r6Register[2]).toString(),
       pictures: JSON.stringify(pictures),
       winnerCount: r7Register,
       serialized: Buffer.from(serializeBox(box).toBytes()).toString('base64'),

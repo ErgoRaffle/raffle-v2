@@ -27,6 +27,7 @@ export class CreationProxyTxBuilder {
   private creationFee?: bigint;
   private name?: string;
   private description?: string;
+  private tags?: string;
   private ticketPrice?: bigint;
   private goal?: bigint;
   private winnersPercent?: number;
@@ -136,6 +137,16 @@ export class CreationProxyTxBuilder {
    */
   setDescription = (description: string): this => {
     this.description = description;
+    return this;
+  };
+
+  /**
+   * Set the raffle tags string (required; pass an empty string when there are no tags)
+   * @param tags - Tags string (e.g. comma-separated labels)
+   * @returns this builder instance
+   */
+  setTags = (tags: string): this => {
+    this.tags = tags;
     return this;
   };
 
@@ -261,6 +272,8 @@ export class CreationProxyTxBuilder {
     if (!this.creationFee) throw new Error('Creation fee not set');
     if (!this.name) throw new Error('Raffle name not set');
     if (!this.description) throw new Error('Raffle description not set');
+    if (this.tags === undefined)
+      throw new Error('Tags not set (use empty string for none)');
     if (!this.ticketPrice) throw new Error('Ticket price not set');
     if (!this.goal) throw new Error('Goal not set');
     if (this.winnersPercent == null) throw new Error('Winners percent not set');
@@ -327,6 +340,7 @@ export class CreationProxyTxBuilder {
       R6: SColl(SColl(SByte), [
         Array.from(Buffer.from(this.name!)),
         Array.from(Buffer.from(this.description!)),
+        Array.from(Buffer.from(this.tags!)),
         ...(this.pictures ?? []).map((p) => Array.from(Buffer.from(p))),
       ]).toHex(),
       R7: SInt(this.winnerCount!).toHex(),

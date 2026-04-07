@@ -110,6 +110,7 @@ export class RaffleDetailsAction extends AbstractErgoBoxAction<
         raffleId: box.raffleId,
         name: box.name,
         description: box.description,
+        tags: box.tags,
       };
     });
   };
@@ -165,6 +166,7 @@ export class RaffleDetailsAction extends AbstractErgoBoxAction<
         serialized: data.serialized,
         name: data.name,
         description: data.description,
+        tags: data.tags,
         pictures: pictures[index].map((pic) => ({
           raffleId: pic.raffleId,
           orderIndex: pic.orderIndex,

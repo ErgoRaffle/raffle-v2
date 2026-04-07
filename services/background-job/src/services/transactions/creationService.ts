@@ -142,6 +142,7 @@ export class CreationService extends AbstractTxService {
       .setFeeBoxes(boxes)
       .setRaffleName(creationProxyEntity.name)
       .setRaffleDescription(creationProxyEntity.description)
+      .setRaffleTags(creationProxyEntity.tags)
       .setRafflePictures(JSON.parse(creationProxyEntity.pictures) as string[])
       .setTicketPrice(creationProxyEntity.ticketPrice)
       .setGoal(creationProxyEntity.goal)

@@ -18,6 +18,7 @@ export const sampleRaffleDetailsBoxes: OutputBox[] = [
       R4: SColl(SColl(SByte), [
         Array.from(Buffer.from('Test')),
         Array.from(Buffer.from('Some descriptions...')),
+        Array.from(Buffer.from('tag1,tag2')),
         Array.from(Buffer.from('picture content 1')),
         Array.from(Buffer.from('picture content 2')),
         Array.from(Buffer.from('picture content 3')),
@@ -34,6 +35,7 @@ export const sampleRaffleDetailsExtractedData = {
   txId: sampleRaffleDetailsBoxes[0].transactionId,
   name: 'Test',
   description: 'Some descriptions...',
+  tags: 'tag1,tag2',
   pictures: [
     {
       content: 'picture content 1',
@@ -56,8 +58,5 @@ export const sampleRaffleDetailsExtractedData = {
   ],
   raffleId: 'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
   serialized:
-    'wMOTBxkGAQEB0XMArtBiAdKd6qXYCV/jCTCEVBKwk9K6dbSOMcJd/58FpnOWdzD7' +
-    'AQEaBQRUZXN0FFNvbWUgZGVzY3JpcHRpb25zLi4uEXBpY3R1cmUgY29udGVudCAx' +
-    'EXBpY3R1cmUgY29udGVudCAyEXBpY3R1cmUgY29udGVudCAzNtvaID0hQ6UZV5Qd' +
-    'ej+liHlZIchm/0B14+5umR8MYtUB',
+    'wMOTBxkGAQEB0XMArtBiAdKd6qXYCV/jCTCEVBKwk9K6dbSOMcJd/58FpnOWdzD7AQEaBgRUZXN0FFNvbWUgZGVzY3JpcHRpb25zLi4uCXRhZzEsdGFnMhFwaWN0dXJlIGNvbnRlbnQgMRFwaWN0dXJlIGNvbnRlbnQgMhFwaWN0dXJlIGNvbnRlbnQgMzbb2iA9IUOlGVeUHXo/pYh5WSHIZv9AdePubpkfDGLVAQ==',
 };

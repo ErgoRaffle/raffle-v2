@@ -24,7 +24,8 @@
   //   R6: Coll[Coll[Byte]] = [
   //         name,
   //         description,
-  //         pictures (optional, from index 2 onward)
+  //         tags,
+  //         pictures (optional, from index 3 onward)
   //       ]
   //
   //   R7: Int = winnersCount

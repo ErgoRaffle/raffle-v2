@@ -54,6 +54,7 @@ export class Migration1774542877898 implements MigrationInterface {
                 "collectingTokenId" character varying NOT NULL,
                 "name" character varying NOT NULL,
                 "description" character varying NOT NULL,
+                "tags" character varying NOT NULL,
                 "pictures" text NOT NULL,
                 "winnerCount" integer NOT NULL,
                 CONSTRAINT "UQ_dc8a55846404e70e4bc1c0ecd9d" UNIQUE ("identifier", "extractor"),
@@ -159,6 +160,7 @@ export class Migration1774542877898 implements MigrationInterface {
                 "raffleId" character varying NOT NULL,
                 "name" character varying NOT NULL,
                 "description" character varying NOT NULL,
+                "tags" character varying NOT NULL,
                 CONSTRAINT "UQ_109f63f620bd465691539f77314" UNIQUE ("identifier", "extractor"),
                 CONSTRAINT "PK_b63c664cdd5dfc4bb7f4dfe5072" PRIMARY KEY ("id")
             )

@@ -53,6 +53,7 @@ export class Migration1774542753390 implements MigrationInterface {
                 "collectingTokenId" varchar NOT NULL,
                 "name" varchar NOT NULL,
                 "description" varchar NOT NULL,
+                "tags" varchar NOT NULL,
                 "pictures" text NOT NULL,
                 "winnerCount" integer NOT NULL,
                 CONSTRAINT "UQ_dc8a55846404e70e4bc1c0ecd9d" UNIQUE ("identifier", "extractor")
@@ -153,6 +154,7 @@ export class Migration1774542753390 implements MigrationInterface {
                 "raffleId" varchar NOT NULL,
                 "name" varchar NOT NULL,
                 "description" varchar NOT NULL,
+                "tags" varchar NOT NULL,
                 CONSTRAINT "UQ_109f63f620bd465691539f77314" UNIQUE ("identifier", "extractor")
             )
         `);

@@ -68,6 +68,7 @@ describe('RaffleDetailsExtractor', () => {
           R4: SColl(SColl(SByte), [
             Array.from(Buffer.from('Test')),
             Array.from(Buffer.from('Some descriptions...')),
+            Array.from(Buffer.from('tag1,tag2')),
             Array.from(Buffer.from('picture content 1')),
             Array.from(Buffer.from('picture content 2')),
             Array.from(Buffer.from('updated picture content 3')),
@@ -134,23 +135,26 @@ describe('RaffleDetailsExtractor', () => {
     });
 
     /**
-     * @target should return false when the length of R4 is less than 2
+     * @target should return false when the length of R4 is less than 3
      * @dependencies
      * @scenario
      * - call the hasData functions
-     * - check if RaffleDetails box R4 length is less than 2
+     * - check if RaffleDetails box R4 length is less than 3
      * - result must be false
      * @expected
      * - RaffleDetails box checking result must be false
      */
-    it<TestInterface>(`should return false when the length of R4 is less than 2`, async ({
+    it<TestInterface>(`should return false when the length of R4 is less than 3`, async ({
       extractor,
     }) => {
       const extractedData = await extractor.hasBoxData({
         ...sampleRaffleDetailsBoxes[0],
         additionalRegisters: {
           ...sampleRaffleDetailsBoxes[0].additionalRegisters,
-          R4: SColl(SColl(SByte), [Array.from(Buffer.from('abcdef'))]).toHex(),
+          R4: SColl(SColl(SByte), [
+            Array.from(Buffer.from('abcdef')),
+            Array.from(Buffer.from('abcdef')),
+          ]).toHex(),
         },
       });
 

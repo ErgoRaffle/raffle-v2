@@ -51,6 +51,7 @@ export interface CreationProxyBoxInterface extends AbstractEntityData {
   collectingTokenId: string;
   name: string;
   description: string;
+  tags: string;
   pictures: string;
   winnerCount: number;
 }
@@ -88,6 +89,7 @@ export interface RaffleDetailsBoxInterface extends AbstractRaffleBoxInterface {
   id?: number;
   name: string;
   description: string;
+  tags: string;
   pictures?: PictureInterface[];
 }
 

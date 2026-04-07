@@ -16,7 +16,7 @@ import { InactiveRaffleBuilder } from './inactiveRaffleBuilder';
  * Raffle Details box holds additional information about a raffle
  *
  * Registers:
- *   R4[Coll[Coll[Byte]]]: [Name, Description, Pictures(optional)]
+ *   R4[Coll[Coll[Byte]]]: [Name, Description, Tags, Pictures(optional)]
  * Tokens:
  *   0: Ticket
  */
@@ -26,6 +26,7 @@ export class RaffleDetailsBuilder {
   private creationHeight?: number;
   private name?: string;
   private description?: string;
+  private tags?: string;
   private pictures: string[] = [];
   private ticketTokenId?: string;
   private ticketTokenAmount?: bigint;
@@ -50,6 +51,7 @@ export class RaffleDetailsBuilder {
     builder
       .setName(inactiveRaffleBuilder.getName())
       .setDescription(inactiveRaffleBuilder.getDescription())
+      .setTags(inactiveRaffleBuilder.getTags())
       .setValue(inactiveRaffleBuilder.getTxFee())
       .setTicketToken(inactiveRaffleBuilder.getTicketId(), 1n)
       .setTxFee(inactiveRaffleBuilder.getTxFee());
@@ -103,6 +105,16 @@ export class RaffleDetailsBuilder {
   };
 
   /**
+   * Set the raffle tags string (required; pass an empty string when there are no tags)
+   * @param tags - Tags string (e.g. comma-separated labels)
+   * @returns this builder instance
+   */
+  setTags = (tags: string): this => {
+    this.tags = tags;
+    return this;
+  };
+
+  /**
    * Add a picture to the raffle details
    * @param picture - Picture content
    * @returns this builder instance
@@ -143,6 +155,8 @@ export class RaffleDetailsBuilder {
     if (!this.creationHeight) throw new Error('Creation height not set');
     if (!this.name) throw new Error('Name not set');
     if (!this.description) throw new Error('Description not set');
+    if (this.tags === undefined)
+      throw new Error('Tags not set (use empty string for none)');
     if (!this.ticketTokenId) throw new Error('Ticket token not set');
     if (!this.ticketTokenAmount) throw new Error('Ticket token amount not set');
 
@@ -164,12 +178,13 @@ export class RaffleDetailsBuilder {
     // Convert strings to byte arrays
     const nameBytes = Array.from(Buffer.from(this.name!));
     const descriptionBytes = Array.from(Buffer.from(this.description!));
+    const tagsBytes = Array.from(Buffer.from(this.tags!));
     const pictureBytes = this.pictures.map((pic) =>
       Array.from(Buffer.from(pic)),
     );
 
     // Combine all byte arrays for R4
-    const r4Data = [nameBytes, descriptionBytes, ...pictureBytes];
+    const r4Data = [nameBytes, descriptionBytes, tagsBytes, ...pictureBytes];
 
     return new OutputBuilder(
       this.value!,

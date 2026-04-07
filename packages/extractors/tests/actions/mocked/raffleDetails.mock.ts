@@ -7,6 +7,7 @@ export const sampleBoxesData = [
       'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
     name: 'Test',
     description: 'Some descriptions...',
+    tags: 'tag1,tag2',
     pictures: [
       {
         orderIndex: 0,
@@ -28,7 +29,7 @@ export const sampleBoxesData = [
       },
     ],
     serialized:
-      'wMOTBxkGAQEB0XMArtBiAdKd6qXYCV/jCTCEVBKwk9K6dbSOMcJd/58FpnOWdzD7AQEaBQRUZXN0FFNvbWUgZGVzY3JpcHRpb25zLi4uEXBpY3R1cmUgY29udGVudCAxEXBpY3R1cmUgY29udGVudCAyEXBpY3R1cmUgY29udGVudCAzNtvaID0hQ6UZV5Qdej+liHlZIchm/0B14+5umR8MYtUB',
+      'wMOTBxkGAQEB0XMArtBiAdKd6qXYCV/jCTCEVBKwk9K6dbSOMcJd/58FpnOWdzD7AQEaBgRUZXN0FFNvbWUgZGVzY3JpcHRpb25zLi4uABFwaWN0dXJlIGNvbnRlbnQgMRFwaWN0dXJlIGNvbnRlbnQgMhFwaWN0dXJlIGNvbnRlbnQgMzbb2iA9IUOlGVeUHXo/pYh5WSHIZv9AdePubpkfDGLVAQ==',
   },
 ];
 
@@ -40,9 +41,10 @@ export const sampleDBData = {
   extractor: 'RaffleDetails',
   height: 1,
   name: 'Test',
+  tags: 'tag1,tag2',
   raffleId: 'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
   serialized:
-    'wMOTBxkGAQEB0XMArtBiAdKd6qXYCV/jCTCEVBKwk9K6dbSOMcJd/58FpnOWdzD7AQEaBQRUZXN0FFNvbWUgZGVzY3JpcHRpb25zLi4uEXBpY3R1cmUgY29udGVudCAxEXBpY3R1cmUgY29udGVudCAyEXBpY3R1cmUgY29udGVudCAzNtvaID0hQ6UZV5Qdej+liHlZIchm/0B14+5umR8MYtUB',
+    'wMOTBxkGAQEB0XMArtBiAdKd6qXYCV/jCTCEVBKwk9K6dbSOMcJd/58FpnOWdzD7AQEaBgRUZXN0FFNvbWUgZGVzY3JpcHRpb25zLi4uABFwaWN0dXJlIGNvbnRlbnQgMRFwaWN0dXJlIGNvbnRlbnQgMhFwaWN0dXJlIGNvbnRlbnQgMzbb2iA9IUOlGVeUHXo/pYh5WSHIZv9AdePubpkfDGLVAQ==',
   spendBlock: null,
   spendHeight: null,
   txId: '36dbda203d2143a51957941d7a3fa588795921c866ff4075e3ee6e991f0c62d5',
