@@ -15,8 +15,8 @@ export const donationRequestSchema = types.object({
 
 // Donation response data schema
 export const donationResponseDataSchema = types.object({
-  tokenId: types.string().optional(),
-  tokenAmount: types.string().optional(),
+  tokenAmount: types.string(),
+  tokenId: types.string(),
   bitcoinAddress: types.string(),
 });
 

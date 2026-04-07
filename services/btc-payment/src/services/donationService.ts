@@ -347,7 +347,9 @@ export class DonationService extends PeriodicTaskService {
     );
 
     const walletKey = ErgoHDKey.fromMnemonicSync(this.ergoConfig.mnemonic);
-    const walletAddress = walletKey.address.toString();
+    const walletAddress = walletKey.address.toString(
+      raffleInfo.network === 'Mainnet' ? Network.Mainnet : Network.Testnet,
+    );
 
     const result = await this.selector.getCoveringBoxes(
       requiredAssets,

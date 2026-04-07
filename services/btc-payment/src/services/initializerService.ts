@@ -13,6 +13,7 @@ import { DbService } from './dbService';
 import { DonationService } from './donationService';
 import { ScannerService } from './scannerService';
 import { TokenMapService } from './tokenMapService';
+import { TxPotService } from './txPotService';
 
 export class InitializerService extends AbstractService {
   name = 'InitializerService';
@@ -74,6 +75,10 @@ export class InitializerService extends AbstractService {
       serviceName: DonationService.name,
       allowedStatuses: [ServiceStatus.running],
     },
+    {
+      serviceName: TxPotService.name,
+      allowedStatuses: [ServiceStatus.running],
+    },
   ];
 
   /**
@@ -114,7 +119,7 @@ export class InitializerService extends AbstractService {
     const scannerLogger = defaultLogger.child('ScannerService');
     const apiLogger = defaultLogger.child('ApiService');
     const donationLogger = defaultLogger.child('DonationService');
-
+    const txPotLogger = defaultLogger.child('TxPotService');
     // Initialize token map service
     this.logger.debug('Initializing token map service');
     TokenMapService.init(configs.tokenMap, tokenMapLogger);
@@ -139,6 +144,11 @@ export class InitializerService extends AbstractService {
     this.logger.debug('Initializing donation service');
     await DonationService.init(configs.donation, configs.ergo, donationLogger);
     this.logger.debug('Donation service initialized');
+
+    // Initialize tx pot service
+    this.logger.debug('Initializing tx pot service');
+    TxPotService.init(DbService.getInstance().getDataSource(), txPotLogger);
+    this.logger.debug('Tx pot service initialized');
   };
 
   /**
@@ -159,5 +169,6 @@ export class InitializerService extends AbstractService {
     this.serviceManager.register(ScannerService.getInstance());
     this.serviceManager.register(ApiService.getInstance());
     this.serviceManager.register(DonationService.getInstance());
+    this.serviceManager.register(TxPotService.getInstance());
   };
 }

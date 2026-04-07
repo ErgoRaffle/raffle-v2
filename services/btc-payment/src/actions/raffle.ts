@@ -14,12 +14,16 @@ class RaffleAction {
    * @param raffleId - The raffle id
    * @returns The raffle entity
    */
-  getData = (raffleId: string): Promise<InactiveRaffleEntity | null> => {
-    return this.repository.findOne({
+  getData = async (raffleId: string): Promise<InactiveRaffleEntity> => {
+    const raffle = await this.repository.findOne({
       where: {
         raffleId: raffleId,
       },
     });
+    if (!raffle) {
+      throw new Error(`Raffle with id ${raffleId} not found`);
+    }
+    return raffle;
   };
 }
 
