@@ -30,6 +30,7 @@ donation:
   interval: 60
   requiredConfirmations: 2
   requestTimeout: 3600
+  fee: 10000
 tokenMap:
   type: file
   path: config/tokenMap.json

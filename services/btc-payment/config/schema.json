@@ -366,6 +366,17 @@
             "error": "donation request timeout must be specified"
           }
         ]
+      },
+      "fee": {
+        "type": "bigint",
+        "default": 10000,
+        "description": "additional donation fee amount in satoshi",
+        "validations": [
+          {
+            "required": true,
+            "error": "donation fee must be specified"
+          }
+        ]
       }
     }
   },

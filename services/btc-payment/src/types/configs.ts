@@ -69,6 +69,7 @@ export interface Donation {
   interval: number;
   requiredConfirmations: number;
   requestTimeout: number;
+  fee: bigint;
 }
 
 export interface TokenMap {

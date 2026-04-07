@@ -2,7 +2,7 @@ import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { FastifyWithZod } from '@rosen-bridge/fastify-enhanced';
 
 import { AddressDeriver } from '../../bitcoin/addressDeriver';
-import { ERG_TOKEN_ID } from '../../constants';
+import { BTC_TOKEN_ID, ERG_TOKEN_ID } from '../../constants';
 import { donationRequestSchema, donationResponseSchema } from '../../types/api';
 import { DbService } from '../dbService';
 import { TokenMapService } from '../tokenMapService';
@@ -15,6 +15,7 @@ export const registerDonationRoute = (
   addressDeriver: AddressDeriver,
   addWatchingAddress: (address: string, tokenId: string) => void,
   tokenMapService: TokenMapService,
+  donationFee: bigint,
 ) => {
   fastify.post(
     '/api/donation',
@@ -45,7 +46,6 @@ export const registerDonationRoute = (
           .getRaffleAction()
           .getData(raffleId);
 
-        // TODO: Consider a fee for the transaction fees
         const tokenAmount = BigInt(ticketCount) * raffleData.ticketPrice;
         const btcTokenId = tokenMapService.getBtcTokenId(
           raffleData.collectingTokenId || ERG_TOKEN_ID,
@@ -63,14 +63,23 @@ export const registerDonationRoute = (
         );
         await addWatchingAddress(bitcoinAddress, savedDonationParams.tokenId);
 
+        const donationData =
+          btcTokenId === BTC_TOKEN_ID
+            ? {
+                satoshiAmount: (tokenAmount + donationFee).toString(),
+                bitcoinAddress,
+              }
+            : {
+                tokenAmount: tokenAmount.toString(),
+                satoshiAmount: donationFee.toString(),
+                tokenId: btcTokenId,
+                bitcoinAddress,
+              };
+
         return {
           success: true,
           message: 'Donation request received',
-          data: {
-            tokenAmount: tokenAmount.toString(),
-            tokenId: btcTokenId,
-            bitcoinAddress,
-          },
+          data: donationData,
         };
       } catch (error) {
         logger.error(`Donation error: ${error}`);

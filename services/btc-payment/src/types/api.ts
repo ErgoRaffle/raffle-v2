@@ -15,9 +15,10 @@ export const donationRequestSchema = types.object({
 
 // Donation response data schema
 export const donationResponseDataSchema = types.object({
-  tokenAmount: types.string(),
-  tokenId: types.string(),
   bitcoinAddress: types.string(),
+  satoshiAmount: types.string(),
+  tokenId: types.string().optional(),
+  tokenAmount: types.string().optional(),
 });
 
 // Donation full response schema - extends base responseSchema

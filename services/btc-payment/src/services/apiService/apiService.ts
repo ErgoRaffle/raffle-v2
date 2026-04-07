@@ -127,6 +127,7 @@ export class ApiService extends AbstractService {
       this.addressDeriver,
       ScannerService.getInstance().addDynamicAddress,
       TokenMapService.getInstance(),
+      configs.donation.fee,
     );
   };
 }

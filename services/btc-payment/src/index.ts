@@ -11,6 +11,7 @@ const logger = DefaultLogger.getInstance().child(import.meta.url);
 const main = async () => {
   // TODO: remove this once we have a proper reader for the configs
   configs.ergo.fee = BigInt(configs.ergo.fee);
+  configs.donation.fee = BigInt(configs.donation.fee);
   const serviceManager = ServiceManager.setup();
 
   logger.debug('Initializing services');
