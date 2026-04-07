@@ -161,18 +161,9 @@ export class Migration1774542877898 implements MigrationInterface {
                 "name" character varying NOT NULL,
                 "description" character varying NOT NULL,
                 "tags" character varying NOT NULL,
+                "pictures" character varying NOT NULL,
                 CONSTRAINT "UQ_109f63f620bd465691539f77314" UNIQUE ("identifier", "extractor"),
                 CONSTRAINT "PK_b63c664cdd5dfc4bb7f4dfe5072" PRIMARY KEY ("id")
-            )
-        `);
-    await queryRunner.query(`
-            CREATE TABLE "picture" (
-                "id" SERIAL NOT NULL,
-                "raffleId" character varying NOT NULL,
-                "orderIndex" integer NOT NULL,
-                "content" character varying NOT NULL,
-                "detailsId" integer,
-                CONSTRAINT "PK_31ccf37c74bae202e771c0c2a38" PRIMARY KEY ("id")
             )
         `);
     await queryRunner.query(`
@@ -327,16 +318,9 @@ export class Migration1774542877898 implements MigrationInterface {
                 CONSTRAINT "PK_032663e4fb5462f8282e834e200" PRIMARY KEY ("id")
             )
         `);
-    await queryRunner.query(`
-            ALTER TABLE "picture"
-            ADD CONSTRAINT "FK_ce8d1331589e50a820e6a84c5ad" FOREIGN KEY ("detailsId") REFERENCES "raffle_details"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
-        `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`
-            ALTER TABLE "picture" DROP CONSTRAINT "FK_ce8d1331589e50a820e6a84c5ad"
-        `);
     await queryRunner.query(`
             DROP TABLE "winner_prize"
         `);
@@ -363,9 +347,6 @@ export class Migration1774542877898 implements MigrationInterface {
         `);
     await queryRunner.query(`
             DROP TYPE "public"."raffle_box_type_enum"
-        `);
-    await queryRunner.query(`
-            DROP TABLE "picture"
         `);
     await queryRunner.query(`
             DROP TABLE "raffle_details"

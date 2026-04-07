@@ -79,18 +79,12 @@ export interface WinnerBoxInterface extends AbstractRaffleBoxInterface {
   rewardPercent: number;
 }
 
-export interface PictureInterface {
-  orderIndex: number;
-  raffleId: string;
-  content: string;
-}
-
 export interface RaffleDetailsBoxInterface extends AbstractRaffleBoxInterface {
   id?: number;
   name: string;
   description: string;
   tags: string;
-  pictures?: PictureInterface[];
+  pictures: string;
 }
 
 export interface GiftBoxInterface extends AbstractRaffleBoxInterface {

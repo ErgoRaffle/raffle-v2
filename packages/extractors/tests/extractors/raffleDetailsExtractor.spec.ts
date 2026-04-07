@@ -1,10 +1,8 @@
 import { compile } from '@fleet-sdk/compiler';
 import { ErgoTree, Network, SByte, SColl } from '@fleet-sdk/core';
-import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 import { describe, it, expect, beforeEach } from 'vitest';
 
-import { PictureEntity } from '../../lib/entities';
 import { RaffleDetailsExtractor } from '../../lib/extractors/raffleDetailsExtractor';
 import { createDatabase } from '../utils.mock';
 import {
@@ -14,7 +12,6 @@ import {
 
 interface TestInterface {
   extractor: RaffleDetailsExtractor;
-  dataSource: DataSource;
   boxFalseErgoTree: ErgoTree;
 }
 
@@ -29,13 +26,12 @@ describe('RaffleDetailsExtractor', () => {
       url: 'http://127.0.0.1/',
       address: boxErgoTree.toAddress(Network.Testnet).toString(),
     });
-    ctx.dataSource = dataSource;
     ctx.boxFalseErgoTree = boxFalseErgoTree;
   });
 
   describe('extractBoxData', () => {
     /**
-     * @target should successfully extract data from the sample RaffleDetails box and insert and then update related pictures
+     * @target should successfully extract data from the sample RaffleDetails box
      * @dependencies
      * @scenario
      * - call the extractBoxData functions
@@ -43,51 +39,14 @@ describe('RaffleDetailsExtractor', () => {
      * @expected
      * - RaffleDetails should extract successfully
      */
-    it<TestInterface>(`should successfully extract data from the sample RaffleDetails box and insert and then update related pictures`, async ({
+    it<TestInterface>(`should successfully extract data from the sample RaffleDetails box`, async ({
       extractor,
-      dataSource,
     }) => {
-      let extractedData = await extractor.extractBoxData(
+      const extractedData = await extractor.extractBoxData(
         sampleRaffleDetailsBoxes[0],
       );
 
       expect(extractedData).toEqual(sampleRaffleDetailsExtractedData);
-
-      await extractor.actions.storeEntities(
-        [extractedData!],
-        { height: 1, hash: '0' },
-        'RaffleDetails',
-      );
-
-      expect(await dataSource.manager.count(PictureEntity)).toEqual(3);
-
-      // update related pictures
-      extractedData = await extractor.extractBoxData({
-        ...sampleRaffleDetailsBoxes[0],
-        additionalRegisters: {
-          R4: SColl(SColl(SByte), [
-            Array.from(Buffer.from('Test')),
-            Array.from(Buffer.from('Some descriptions...')),
-            Array.from(Buffer.from('tag1,tag2')),
-            Array.from(Buffer.from('picture content 1')),
-            Array.from(Buffer.from('picture content 2')),
-            Array.from(Buffer.from('updated picture content 3')),
-          ]).toHex(),
-        },
-      });
-      await extractor.actions.storeEntities(
-        [extractedData!],
-        { height: 1, hash: '0' },
-        'RaffleDetails',
-      );
-      expect(await dataSource.manager.count(PictureEntity)).toEqual(3);
-      expect(
-        (
-          await dataSource.manager
-            .getRepository(PictureEntity)
-            .find({ where: { content: 'updated picture content 3' } })
-        ).length,
-      ).toEqual(1);
     });
   });
 

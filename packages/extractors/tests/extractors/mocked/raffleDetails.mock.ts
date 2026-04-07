@@ -36,26 +36,11 @@ export const sampleRaffleDetailsExtractedData = {
   name: 'Test',
   description: 'Some descriptions...',
   tags: 'tag1,tag2',
-  pictures: [
-    {
-      content: 'picture content 1',
-      orderIndex: 0,
-      raffleId:
-        'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
-    },
-    {
-      content: 'picture content 2',
-      orderIndex: 1,
-      raffleId:
-        'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
-    },
-    {
-      content: 'picture content 3',
-      orderIndex: 2,
-      raffleId:
-        'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
-    },
-  ],
+  pictures: JSON.stringify([
+    'picture content 1',
+    'picture content 2',
+    'picture content 3',
+  ]),
   raffleId: 'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
   serialized:
     'wMOTBxkGAQEB0XMArtBiAdKd6qXYCV/jCTCEVBKwk9K6dbSOMcJd/58FpnOWdzD7AQEaBgRUZXN0FFNvbWUgZGVzY3JpcHRpb25zLi4uCXRhZzEsdGFnMhFwaWN0dXJlIGNvbnRlbnQgMRFwaWN0dXJlIGNvbnRlbnQgMhFwaWN0dXJlIGNvbnRlbnQgMzbb2iA9IUOlGVeUHXo/pYh5WSHIZv9AdePubpkfDGLVAQ==',

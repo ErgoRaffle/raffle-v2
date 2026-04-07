@@ -1,9 +1,9 @@
 import { AbstractErgoBoxAction } from '@rosen-bridge/abstract-extractor';
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
-import { DataSource, In, QueryRunner } from '@rosen-bridge/extended-typeorm';
+import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
 
-import { PictureEntity, RaffleDetailsEntity } from '../entities';
+import { RaffleDetailsEntity } from '../entities';
 import { RaffleDetailsBoxInterface } from '../interfaces/types';
 
 export class RaffleDetailsAction extends AbstractErgoBoxAction<
@@ -15,84 +15,11 @@ export class RaffleDetailsAction extends AbstractErgoBoxAction<
   }
 
   /**
-   * insert entities extracted from a block to database
-   * @param queryRunner
-   * @param boxesToInsert
-   * @param block
-   * @param extractor
-   */
-  insertEntities = async (
-    queryRunner: QueryRunner,
-    boxesToInsert: RaffleDetailsBoxInterface[],
-    block: BlockInfo,
-    extractor: string,
-  ) => {
-    const repository = queryRunner.manager.getRepository(RaffleDetailsEntity);
-    const insertedBoxes = await repository.insert(
-      this.createEntity(boxesToInsert, block, extractor),
-    );
-
-    // insert related pictures
-    const ids = insertedBoxes.identifiers.map((d) => d['id']);
-    const picRepository = queryRunner.manager.getRepository(PictureEntity);
-    const pictures = [];
-    for (let i = 0; i < boxesToInsert.length; i++) {
-      const box = boxesToInsert[i];
-      if (box.pictures != undefined) {
-        for (const pic of box.pictures) {
-          const raffleDetailsObject = new RaffleDetailsEntity();
-          raffleDetailsObject.id = ids[i];
-          pictures.push({ ...pic, details: raffleDetailsObject });
-        }
-      }
-    }
-    if (pictures.length > 0)
-      // Store related pictures
-      await picRepository.insert(pictures);
-  };
-
-  /**
-   * update entities related to a box
-   * @param queryRunner
-   * @param updateBox
-   * @param block
-   * @param extractor
-   */
-  updateEntity = async (
-    queryRunner: QueryRunner,
-    updateBox: RaffleDetailsBoxInterface,
-    block: BlockInfo,
-    extractor: string,
-  ) => {
-    const repository = queryRunner.manager.getRepository(RaffleDetailsEntity);
-    const picRepository = queryRunner.manager.getRepository(PictureEntity);
-
-    const box = this.createEntity([updateBox], block, extractor)[0];
-    await repository.update(
-      {
-        identifier: box.identifier,
-        extractor: extractor,
-      },
-      box,
-    );
-
-    // Delete old pictures
-    await picRepository.delete({ raffleId: updateBox.raffleId });
-    // Store related pictures
-    if (updateBox.pictures != undefined) {
-      const pictures = updateBox.pictures.map((pic) => ({
-        ...pic,
-        details: updateBox,
-      }));
-      await picRepository.insert(pictures);
-    }
-  };
-
-  /**
    * create the box entity from extracted data and block information
-   * @param boxes
-   * @param block
-   * @param extractor
+   * @param boxes extracted boxes
+   * @param block block metadata
+   * @param extractor extractor name
+   * @returns mapped entities for database insert/update
    */
   createEntity = (
     boxes: RaffleDetailsBoxInterface[],
@@ -111,54 +38,21 @@ export class RaffleDetailsAction extends AbstractErgoBoxAction<
         name: box.name,
         description: box.description,
         tags: box.tags,
+        pictures: box.pictures,
       };
     });
   };
 
   /**
-   * delete all data extracted from a block
-   * @param queryRunner
-   * @param extractor
-   * @param block
-   * @returns
-   */
-  protected deleteBlockRecords = async (
-    queryRunner: QueryRunner,
-    extractor: string,
-    block: string,
-  ): Promise<RaffleDetailsBoxInterface[]> => {
-    const repository = queryRunner.manager.getRepository(RaffleDetailsEntity);
-    const picRepository = queryRunner.manager.getRepository(PictureEntity);
-    const deletedDetails = await repository.find({
-      where: { extractor: extractor, block: block },
-    });
-    const pictures: PictureEntity[][] = [];
-    deletedDetails.forEach(async (details) => {
-      const detailsPictures = await picRepository.find({
-        where: { details: details },
-      });
-      pictures.push(detailsPictures);
-    });
-    await picRepository.delete({
-      details: In(deletedDetails.map((rf) => rf.id)),
-    });
-    await repository.delete({
-      extractor: extractor,
-      block: block,
-    });
-    return this.convertEntityToData(deletedDetails, pictures);
-  };
-
-  /**
-   * convert the database entity back to raw data
-   * @param entities
+   * convert database entity back to extracted box format
+   * @param entities stored entities
+   * @returns converted extractor data objects
    */
   convertEntityToData = (
     entities: RaffleDetailsEntity[],
-    pictures: PictureEntity[][] = [],
   ): RaffleDetailsBoxInterface[] => {
-    return entities.map((data, index) => {
-      const details = {
+    return entities.map((data) => {
+      return {
         identifier: data.identifier,
         txId: data.txId,
         raffleId: data.raffleId,
@@ -167,13 +61,8 @@ export class RaffleDetailsAction extends AbstractErgoBoxAction<
         name: data.name,
         description: data.description,
         tags: data.tags,
-        pictures: pictures[index].map((pic) => ({
-          raffleId: pic.raffleId,
-          orderIndex: pic.orderIndex,
-          content: pic.content,
-        })),
+        pictures: data.pictures,
       };
-      return details;
     });
   };
 }
