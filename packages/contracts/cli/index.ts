@@ -1,7 +1,6 @@
 import { Network } from '@fleet-sdk/core';
 import { program } from 'commander';
 import * as fs from 'fs';
-import path from 'path';
 import { exit } from 'process';
 
 import {
@@ -10,7 +9,7 @@ import {
 } from '../lib/constants';
 import { logger } from '../lib/logger';
 import * as types from '../lib/types';
-import { compileAll } from '../lib/utils';
+import { compileAll, loadConfig } from '../lib/utils';
 
 program
   .name('contracts')
@@ -103,29 +102,6 @@ program
     if (!fileCreatedSuccess)
       logger.info('Create input file template command ran successful');
   });
-
-const loadConfig = () => {
-  const configFileName = process.env.CONTRACT_CONFIGS || 'development';
-
-  let configDir = './configs';
-  let finalConfigPath: string;
-
-  finalConfigPath = path.join(configDir, configFileName + '.json');
-  logger.info(`Loading configuration from: ${finalConfigPath}`);
-  try {
-    const rawConfigs = JSON.parse(
-      fs.readFileSync(finalConfigPath).toString(),
-    ) as {
-      [key: string]: string | number | object;
-    };
-    return rawConfigs;
-  } catch (err) {
-    logger.error(
-      `Failed to load config file from ${finalConfigPath}: \n${err}`,
-    );
-    process.exit(1);
-  }
-};
 
 // build final release index.js & index.d.ts files
 program.command('build').action(() => {
