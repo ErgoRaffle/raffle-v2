@@ -1,6 +1,7 @@
 import { Network } from '@fleet-sdk/core';
 import { program } from 'commander';
 import * as fs from 'fs';
+import path from 'path';
 import { exit } from 'process';
 
 import {
@@ -103,119 +104,125 @@ program
       logger.info('Create input file template command ran successful');
   });
 
-// build final release index.js & index.d.ts files
-program
-  .command('build')
-  .argument(
-    '-c, --config <config file path>',
-    'Address of input file that contains JSON contract name and variables',
-  )
-  .option(
-    '-t, --testnet',
-    'This flag determine output addresses must be generate for the Testnet or no',
-  )
-  .action((config, options) => {
-    let rawConfigs;
-    let contracts;
-    const isTestnet = options.testnet;
+const loadConfig = () => {
+  const configFileName = process.env.CONTRACT_CONFIGS || 'development';
 
-    logger.info(
-      `starts building addresses and tokens list on the ${isTestnet ? 'testnet' : 'mainnet'}`,
-    );
+  let configDir = './configs';
+  let finalConfigPath: string;
 
-    try {
-      rawConfigs = JSON.parse(fs.readFileSync(config).toString()) as {
-        [key: string]: string | number | object;
-      };
-    } catch (err) {
-      logger.error(`The config file is not valid: \n${err}`);
-      process.exit(0);
-    }
-
-    const tokens = rawConfigs['tokens'] as { [key: string]: string };
-    const defaults = new Map<string, string>();
-    defaults.set(
-      'SERVICE_NFT_B64',
-      Buffer.from(tokens['serviceNft'].toString(), 'hex').toString('base64'),
-    );
-    defaults.set(
-      'OWNER_NFT_B64',
-      Buffer.from(tokens['ownerNft'].toString(), 'hex').toString('base64'),
-    );
-    defaults.set(
-      'RAFFLE_LICENSE_B64',
-      Buffer.from(tokens['raffleLicense'].toString(), 'hex').toString('base64'),
-    );
-    defaults.set(
-      'ORACLE_TOKEN_ID_B64',
-      Buffer.from(tokens['oracleTokenId'].toString(), 'hex').toString('base64'),
-    );
-    defaults.set(
-      'TICKET_COLLECTOR_NFT_B64',
-      Buffer.from(tokens['ticketCollectorNft'].toString(), 'hex').toString(
-        'base64',
-      ),
-    );
-    // Convert number to string with L for compilation
-    defaults.set(
-      'GIFT_TOKEN_COUNT',
-      rawConfigs['giftTokenCount'].toString() + 'L',
-    );
-    defaults.set(
-      'TICKET_EXPIRATION_HEIGHT',
-      rawConfigs['ticketExpirationHeight'].toString(),
-    );
-    const configs = new Map<'defaults', Map<string, string>>();
-    configs.set('defaults', defaults);
-
-    try {
-      contracts = compileAll(
-        configs as types.ContextVarsType,
-        false,
-        [],
-        isTestnet ? Network.Testnet : Network.Mainnet,
-      );
-    } catch (err) {
-      logger.error(`Compile Error: \n${err}`);
-      process.exit(0);
-    }
-
-    const RaffleAddressesAndTokens = {
-      network: isTestnet ? 'Testnet' : 'Mainnet',
-      addresses: contracts,
-      tokens: tokens,
-      constants: {
-        giftTokenCount: rawConfigs['giftTokenCount'],
-        ticketExpirationHeight: rawConfigs['ticketExpirationHeight'],
-      },
+  finalConfigPath = path.join(configDir, configFileName + '.json');
+  logger.info(`Loading configuration from: ${finalConfigPath}`);
+  try {
+    const rawConfigs = JSON.parse(
+      fs.readFileSync(finalConfigPath).toString(),
+    ) as {
+      [key: string]: string | number | object;
     };
+    return rawConfigs;
+  } catch (err) {
+    logger.error(
+      `Failed to load config file from ${finalConfigPath}: \n${err}`,
+    );
+    process.exit(1);
+  }
+};
 
-    fs.writeFileSync(
-      './dist/index.js',
-      `\
+// build final release index.js & index.d.ts files
+program.command('build').action(() => {
+  const rawConfigs = loadConfig();
+  let contracts;
+
+  // Get network from config file instead of testnet flag
+  const networkType = rawConfigs['network'] as string;
+
+  logger.info(
+    `starts building addresses and tokens list on the ${networkType}`,
+  );
+
+  const tokens = rawConfigs['tokens'] as { [key: string]: string };
+  const defaults = new Map<string, string>();
+  defaults.set(
+    'SERVICE_NFT_B64',
+    Buffer.from(tokens['serviceNft'].toString(), 'hex').toString('base64'),
+  );
+  defaults.set(
+    'OWNER_NFT_B64',
+    Buffer.from(tokens['ownerNft'].toString(), 'hex').toString('base64'),
+  );
+  defaults.set(
+    'RAFFLE_LICENSE_B64',
+    Buffer.from(tokens['raffleLicense'].toString(), 'hex').toString('base64'),
+  );
+  defaults.set(
+    'ORACLE_TOKEN_ID_B64',
+    Buffer.from(tokens['oracleTokenId'].toString(), 'hex').toString('base64'),
+  );
+  defaults.set(
+    'TICKET_COLLECTOR_NFT_B64',
+    Buffer.from(tokens['ticketCollectorNft'].toString(), 'hex').toString(
+      'base64',
+    ),
+  );
+  // Convert number to string with L for compilation
+  defaults.set(
+    'GIFT_TOKEN_COUNT',
+    rawConfigs['giftTokenCount'].toString() + 'L',
+  );
+  defaults.set(
+    'TICKET_EXPIRATION_HEIGHT',
+    rawConfigs['ticketExpirationHeight'].toString(),
+  );
+  const configs = new Map<'defaults', Map<string, string>>();
+  configs.set('defaults', defaults);
+
+  try {
+    contracts = compileAll(
+      configs as types.ContextVarsType,
+      false,
+      [],
+      networkType === 'testnet' ? Network.Testnet : Network.Mainnet,
+    );
+  } catch (err) {
+    logger.error(`Compile Error: \n${err}`);
+    process.exit(0);
+  }
+
+  const RaffleAddressesAndTokens = {
+    network: networkType === 'testnet' ? 'Testnet' : 'Mainnet',
+    addresses: contracts,
+    tokens: tokens,
+    constants: {
+      giftTokenCount: rawConfigs['giftTokenCount'],
+      ticketExpirationHeight: rawConfigs['ticketExpirationHeight'],
+    },
+  };
+
+  fs.writeFileSync(
+    './dist/index.js',
+    `\
 export const raffleInfo = ${JSON.stringify(RaffleAddressesAndTokens, null, 4)};
 `,
-    );
+  );
 
-    let addressesTypeString = '\n';
-    const addressKeys = Object.keys(contracts);
-    for (const contractName of addressKeys) {
-      addressesTypeString += `        "${contractName}": string`;
-      addressesTypeString +=
-        contractName == addressKeys[addressKeys.length - 1] ? '' : ',\n';
-    }
+  let addressesTypeString = '\n';
+  const addressKeys = Object.keys(contracts);
+  for (const contractName of addressKeys) {
+    addressesTypeString += `        "${contractName}": string`;
+    addressesTypeString +=
+      contractName == addressKeys[addressKeys.length - 1] ? '' : ',\n';
+  }
 
-    let tokensTypeString = '\n';
-    const tokenKeys = Object.keys(tokens);
-    for (const tokenName of tokenKeys) {
-      tokensTypeString += `        "${tokenName}": string`;
-      tokensTypeString +=
-        tokenName == tokenKeys[tokenKeys.length - 1] ? '' : ',\n';
-    }
+  let tokensTypeString = '\n';
+  const tokenKeys = Object.keys(tokens);
+  for (const tokenName of tokenKeys) {
+    tokensTypeString += `        "${tokenName}": string`;
+    tokensTypeString +=
+      tokenName == tokenKeys[tokenKeys.length - 1] ? '' : ',\n';
+  }
 
-    fs.writeFileSync(
-      './dist/index.d.ts',
-      `\
+  fs.writeFileSync(
+    './dist/index.d.ts',
+    `\
 export const raffleInfo: {
   "network": "Mainnet" | "Testnet",
   "addresses": {${addressesTypeString}
@@ -228,7 +235,7 @@ export const raffleInfo: {
     }
 };
 `,
-    );
-  });
+  );
+});
 
 program.parse(process.argv);

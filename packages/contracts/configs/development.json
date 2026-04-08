@@ -1,4 +1,5 @@
 {
+  "network": "testnet",
   "giftTokenCount": 2000,
   "ticketExpirationHeight": 100,
   "tokens": {
