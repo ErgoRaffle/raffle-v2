@@ -42,6 +42,7 @@ describe('CreationProxy', () => {
       creationFee: 1_000_000_000n,
       name: 'Test Raffle',
       description: 'Test Description',
+      tags: 'tag1,tag2',
       ticketPrice: 10n,
       pictures: [
         'https://example.com/picture1.jpg',
@@ -107,6 +108,7 @@ describe('CreationProxy', () => {
         )
         .setRaffleName(proxyParams.name)
         .setRaffleDescription(proxyParams.description)
+        .setRaffleTags(proxyParams.tags)
         .setRafflePictures(proxyParams.pictures || [])
         .setTicketTokenCount(100n)
         .setChainHeight(chain.height)

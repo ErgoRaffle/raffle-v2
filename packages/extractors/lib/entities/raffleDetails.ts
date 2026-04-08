@@ -14,4 +14,10 @@ export class RaffleDetailsEntity extends AbstractErgoBoxEntity {
 
   @Column({ type: 'varchar' })
   description: string;
+
+  @Column({ type: 'varchar' })
+  tags: string;
+
+  @Column({ type: 'varchar' })
+  pictures: string;
 }

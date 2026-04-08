@@ -52,6 +52,9 @@ export class CreationProxyEntity extends AbstractErgoBoxEntity {
   @Column({ type: 'varchar' })
   description: string;
 
+  @Column({ type: 'varchar' })
+  tags: string;
+
   @Column({ type: 'text' })
   pictures: string;
 

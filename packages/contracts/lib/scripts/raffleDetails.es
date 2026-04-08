@@ -2,7 +2,7 @@
   // ErgoRaffle V2 Raffle Detail Contract
   //
   // Registers:
-  //   R4[Coll[Coll[Byte]]]: [Name, Description, Pictures(optional)]
+  //   R4[Coll[Coll[Byte]]]: [Name, Description, Tags, Pictures(optional)]
   // Tokens:
   //   0: Ticket
   //

@@ -40,6 +40,8 @@ import {
       .addSelect('raffle.winnersPercentList', 'winnersPercentList')
       .addSelect('details.description', 'description')
       .addSelect('details.name', 'name')
+      .addSelect('details.tags', 'tags')
+      .addSelect('details.pictures', 'pictures')
       .addSelect('COUNT(gift.id)', 'giftCount')
       .addSelect('MAX(gift.height)', 'giftMaxHeight')
       .addSelect('SUM(ticket.rangeEnd - ticket.rangeStart)', 'soldTicketCount')
@@ -71,6 +73,12 @@ export class RaffleView {
 
   @ViewColumn()
   deadline: number;
+
+  @ViewColumn()
+  tags: string;
+
+  @ViewColumn()
+  pictures: string;
 
   @ViewColumn()
   description: string;

@@ -42,6 +42,7 @@ export class CreationTxBuilder {
   private txFee?: bigint;
   private raffleName?: string;
   private raffleDescription?: string;
+  private raffleTags?: string;
   private rafflePictures?: string[];
   private ticketTokenName?: string;
   private ticketTokenDescription?: string;
@@ -250,6 +251,16 @@ export class CreationTxBuilder {
   };
 
   /**
+   * Set the raffle tags string (required; pass an empty string when there are no tags)
+   * @param tags - Tags string (e.g. comma-separated labels)
+   * @returns this builder instance
+   */
+  setRaffleTags = (tags: string): this => {
+    this.raffleTags = tags;
+    return this;
+  };
+
+  /**
    * Set the raffle pictures
    * @param pictures - Array of picture URLs
    * @returns this builder instance
@@ -311,6 +322,8 @@ export class CreationTxBuilder {
     if (!this.txFee) throw new Error('Transaction fee not set');
     if (!this.raffleName) throw new Error('Raffle name not set');
     if (!this.raffleDescription) throw new Error('Raffle description not set');
+    if (this.raffleTags === undefined)
+      throw new Error('Raffle tags not set (use empty string for none)');
     if (!this.ticketTokenCount) throw new Error('Ticket token count not set');
   };
 
@@ -366,6 +379,7 @@ export class CreationTxBuilder {
       .setWinnersCount(this.winnersCount!)
       .setName(this.raffleName!)
       .setDescription(this.raffleDescription!)
+      .setTags(this.raffleTags!)
       .setTicketId(this.raffleId!)
       .setWinnersPercentList(this.winnersPercent!)
       .setImplementerErgoTree(this.implementerErgoTree!)

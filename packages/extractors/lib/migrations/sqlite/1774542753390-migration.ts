@@ -53,6 +53,7 @@ export class Migration1774542753390 implements MigrationInterface {
                 "collectingTokenId" varchar NOT NULL,
                 "name" varchar NOT NULL,
                 "description" varchar NOT NULL,
+                "tags" varchar NOT NULL,
                 "pictures" text NOT NULL,
                 "winnerCount" integer NOT NULL,
                 CONSTRAINT "UQ_dc8a55846404e70e4bc1c0ecd9d" UNIQUE ("identifier", "extractor")
@@ -153,16 +154,9 @@ export class Migration1774542753390 implements MigrationInterface {
                 "raffleId" varchar NOT NULL,
                 "name" varchar NOT NULL,
                 "description" varchar NOT NULL,
+                "tags" varchar NOT NULL,
+                "pictures" varchar NOT NULL,
                 CONSTRAINT "UQ_109f63f620bd465691539f77314" UNIQUE ("identifier", "extractor")
-            )
-        `);
-    await queryRunner.query(`
-            CREATE TABLE "picture" (
-                "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-                "raffleId" varchar NOT NULL,
-                "orderIndex" integer NOT NULL,
-                "content" varchar NOT NULL,
-                "detailsId" integer
             )
         `);
     await queryRunner.query(`
@@ -304,72 +298,9 @@ export class Migration1774542753390 implements MigrationInterface {
                 CONSTRAINT "UQ_1c3eb64d3ed8435c9eb69d41005" UNIQUE ("identifier", "extractor")
             )
         `);
-    await queryRunner.query(`
-            CREATE TABLE "temporary_picture" (
-                "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-                "raffleId" varchar NOT NULL,
-                "orderIndex" integer NOT NULL,
-                "content" varchar NOT NULL,
-                "detailsId" integer,
-                CONSTRAINT "FK_ce8d1331589e50a820e6a84c5ad" FOREIGN KEY ("detailsId") REFERENCES "raffle_details" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION
-            )
-        `);
-    await queryRunner.query(`
-            INSERT INTO "temporary_picture"(
-                    "id",
-                    "raffleId",
-                    "orderIndex",
-                    "content",
-                    "detailsId"
-                )
-            SELECT "id",
-                "raffleId",
-                "orderIndex",
-                "content",
-                "detailsId"
-            FROM "picture"
-        `);
-    await queryRunner.query(`
-            DROP TABLE "picture"
-        `);
-    await queryRunner.query(`
-            ALTER TABLE "temporary_picture"
-                RENAME TO "picture"
-        `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`
-            ALTER TABLE "picture"
-                RENAME TO "temporary_picture"
-        `);
-    await queryRunner.query(`
-            CREATE TABLE "picture" (
-                "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-                "raffleId" varchar NOT NULL,
-                "orderIndex" integer NOT NULL,
-                "content" varchar NOT NULL,
-                "detailsId" integer
-            )
-        `);
-    await queryRunner.query(`
-            INSERT INTO "picture"(
-                    "id",
-                    "raffleId",
-                    "orderIndex",
-                    "content",
-                    "detailsId"
-                )
-            SELECT "id",
-                "raffleId",
-                "orderIndex",
-                "content",
-                "detailsId"
-            FROM "temporary_picture"
-        `);
-    await queryRunner.query(`
-            DROP TABLE "temporary_picture"
-        `);
     await queryRunner.query(`
             DROP TABLE "winner_prize"
         `);
@@ -393,9 +324,6 @@ export class Migration1774542753390 implements MigrationInterface {
         `);
     await queryRunner.query(`
             DROP TABLE "raffle_box"
-        `);
-    await queryRunner.query(`
-            DROP TABLE "picture"
         `);
     await queryRunner.query(`
             DROP TABLE "raffle_details"
