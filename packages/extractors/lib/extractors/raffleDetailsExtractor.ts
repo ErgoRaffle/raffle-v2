@@ -77,7 +77,8 @@ export class RaffleDetailsExtractor extends AbstractErgoBoxExtractor<
       raffleId: box.assets![0].tokenId,
       name: Buffer.from(R4Serialized[0]).toString(),
       description: Buffer.from(R4Serialized[1]).toString(),
-      tags: Buffer.from(R4Serialized[2]).toString(),
+      // Add commas to the beginning and end of the tags to make it easier to search for specific tags
+      tags: ',' + Buffer.from(R4Serialized[2]).toString() + ',',
       pictures: JSON.stringify(pictures),
       serialized: Buffer.from(serializeBox(box).toBytes()).toString('base64'),
     };

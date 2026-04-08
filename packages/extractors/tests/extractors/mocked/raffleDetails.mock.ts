@@ -35,7 +35,7 @@ export const sampleRaffleDetailsExtractedData = {
   txId: sampleRaffleDetailsBoxes[0].transactionId,
   name: 'Test',
   description: 'Some descriptions...',
-  tags: 'tag1,tag2',
+  tags: ',tag1,tag2,',
   pictures: JSON.stringify([
     'picture content 1',
     'picture content 2',
