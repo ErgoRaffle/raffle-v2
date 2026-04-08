@@ -115,7 +115,9 @@ export class TestConstants {
     let configSampleContent: RaffleContextVarsInterface;
     try {
       configSampleContent = JSON.parse(
-        fs.readFileSync(path.join(__dirname, '../configs.json')).toString(),
+        fs
+          .readFileSync(path.join(__dirname, '../configs/development.json'))
+          .toString(),
       );
     } catch (err) {
       console.error(`The compile-all command failed: ${err}`);
