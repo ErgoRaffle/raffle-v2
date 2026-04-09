@@ -71,11 +71,14 @@ export class TokenDetailsService extends PeriodicTaskService {
     );
 
     const inactiveRaffles =
-      await DbService.getInstance().getInactiveRaffleBoxes(undefined);
+      await DbService.getInstance().getInactiveRaffleBoxes(false);
 
     const tokenIds = inactiveRaffles
       .map((r) => r.collectingTokenId)
       .filter((id) => id != null);
+    this.logger.debug(
+      `Found ${tokenIds.length} token ids to update: ${tokenIds.join(', ')}`,
+    );
     await this.tokenAction.ensureTokens(tokenIds, false);
 
     this.updateHeight = inactiveRaffles.reduce(
@@ -103,7 +106,7 @@ export class TokenDetailsService extends PeriodicTaskService {
         `Checking for new inactive raffles, updateHeight is ${this.updateHeight}`,
       );
       const newRaffles = await DbService.getInstance().getInactiveRaffleBoxes(
-        undefined,
+        false,
         this.updateHeight,
       );
 
