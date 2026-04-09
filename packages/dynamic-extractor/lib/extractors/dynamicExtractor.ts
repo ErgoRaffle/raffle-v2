@@ -108,19 +108,16 @@ export class DynamicExtractor extends AbstractExtractor<
           );
           continue;
         }
-        const watchedTokenId = this.addressWatchList.get(address);
-        if (watchedTokenId === BTC_TOKEN_ID) {
-          const value = output.value ?? 0;
-          const voutIndex = output.n;
-          boxesToInsert.push({
-            identifier: `${tx.txid}:${voutIndex}`,
-            txId: tx.txid,
-            address,
-            serialized: '',
-            tokenId: BTC_TOKEN_ID,
-            amount: value.toString(),
-          });
-        }
+        const value = output.value ?? 0;
+        const voutIndex = output.n;
+        boxesToInsert.push({
+          identifier: `${tx.txid}:${voutIndex}`,
+          txId: tx.txid,
+          address,
+          serialized: '',
+          tokenId: BTC_TOKEN_ID,
+          amount: value.toString(),
+        });
       }
 
       // Runes: tokenId !== 'btc' — fetch runes and match by address + runeId

@@ -132,7 +132,7 @@ export const registerDonationRoute = (
             donatorAddress,
             bitcoinAddress,
           },
-          tokenAmount,
+          btcTokenId === BTC_TOKEN_ID ? tokenAmount + donationFee : tokenAmount,
           btcTokenId,
         );
         await addWatchingAddress(bitcoinAddress, savedDonationParams.tokenId);
