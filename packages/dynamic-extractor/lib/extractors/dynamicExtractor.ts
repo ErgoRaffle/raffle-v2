@@ -79,7 +79,8 @@ export class DynamicExtractor extends AbstractExtractor<
   /**
    * Process a list of Bitcoin transactions in a block and store outputs for watched addresses.
    * Skips transactions that cannot match any watched address.
-   * When tokenId is 'btc' uses UTXO total value (sats); otherwise uses runes network for token amount.
+   * For matched transactions, extracts BTC amounts from all tx outputs with the watched address.
+   * Extracts rune amounts only from rune outputs matching both watched address and tokenId.
    * @param txs - List of Bitcoin transactions in the block
    * @param block - Block info (hash, height)
    * @returns true if processing completed successfully
@@ -106,6 +107,10 @@ export class DynamicExtractor extends AbstractExtractor<
           this.logger.debug(
             `address can not be derived from scriptPubKey for tx ${tx.txid}, output scriptPubKey hex: ${output.scriptPubKey.hex}`,
           );
+          continue;
+        }
+        if (!this.addressWatchList.get(address)) {
+          this.logger.debug(`address ${address} is not in the watch list`);
           continue;
         }
         const value = output.value ?? 0;
