@@ -277,11 +277,7 @@ export class InitializerService extends AbstractService {
 
     this.logger.debug('All transaction services initialized');
 
-    TokenDetailsService.init(
-      configs.scanner.node.url,
-      configs.verifiedTokenIds ?? [],
-      tokenDetailsLogger,
-    );
+    TokenDetailsService.init(configs.scanner.node.url, tokenDetailsLogger);
     this.logger.debug('Token details service initialized');
     this.logger.info('All services initialized successfully');
   };

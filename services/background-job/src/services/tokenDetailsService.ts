@@ -18,7 +18,6 @@ export class TokenDetailsService extends PeriodicTaskService {
 
   private constructor(
     private readonly nodeUrl: string,
-    private readonly verifiedTokenIds: string[],
     logger?: AbstractLogger,
   ) {
     super(logger);
@@ -32,16 +31,11 @@ export class TokenDetailsService extends PeriodicTaskService {
 
   /**
    * @param nodeUrl - Ergo node base URL for fetching token metadata
-   * @param verifiedTokenIds - Token ids from config that should be marked verified
    * @param logger - Optional logger instance
    */
-  static readonly init = (
-    nodeUrl: string,
-    verifiedTokenIds: string[],
-    logger?: AbstractLogger,
-  ) => {
+  static readonly init = (nodeUrl: string, logger?: AbstractLogger) => {
     if (this.instance != undefined) return;
-    this.instance = new TokenDetailsService(nodeUrl, verifiedTokenIds, logger);
+    this.instance = new TokenDetailsService(nodeUrl, logger);
   };
 
   /**
@@ -62,14 +56,10 @@ export class TokenDetailsService extends PeriodicTaskService {
   ];
 
   /**
-   * Syncs verified token ids from config and sets the update height to the highest height of the inactive raffles
+   * Syncs the token details for the existing inactive raffles
+   * Sets the update height to the highest height of the inactive raffles
    */
   protected preStart = async (): Promise<void> => {
-    await this.tokenAction.syncVerifiedTokens(this.verifiedTokenIds);
-    this.logger.info(
-      `Synced ${this.verifiedTokenIds.length} verified token ids from config`,
-    );
-
     const inactiveRaffles =
       await DbService.getInstance().getInactiveRaffleBoxes(false);
 

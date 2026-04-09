@@ -20,6 +20,7 @@
     "config:generate:types": "cross-env NODE_OPTIONS=\"--import tsx\" npx @rosen-bridge/config generate-ts-types --schema ./config/schema.json --output ./src/types/configs.ts --root-type BackgroundJobConfig",
     "coverage": "npm run test -- --coverage",
     "init": "tsx ./src/serviceBoxInit.ts",
+    "sync-verified-tokens": "tsx ./src/syncVerifiedTokens.ts",
     "lint": "eslint --fix . && npm run prettify",
     "lint:check": "eslint . && npm run prettify:check",
     "prettify": "prettier --write . --ignore-path ../../.gitignore",
