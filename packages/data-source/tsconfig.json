@@ -9,6 +9,7 @@
     { "path": "../../packages/dynamic-extractor" },
     { "path": "../../packages/extractors" },
     { "path": "../../packages/request-params" },
-    { "path": "../../packages/db-views" }
+    { "path": "../../packages/db-views" },
+    { "path": "../../packages/tokens" }
   ]
 }
