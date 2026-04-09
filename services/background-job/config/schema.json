@@ -331,6 +331,22 @@
       }
     }
   },
+  "tokenDetails": {
+    "type": "object",
+    "children": {
+      "updateInterval": {
+        "type": "number",
+        "default": 60,
+        "description": "token details sync interval for inactive raffles, in seconds",
+        "validations": [
+          {
+            "required": true,
+            "error": "token details update interval must be specified"
+          }
+        ]
+      }
+    }
+  },
   "addresses": {
     "type": "object",
     "children": {
@@ -344,6 +360,14 @@
           }
         ]
       }
+    }
+  },
+  "verifiedTokenIds": {
+    "type": "array",
+    "default": [],
+    "description": "Ergo token ids verified by the service to be used as collecting tokens",
+    "items": {
+      "type": "string"
     }
   }
 }

@@ -135,12 +135,18 @@ export class DbService extends AbstractService {
 
   /**
    * Get all inactive raffle boxes
+   * @param isUnspent - Whether to filter by unspent boxes
+   * @param minHeight - If provided, only returns raffles with height greater than this value
    * @returns The inactive raffle boxes
    */
-  getInactiveRaffleBoxes = (): Promise<InactiveRaffleEntity[]> => {
-    return this.dataSource
-      .getRepository(InactiveRaffleEntity)
-      .findBy({ spendBlock: IsNull() });
+  getInactiveRaffleBoxes = (
+    isUnspent = true,
+    minHeight?: number,
+  ): Promise<InactiveRaffleEntity[]> => {
+    return this.dataSource.getRepository(InactiveRaffleEntity).findBy({
+      ...(isUnspent ? { spendBlock: IsNull() } : {}),
+      ...(minHeight ? { height: MoreThan(minHeight) } : {}),
+    });
   };
 
   /**
