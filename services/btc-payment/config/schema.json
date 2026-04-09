@@ -204,7 +204,6 @@
       },
       "secret": {
         "type": "string",
-        "default": "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe",
         "description": "Captcha provider secret key (e.g. reCAPTCHA secret); set in deployment or local.yml",
         "validations": [
           {
