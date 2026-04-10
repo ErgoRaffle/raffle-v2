@@ -1,5 +1,4 @@
 export interface BackgroundJobConfig {
-  verifiedTokenIds?: string[];
   addresses: Addresses;
   tokenDetails: TokenDetails;
   boxLookup: BoxLookup;

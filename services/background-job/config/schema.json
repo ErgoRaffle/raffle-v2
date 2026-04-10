@@ -361,13 +361,5 @@
         ]
       }
     }
-  },
-  "verifiedTokenIds": {
-    "type": "array",
-    "default": [],
-    "description": "Ergo token ids verified by the service to be used as collecting tokens",
-    "items": {
-      "type": "string"
-    }
   }
 }
