@@ -115,7 +115,8 @@ export class DynamicExtractor extends AbstractExtractor<
           this.logger.debug(`address ${address} is not in the watch list`);
           continue;
         }
-        const value = output.value ?? 0;
+        const parts = output.value.toString().split('.');
+        const part1 = ((parts[1] ?? '') + '0'.repeat(8)).substring(0, 8);
         const voutIndex = output.n;
         btcData.push({
           identifier: `${tx.txid}:${voutIndex}`,
@@ -123,7 +124,7 @@ export class DynamicExtractor extends AbstractExtractor<
           address,
           serialized: '',
           tokenId: BTC_TOKEN_ID,
-          amount: value.toString(),
+          amount: (parts[0] === '0' ? '' : parts[0]) + part1,
         });
       }
 

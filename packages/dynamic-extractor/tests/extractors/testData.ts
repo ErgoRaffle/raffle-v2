@@ -18,7 +18,7 @@ export const sampleScriptPubKeyHexAddress =
   '0014311564348890e005880a9bc834aaa5884f1b5932';
 
 export const sampleBitcoinTxOutput: BitcoinRpcTxOutput = {
-  value: 50000,
+  value: 0.0005,
   n: 0,
   scriptPubKey: {
     asm: 'OP_0 751e76e8199196d454941c45d1b3a323f1433bd6',
@@ -28,7 +28,7 @@ export const sampleBitcoinTxOutput: BitcoinRpcTxOutput = {
 
 /** Second vout decoding to sampleBitcoinAddress (so tx passes pre-filter when watching runes for that address) */
 export const sampleBitcoinTxOutputAddress: BitcoinRpcTxOutput = {
-  value: 10000,
+  value: 20.01,
   n: 1,
   scriptPubKey: {
     asm: 'OP_0 311564348890e005880a9bc834aaa5884f1b5932',
@@ -83,5 +83,5 @@ export const sampleDynamicExtractedBtcBox = {
   address: sampleBitcoinAddress,
   serialized: '',
   tokenId: 'btc',
-  amount: '10000',
+  amount: '2001000000',
 };
