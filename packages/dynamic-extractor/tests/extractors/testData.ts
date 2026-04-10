@@ -77,13 +77,11 @@ export const sampleDynamicExtractedDataWithRune = {
 };
 
 /** Expected BTC boxes produced from sampleBitcoinTx outputs. */
-export const sampleDynamicExtractedBtcBox = [
-  {
-    identifier: `${sampleBitcoinTx.txid}:1`,
-    txId: sampleBitcoinTx.txid,
-    address: sampleBitcoinAddress,
-    serialized: '',
-    tokenId: 'btc',
-    amount: '10000',
-  },
-];
+export const sampleDynamicExtractedBtcBox = {
+  identifier: `${sampleBitcoinTx.txid}:1`,
+  txId: sampleBitcoinTx.txid,
+  address: sampleBitcoinAddress,
+  serialized: '',
+  tokenId: 'btc',
+  amount: '10000',
+};

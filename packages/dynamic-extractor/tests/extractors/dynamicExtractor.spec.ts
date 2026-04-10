@@ -154,9 +154,9 @@ describe('DynamicExtractor', () => {
       expect(result).toBe(true);
       expect(storeEntitiesSpy).toHaveBeenCalledTimes(1);
       expect(storeEntitiesSpy).toHaveBeenCalledWith(
-        sampleDynamicExtractedBtcBox,
+        [sampleDynamicExtractedBtcBox],
         block,
-        'Dynamic',
+        'Dynamic:BTC',
       );
     });
 
@@ -197,11 +197,16 @@ describe('DynamicExtractor', () => {
       );
 
       expect(result).toBe(true);
-      expect(storeEntitiesSpy).toHaveBeenCalledTimes(1);
+      expect(storeEntitiesSpy).toHaveBeenCalledTimes(2);
       expect(storeEntitiesSpy).toHaveBeenCalledWith(
-        [...sampleDynamicExtractedBtcBox, sampleDynamicExtractedDataWithRune],
+        [sampleDynamicExtractedBtcBox],
         block,
-        'Dynamic',
+        'Dynamic:BTC',
+      );
+      expect(storeEntitiesSpy).toHaveBeenCalledWith(
+        [sampleDynamicExtractedDataWithRune],
+        block,
+        'Dynamic:RUNES',
       );
     });
 
@@ -244,9 +249,9 @@ describe('DynamicExtractor', () => {
       expect(result).toBe(true);
       expect(storeEntitiesSpy).toHaveBeenCalledTimes(1);
       expect(storeEntitiesSpy).toHaveBeenCalledWith(
-        sampleDynamicExtractedBtcBox,
+        [sampleDynamicExtractedBtcBox],
         block,
-        'Dynamic',
+        'Dynamic:BTC',
       );
     });
 
@@ -281,9 +286,9 @@ describe('DynamicExtractor', () => {
       expect(result).toBe(true);
       expect(storeEntitiesSpy).toHaveBeenCalledTimes(1);
       expect(storeEntitiesSpy).toHaveBeenCalledWith(
-        sampleDynamicExtractedBtcBox,
+        [sampleDynamicExtractedBtcBox],
         block,
-        'Dynamic',
+        'Dynamic:BTC',
       );
     });
   });
