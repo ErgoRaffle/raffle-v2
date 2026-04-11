@@ -175,3 +175,30 @@ export function bigIntToUint8Array(num: bigint) {
   new DataView(b).setBigUint64(0, num);
   return new Uint8Array(b);
 }
+
+/**
+ *  Load config file from configs directory based on CONTRACT_CONFIGS environment variable or default to development.json
+ * @returns JSON object of config file
+ */
+export const loadConfig = () => {
+  const configFileName = process.env.CONTRACT_CONFIGS || 'development';
+
+  let configDir = './configs';
+  let finalConfigPath: string;
+
+  finalConfigPath = path.join(configDir, configFileName + '.json');
+  logger.info(`Loading configuration from: ${finalConfigPath}`);
+  try {
+    const rawConfigs = JSON.parse(
+      fs.readFileSync(finalConfigPath).toString(),
+    ) as {
+      [key: string]: string | number | object;
+    };
+    return rawConfigs;
+  } catch (err) {
+    logger.error(
+      `Failed to load config file from ${finalConfigPath}: \n${err}`,
+    );
+    process.exit(1);
+  }
+};

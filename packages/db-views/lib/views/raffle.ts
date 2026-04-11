@@ -38,8 +38,10 @@ import {
       .addSelect('raffle.txFee', 'txFee')
       .addSelect('raffle.winnersPercent', 'winnersPercent')
       .addSelect('raffle.winnersPercentList', 'winnersPercentList')
-      .addSelect('details.description', 'description')
-      .addSelect('details.name', 'name')
+      .addSelect('MAX(details.description)', 'description')
+      .addSelect('MAX(details.name)', 'name')
+      .addSelect('MAX(details.tags)', 'tags')
+      .addSelect('MAX(details.pictures)', 'pictures')
       .addSelect('COUNT(gift.id)', 'giftCount')
       .addSelect('MAX(gift.height)', 'giftMaxHeight')
       .addSelect('SUM(ticket.rangeEnd - ticket.rangeStart)', 'soldTicketCount')
@@ -60,7 +62,20 @@ import {
         'raffle.raffleId = success.raffleId',
       )
       .leftJoin(GiftRedeemEntity, 'redeem', 'raffle.raffleId = redeem.raffleId')
-      .groupBy('raffle.raffleId'),
+      .groupBy('raffle.raffleId')
+      .addGroupBy('raffle.height')
+      .addGroupBy('raffle.serviceErgoTree')
+      .addGroupBy('raffle.implementerErgoTree')
+      .addGroupBy('raffle.projectErgoTree')
+      .addGroupBy('raffle.serviceFeePercent')
+      .addGroupBy('raffle.implementerFeePercent')
+      .addGroupBy('raffle.winnersPercent')
+      .addGroupBy('raffle.ticketPrice')
+      .addGroupBy('raffle.goal')
+      .addGroupBy('raffle.deadline')
+      .addGroupBy('raffle.winnersPercentList')
+      .addGroupBy('raffle.txFee')
+      .addGroupBy('raffle.collectingTokenId'),
 })
 export class RaffleView {
   @ViewColumn()
@@ -71,6 +86,12 @@ export class RaffleView {
 
   @ViewColumn()
   deadline: number;
+
+  @ViewColumn()
+  tags: string;
+
+  @ViewColumn()
+  pictures: string;
 
   @ViewColumn()
   description: string;

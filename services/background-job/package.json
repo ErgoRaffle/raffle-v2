@@ -20,6 +20,7 @@
     "config:generate:types": "cross-env NODE_OPTIONS=\"--import tsx\" npx @rosen-bridge/config generate-ts-types --schema ./config/schema.json --output ./src/types/configs.ts --root-type BackgroundJobConfig",
     "coverage": "npm run test -- --coverage",
     "init": "tsx ./src/serviceBoxInit.ts",
+    "sync-verified-tokens": "tsx ./src/syncVerifiedTokens.ts",
     "lint": "eslint --fix . && npm run prettify",
     "lint:check": "eslint . && npm run prettify:check",
     "prettify": "prettier --write . --ignore-path ../../.gitignore",
@@ -35,6 +36,7 @@
     "@ergo-raffle/contracts": "0.0.0",
     "@ergo-raffle/data-source": "0.0.0",
     "@ergo-raffle/extractors": "0.0.0",
+    "@ergo-raffle/tokens": "0.0.0",
     "@ergo-raffle/fleet-box-selection": "^0.0.0",
     "@ergo-raffle/transactions": "0.0.0",
     "@ergo-raffle/utils": "^0.0.0",
@@ -45,7 +47,7 @@
     "@rosen-bridge/abstract-logger": "^4.0.0",
     "@rosen-bridge/abstract-scanner": "^1.0.2",
     "@rosen-bridge/callback-logger": "^2.0.0",
-    "@rosen-bridge/config": "^1.2.0",
+    "@rosen-bridge/config": "^2.0.0",
     "@rosen-bridge/discord-notification": "^1.0.0",
     "@rosen-bridge/ergo-scanner": "^1.0.2",
     "@rosen-bridge/extended-typeorm": "^1.0.1",
@@ -56,13 +58,11 @@
     "@rosen-bridge/service-manager": "^1.0.2",
     "@rosen-bridge/tx-pot": "^2.0.3",
     "@rosen-bridge/winston-logger": "^3.0.0",
-    "config": "^3.3.12",
     "lodash-es": "^4.17.21",
     "pg": "^8.4.0",
     "sigmastate-js": "^0.4.6"
   },
   "devDependencies": {
-    "@types/config": "^3.3.5",
     "@types/lodash-es": "^4.17.12"
   },
   "engines": {

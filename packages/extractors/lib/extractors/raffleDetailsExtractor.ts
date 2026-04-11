@@ -50,7 +50,7 @@ export class RaffleDetailsExtractor extends AbstractErgoBoxExtractor<
         box.ergoTree == this.ergoTree &&
         box.additionalRegisters.R4 != undefined &&
         (SConstant.from(box.additionalRegisters.R4).data as Uint8Array[])
-          .length >= 2 &&
+          .length >= 3 &&
         box.assets.length == 1
       );
     } catch (err) {
@@ -67,13 +67,9 @@ export class RaffleDetailsExtractor extends AbstractErgoBoxExtractor<
   extractBoxData = (box: OutputBox): RaffleDetailsBoxInterface | undefined => {
     const R4Serialized = SConstant.from(box.additionalRegisters!.R4!)
       .data as Uint8Array[];
-    const pictures = R4Serialized.slice(2).map((picInfo, i) => {
-      return {
-        orderIndex: i,
-        raffleId: box.assets![0].tokenId,
-        content: Buffer.from(picInfo).toString(),
-      };
-    });
+    const pictures = R4Serialized.slice(3).map((picInfo) =>
+      Buffer.from(picInfo).toString(),
+    );
 
     const data = {
       identifier: box.boxId.toString(),
@@ -81,7 +77,9 @@ export class RaffleDetailsExtractor extends AbstractErgoBoxExtractor<
       raffleId: box.assets![0].tokenId,
       name: Buffer.from(R4Serialized[0]).toString(),
       description: Buffer.from(R4Serialized[1]).toString(),
-      pictures: pictures,
+      // Add commas to the beginning and end of the tags to make it easier to search for specific tags
+      tags: ',' + Buffer.from(R4Serialized[2]).toString() + ',',
+      pictures: JSON.stringify(pictures),
       serialized: Buffer.from(serializeBox(box).toBytes()).toString('base64'),
     };
 

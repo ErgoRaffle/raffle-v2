@@ -1,10 +1,12 @@
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { FastifyWithZod } from '@rosen-bridge/fastify-enhanced';
-import { TokenMap } from '@rosen-bridge/tokens';
+
+import { ERG_TOKEN_ID } from '@ergo-raffle/utils';
 
 import { AddressDeriver } from '../../bitcoin/addressDeriver';
 import { donationRequestSchema, donationResponseSchema } from '../../types/api';
 import { DbService } from '../dbService';
+import { TokenMapService } from '../tokenMapService';
 
 // TODO: Add captcha verification
 // local/ergo/ergoraffle/raffle-v2/-/issues/125
@@ -13,7 +15,7 @@ export const registerDonationRoute = (
   logger: AbstractLogger,
   addressDeriver: AddressDeriver,
   addWatchingAddress: (address: string, tokenId: string) => void,
-  tokenMap: TokenMap,
+  tokenMapService: TokenMapService,
 ) => {
   fastify.post(
     '/api/donation',
@@ -40,6 +42,16 @@ export const registerDonationRoute = (
         const bitcoinAddress =
           await addressDeriver.deriveAddress(lastDonationParamsId);
 
+        const raffleData = await DbService.getInstance()
+          .getRaffleAction()
+          .getData(raffleId);
+
+        // TODO: Consider a fee for the transaction fees
+        const tokenAmount = BigInt(ticketCount) * raffleData.ticketPrice;
+        const btcTokenId = tokenMapService.getBtcTokenId(
+          raffleData.collectingTokenId || ERG_TOKEN_ID,
+        );
+
         const savedDonationParams = await donationAction.save(
           {
             raffleId,
@@ -47,7 +59,8 @@ export const registerDonationRoute = (
             donatorAddress,
             bitcoinAddress,
           },
-          tokenMap,
+          tokenAmount,
+          btcTokenId,
         );
         await addWatchingAddress(bitcoinAddress, savedDonationParams.tokenId);
 
@@ -55,8 +68,8 @@ export const registerDonationRoute = (
           success: true,
           message: 'Donation request received',
           data: {
-            requiredTokenId: savedDonationParams.tokenId.toString(),
-            requiredTokenCount: savedDonationParams.tokenAmount.toString(),
+            tokenAmount: tokenAmount.toString(),
+            tokenId: btcTokenId,
             bitcoinAddress,
           },
         };

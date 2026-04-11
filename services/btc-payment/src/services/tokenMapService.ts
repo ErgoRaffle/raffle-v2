@@ -4,6 +4,7 @@ import { TokenMap } from '@rosen-bridge/tokens';
 import * as fs from 'fs/promises';
 import path from 'path';
 
+import { BITCOIN_CHAIN_NAME, BITCOIN_RUNES_CHAIN_NAME } from '../constants';
 import { TokenMap as TokenMapConfig } from '../types/configs';
 
 export class TokenMapService extends PeriodicTaskService {
@@ -153,5 +154,25 @@ export class TokenMapService extends PeriodicTaskService {
       throw new Error('TokenMapService has not started');
     }
     return this.tokenMap;
+  };
+
+  /**
+   * Returns the Bitcoin token id for the given token id.
+   *
+   * @param tokenId - The token id.
+   * @returns The Bitcoin token id.
+   */
+  getBtcTokenId = (tokenId: string): string => {
+    const token = this.tokenMap?.getTokenSet(tokenId);
+    if (!token) {
+      throw new Error(`Token ${tokenId} not found in token map`);
+    }
+    if (!token[BITCOIN_CHAIN_NAME] && !token[BITCOIN_RUNES_CHAIN_NAME]) {
+      throw new Error(`Bitcoin token id not found for token ${tokenId}`);
+    }
+    return (
+      token[BITCOIN_CHAIN_NAME]?.tokenId ||
+      token[BITCOIN_RUNES_CHAIN_NAME]?.tokenId
+    );
   };
 }

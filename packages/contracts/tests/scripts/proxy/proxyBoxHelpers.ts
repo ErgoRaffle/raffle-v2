@@ -21,6 +21,7 @@ export interface CreationProxyParams {
   expirationHeight: number;
   raffleDeadline: number;
   collectingTokenId?: string;
+  tags: string;
   pictures?: string[];
 }
 
@@ -99,6 +100,7 @@ export function buildCreationProxyBox(
     R6: SColl(SColl(SByte), [
       Array.from(Buffer.from(params.name)),
       Array.from(Buffer.from(params.description)),
+      Array.from(Buffer.from(params.tags)),
       ...(params.pictures ?? []).map((p) => Array.from(Buffer.from(p))),
     ]).toHex(),
     R7: SInt(params.winnerCount).toHex(),

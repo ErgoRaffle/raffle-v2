@@ -4,7 +4,7 @@
   // Registers:
   //   R4[Coll[Long]]: [WinnersPercent, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, Deadline, txFee]
   //   R5[Coll[Coll[Byte]]]: [ServiceErgoTreeHash, ImplementerErgoTreeHash, ProjectErgoTreeHash]
-  //   R6[Coll[Coll[Byte]]]: [Name, Description, Pictures(optional)]
+  //   R6[Coll[Coll[Byte]]]: [Name, Description, Tags, Pictures(optional)]
   //   R7[Coll[Coll[Byte]]]: [TicketId, WinnersPercentListHash]
   //   R8[Int]: winnersCount
   // Tokens:
@@ -84,7 +84,7 @@
     activeRaffleCollectingTokenVerification,
 
     // Correct RaffleDetails format
-    // R4: [Name, Description, Pictures(optional)]
+    // R4: [Name, Description, Tags, Pictures(optional)]
     blake2b256(raffleDetails.propositionBytes) == raffleDetailsScriptHash,
     raffleDetails.R4[Coll[Coll[Byte]]].get == SELF.R6[Coll[Coll[Byte]]].get,
     raffleDetails.tokens(0)._1 == ticketId, // Ticket token as identifier

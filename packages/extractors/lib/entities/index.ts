@@ -3,7 +3,6 @@ export { InactiveRaffleEntity } from './inactiveRaffleEntity';
 export { RaffleBoxEntity, RaffleBoxType } from './raffleBoxEntity';
 export { WinnerEntity } from './winner';
 export { RaffleDetailsEntity } from './raffleDetails';
-export { PictureEntity } from './picture';
 export { GiftEntity } from './gift';
 export { TicketEntity } from './ticket';
 export { WinnerPrizeEntity } from './winnerPrize';

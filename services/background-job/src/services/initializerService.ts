@@ -13,6 +13,7 @@ import { BoxLookupService } from './boxLookup/boxLookupService';
 import { DbService } from './dbService';
 import { HealthCheckService } from './healthCheckService';
 import { ScannerService } from './scannerService';
+import { TokenDetailsService } from './tokenDetailsService';
 import { ActivationService } from './transactions/activationService';
 import { AddGiftService } from './transactions/addGiftService';
 import { CreationService } from './transactions/creationService';
@@ -145,6 +146,10 @@ export class InitializerService extends AbstractService {
       serviceName: SafeWithdrawalService.name,
       allowedStatuses: [ServiceStatus.running],
     },
+    {
+      serviceName: TokenDetailsService.name,
+      allowedStatuses: [ServiceStatus.running],
+    },
   ];
 
   /**
@@ -201,6 +206,7 @@ export class InitializerService extends AbstractService {
     const ticketRedeemLogger = defaultLogger.child('TicketRedeemService');
     const licenseRedeemLogger = defaultLogger.child('LicenseRedeemService');
     const safeWithdrawalLogger = defaultLogger.child('SafeWithdrawalService');
+    const tokenDetailsLogger = defaultLogger.child('TokenDetailsService');
 
     // Initialize database service
     this.logger.debug('Initializing database service');
@@ -270,6 +276,9 @@ export class InitializerService extends AbstractService {
     TicketRedeemService.init(configs.scanner.node.url, ticketRedeemLogger);
 
     this.logger.debug('All transaction services initialized');
+
+    TokenDetailsService.init(configs.scanner.node.url, tokenDetailsLogger);
+    this.logger.debug('Token details service initialized');
     this.logger.info('All services initialized successfully');
   };
 
@@ -298,6 +307,7 @@ export class InitializerService extends AbstractService {
     this.serviceManager.register(TicketRedeemService.getInstance());
     this.serviceManager.register(LicenseRedeemService.getInstance());
     this.serviceManager.register(SafeWithdrawalService.getInstance());
+    this.serviceManager.register(TokenDetailsService.getInstance());
     this.logger.debug('All services registered with ServiceManager');
   };
 

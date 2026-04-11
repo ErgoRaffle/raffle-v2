@@ -23,7 +23,7 @@ import { ServiceBuilder } from './serviceBuilder';
  * Registers:
  *   R4[Coll[Long]]: [WinnersPercentage, ServiceFeePercent, ImplementerFeePercent, TicketPrice, Goal, Deadline, TxFee]
  *   R5[Coll[Coll[Byte]]]: [ServiceErgoTreeHash, ImplementerErgoTreeHash, ProjectErgoTreeHash]
- *   R6[Coll[Coll[Byte]]]: [Name, Description, Pictures(optional)]
+ *   R6[Coll[Coll[Byte]]]: [Name, Description, Tags, Pictures(optional)]
  *   R7[Coll[Coll[Byte]]]: [TicketId, WinnersPercentListHash]
  *   R8[Int]: WinnersCount
  * Tokens:
@@ -43,6 +43,7 @@ export class InactiveRaffleBuilder {
   private winnersCount?: number;
   private name?: string;
   private description?: string;
+  private tags?: string;
   private pictures?: string[];
   private ticketId?: string;
   private winnersPercentList?: bigint[];
@@ -176,6 +177,16 @@ export class InactiveRaffleBuilder {
   };
 
   /**
+   * Set the raffle tags string (required; pass an empty string when there are no tags)
+   * @param tags - Tags string (e.g. comma-separated labels)
+   * @returns this builder instance
+   */
+  setTags = (tags: string): this => {
+    this.tags = tags;
+    return this;
+  };
+
+  /**
    * Set the raffle pictures
    * @param pictures - Array of picture URLs or data
    * @returns this builder instance
@@ -290,6 +301,14 @@ export class InactiveRaffleBuilder {
    */
   getDescription = (): string => {
     return this.description!;
+  };
+
+  /**
+   * Get the raffle tags string
+   * @returns Tags string
+   */
+  getTags = (): string => {
+    return this.tags!;
   };
 
   /**
@@ -455,6 +474,8 @@ export class InactiveRaffleBuilder {
     if (!this.winnersCount) throw new Error('Winners count not set');
     if (!this.name) throw new Error('Name not set');
     if (!this.description) throw new Error('Description not set');
+    if (this.tags === undefined)
+      throw new Error('Tags not set (use empty string for none)');
     if (!this.ticketId) throw new Error('Ticket ID not set');
     if (!this.winnersPercentList)
       throw new Error('Winners percent list not set');
@@ -515,6 +536,7 @@ export class InactiveRaffleBuilder {
         R6: SColl(SColl(SByte), [
           Array.from(Buffer.from(this.name!)),
           Array.from(Buffer.from(this.description!)),
+          Array.from(Buffer.from(this.tags!)),
           ...(this.pictures
             ? this.pictures.map((pic) => Array.from(Buffer.from(pic)))
             : []),
@@ -569,7 +591,7 @@ export class InactiveRaffleBuilder {
       );
     }
 
-    if (r6Data.length < 2) {
+    if (r6Data.length < 3) {
       throw new Error(
         'Invalid inactive raffle box: invalid R6 register format',
       );
@@ -596,6 +618,7 @@ export class InactiveRaffleBuilder {
       .setWinnersCount(r8Data)
       .setName(Buffer.from(r6Data[0]).toString())
       .setDescription(Buffer.from(r6Data[1]).toString())
+      .setTags(Buffer.from(r6Data[2]).toString())
       .setTicketId(Buffer.from(r7Data[0]).toString('hex'));
 
     // Set ergoTree hashes
@@ -603,10 +626,10 @@ export class InactiveRaffleBuilder {
     builder.implementerErgoTreeHash = r5Data[1];
     builder.projectErgoTreeHash = r5Data[2];
 
-    // Set pictures if present
-    if (r6Data.length > 2) {
+    // Set pictures if present (after name, description, tags)
+    if (r6Data.length > 3) {
       const pictures = r6Data
-        .slice(2)
+        .slice(3)
         .map((arr) => Buffer.from(arr).toString());
       builder.setPictures(pictures);
     }

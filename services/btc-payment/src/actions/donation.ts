@@ -1,13 +1,10 @@
 import { DataSource, Repository } from '@rosen-bridge/extended-typeorm';
-import { TokenMap } from '@rosen-bridge/tokens';
-import { BITCOIN_CHAIN_NAME } from 'src/constants';
 
 import { InactiveRaffleEntity } from '@ergo-raffle/extractors';
 import {
   DonationParamsEntity,
   DonationStatus,
 } from '@ergo-raffle/request-params';
-import { ERG_TOKEN_ID } from '@ergo-raffle/utils';
 
 class DonationAction {
   protected repository: Repository<DonationParamsEntity>;
@@ -24,6 +21,7 @@ class DonationAction {
    */
   getLastId = async (): Promise<number> => {
     const data = await this.repository.findOne({
+      where: {},
       order: { id: 'DESC' },
     });
     return data?.id || 0;
@@ -31,7 +29,9 @@ class DonationAction {
 
   /**
    * Save the donation params
-   * @param donationParams - The donation params
+   * @param donationParams - The donation params (raffleId, ticketCount, donatorAddress, bitcoinAddress)
+   * @param tokenAmount - Total donation token amount
+   * @param tokenId - Bitcoin chain token id for the raffle collecting token
    * @returns The saved donation params
    */
   save = async (
@@ -44,36 +44,14 @@ class DonationAction {
       | 'requiredValue'
       | 'status'
     >,
-    tokenMap: TokenMap,
+    tokenAmount: bigint,
+    tokenId: string,
   ): Promise<DonationParamsEntity> => {
-    const raffleData = await this.raffleRepository.findOne({
-      where: { raffleId: donationParams.raffleId },
-    });
-    if (!raffleData) {
-      throw new Error('Raffle not found');
-    }
-    // TODO: Consider a fee for the transaction fees
-    const donationAmount =
-      BigInt(donationParams.ticketCount) * raffleData.ticketPrice;
-
-    const token = tokenMap.getTokenSet(
-      raffleData.collectingTokenId || ERG_TOKEN_ID,
-    );
-    if (!token) {
-      throw new Error(
-        `Token ${raffleData.collectingTokenId || ERG_TOKEN_ID} not found in token map`,
-      );
-    }
-    if (!token[BITCOIN_CHAIN_NAME]) {
-      throw new Error(
-        `Bitcoin token id not found for token ${raffleData.collectingTokenId || ERG_TOKEN_ID}`,
-      );
-    }
     const savedParams = await this.repository.insert({
       ...donationParams,
-      tokenId: token[BITCOIN_CHAIN_NAME].tokenId,
-      tokenAmount: donationAmount,
-      timestamp: Date.now(),
+      tokenId,
+      tokenAmount,
+      timestamp: Math.floor(Date.now() / 1000),
       status: DonationStatus.Pending,
     });
 

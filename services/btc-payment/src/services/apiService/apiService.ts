@@ -126,7 +126,7 @@ export class ApiService extends AbstractService {
       this.logger.child('donationRoute'),
       this.addressDeriver,
       ScannerService.getInstance().addDynamicAddress,
-      TokenMapService.getInstance().getTokenMap(),
+      TokenMapService.getInstance(),
     );
   };
 }

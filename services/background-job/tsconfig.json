@@ -9,6 +9,7 @@
   "references": [
     { "path": "../../packages/extractors" },
     { "path": "../../packages/boxes" },
+    { "path": "../../packages/tokens" },
     { "path": "../../packages/transactions" },
     { "path": "../../packages/box-lookup" },
     { "path": "../../packages/data-source" },

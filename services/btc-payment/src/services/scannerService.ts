@@ -92,18 +92,22 @@ export class ScannerService extends PeriodicTaskService {
   };
 
   /**
-   * Starts the service periodic job for updating the Bitcoin scanner
+   * Re-registers all pending donation addresses in the dynamic extractor before starting the service.
    */
   protected preStart = async (): Promise<void> => {
-    this.logger.debug('Starting ScannerService');
+    const activeDonations = await DbService.getInstance()
+      .getDonationAction()
+      .getOngoing();
+    for (const donation of activeDonations) {
+      this.addDynamicAddress(donation.bitcoinAddress, donation.tokenId);
+    }
+
+    this.logger.info(
+      `Re-registered ${activeDonations.length} active donation address-token pairs in dynamic extractor`,
+    );
   };
 
-  /**
-   * Stops the service periodic job for updating the Bitcoin scanner
-   */
-  protected postStop = async (): Promise<void> => {
-    this.logger.info('ScannerService stopped');
-  };
+  protected postStop = async (): Promise<void> => {};
 
   /**
    * Returns the periodic task for the Bitcoin scanner (single chain).

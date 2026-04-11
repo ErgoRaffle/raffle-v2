@@ -1,6 +1,7 @@
 import {
   ErgoAddress,
   ErgoBox,
+  Network,
   OutputBuilder,
   TransactionBuilder,
 } from '@fleet-sdk/core';
@@ -133,8 +134,10 @@ export class AddGiftService extends AbstractTxService {
     const sum = calculateBoxesAssetSum(boxes);
     const txFee = configs.ergo.fee;
     const giftGiverAddress = ErgoAddress.fromErgoTree(
-      addGiftEntity.giftGiverErgoTree,
-    ).toString();
+      Buffer.from(addGiftEntity.giftGiverErgoTree, 'hex'),
+    ).toString(
+      raffleInfo.network === 'Mainnet' ? Network.Mainnet : Network.Testnet,
+    );
 
     const addGiftTx = new AddGiftTxBuilder()
       .setWinner(winnerBox)

@@ -48,6 +48,7 @@ export class CreationProxyAction extends AbstractErgoBoxAction<
         collectingTokenId: box.collectingTokenId,
         name: box.name,
         description: box.description,
+        tags: box.tags,
         pictures: box.pictures,
         winnerCount: box.winnerCount,
       };
@@ -79,6 +80,7 @@ export class CreationProxyAction extends AbstractErgoBoxAction<
         'collectingTokenId',
         'name',
         'description',
+        'tags',
         'pictures',
         'winnerCount',
         'extractor',
