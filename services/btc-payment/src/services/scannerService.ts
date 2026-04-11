@@ -14,6 +14,7 @@ import { DynamicExtractor } from '@ergo-raffle/dynamic-extractor';
 
 import { Bitcoin as BitcoinConfig } from '../types/configs';
 import { DbService } from './dbService';
+import { TokenMapService } from './tokenMapService';
 
 export class ScannerService extends PeriodicTaskService {
   name = 'ScannerService';
@@ -21,6 +22,10 @@ export class ScannerService extends PeriodicTaskService {
   protected dependencies: Dependency[] = [
     {
       serviceName: DbService.name,
+      allowedStatuses: [ServiceStatus.running],
+    },
+    {
+      serviceName: TokenMapService.name,
       allowedStatuses: [ServiceStatus.running],
     },
   ];
@@ -54,6 +59,7 @@ export class ScannerService extends PeriodicTaskService {
       'Donation',
       btcNetwork,
       unisat.url,
+      TokenMapService.getInstance().getTokenMap,
       unisat.apiKey,
       DefaultLogger.getInstance().child('btc-dynamic-extractor'),
     );

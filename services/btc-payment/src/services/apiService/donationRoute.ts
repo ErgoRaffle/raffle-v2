@@ -3,6 +3,7 @@ import { FastifyWithZod } from '@rosen-bridge/fastify-enhanced';
 
 import { AddressDeriver } from '../../bitcoin/addressDeriver';
 import { BTC_TOKEN_ID, ERG_TOKEN_ID } from '../../constants';
+import { ERGO_CHAIN_NAME } from '../../constants';
 import {
   Captcha as CaptchaConfig,
   donationRequestSchema,
@@ -121,6 +122,13 @@ export const registerDonationRoute = (
           .getData(raffleId);
 
         const tokenAmount = BigInt(ticketCount) * raffleData.ticketPrice;
+        const wrappedTokenAmount = tokenMapService
+          .getTokenMap()
+          .wrapAmount(
+            raffleData.collectingTokenId || ERG_TOKEN_ID,
+            tokenAmount,
+            ERGO_CHAIN_NAME,
+          ).amount;
         const btcTokenId = tokenMapService.getBtcTokenId(
           raffleData.collectingTokenId || ERG_TOKEN_ID,
         );
@@ -132,7 +140,9 @@ export const registerDonationRoute = (
             donatorAddress,
             bitcoinAddress,
           },
-          btcTokenId === BTC_TOKEN_ID ? tokenAmount + donationFee : tokenAmount,
+          btcTokenId === BTC_TOKEN_ID
+            ? wrappedTokenAmount + donationFee
+            : wrappedTokenAmount,
           btcTokenId,
         );
         await addWatchingAddress(bitcoinAddress, savedDonationParams.tokenId);
@@ -140,11 +150,11 @@ export const registerDonationRoute = (
         const donationData =
           btcTokenId === BTC_TOKEN_ID
             ? {
-                satoshiAmount: (tokenAmount + donationFee).toString(),
+                satoshiAmount: (wrappedTokenAmount + donationFee).toString(),
                 bitcoinAddress,
               }
             : {
-                tokenAmount: tokenAmount.toString(),
+                tokenAmount: wrappedTokenAmount.toString(),
                 satoshiAmount: donationFee.toString(),
                 tokenId: btcTokenId,
                 bitcoinAddress,
