@@ -1,4 +1,5 @@
 import { DataSource } from '@rosen-bridge/extended-typeorm';
+import { TokenMap } from '@rosen-bridge/tokens';
 import * as bitcoin from 'bitcoinjs-lib';
 
 import { DynamicExtractor } from '../../lib/extractors/dynamicExtractor';
@@ -20,13 +21,16 @@ const unisatApiKey = '';
 describe('DynamicExtractor', () => {
   let dataSource: DataSource;
   let extractor: DynamicExtractor;
+  let tokenMap: TokenMap;
   beforeEach(async () => {
     dataSource = await createDatabase();
+    tokenMap = new TokenMap();
     extractor = new DynamicExtractor(
       dataSource,
       'Dynamic',
       bitcoin.networks.bitcoin,
       unisatUrl,
+      () => tokenMap,
       unisatApiKey,
     );
   });

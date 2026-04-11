@@ -6,9 +6,11 @@ import {
 } from '@rosen-bridge/bitcoin-scanner';
 import { DataSource, SelectQueryBuilder } from '@rosen-bridge/extended-typeorm';
 import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
+import { TokenMap } from '@rosen-bridge/tokens';
 import * as bitcoin from 'bitcoinjs-lib';
 
 import { DynamicBoxAction } from '../actions/dynamicBoxAction';
+import { BITCOIN_CHAIN_NAME, BITCOIN_RUNES_CHAIN_NAME } from '../constants';
 import { DynamicBoxEntity } from '../entities';
 import { DynamicBoxInterface } from '../interfaces/types';
 import { UnisatRunesProtocolNetwork } from '../network/unisatRunesProtocolNetwork';
@@ -30,6 +32,7 @@ export class DynamicExtractor extends AbstractExtractor<
    * @param dataSource - TypeORM data source for persistence
    * @param id - Extractor id
    * @param unisatUrl - Unisat API base URL for runes data
+   * @param getTokenMap - Resolves the Rosen token map (called when processing txs so the map is loaded)
    * @param unisatApiKey - Unisat API key (optional)
    * @param logger - Logger instance
    */
@@ -38,6 +41,7 @@ export class DynamicExtractor extends AbstractExtractor<
     private readonly id: string,
     private readonly network: bitcoin.Network,
     unisatUrl: string,
+    private readonly getTokenMap: () => TokenMap,
     unisatApiKey?: string,
     private readonly logger: AbstractLogger = new DummyLogger(),
   ) {
@@ -49,6 +53,23 @@ export class DynamicExtractor extends AbstractExtractor<
       logger,
     );
   }
+
+  /**
+   * Converts a chain-native amount to Rosen wrapped units for persistence.
+   *
+   * @param tokenId - Chain token id (`btc` or a rune id)
+   * @param nativeAmount - Amount in that chain's smallest units
+   * @param chain - Rosen chain name (`bitcoin` or `bitcoin-runes`)
+   * @returns Wrapped amount as a decimal string
+   */
+  private readonly wrapStoredAmount = (
+    tokenId: string,
+    nativeAmount: bigint,
+    chain: string,
+  ): string =>
+    this.getTokenMap()
+      .wrapAmount(tokenId, nativeAmount, chain)
+      .amount.toString();
 
   /**
    * get Id for current extractor
@@ -81,6 +102,7 @@ export class DynamicExtractor extends AbstractExtractor<
    * Skips transactions that cannot match any watched address.
    * For matched transactions, extracts BTC amounts from all tx outputs with the watched address.
    * Extracts rune amounts only from rune outputs matching both watched address and tokenId.
+   * Amounts are converted with TokenMap.wrapAmount for `bitcoin` and `bitcoin-runes`.
    * Stores BTC and runes data with separate extractor ids with added tags (BTC and RUNES)
    * @param txs - List of Bitcoin transactions in the block
    * @param block - Block info (hash, height)
@@ -117,6 +139,7 @@ export class DynamicExtractor extends AbstractExtractor<
         }
         const parts = output.value.toString().split('.');
         const part1 = ((parts[1] ?? '') + '0'.repeat(8)).substring(0, 8);
+        const nativeSatsStr = (parts[0] === '0' ? '' : parts[0]) + part1;
         const voutIndex = output.n;
         btcData.push({
           identifier: `${tx.txid}:${voutIndex}`,
@@ -124,7 +147,11 @@ export class DynamicExtractor extends AbstractExtractor<
           address,
           serialized: '',
           tokenId: BTC_TOKEN_ID,
-          amount: (parts[0] === '0' ? '' : parts[0]) + part1,
+          amount: this.wrapStoredAmount(
+            BTC_TOKEN_ID,
+            BigInt(nativeSatsStr),
+            BITCOIN_CHAIN_NAME,
+          ),
         });
       }
 
@@ -150,7 +177,11 @@ export class DynamicExtractor extends AbstractExtractor<
             address: rune.address,
             serialized: '',
             tokenId: rune.runeId,
-            amount: rune.runeAmount,
+            amount: this.wrapStoredAmount(
+              rune.runeId,
+              BigInt(rune.runeAmount),
+              BITCOIN_RUNES_CHAIN_NAME,
+            ),
           });
         }
       } catch (err) {
