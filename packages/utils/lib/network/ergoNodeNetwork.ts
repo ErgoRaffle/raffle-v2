@@ -3,6 +3,7 @@ import { deserializeTransaction } from '@fleet-sdk/serializer';
 import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
 import JsonBigInt from '@rosen-bridge/json-bigint';
 import ergoNodeClientFactory from '@rosen-clients/ergo-node';
+import { IndexedToken } from '@rosen-clients/ergo-node';
 // TODO: Import from @rosen-clients/rate-limited-axios
 import { AxiosError } from 'axios';
 import {
@@ -250,6 +251,25 @@ export class ErgoNodeNetwork {
         error,
         'Failed to get unspent boxes by token id from Ergo Node:',
       );
+    }
+  };
+
+  /**
+   * Fetches token metadata from node.
+   * @param tokenId - Token id.
+   * @returns Token metadata including name and decimals.
+   */
+  public getTokenData = async (tokenId: string): Promise<IndexedToken> => {
+    try {
+      const tokenData = await this.client.getTokenById(tokenId);
+      this.logger.debug(
+        `requested 'getTokenById' for tokenId [${tokenId}]. res: ${JsonBigInt.stringify(
+          tokenData,
+        )}`,
+      );
+      return tokenData;
+    } catch (error) {
+      return handleApiError(error, 'Failed to get token data from Ergo Node:');
     }
   };
 

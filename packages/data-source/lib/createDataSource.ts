@@ -39,6 +39,10 @@ import {
   DonationParamsEntity,
   migrations as requestParamsMigrations,
 } from '@ergo-raffle/request-params';
+import {
+  TokenEntity,
+  migrations as tokensMigrations,
+} from '@ergo-raffle/tokens';
 
 import type { DatabaseConfig } from './config.js';
 
@@ -60,6 +64,7 @@ const ENTITIES = [
   TransactionEntity,
   DynamicBoxEntity,
   DonationParamsEntity,
+  TokenEntity,
   CreationProxyEntity,
   DonationProxyEntity,
   AddGiftProxyEntity,
@@ -72,6 +77,7 @@ const MIGRATIONS = {
     ...txpotMigrations.sqlite,
     ...extractorsMigrations.sqlite,
     ...requestParamsMigrations.sqlite,
+    ...tokensMigrations.sqlite,
     ...dynamicBoxMigrations.sqlite,
     ...dbViewMigrations.sqlite,
   ],
@@ -80,6 +86,7 @@ const MIGRATIONS = {
     ...txpotMigrations.postgres,
     ...extractorsMigrations.postgres,
     ...requestParamsMigrations.postgres,
+    ...tokensMigrations.postgres,
     ...dynamicBoxMigrations.postgres,
     ...dbViewMigrations.postgres,
   ],

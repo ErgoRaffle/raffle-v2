@@ -7,6 +7,7 @@
     { "path": "../../packages/dynamic-extractor/tsconfig.build.json" },
     { "path": "../../packages/extractors/tsconfig.build.json" },
     { "path": "../../packages/request-params/tsconfig.build.json" },
-    { "path": "../../packages/db-views/tsconfig.build.json" }
+    { "path": "../../packages/db-views/tsconfig.build.json" },
+    { "path": "../../packages/tokens/tsconfig.build.json" }
   ]
 }

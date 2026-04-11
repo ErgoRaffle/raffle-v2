@@ -1,5 +1,6 @@
 export interface BackgroundJobConfig {
   addresses: Addresses;
+  tokenDetails: TokenDetails;
   boxLookup: BoxLookup;
   notification: Notification;
   healthCheck: HealthCheck;
@@ -65,6 +66,10 @@ export interface Notification {
 }
 
 export interface BoxLookup {
+  updateInterval: number;
+}
+
+export interface TokenDetails {
   updateInterval: number;
 }
 
