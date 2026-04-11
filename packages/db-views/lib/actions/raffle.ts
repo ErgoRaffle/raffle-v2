@@ -1,25 +1,18 @@
 import {
   DataSource,
-  FindOperator,
   FindOptionsOrder,
   FindOptionsWhere,
   In,
+  IsNull,
   Like,
+  Or,
   Repository,
 } from '@rosen-bridge/extended-typeorm';
 
 import { RaffleSearchCriteria } from '../types';
-import { orListOptions } from '../utils';
+import { buildWhere } from '../utils';
 import { RaffleView } from '../views';
 
-const searchMap = {
-  text: {
-    fields: ['raffleId', 'name', 'description', 'collectingTokenId'],
-    fn: (value: string) => Like(value),
-  },
-  tokenId: { fields: ['tokenId'], fn: (value: Array<string>) => In(value) },
-  ids: { fields: ['raffleId'], fn: (value: Array<string>) => In(value) },
-};
 export class RaffleViewActions {
   repository: Repository<RaffleView>;
 
@@ -28,32 +21,45 @@ export class RaffleViewActions {
   }
 
   getRaffles = (
-    query: RaffleSearchCriteria,
+    query: Partial<RaffleSearchCriteria>,
     order: FindOptionsOrder<RaffleView>,
     offset: number = 0,
     limit: number,
   ) => {
-    const conditions: { [key: string]: Array<FindOperator<unknown>> } = {};
-    (Object.keys(searchMap) as Array<keyof typeof searchMap>).forEach((tag) => {
-      if (Object.prototype.hasOwnProperty.call(query, tag)) {
-        const value = query[tag] as Parameters<
-          (typeof searchMap)[typeof tag]['fn']
-        >[0];
-        const searchField = searchMap[tag];
-        searchField.fields.forEach((field: string) => {
-          conditions[field] = conditions[field] ?? [];
-          conditions[field].push(
-            (searchField.fn as (v: typeof value) => FindOperator<unknown>)(
-              value,
-            ),
-          );
-        });
-      }
-    });
-    const where = {} as Record<string, unknown>;
-    Object.entries(conditions).forEach(([key, value]) => {
-      where[key] = orListOptions(value);
-    });
+    const where = buildWhere(
+      {
+        text: query.text,
+        tokenId: query.tokenIds,
+        ids: query.ids,
+        status: query.status,
+        tags: query.tags,
+      },
+      {
+        text: {
+          fields: ['raffleId', 'name', 'description', 'collectingTokenId'],
+          resolver: (value: unknown) => Like(`%${value}%`),
+        },
+        tokenId: {
+          fields: ['collectingTokenId'],
+          resolver: (value: unknown) => {
+            const valueArr = value as Array<string>;
+            if (valueArr.includes('erg')) {
+              return Or(IsNull(), In(valueArr));
+            }
+            return In(value as Array<string>);
+          },
+        },
+        ids: {
+          fields: ['raffleId'],
+          resolver: (value) => In(value as Array<string>),
+        },
+        // tags: {
+        //   fields: ['tags'],
+        //   resolver: value => In((value as Array<string>).map(item => `,${item},`)),
+        // }
+      },
+    );
+
     return this.repository.findAndCount({
       where: where as FindOptionsWhere<RaffleView>,
       order,

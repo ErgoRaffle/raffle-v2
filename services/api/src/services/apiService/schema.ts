@@ -1,7 +1,8 @@
 import { z } from 'zod';
 
+import { RaffleStatus } from '@ergo-raffle/db-views';
+
 import { DEFAULT_API_PAGE_SIZE } from '../../const';
-import { RaffleStatus } from '../../types';
 
 const blockchainInfoResponseSchema = z.object({
   fee: z.object({
@@ -56,13 +57,13 @@ const raffleItemSchema = z.object({
 });
 
 const getRafflesQuerySchema = z.object({
-  // text: z.string().optional(),
-  // tokenId: z.array(z.string()).optional(),
-  // tags: z.array(z.string()).optional(),
-  // status: z.array(raffleStatusSchema).optional(),
-  // ids: z.array(z.string()).optional(),
-  offset: z.string().optional().default('0'),
-  limit: z.string().optional().default(DEFAULT_API_PAGE_SIZE.toString()),
+  text: z.string().optional(),
+  tokenIds: z.union([z.array(z.string()), z.string()]).optional(),
+  tags: z.union([z.array(z.string()), z.string()]).optional(),
+  ids: z.union([z.array(z.string()), z.string()]).optional(),
+  status: z.union([raffleStatusSchema, z.array(raffleStatusSchema)]).optional(),
+  offset: z.coerce.number().optional().default(0),
+  limit: z.coerce.number().optional().default(DEFAULT_API_PAGE_SIZE),
 });
 
 const getRafflesResponseSchema = z.object({

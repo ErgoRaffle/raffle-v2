@@ -95,7 +95,7 @@ export function createDataSource(config: DatabaseConfig): DataSource {
   const common = {
     entities: ENTITIES,
     synchronize: false,
-    logging: false,
+    // logging: false,
   };
 
   if (config.type === 'sqlite') {
@@ -104,6 +104,7 @@ export function createDataSource(config: DatabaseConfig): DataSource {
       database: config.path!,
       migrations: MIGRATIONS.sqlite,
       ...common,
+      logging: 'all',
     });
   }
 
@@ -116,5 +117,6 @@ export function createDataSource(config: DatabaseConfig): DataSource {
     database: config.name,
     migrations: MIGRATIONS.postgres,
     ...common,
+    logging: 'all',
   });
 }

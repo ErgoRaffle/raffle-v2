@@ -1,6 +1,8 @@
 import { FastifyWithZod } from '@rosen-bridge/fastify-enhanced';
 
-import { RaffleStatus } from '../../../types';
+import { RaffleStatus } from '@ergo-raffle/db-views';
+
+import { toArrayOrUndefined } from '../../../../utils/utils';
 import { DbService } from '../../dbService';
 import { getRafflesQuerySchema, getRafflesResponseSchema } from '../schema';
 
@@ -22,10 +24,23 @@ const registerGetRafflesRoute = (fastify: FastifyWithZod) => {
       },
     },
     async (request, response) => {
-      const { limit, offset } = request.query;
+      const { limit, offset, text, tokenIds, ids, tags, status } =
+        request.query;
+
       const [raffles, total] = await DbService.getInstance()
         .getRaffleViewAction()
-        .getRaffles({}, {}, Number(offset), Number(limit));
+        .getRaffles(
+          {
+            text,
+            tokenIds: toArrayOrUndefined(tokenIds),
+            tags: toArrayOrUndefined(tags),
+            ids: toArrayOrUndefined(ids),
+            status: toArrayOrUndefined(status),
+          },
+          {},
+          offset,
+          limit,
+        );
       const items = raffles.map((raffle) => ({
         id: raffle.raffleId,
         name: raffle.name,
@@ -43,6 +58,7 @@ const registerGetRafflesRoute = (fastify: FastifyWithZod) => {
           goal: raffle.goal,
           raised: raffle.ticketPrice * raffle.soldTicketCount,
         },
+        // tags: raffle.tags.split(','),
         ticketPrice: raffle.ticketPrice,
         trust: 0,
         status:

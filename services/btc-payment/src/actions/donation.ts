@@ -1,12 +1,13 @@
 import { DataSource, Repository } from '@rosen-bridge/extended-typeorm';
 import { TokenMap } from '@rosen-bridge/tokens';
-import { BITCOIN_CHAIN_NAME, ERG_TOKEN_ID } from 'src/constants';
+import { BITCOIN_CHAIN_NAME } from 'src/constants';
 
 import { InactiveRaffleEntity } from '@ergo-raffle/extractors';
 import {
   DonationParamsEntity,
   DonationStatus,
 } from '@ergo-raffle/request-params';
+import { ERG_TOKEN_ID } from '@ergo-raffle/utils';
 
 class DonationAction {
   protected repository: Repository<DonationParamsEntity>;

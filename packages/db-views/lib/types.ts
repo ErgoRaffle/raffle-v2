@@ -1,24 +1,26 @@
+import { FindOperator } from '@rosen-bridge/extended-typeorm';
+
+enum RaffleStatus {
+  SuccessFull = 'successful',
+  Failed = 'failed',
+  Active = 'active',
+}
+
 type RaffleSearchCriteria = {
-  text?: string;
-  tokenId?: Array<string>;
-  tags?: Array<string>;
-  status?: Array<'success' | 'failed' | 'active'>;
-  ids?: Array<string>;
+  text: string;
+  tokenIds: Array<string>;
+  tags: Array<string>;
+  status: Array<RaffleStatus>;
+  ids: Array<string>;
 };
 
-export { RaffleSearchCriteria };
-//
-// raffleId -> fullTextSearch
-// name -> fullTextSearch
-// description -> fullTextSearch
-// collectingTokenId -> fullTextSearch + filter(MultipleSelect)
-// winnersCount
-// giftCount
-// tags -> fullTextSearch + filter(MultipleSelect)
-// deadline -> sort(asc/desc)
-// goal
-// soldTicketCount
-// ticketPrice
-// creationHeight -> sort(asc/desc)
-// lastActivity -> sort(asc/desc)
-// status -> filter(MultipleSelect)
+type SearchFieldQuery<T> = {
+  fields: Array<string>;
+  fn: (value: T) => FindOperator<T>;
+};
+
+type SearchQuery<TMap> = {
+  [K in keyof TMap]: Array<SearchFieldQuery<TMap[K]>>;
+};
+
+export { RaffleSearchCriteria, SearchQuery, RaffleStatus };
