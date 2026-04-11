@@ -58,7 +58,7 @@ const registerGetRafflesRoute = (fastify: FastifyWithZod) => {
           goal: raffle.goal,
           raised: raffle.ticketPrice * raffle.soldTicketCount,
         },
-        // tags: raffle.tags.split(','),
+        tags: raffle.tags.split(','),
         ticketPrice: raffle.ticketPrice,
         trust: 0,
         status:

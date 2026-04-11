@@ -61,7 +61,7 @@ const getRafflesQuerySchema = z.object({
   tokenIds: z.union([z.array(z.string()), z.string()]).optional(),
   tags: z.union([z.array(z.string()), z.string()]).optional(),
   ids: z.union([z.array(z.string()), z.string()]).optional(),
-  status: z.union([raffleStatusSchema, z.array(raffleStatusSchema)]).optional(),
+  status: z.union([z.array(raffleStatusSchema), raffleStatusSchema]).optional(),
   offset: z.coerce.number().optional().default(0),
   limit: z.coerce.number().optional().default(DEFAULT_API_PAGE_SIZE),
 });

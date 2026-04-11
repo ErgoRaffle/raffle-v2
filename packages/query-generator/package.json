@@ -1,10 +1,10 @@
 {
-  "name": "@ergo-raffle/db-views",
+  "name": "@ergo-raffle/query-generator",
   "version": "0.0.0",
-  "description": "Contains database view definitions for ErgoRaffle",
+  "description": "Query generator utilities for ergo raffle",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ergoraffle/raffle-v2"
+    "url": "git+https://github.com/ergoraffle/raffle-v2.git"
   },
   "license": "MIT",
   "author": "ErgoRaffle Team",
@@ -23,18 +23,13 @@
     "prettify": "prettier --write . --ignore-path ../../.gitignore",
     "prettify:check": "prettier --check . --ignore-path ../../.gitignore",
     "release": "npm run clean && npm run build && npm publish --access public",
-    "type-check": "tsc --noEmit",
-    "typeorm": "cross-env NODE_OPTIONS='--import tsx' typeorm",
-    "typeorm:generate:postgres": "npm run typeorm migration:generate ./lib/migrations/postgres/migration -- -p -d ./lib/dataSource.ts",
-    "typeorm:generate:sqlite": "npm run typeorm migration:generate ./lib/migrations/sqlite/migration -- -p -d ./lib/dataSource.ts"
-  },
-  "dependencies": {
-    "@ergo-raffle/extractors": "0.0.0",
-    "@ergo-raffle/query-generator": "^0.0.0",
-    "@rosen-bridge/extended-typeorm": "^1.0.1"
+    "type-check": "tsc --noEmit"
   },
   "engines": {
     "node": ">=22.18.0",
     "npm": "11.6.2"
+  },
+  "dependencies": {
+    "@rosen-bridge/extended-typeorm": "^1.0.1"
   }
 }

@@ -9,8 +9,10 @@ import {
   Repository,
 } from '@rosen-bridge/extended-typeorm';
 
+import { buildWhere } from '@ergo-raffle/query-generator';
+
 import { RaffleSearchCriteria } from '../types';
-import { buildWhere } from '../utils';
+import { orListOptions } from '../utils';
 import { RaffleView } from '../views';
 
 export class RaffleViewActions {
@@ -53,10 +55,13 @@ export class RaffleViewActions {
           fields: ['raffleId'],
           resolver: (value) => In(value as Array<string>),
         },
-        // tags: {
-        //   fields: ['tags'],
-        //   resolver: value => In((value as Array<string>).map(item => `,${item},`)),
-        // }
+        tags: {
+          fields: ['tags'],
+          resolver: (value) =>
+            orListOptions(
+              (value as Array<string>).map((item) => Like(`%,${item},%`)),
+            ),
+        },
       },
     );
 
