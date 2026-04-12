@@ -1,3 +1,5 @@
+import { RaffleView } from './views';
+
 enum RaffleStatus {
   SuccessFull = 'successful',
   Failed = 'failed',
@@ -12,4 +14,16 @@ type RaffleSearchCriteria = {
   ids: Array<string>;
 };
 
-export { RaffleSearchCriteria, RaffleStatus };
+type RaffleOrder = {
+  field: keyof RaffleView;
+  direction: 'ASC' | 'DESC';
+};
+
+type getRaffleParams = {
+  query?: Partial<RaffleSearchCriteria>;
+  order?: RaffleOrder;
+  offset?: number;
+  limit: number;
+};
+
+export { RaffleStatus, getRaffleParams, RaffleOrder };

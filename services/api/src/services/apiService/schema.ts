@@ -58,10 +58,23 @@ const raffleItemSchema = z.object({
 
 const getRafflesQuerySchema = z.object({
   text: z.string().optional(),
-  tokenIds: z.union([z.array(z.string()), z.string()]).optional(),
-  tags: z.union([z.array(z.string()), z.string()]).optional(),
-  ids: z.union([z.array(z.string()), z.string()]).optional(),
-  status: z.union([z.array(raffleStatusSchema), raffleStatusSchema]).optional(),
+  tokenIds: z
+    .union([z.array(z.string()), z.string().transform((item) => [item])])
+    .optional(),
+  tags: z
+    .union([z.array(z.string()), z.string().transform((item) => [item])])
+    .optional(),
+  ids: z
+    .union([z.array(z.string()), z.string().transform((item) => [item])])
+    .optional(),
+  status: z
+    .union([
+      z.array(raffleStatusSchema),
+      raffleStatusSchema.transform((item) => [item]),
+    ])
+    .optional(),
+  order: z.enum(['height', 'deadline']).optional().default('height'),
+  direction: z.enum(['asc', 'desc']).optional().default('desc'),
   offset: z.coerce.number().optional().default(0),
   limit: z.coerce.number().optional().default(DEFAULT_API_PAGE_SIZE),
 });

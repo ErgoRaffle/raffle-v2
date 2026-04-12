@@ -18,11 +18,13 @@
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
     "clean": "rimraf dist && rimraf tsconfig.build.tsbuildinfo",
+    "coverage": "npm run test -- --coverage",
     "lint": "eslint --fix . && npm run prettify",
     "lint:check": "eslint . && npm run prettify:check",
     "prettify": "prettier --write . --ignore-path ../../.gitignore",
     "prettify:check": "prettier --check . --ignore-path ../../.gitignore",
     "release": "npm run clean && npm run build && npm publish --access public",
+    "test": "cross-env NODE_OPTIONS=\"--import tsx\" vitest",
     "type-check": "tsc --noEmit",
     "typeorm": "cross-env NODE_OPTIONS='--import tsx' typeorm",
     "typeorm:generate:postgres": "npm run typeorm migration:generate ./lib/migrations/postgres/migration -- -p -d ./lib/dataSource.ts",
@@ -30,7 +32,6 @@
   },
   "dependencies": {
     "@ergo-raffle/extractors": "0.0.0",
-    "@ergo-raffle/query-generator": "^0.0.0",
     "@rosen-bridge/extended-typeorm": "^1.0.1"
   },
   "engines": {
