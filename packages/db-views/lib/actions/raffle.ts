@@ -10,16 +10,33 @@ export class RaffleViewActions {
     this.repository = dataSource.getRepository(RaffleView);
   }
 
+  /**
+   * Creates a SQL LIKE condition for searching text across raffleId, name, description, collectingTokenId fields
+   * @param text - Search text to match (case-insensitive)
+   * @returns SQL condition and parameters, or undefined if no text provided
+   */
   protected createTextSearch = (text?: string) => {
     if (text) {
-      const fields = ['raffleId', 'name', 'description', 'collectingTokenId'];
+      const fields = [
+        '"raffleId"',
+        'name',
+        'description',
+        '"collectingTokenId"',
+      ];
       const condition = fields
-        .map((field) => `${field} LIKE :text`)
+        .map((field) => `LOWER(${field}) LIKE LOWER(:text)`)
         .join(' OR ');
       return { condition, params: { text: `%${text}%` } };
     }
   };
 
+  /**
+   * Creates an IN clause condition for filtering by a list of values
+   * @param field - Database field name to filter on
+   * @param collection - Parameter name for the collection
+   * @param items - Array of values to match
+   * @returns SQL condition and parameters, or undefined if items array is empty
+   */
   protected createInListSearch = (
     field: string,
     collection: string,
@@ -33,6 +50,13 @@ export class RaffleViewActions {
     }
   };
 
+  /**
+   * Creates a condition for XOR logic between Active and another status
+   * @param isActive - Whether Active status is included
+   * @param isOtherStatus - Whether the other status (Success/Failed) is included
+   * @param field - Database field name to check (successCount or redeemCount)
+   * @returns SQL condition string, or undefined if both statuses are the same
+   */
   protected createXorFieldSearch = (
     isActive: boolean,
     isOtherStatus: boolean,
@@ -44,17 +68,32 @@ export class RaffleViewActions {
     }
   };
 
+  /**
+   * Creates SQL conditions for filtering by raffle status
+   * Uses XOR logic: Active requires successCount=0 AND redeemCount=0
+   * @param status - Array of raffle statuses to filter by
+   * @returns Array of SQL condition strings
+   */
   protected createStatusSearch = (status: Array<RaffleStatus>) => {
     const isActive = status.includes(RaffleStatus.Active);
     const isSuccess = status.includes(RaffleStatus.SuccessFull);
     const isFailed = status.includes(RaffleStatus.Failed);
     return [
-      this.createXorFieldSearch(isActive, isSuccess, 'successCount'),
-      this.createXorFieldSearch(isActive, isFailed, 'redeemCount'),
+      // If one and only one of isActive and isSuccess passed "successCount" must be filtered
+      this.createXorFieldSearch(isActive, isSuccess, '"successCount"'),
+      // If one and only one of isActive and isFailed passed "redeemCount" must be filtered
+      this.createXorFieldSearch(isActive, isFailed, '"redeemCount"'),
     ].filter(Boolean) as Array<string>;
   };
 
-  getRaffles = (params: getRaffleParams) => {
+  /**
+   * Retrieves raffles from the database with optional filtering, ordering, and pagination
+   * @param params - Query parameters including filters, order, offset, and limit
+   * @returns Tuple containing array of raffle views and total count
+   */
+  getRaffles = async (
+    params: getRaffleParams,
+  ): Promise<[RaffleView[], number]> => {
     const queryBuilder = this.repository.createQueryBuilder();
     const queries = [
       this.createTextSearch(params.query?.text),
@@ -62,11 +101,11 @@ export class RaffleViewActions {
         (condition) => ({ condition, params: {} }),
       ),
       this.createInListSearch(
-        'collectingTokenId',
+        '"collectingTokenId"',
         'tokenIds',
         params.query?.tokenIds ?? [],
       ),
-      this.createInListSearch('raffleId', 'ids', params.query?.ids ?? []),
+      this.createInListSearch('"raffleId"', 'ids', params.query?.ids ?? []),
     ].filter(Boolean) as Array<{
       condition: string;
       params: Record<string, unknown>;
@@ -83,6 +122,21 @@ export class RaffleViewActions {
     }
     queryBuilder.skip(params.offset ?? 0).take(params.limit);
 
-    return queryBuilder.getManyAndCount();
+    const [items, count] = await queryBuilder.getManyAndCount();
+    const fetchedRaffles = items.map(
+      (item) =>
+        ({
+          ...item,
+          // these conversions are needed because queryBuilder missed executing transform on field also COUNT output type mismatched in postgres and sqlite
+          successCount: Number(item.successCount),
+          redeemCount: Number(item.redeemCount),
+          giftCount: Number(item.giftCount),
+          soldTicketCount: BigInt(item.soldTicketCount),
+          ticketPrice: BigInt(item.ticketPrice),
+          goal: BigInt(item.goal),
+          txFee: BigInt(item.txFee),
+        }) as RaffleView,
+    );
+    return [fetchedRaffles, count];
   };
 }

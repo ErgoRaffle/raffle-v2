@@ -34,7 +34,7 @@ export const createDatabase = async (): Promise<DataSource> => {
     ],
     migrations: [...extractorMigrations.sqlite, ...migrations.sqlite],
     synchronize: false,
-    logging: 'all',
+    logging: false,
   });
   await dataSource.initialize();
   await dataSource.runMigrations();
