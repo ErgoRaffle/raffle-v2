@@ -6,9 +6,7 @@ import {
 /** Bitcoin-style test data for DynamicExtractor */
 export const sampleBitcoinAddress =
   'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh';
-/** Another valid Bitcoin address (BIP173 test vector) for "other address" tests */
-export const sampleBitcoinAddressOther =
-  'bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4';
+
 export const sampleInvalidBitcoinAddress = 'not-a-valid-btc-address';
 
 /** P2WPKH scriptPubKey hex that decodes to sampleBitcoinAddressOther */
@@ -20,7 +18,7 @@ export const sampleScriptPubKeyHexAddress =
   '0014311564348890e005880a9bc834aaa5884f1b5932';
 
 export const sampleBitcoinTxOutput: BitcoinRpcTxOutput = {
-  value: 50000,
+  value: 0.0005,
   n: 0,
   scriptPubKey: {
     asm: 'OP_0 751e76e8199196d454941c45d1b3a323f1433bd6',
@@ -30,7 +28,7 @@ export const sampleBitcoinTxOutput: BitcoinRpcTxOutput = {
 
 /** Second vout decoding to sampleBitcoinAddress (so tx passes pre-filter when watching runes for that address) */
 export const sampleBitcoinTxOutputAddress: BitcoinRpcTxOutput = {
-  value: 10000,
+  value: 20.01,
   n: 1,
   scriptPubKey: {
     asm: 'OP_0 311564348890e005880a9bc834aaa5884f1b5932',
@@ -68,15 +66,6 @@ export const sampleBitcoinTxOnlyOther: BitcoinRpcTransaction = {
 
 export const sampleTokenId = 'rune-id-sample';
 
-export const sampleDynamicExtractedData = {
-  identifier: `${sampleBitcoinTx.txid}:0`,
-  txId: sampleBitcoinTx.txid,
-  address: sampleBitcoinAddress,
-  serialized: '',
-  tokenId: sampleTokenId,
-  amount: '0',
-};
-
 /** Expected box when processTransactions uses runes network returning one rune (rune on vout 1 = sampleBitcoinAddress) */
 export const sampleDynamicExtractedDataWithRune = {
   identifier: `${sampleBitcoinTx.txid}:1`,
@@ -85,4 +74,14 @@ export const sampleDynamicExtractedDataWithRune = {
   serialized: '',
   tokenId: sampleTokenId,
   amount: '100',
+};
+
+/** Expected BTC boxes produced from sampleBitcoinTx outputs. */
+export const sampleDynamicExtractedBtcBox = {
+  identifier: `${sampleBitcoinTx.txid}:1`,
+  txId: sampleBitcoinTx.txid,
+  address: sampleBitcoinAddress,
+  serialized: '',
+  tokenId: 'btc',
+  amount: '2001000000',
 };

@@ -18,7 +18,7 @@ import {
 import { DonateTxBuilder } from '@ergo-raffle/transactions';
 import { ErgoNodeNetwork, signTransaction } from '@ergo-raffle/utils';
 
-import { BTC_DONATION_TX_TYPE } from '../constants';
+import { BTC_DONATION_TX_TYPE, BTC_TOKEN_ID } from '../constants';
 import {
   Donation as DonationConfig,
   Ergo as ErgoConfig,
@@ -207,21 +207,42 @@ export class DonationService extends PeriodicTaskService {
 
     for (const donation of ongoing) {
       try {
-        const tokenId = donation.tokenId;
-        const tokenAmount = donation.tokenAmount;
         const confirmedSum = await db
           .getDynamicBoxAction()
           .getConfirmedSum(
             donation.bitcoinAddress,
-            tokenId,
+            donation.tokenId,
             minConfirmedHeight,
           );
+        this.logger.debug(
+          `Confirmed sum for donation request id=${donation.id} tokenId=${donation.tokenId}: ${confirmedSum}`,
+        );
 
-        if (confirmedSum < tokenAmount) {
+        if (confirmedSum < donation.tokenAmount) {
           this.logger.info(
-            `Donation request id=${donation.id} not satisfied (confirmedSum=${confirmedSum}, tokenAmount=${tokenAmount})`,
+            `Donation request id=${donation.id} not satisfied (confirmedSum=${confirmedSum}, tokenAmount=${donation.tokenAmount})`,
           );
           continue;
+        }
+        // If the token is not BTC, check if the donation fee is satisfied in btc
+        if (donation.tokenId !== BTC_TOKEN_ID) {
+          const confirmedSum = await db
+            .getDynamicBoxAction()
+            .getConfirmedSum(
+              donation.bitcoinAddress,
+              BTC_TOKEN_ID,
+              minConfirmedHeight,
+            );
+          this.logger.debug(
+            `Confirmed sum for donation request id=${donation.id} tokenId=${BTC_TOKEN_ID}: ${confirmedSum}`,
+          );
+
+          if (confirmedSum < this.config.fee) {
+            this.logger.info(
+              `Donation request id=${donation.id} not satisfied the donation fee (confirmedSum=${confirmedSum}, required Fee=${this.config.fee})`,
+            );
+            continue;
+          }
         }
 
         this.logger.info(

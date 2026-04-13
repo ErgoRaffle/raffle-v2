@@ -1,4 +1,5 @@
 import { DataSource } from '@rosen-bridge/extended-typeorm';
+import { TokenMap } from '@rosen-bridge/tokens';
 import * as bitcoin from 'bitcoinjs-lib';
 
 import { DynamicExtractor } from '../../lib/extractors/dynamicExtractor';
@@ -6,8 +7,8 @@ import type { TxOutputRune } from '../../lib/network/types';
 import { createDatabase } from '../utils.mock';
 import {
   sampleDynamicExtractedDataWithRune,
+  sampleDynamicExtractedBtcBox,
   sampleBitcoinAddress,
-  sampleBitcoinAddressOther,
   sampleInvalidBitcoinAddress,
   sampleBitcoinTx,
   sampleBitcoinTxOnlyOther,
@@ -20,13 +21,16 @@ const unisatApiKey = '';
 describe('DynamicExtractor', () => {
   let dataSource: DataSource;
   let extractor: DynamicExtractor;
+  let tokenMap: TokenMap;
   beforeEach(async () => {
     dataSource = await createDatabase();
+    tokenMap = new TokenMap();
     extractor = new DynamicExtractor(
       dataSource,
       'Dynamic',
       bitcoin.networks.bitcoin,
       unisatUrl,
+      () => tokenMap,
       unisatApiKey,
     );
   });
@@ -143,8 +147,8 @@ describe('DynamicExtractor', () => {
         .spyOn(extractor.actions, 'storeEntities')
         .mockResolvedValue(true);
 
-      // sampleBitcoinTx vout scriptPubKey decodes to sampleBitcoinAddressOther (P2WPKH)
-      extractor.addNewAddress(sampleBitcoinAddressOther, 'btc');
+      // sampleBitcoinTx vout scriptPubKey decodes to sampleBitcoinAddress (P2WPKH)
+      extractor.addNewAddress(sampleBitcoinAddress, 'btc');
       const block = { hash: 'block', height: 800000 };
       const result = await extractor.processTransactions(
         [sampleBitcoinTx],
@@ -154,18 +158,9 @@ describe('DynamicExtractor', () => {
       expect(result).toBe(true);
       expect(storeEntitiesSpy).toHaveBeenCalledTimes(1);
       expect(storeEntitiesSpy).toHaveBeenCalledWith(
-        [
-          {
-            identifier: `${sampleBitcoinTx.txid}:0`,
-            txId: sampleBitcoinTx.txid,
-            address: sampleBitcoinAddressOther,
-            serialized: '',
-            tokenId: 'btc',
-            amount: '50000',
-          },
-        ],
+        [sampleDynamicExtractedBtcBox],
         block,
-        'Dynamic',
+        'Dynamic:BTC',
       );
     });
 
@@ -179,7 +174,7 @@ describe('DynamicExtractor', () => {
      * - mock runes network to return one rune for the tx matching address and tokenId
      * - call processTransactions
      * @expected
-     * - storeEntities called with one box with tokenId and amount from rune
+     * - storeEntities called with BTC boxes for tx outputs plus the matched rune box
      */
     it(`should store box for runes token when runes network returns matching rune`, async () => {
       const storeEntitiesSpy = vi
@@ -206,16 +201,21 @@ describe('DynamicExtractor', () => {
       );
 
       expect(result).toBe(true);
-      expect(storeEntitiesSpy).toHaveBeenCalledTimes(1);
+      expect(storeEntitiesSpy).toHaveBeenCalledTimes(2);
+      expect(storeEntitiesSpy).toHaveBeenCalledWith(
+        [sampleDynamicExtractedBtcBox],
+        block,
+        'Dynamic:BTC',
+      );
       expect(storeEntitiesSpy).toHaveBeenCalledWith(
         [sampleDynamicExtractedDataWithRune],
         block,
-        'Dynamic',
+        'Dynamic:RUNES',
       );
     });
 
     /**
-     * @target should not store rune when runeId does not match watched tokenId
+     * @target should store only BTC boxes when runeId does not match watched tokenId
      * @dependencies
      * - db actions
      * - runesNetwork
@@ -224,7 +224,7 @@ describe('DynamicExtractor', () => {
      * - mock runes network to return rune with different runeId for that address
      * - call processTransactions
      * @expected
-     * - storeEntities not called (rune filtered out)
+     * - storeEntities called with BTC boxes only (rune is filtered out)
      */
     it(`should not store rune when runeId does not match watched tokenId`, async () => {
       const storeEntitiesSpy = vi
@@ -251,11 +251,16 @@ describe('DynamicExtractor', () => {
       );
 
       expect(result).toBe(true);
-      expect(storeEntitiesSpy).not.toHaveBeenCalled();
+      expect(storeEntitiesSpy).toHaveBeenCalledTimes(1);
+      expect(storeEntitiesSpy).toHaveBeenCalledWith(
+        [sampleDynamicExtractedBtcBox],
+        block,
+        'Dynamic:BTC',
+      );
     });
 
     /**
-     * @target should not store when runes network returns no runes for tx
+     * @target should store only BTC boxes when runes network returns no runes for tx
      * @dependencies
      * - db actions
      * - runesNetwork
@@ -264,7 +269,7 @@ describe('DynamicExtractor', () => {
      * - mock runes network to return empty array
      * - call processTransactions
      * @expected
-     * - processTransactions returns true and storeEntities is not called
+     * - processTransactions returns true and storeEntities is called with BTC boxes only
      */
     it(`should not store when runes network returns no runes for tx`, async () => {
       const storeEntitiesSpy = vi
@@ -283,7 +288,12 @@ describe('DynamicExtractor', () => {
       );
 
       expect(result).toBe(true);
-      expect(storeEntitiesSpy).not.toHaveBeenCalled();
+      expect(storeEntitiesSpy).toHaveBeenCalledTimes(1);
+      expect(storeEntitiesSpy).toHaveBeenCalledWith(
+        [sampleDynamicExtractedBtcBox],
+        block,
+        'Dynamic:BTC',
+      );
     });
   });
 });

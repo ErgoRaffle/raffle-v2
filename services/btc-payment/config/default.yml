@@ -16,6 +16,9 @@ database:
 api:
   host: localhost
   port: 3000
+captcha:
+  enabled: true
+  url: https://www.google.com/recaptcha/api/siteverify
 ergo:
   fee: 1500000
 bitcoin:
@@ -30,6 +33,7 @@ donation:
   interval: 60
   requiredConfirmations: 2
   requestTimeout: 3600
+  fee: 10000
 tokenMap:
   type: file
   path: config/tokenMap.json

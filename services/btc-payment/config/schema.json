@@ -187,6 +187,46 @@
       }
     }
   },
+  "captcha": {
+    "type": "object",
+    "description": "Captcha verification for public API routes (e.g. donation)",
+    "children": {
+      "enabled": {
+        "type": "boolean",
+        "default": true,
+        "description": "Enable or disable captcha validation for public API routes",
+        "validations": [
+          {
+            "required": true,
+            "error": "captcha enabled flag must be specified"
+          }
+        ]
+      },
+      "secret": {
+        "type": "string",
+        "description": "Captcha provider secret key (e.g. reCAPTCHA secret); set in deployment or local.yml",
+        "validations": [
+          {
+            "required": true,
+            "when": { "path": "captcha.enabled", "value": true },
+            "error": "captcha secret must be specified"
+          }
+        ]
+      },
+      "url": {
+        "type": "string",
+        "default": "https://www.google.com/recaptcha/api/siteverify",
+        "description": "Captcha provider token verification endpoint URL",
+        "validations": [
+          {
+            "required": true,
+            "when": { "path": "captcha.enabled", "value": true },
+            "error": "captcha verification URL must be specified"
+          }
+        ]
+      }
+    }
+  },
   "ergo": {
     "type": "object",
     "children": {
@@ -364,6 +404,17 @@
           {
             "required": true,
             "error": "donation request timeout must be specified"
+          }
+        ]
+      },
+      "fee": {
+        "type": "bigint",
+        "default": 10000,
+        "description": "additional donation fee amount in satoshi",
+        "validations": [
+          {
+            "required": true,
+            "error": "donation fee must be specified"
           }
         ]
       }

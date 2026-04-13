@@ -74,7 +74,7 @@ const getRafflesQuerySchema = z.object({
     ])
     .optional(),
   order: z.enum(['height', 'deadline']).optional().default('height'),
-  direction: z.enum(['asc', 'desc']).optional().default('desc'),
+  direction: z.enum(['ASC', 'DESC']).optional().default('DESC'),
   offset: z.coerce.number().optional().default(0),
   limit: z.coerce.number().optional().default(DEFAULT_API_PAGE_SIZE),
 });

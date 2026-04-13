@@ -34,8 +34,9 @@ const registerGetRafflesRoute = (fastify: FastifyWithZod) => {
         order,
         direction,
       } = request.query;
-      const orderDirection =
+      const orderDirection: RaffleOrder | undefined =
         order && direction ? { field: order, direction } : undefined;
+      console.log(orderDirection);
       const [raffles, total] = await DbService.getInstance()
         .getRaffleViewAction()
         .getRaffles({
@@ -46,7 +47,7 @@ const registerGetRafflesRoute = (fastify: FastifyWithZod) => {
             ids: ids,
             status: status,
           },
-          order: orderDirection as RaffleOrder | undefined,
+          order: orderDirection,
           offset,
           limit,
         });

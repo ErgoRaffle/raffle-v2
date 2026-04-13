@@ -3,6 +3,7 @@ export interface BtcPaymentConfig {
   donation: Donation;
   bitcoin: Bitcoin;
   ergo: Ergo;
+  captcha: Captcha;
   api: Api;
   database: Database;
   logs: Logs[];
@@ -32,6 +33,12 @@ export interface Database {
 export interface Api {
   host: string;
   port: number;
+}
+
+export interface Captcha {
+  enabled: boolean;
+  secret?: string;
+  url?: string;
 }
 
 export interface Ergo {
@@ -69,6 +76,7 @@ export interface Donation {
   interval: number;
   requiredConfirmations: number;
   requestTimeout: number;
+  fee: bigint;
 }
 
 export interface TokenMap {
