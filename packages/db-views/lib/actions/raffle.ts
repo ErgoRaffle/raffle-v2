@@ -17,7 +17,13 @@ export class RaffleViewActions {
    */
   protected createTextSearch = (text?: string) => {
     if (text) {
-      const fields = ['raffleId', 'name', 'description', 'collectingTokenId'];
+      const fields = [
+        'raffleId',
+        'name',
+        'description',
+        'collectingTokenId',
+        'tags',
+      ];
       const condition = fields
         .map((field) => `LOWER("${field}") LIKE LOWER(:text)`)
         .join(' OR ');

@@ -60,6 +60,27 @@ describe('RaffleViewActions', () => {
     });
 
     /**
+     * @target should return raffles whose tags contain the search text
+     * @dependencies
+     * @scenario
+     * - call getRaffles with text 'test-'
+     * - check if raffles with 'test-' in tags are returned
+     * @expected
+     * - should return 2 raffles (raffle2, raffle4)
+     */
+    it('should find appropriate raffle when tag contains search text', async () => {
+      const result = await actions.getRaffles({
+        query: { text: 'test-' },
+        limit: 100,
+      });
+      expect(result[1]).toBe(2);
+      expect(result[0].map((item) => item.raffleId).sort()).toEqual([
+        'raffle2',
+        'raffle4',
+      ]);
+    });
+
+    /**
      * @target should return raffles whose description contains the search text
      * @dependencies
      * @scenario

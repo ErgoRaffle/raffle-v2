@@ -211,7 +211,7 @@ export const mockRaffles = async () => {
       name: 'Tech Gadgets Prize Draw',
       description:
         'Win the latest smartphones, laptops, and gaming consoles. Perfect for tech enthusiasts looking to upgrade their devices.',
-      tags: ',tech,gadgets,electronics,prize,',
+      tags: ',tech,gadgets,electronics,prize,the-test-tag,',
       pictures: 'https://example.com/tech1.jpg,https://example.com/tech2.jpg',
       block: '2000',
       height: 2000,
@@ -240,7 +240,7 @@ export const mockRaffles = async () => {
       name: 'Tech@gadget.com Exclusive Raffle',
       description:
         'Exclusive raffle for tech gadget enthusiasts. Premium devices and accessories from top brands.',
-      tags: ',tech,gadgets,exclusive,premium,',
+      tags: ',tech,gadgets,exclusive,premium,the-test-tag,',
       pictures:
         'https://example.com/gadget1.jpg,https://example.com/gadget2.jpg',
       block: '4000',
