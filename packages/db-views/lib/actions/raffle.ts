@@ -17,14 +17,9 @@ export class RaffleViewActions {
    */
   protected createTextSearch = (text?: string) => {
     if (text) {
-      const fields = [
-        '"raffleId"',
-        'name',
-        'description',
-        '"collectingTokenId"',
-      ];
+      const fields = ['raffleId', 'name', 'description', 'collectingTokenId'];
       const condition = fields
-        .map((field) => `LOWER(${field}) LIKE LOWER(:text)`)
+        .map((field) => `LOWER("${field}") LIKE LOWER(:text)`)
         .join(' OR ');
       return { condition, params: { text: `%${text}%` } };
     }
@@ -44,7 +39,7 @@ export class RaffleViewActions {
   ) => {
     if (items.length) {
       return {
-        condition: `${field} IN (:...${collection})`,
+        condition: `"${field}" IN (:...${collection})`,
         params: { [collection]: items },
       };
     }
@@ -64,7 +59,7 @@ export class RaffleViewActions {
   ) => {
     if (isActive !== isOtherStatus) {
       const operator = isActive ? '=' : '>';
-      return `${field} ${operator} 0`;
+      return `"${field}" ${operator} 0`;
     }
   };
 
@@ -80,10 +75,26 @@ export class RaffleViewActions {
     const isFailed = status.includes(RaffleStatus.Failed);
     return [
       // If one and only one of isActive and isSuccess passed "successCount" must be filtered
-      this.createXorFieldSearch(isActive, isSuccess, '"successCount"'),
+      this.createXorFieldSearch(isActive, isSuccess, 'successCount'),
       // If one and only one of isActive and isFailed passed "redeemCount" must be filtered
-      this.createXorFieldSearch(isActive, isFailed, '"redeemCount"'),
+      this.createXorFieldSearch(isActive, isFailed, 'redeemCount'),
     ].filter(Boolean) as Array<string>;
+  };
+
+  /**
+   * Creates SQL LIKE conditions for searching by tags
+   * Tags are stored as comma-separated values, so each tag is wrapped in commas for exact matching
+   * @param tags - Array of tag strings to search for
+   * @returns SQL condition and parameters, or undefined if tags array is empty
+   */
+  protected createTagsSearch = (tags: Array<string>) => {
+    if (tags.length > 0) {
+      const queries = tags.map((tag, index) => `"tags" LIKE :tag${index}`);
+      const params = tags
+        .map((item, index) => ({ [`tag${index}`]: `%,${item},%` }))
+        .reduce((a, b) => ({ ...a, ...b }), {});
+      return { condition: queries.join(' OR '), params };
+    }
   };
 
   /**
@@ -101,11 +112,12 @@ export class RaffleViewActions {
         (condition) => ({ condition, params: {} }),
       ),
       this.createInListSearch(
-        '"collectingTokenId"',
+        'collectingTokenId',
         'tokenIds',
         params.query?.tokenIds ?? [],
       ),
-      this.createInListSearch('"raffleId"', 'ids', params.query?.ids ?? []),
+      this.createInListSearch('raffleId', 'ids', params.query?.ids ?? []),
+      this.createTagsSearch(params.query?.tags ?? []),
     ].filter(Boolean) as Array<{
       condition: string;
       params: Record<string, unknown>;

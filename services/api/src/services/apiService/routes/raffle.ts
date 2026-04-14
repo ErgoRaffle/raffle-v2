@@ -1,6 +1,7 @@
 import { FastifyWithZod } from '@rosen-bridge/fastify-enhanced';
 
 import { RaffleStatus, RaffleOrder } from '@ergo-raffle/db-views';
+import { ERG_TOKEN_ID } from '@ergo-raffle/utils';
 
 import { DbService } from '../../dbService';
 import { getRafflesQuerySchema, getRafflesResponseSchema } from '../schema';
@@ -59,7 +60,7 @@ const registerGetRafflesRoute = (fastify: FastifyWithZod) => {
           description: raffle.description,
           image: picture,
           token: {
-            id: raffle.collectingTokenId ?? 'erg',
+            id: raffle.collectingTokenId ?? ERG_TOKEN_ID,
             name: 'Erg',
             decimals: 9,
             verified: true,

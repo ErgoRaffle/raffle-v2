@@ -162,6 +162,29 @@ describe('RaffleViewActions', () => {
     });
 
     /**
+     * @target should return raffles matching the provided list of tags
+     * @dependencies
+     * @scenario
+     * - call getRaffles with tags ['tech']
+     * - check if only raffles with 'tech' tag are returned
+     * @expected
+     * - should return 4 raffles (raffle2, raffle4, raffle6, raffle8)
+     */
+    it('should find appropriate raffle when list of tags passed', async () => {
+      const result = await actions.getRaffles({
+        query: { tags: ['tech'] },
+        limit: 100,
+      });
+      expect(result[1]).toBe(4);
+      expect(result[0].map((item) => item.raffleId).sort()).toEqual([
+        'raffle2',
+        'raffle4',
+        'raffle6',
+        'raffle8',
+      ]);
+    });
+
+    /**
      * @target should return raffles with Active status
      * @dependencies
      * @scenario

@@ -196,7 +196,7 @@ export const mockRaffles = async () => {
       name: 'Charity Raffle for Education',
       description:
         'Support educational programs for underprivileged children in rural areas. Your contribution helps build schools and provide learning materials.',
-      tags: 'charity,education,community',
+      tags: ',charity,education,community,',
       pictures:
         'https://example.com/charity1.jpg,https://example.com/charity2.jpg',
       block: '1000',
@@ -211,7 +211,7 @@ export const mockRaffles = async () => {
       name: 'Tech Gadgets Prize Draw',
       description:
         'Win the latest smartphones, laptops, and gaming consoles. Perfect for tech enthusiasts looking to upgrade their devices.',
-      tags: 'tech,gadgets,electronics,prize',
+      tags: ',tech,gadgets,electronics,prize,',
       pictures: 'https://example.com/tech1.jpg,https://example.com/tech2.jpg',
       block: '2000',
       height: 2000,
@@ -225,7 +225,7 @@ export const mockRaffles = async () => {
       name: 'Community Development Project',
       description:
         'Help fund local community centers, parks, and recreational facilities. Building stronger neighborhoods together.',
-      tags: 'community,local,development',
+      tags: ',community,local,development,',
       pictures:
         'https://example.com/community1.jpg,https://example.com/community2.jpg',
       block: '3000',
@@ -240,7 +240,7 @@ export const mockRaffles = async () => {
       name: 'Tech@gadget.com Exclusive Raffle',
       description:
         'Exclusive raffle for tech gadget enthusiasts. Premium devices and accessories from top brands.',
-      tags: 'tech,gadgets,exclusive,premium',
+      tags: ',tech,gadgets,exclusive,premium,',
       pictures:
         'https://example.com/gadget1.jpg,https://example.com/gadget2.jpg',
       block: '4000',
@@ -255,7 +255,7 @@ export const mockRaffles = async () => {
       name: 'Charity Event for Healthcare',
       description:
         'Support healthcare initiatives in developing countries. Your ticket helps provide medical supplies and treatments.',
-      tags: 'charity,healthcare,medical,help',
+      tags: ',charity,healthcare,medical,help,',
       pictures:
         'https://example.com/health1.jpg,https://example.com/health2.jpg',
       block: '5000',
@@ -270,7 +270,7 @@ export const mockRaffles = async () => {
       name: 'Tech Gadgets Innovation Prize',
       description:
         'Win cutting-edge technology and innovative gadgets. From smart home devices to wearable tech.',
-      tags: 'tech,gadgets,innovation,smart',
+      tags: ',tech,gadgets,innovation,smart,',
       pictures: 'https://example.com/innov1.jpg,https://example.com/innov2.jpg',
       block: '6000',
       height: 6000,
@@ -284,7 +284,7 @@ export const mockRaffles = async () => {
       name: 'Successful Charity Campaign',
       description:
         'A proven track record of successful charitable initiatives. Join our community of givers making real impact.',
-      tags: 'charity,successful,impact,giving',
+      tags: ',charity,successful,impact,giving,',
       pictures:
         'https://example.com/success1.jpg,https://example.com/success2.jpg',
       block: '7000',
@@ -299,7 +299,7 @@ export const mockRaffles = async () => {
       name: 'Active Tech Competition',
       description:
         'Compete for amazing tech prizes in this ongoing competition. Multiple rounds and exciting challenges await.',
-      tags: 'tech,competition,active,challenges',
+      tags: ',tech,competition,active,challenges,',
       pictures: 'https://example.com/comp1.jpg,https://example.com/comp2.jpg',
       block: '8000',
       height: 8000,
