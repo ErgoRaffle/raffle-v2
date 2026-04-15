@@ -141,20 +141,31 @@ export class RaffleViewActions {
     queryBuilder.skip(params.offset ?? 0).take(params.limit);
 
     const [items, count] = await queryBuilder.getManyAndCount();
-    const fetchedRaffles = items.map(
-      (item) =>
-        ({
-          ...item,
-          // these conversions are needed because queryBuilder missed executing transform on field also COUNT output type mismatched in postgres and sqlite
-          successCount: Number(item.successCount),
-          redeemCount: Number(item.redeemCount),
-          giftCount: Number(item.giftCount),
-          soldTicketCount: BigInt(item.soldTicketCount),
-          ticketPrice: BigInt(item.ticketPrice),
-          goal: BigInt(item.goal),
-          txFee: BigInt(item.txFee),
-        }) as RaffleView,
-    );
+    const fetchedRaffles = items.map(this.transformRaffleView);
     return [fetchedRaffles, count];
   };
+
+  /**
+   * Retrieves a single raffle by its ID
+   * @param raffleId - The raffle ID to search for
+   * @returns RaffleView instance or null if not found
+   */
+  getRaffle = async (raffleId: string): Promise<RaffleView | null> => {
+    const item = await this.repository.findOne({ where: { raffleId } });
+    return item === null ? item : this.transformRaffleView(item);
+  };
+
+  protected transformRaffleView = (item: RaffleView) =>
+    ({
+      ...item,
+      // these conversions are needed because queryBuilder missed executing transform on field also COUNT output type mismatched in postgres and sqlite
+      successCount: Number(item.successCount),
+      redeemCount: Number(item.redeemCount),
+      giftCount: Number(item.giftCount),
+      soldTicketCount: BigInt(item.soldTicketCount),
+      ticketPrice: BigInt(item.ticketPrice),
+      goal: BigInt(item.goal),
+      txFee: BigInt(item.txFee),
+      bakers: Number(item.bakers),
+    }) as RaffleView;
 }

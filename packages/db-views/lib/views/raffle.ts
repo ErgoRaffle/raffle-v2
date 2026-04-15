@@ -12,10 +12,11 @@ import {
   SuccessRaffleEntity,
   TicketEntity,
 } from '@ergo-raffle/extractors';
+import { TokenEntity } from '@ergo-raffle/tokens';
 
 /**
  * Database view joining `inactive_raffle` with `raffle_details`, `gift`, `ticket`,
- * `success_raffle` and `gift_redeem` on `raffleId`.
+ * `success_raffle`, `gift_redeem` and `token` on `raffleId` and `collectingTokenId`.
  * Selects all domain-relevant fields while omitting internal extraction
  * fields (`serialized`, `extractor`, `block`).
  */
@@ -45,9 +46,13 @@ import {
       .addSelect('COUNT(gift.id)', 'giftCount')
       .addSelect('MAX(gift.height)', 'giftMaxHeight')
       .addSelect('SUM(ticket.rangeEnd - ticket.rangeStart)', 'soldTicketCount')
+      .addSelect('COUNT(ticket.id)', 'bakers')
       .addSelect('MAX(ticket.height)', 'ticketMaxHeight')
       .addSelect('COUNT(redeem.id)', 'redeemCount')
       .addSelect('COUNT(success.id)', 'successCount')
+      .addSelect('MAX(token.name)', 'tokenName')
+      .addSelect('MAX(token.decimals)', 'tokenDecimals')
+      .addSelect('token.isVerified', 'tokenIsVerified')
       .from(InactiveRaffleEntity, 'raffle')
       .innerJoin(
         RaffleDetailsEntity,
@@ -62,6 +67,7 @@ import {
         'raffle.raffleId = success.raffleId',
       )
       .leftJoin(GiftRedeemEntity, 'redeem', 'raffle.raffleId = redeem.raffleId')
+      .leftJoin(TokenEntity, 'token', 'raffle.collectingTokenId = token.id')
       .groupBy('raffle.raffleId')
       .addGroupBy('raffle.height')
       .addGroupBy('raffle.serviceErgoTree')
@@ -75,7 +81,8 @@ import {
       .addGroupBy('raffle.deadline')
       .addGroupBy('raffle.winnersPercentList')
       .addGroupBy('raffle.txFee')
-      .addGroupBy('raffle.collectingTokenId'),
+      .addGroupBy('raffle.collectingTokenId')
+      .addGroupBy('token.isVerified'),
 })
 export class RaffleView {
   @ViewColumn()
@@ -83,6 +90,15 @@ export class RaffleView {
 
   @ViewColumn()
   collectingTokenId?: string;
+
+  @ViewColumn()
+  tokenName?: string;
+
+  @ViewColumn()
+  tokenDecimals?: number;
+
+  @ViewColumn()
+  tokenIsVerified?: boolean;
 
   @ViewColumn()
   deadline: number;
@@ -131,6 +147,9 @@ export class RaffleView {
 
   @ViewColumn({ transformer: new BigIntValueTransformer() })
   soldTicketCount: bigint;
+
+  @ViewColumn()
+  bakers: number;
 
   @ViewColumn()
   successCount: number;

@@ -40,7 +40,7 @@ const raffleAmountSchema = z.object({
   raised: z.coerce.bigint(),
 });
 
-const raffleItemSchema = z.object({
+const raffleItemSchemaObject = {
   id: z.string(),
   name: z.string(),
   description: z.string(),
@@ -54,6 +54,26 @@ const raffleItemSchema = z.object({
   ticketPrice: z.coerce.bigint(),
   trust: z.number(),
   status: raffleStatusSchema,
+};
+
+const raffleItemSchema = z.object(raffleItemSchemaObject);
+
+const raffleAddressesSchema = z.object({
+  project: z.string(),
+  implementer: z.string(),
+  service: z.string(),
+});
+
+const raffleShareSchema = z.object({
+  winner: z.number(),
+  implementer: z.number(),
+  service: z.number(),
+});
+const raffleDetailsSchema = z.object({
+  ...raffleItemSchemaObject,
+  addresses: raffleAddressesSchema,
+  share: raffleShareSchema,
+  baker: z.number(),
 });
 
 const getRafflesQuerySchema = z.object({
@@ -84,10 +104,16 @@ const getRafflesResponseSchema = z.object({
   total: z.number(),
 });
 
+const raffleSearchParamScheme = z.object({
+  raffleId: z.string(),
+});
+
 export {
   blockchainInfoResponseSchema,
   versionResponseSchema,
   errorResponseSchema,
   getRafflesQuerySchema,
   getRafflesResponseSchema,
+  raffleDetailsSchema,
+  raffleSearchParamScheme,
 };

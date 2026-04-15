@@ -3,8 +3,8 @@ import {
   QueryRunner,
 } from '@rosen-bridge/extended-typeorm';
 
-export class Migration1775456264404 implements MigrationInterface {
-  name = 'Migration1775456264404';
+export class Migration1776258338343 implements MigrationInterface {
+  name = 'Migration1776258338343';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
@@ -23,6 +23,7 @@ export class Migration1775456264404 implements MigrationInterface {
                 "raffle"."winnersPercentList" AS "winnersPercentList",
                 "raffle"."txFee" AS "txFee",
                 "raffle"."collectingTokenId" AS "collectingTokenId",
+                "token"."isVerified" AS "tokenIsVerified",
                 MAX("details"."description") AS "description",
                 MAX("details"."name") AS "name",
                 MAX("details"."tags") AS "tags",
@@ -30,15 +31,19 @@ export class Migration1775456264404 implements MigrationInterface {
                 COUNT("gift"."id") AS "giftCount",
                 MAX("gift"."height") AS "giftMaxHeight",
                 SUM("ticket"."rangeEnd" - "ticket"."rangeStart") AS "soldTicketCount",
+                COUNT("ticket"."id") AS "bakers",
                 MAX("ticket"."height") AS "ticketMaxHeight",
                 COUNT("redeem"."id") AS "redeemCount",
-                COUNT("success"."id") AS "successCount"
+                COUNT("success"."id") AS "successCount",
+                MAX("token"."name") AS "tokenName",
+                MAX("token"."decimals") AS "tokenDecimals"
             FROM "inactive_raffle" "raffle"
                 INNER JOIN "raffle_details" "details" ON "raffle"."raffleId" = "details"."raffleId"
                 LEFT JOIN "gift" "gift" ON "raffle"."raffleId" = "gift"."raffleId"
                 LEFT JOIN "ticket" "ticket" ON "raffle"."raffleId" = "ticket"."raffleId"
                 LEFT JOIN "success_raffle" "success" ON "raffle"."raffleId" = "success"."raffleId"
                 LEFT JOIN "gift_redeem" "redeem" ON "raffle"."raffleId" = "redeem"."raffleId"
+                LEFT JOIN "token" "token" ON "raffle"."collectingTokenId" = "token"."id"
             GROUP BY "raffle"."raffleId",
                 "raffle"."height",
                 "raffle"."serviceErgoTree",
@@ -52,7 +57,8 @@ export class Migration1775456264404 implements MigrationInterface {
                 "raffle"."deadline",
                 "raffle"."winnersPercentList",
                 "raffle"."txFee",
-                "raffle"."collectingTokenId"
+                "raffle"."collectingTokenId",
+                "token"."isVerified"
         `);
     await queryRunner.query(
       `
@@ -69,7 +75,7 @@ export class Migration1775456264404 implements MigrationInterface {
       [
         'VIEW',
         'raffle_view',
-        'SELECT "raffle"."height" AS "height", "raffle"."raffleId" AS "raffleId", "raffle"."serviceErgoTree" AS "serviceErgoTree", "raffle"."implementerErgoTree" AS "implementerErgoTree", "raffle"."projectErgoTree" AS "projectErgoTree", "raffle"."serviceFeePercent" AS "serviceFeePercent", "raffle"."implementerFeePercent" AS "implementerFeePercent", "raffle"."winnersPercent" AS "winnersPercent", "raffle"."ticketPrice" AS "ticketPrice", "raffle"."goal" AS "goal", "raffle"."deadline" AS "deadline", "raffle"."winnersPercentList" AS "winnersPercentList", "raffle"."txFee" AS "txFee", "raffle"."collectingTokenId" AS "collectingTokenId", MAX("details"."description") AS "description", MAX("details"."name") AS "name", MAX("details"."tags") AS "tags", MAX("details"."pictures") AS "pictures", COUNT("gift"."id") AS "giftCount", MAX("gift"."height") AS "giftMaxHeight", SUM("ticket"."rangeEnd" - "ticket"."rangeStart") AS "soldTicketCount", MAX("ticket"."height") AS "ticketMaxHeight", COUNT("redeem"."id") AS "redeemCount", COUNT("success"."id") AS "successCount" FROM "inactive_raffle" "raffle" INNER JOIN "raffle_details" "details" ON "raffle"."raffleId" = "details"."raffleId"  LEFT JOIN "gift" "gift" ON "raffle"."raffleId" = "gift"."raffleId"  LEFT JOIN "ticket" "ticket" ON "raffle"."raffleId" = "ticket"."raffleId"  LEFT JOIN "success_raffle" "success" ON "raffle"."raffleId" = "success"."raffleId"  LEFT JOIN "gift_redeem" "redeem" ON "raffle"."raffleId" = "redeem"."raffleId" GROUP BY "raffle"."raffleId", "raffle"."height", "raffle"."serviceErgoTree", "raffle"."implementerErgoTree", "raffle"."projectErgoTree", "raffle"."serviceFeePercent", "raffle"."implementerFeePercent", "raffle"."winnersPercent", "raffle"."ticketPrice", "raffle"."goal", "raffle"."deadline", "raffle"."winnersPercentList", "raffle"."txFee", "raffle"."collectingTokenId"',
+        'SELECT "raffle"."height" AS "height", "raffle"."raffleId" AS "raffleId", "raffle"."serviceErgoTree" AS "serviceErgoTree", "raffle"."implementerErgoTree" AS "implementerErgoTree", "raffle"."projectErgoTree" AS "projectErgoTree", "raffle"."serviceFeePercent" AS "serviceFeePercent", "raffle"."implementerFeePercent" AS "implementerFeePercent", "raffle"."winnersPercent" AS "winnersPercent", "raffle"."ticketPrice" AS "ticketPrice", "raffle"."goal" AS "goal", "raffle"."deadline" AS "deadline", "raffle"."winnersPercentList" AS "winnersPercentList", "raffle"."txFee" AS "txFee", "raffle"."collectingTokenId" AS "collectingTokenId", "token"."isVerified" AS "tokenIsVerified", MAX("details"."description") AS "description", MAX("details"."name") AS "name", MAX("details"."tags") AS "tags", MAX("details"."pictures") AS "pictures", COUNT("gift"."id") AS "giftCount", MAX("gift"."height") AS "giftMaxHeight", SUM("ticket"."rangeEnd" - "ticket"."rangeStart") AS "soldTicketCount", COUNT("ticket"."id") AS "bakers", MAX("ticket"."height") AS "ticketMaxHeight", COUNT("redeem"."id") AS "redeemCount", COUNT("success"."id") AS "successCount", MAX("token"."name") AS "tokenName", MAX("token"."decimals") AS "tokenDecimals" FROM "inactive_raffle" "raffle" INNER JOIN "raffle_details" "details" ON "raffle"."raffleId" = "details"."raffleId"  LEFT JOIN "gift" "gift" ON "raffle"."raffleId" = "gift"."raffleId"  LEFT JOIN "ticket" "ticket" ON "raffle"."raffleId" = "ticket"."raffleId"  LEFT JOIN "success_raffle" "success" ON "raffle"."raffleId" = "success"."raffleId"  LEFT JOIN "gift_redeem" "redeem" ON "raffle"."raffleId" = "redeem"."raffleId"  LEFT JOIN "token" "token" ON "raffle"."collectingTokenId" = "token"."id" GROUP BY "raffle"."raffleId", "raffle"."height", "raffle"."serviceErgoTree", "raffle"."implementerErgoTree", "raffle"."projectErgoTree", "raffle"."serviceFeePercent", "raffle"."implementerFeePercent", "raffle"."winnersPercent", "raffle"."ticketPrice", "raffle"."goal", "raffle"."deadline", "raffle"."winnersPercentList", "raffle"."txFee", "raffle"."collectingTokenId", "token"."isVerified"',
       ],
     );
   }
