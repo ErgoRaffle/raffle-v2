@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { RaffleViewActions } from '../lib';
-import { RaffleStatus } from '../lib';
-import { mockRaffles } from './testData';
+import { RaffleViewActions } from '../../lib';
+import { RaffleStatus } from '../../lib';
+import { mockRaffles } from '../testData';
 
 describe('RaffleViewActions', () => {
   describe('getRaffles', () => {
@@ -23,8 +23,8 @@ describe('RaffleViewActions', () => {
      */
     it('should find appropriate raffle when no search passed', async () => {
       const result = await actions.getRaffles({ limit: 100 });
-      expect(result[1]).toBe(8);
-      expect(result[0].map((item) => item.raffleId)).toEqual([
+      expect(result.total).toBe(8);
+      expect(result.items.map((item) => item.raffleId)).toEqual([
         'raffle1',
         'raffle2',
         'raffle3',
@@ -50,8 +50,8 @@ describe('RaffleViewActions', () => {
         query: { text: 'Tech' },
         limit: 100,
       });
-      expect(result[1]).toBe(4);
-      expect(result[0].map((item) => item.raffleId).sort()).toEqual([
+      expect(result.total).toBe(4);
+      expect(result.items.map((item) => item.raffleId).sort()).toEqual([
         'raffle2',
         'raffle4',
         'raffle6',
@@ -73,8 +73,8 @@ describe('RaffleViewActions', () => {
         query: { text: 'test-' },
         limit: 100,
       });
-      expect(result[1]).toBe(2);
-      expect(result[0].map((item) => item.raffleId).sort()).toEqual([
+      expect(result.total).toBe(2);
+      expect(result.items.map((item) => item.raffleId).sort()).toEqual([
         'raffle2',
         'raffle4',
       ]);
@@ -94,8 +94,8 @@ describe('RaffleViewActions', () => {
         query: { text: 'educational' },
         limit: 100,
       });
-      expect(result[1]).toBe(1);
-      expect(result[0].map((item) => item.raffleId)).toEqual(['raffle1']);
+      expect(result.total).toBe(1);
+      expect(result.items.map((item) => item.raffleId)).toEqual(['raffle1']);
     });
 
     /**
@@ -112,8 +112,8 @@ describe('RaffleViewActions', () => {
         query: { text: 'token123' },
         limit: 100,
       });
-      expect(result[1]).toBe(3);
-      expect(result[0].map((item) => item.raffleId).sort()).toEqual([
+      expect(result.total).toBe(3);
+      expect(result.items.map((item) => item.raffleId).sort()).toEqual([
         'raffle2',
         'raffle5',
         'raffle8',
@@ -134,8 +134,8 @@ describe('RaffleViewActions', () => {
         query: { text: 'raffle1' },
         limit: 100,
       });
-      expect(result[1]).toBe(1);
-      expect(result[0].map((item) => item.raffleId)).toEqual(['raffle1']);
+      expect(result.total).toBe(1);
+      expect(result.items.map((item) => item.raffleId)).toEqual(['raffle1']);
     });
 
     /**
@@ -152,8 +152,8 @@ describe('RaffleViewActions', () => {
         query: { ids: ['raffle1', 'raffle3', 'raffle5'] },
         limit: 100,
       });
-      expect(result[1]).toBe(3);
-      expect(result[0].map((item) => item.raffleId).sort()).toEqual([
+      expect(result.total).toBe(3);
+      expect(result.items.map((item) => item.raffleId).sort()).toEqual([
         'raffle1',
         'raffle3',
         'raffle5',
@@ -174,8 +174,8 @@ describe('RaffleViewActions', () => {
         query: { tokenIds: ['token123'] },
         limit: 100,
       });
-      expect(result[1]).toBe(3);
-      expect(result[0].map((item) => item.raffleId).sort()).toEqual([
+      expect(result.total).toBe(3);
+      expect(result.items.map((item) => item.raffleId).sort()).toEqual([
         'raffle2',
         'raffle5',
         'raffle8',
@@ -196,8 +196,8 @@ describe('RaffleViewActions', () => {
         query: { tags: ['tech'] },
         limit: 100,
       });
-      expect(result[1]).toBe(4);
-      expect(result[0].map((item) => item.raffleId).sort()).toEqual([
+      expect(result.total).toBe(4);
+      expect(result.items.map((item) => item.raffleId).sort()).toEqual([
         'raffle2',
         'raffle4',
         'raffle6',
@@ -219,8 +219,8 @@ describe('RaffleViewActions', () => {
         query: { status: [RaffleStatus.Active] },
         limit: 100,
       });
-      expect(result[1]).toBe(4);
-      expect(result[0].map((item) => item.raffleId).sort()).toEqual([
+      expect(result.total).toBe(4);
+      expect(result.items.map((item) => item.raffleId).sort()).toEqual([
         'raffle1',
         'raffle6',
         'raffle7',
@@ -242,8 +242,8 @@ describe('RaffleViewActions', () => {
         query: { status: [RaffleStatus.SuccessFull] },
         limit: 100,
       });
-      expect(result[1]).toBe(2);
-      expect(result[0].map((item) => item.raffleId).sort()).toEqual([
+      expect(result.total).toBe(2);
+      expect(result.items.map((item) => item.raffleId).sort()).toEqual([
         'raffle2',
         'raffle4',
       ]);
@@ -263,8 +263,8 @@ describe('RaffleViewActions', () => {
         query: { status: [RaffleStatus.Failed] },
         limit: 100,
       });
-      expect(result[1]).toBe(2);
-      expect(result[0].map((item) => item.raffleId).sort()).toEqual([
+      expect(result.total).toBe(2);
+      expect(result.items.map((item) => item.raffleId).sort()).toEqual([
         'raffle3',
         'raffle5',
       ]);
@@ -284,8 +284,8 @@ describe('RaffleViewActions', () => {
         query: { status: [RaffleStatus.SuccessFull, RaffleStatus.Active] },
         limit: 100,
       });
-      expect(result[1]).toBe(6);
-      expect(result[0].map((item) => item.raffleId).sort()).toEqual([
+      expect(result.total).toBe(6);
+      expect(result.items.map((item) => item.raffleId).sort()).toEqual([
         'raffle1',
         'raffle2',
         'raffle4',
@@ -309,8 +309,8 @@ describe('RaffleViewActions', () => {
         query: { status: [RaffleStatus.Failed, RaffleStatus.Active] },
         limit: 100,
       });
-      expect(result[1]).toBe(6);
-      expect(result[0].map((item) => item.raffleId).sort()).toEqual([
+      expect(result.total).toBe(6);
+      expect(result.items.map((item) => item.raffleId).sort()).toEqual([
         'raffle1',
         'raffle3',
         'raffle5',
@@ -334,8 +334,8 @@ describe('RaffleViewActions', () => {
         order: { field: 'raffleId', direction: 'DESC' },
         limit: 100,
       });
-      expect(result[1]).toBe(8);
-      expect(result[0].map((item) => item.raffleId)).toEqual([
+      expect(result.total).toBe(8);
+      expect(result.items.map((item) => item.raffleId)).toEqual([
         'raffle8',
         'raffle7',
         'raffle6',
@@ -362,8 +362,8 @@ describe('RaffleViewActions', () => {
         limit: 2,
         offset: 3,
       });
-      expect(result[1]).toBe(8);
-      expect(result[0].map((item) => item.raffleId)).toEqual([
+      expect(result.total).toBe(8);
+      expect(result.items.map((item) => item.raffleId)).toEqual([
         'raffle5',
         'raffle4',
       ]);

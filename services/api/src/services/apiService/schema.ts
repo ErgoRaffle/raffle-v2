@@ -52,7 +52,6 @@ const raffleItemSchema = z.object({
   deadline: z.number(),
   amount: raffleAmountSchema,
   ticketPrice: z.coerce.bigint(),
-  trust: z.number(),
   status: raffleStatusSchema,
 });
 

@@ -1,6 +1,6 @@
 import { DataSource, Repository } from '@rosen-bridge/extended-typeorm';
 
-import { getRaffleParams, RaffleStatus } from '../types';
+import { getRaffleParams, RaffleStatus, RaffleWithTotalResult } from '../types';
 import { RaffleView } from '../views';
 
 export class RaffleViewActions {
@@ -25,9 +25,9 @@ export class RaffleViewActions {
         'tags',
       ];
       const condition = fields
-        .map((field) => `LOWER("${field}") LIKE LOWER(:text)`)
+        .map((field) => `LOWER("${field}") LIKE :text`)
         .join(' OR ');
-      return { condition, params: { text: `%${text}%` } };
+      return { condition, params: { text: `%${text.toLowerCase()}%` } };
     }
   };
 
@@ -110,7 +110,7 @@ export class RaffleViewActions {
    */
   getRaffles = async (
     params: getRaffleParams,
-  ): Promise<[RaffleView[], number]> => {
+  ): Promise<RaffleWithTotalResult> => {
     const queryBuilder = this.repository.createQueryBuilder();
     const queries = [
       this.createTextSearch(params.query?.text),
@@ -155,6 +155,6 @@ export class RaffleViewActions {
           txFee: BigInt(item.txFee),
         }) as RaffleView,
     );
-    return [fetchedRaffles, count];
+    return { items: fetchedRaffles, total: count };
   };
 }

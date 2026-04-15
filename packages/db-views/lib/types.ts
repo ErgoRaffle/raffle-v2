@@ -26,4 +26,9 @@ type getRaffleParams = {
   limit: number;
 };
 
-export { RaffleStatus, getRaffleParams, RaffleOrder };
+type RaffleWithTotalResult = {
+  items: Array<RaffleView>;
+  total: number;
+};
+
+export { RaffleStatus, getRaffleParams, RaffleOrder, RaffleWithTotalResult };

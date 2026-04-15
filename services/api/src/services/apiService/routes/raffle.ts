@@ -1,6 +1,6 @@
 import { FastifyWithZod } from '@rosen-bridge/fastify-enhanced';
 
-import { RaffleStatus, RaffleOrder } from '@ergo-raffle/db-views';
+import { RaffleOrder } from '@ergo-raffle/db-views';
 import { ERG_TOKEN_ID } from '@ergo-raffle/utils';
 
 import { DbService } from '../../dbService';
@@ -37,7 +37,7 @@ const registerGetRafflesRoute = (fastify: FastifyWithZod) => {
       } = request.query;
       const orderDirection: RaffleOrder | undefined =
         order && direction ? { field: order, direction } : undefined;
-      const [raffles, total] = await DbService.getInstance()
+      const raffleResult = await DbService.getInstance()
         .getRaffleViewAction()
         .getRaffles({
           query: {
@@ -51,8 +51,9 @@ const registerGetRafflesRoute = (fastify: FastifyWithZod) => {
           offset,
           limit,
         });
-      const items = raffles.map((raffle) => {
+      const items = raffleResult.items.map((raffle) => {
         const pictures = raffle.pictures.split(',');
+        // TODO must fix after local/ergo/ergoraffle/raffle-v2/-/issues/135
         const picture = pictures.length > 0 ? pictures[0] : undefined;
         return {
           id: raffle.raffleId,
@@ -74,16 +75,10 @@ const registerGetRafflesRoute = (fastify: FastifyWithZod) => {
           },
           tags: raffle.tags.split(',').filter(Boolean),
           ticketPrice: raffle.ticketPrice,
-          trust: 0,
-          status:
-            raffle.successCount > 0
-              ? RaffleStatus.SuccessFull
-              : raffle.redeemCount > 0
-                ? RaffleStatus.Failed
-                : RaffleStatus.Active,
+          status: raffle.status(),
         };
       });
-      response.status(200).send({ items: items, total: total });
+      response.status(200).send({ items, total: raffleResult.total });
     },
   );
 };
