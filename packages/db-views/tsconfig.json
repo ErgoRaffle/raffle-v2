@@ -8,5 +8,8 @@
     "types": ["vitest/globals", "node"]
   },
   "include": ["tests", "lib"],
-  "references": [{ "path": "../../packages/extractors" }]
+  "references": [
+    { "path": "../../packages/extractors" },
+    { "path": "../../packages/tokens" }
+  ]
 }
