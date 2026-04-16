@@ -13,6 +13,8 @@ import {
   TicketEntity,
 } from '@ergo-raffle/extractors';
 
+import { RaffleStatus } from '../types';
+
 /**
  * Database view joining `inactive_raffle` with `raffle_details`, `gift`, `ticket`,
  * `success_raffle` and `gift_redeem` on `raffleId`.
@@ -149,4 +151,12 @@ export class RaffleView {
 
   @ViewColumn()
   winnersPercentList: string;
+
+  status = () => {
+    return this.successCount > 0
+      ? RaffleStatus.SuccessFull
+      : this.redeemCount > 0
+        ? RaffleStatus.Failed
+        : RaffleStatus.Active;
+  };
 }

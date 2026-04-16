@@ -13,6 +13,7 @@ import { ErgoNodeNetwork } from './index';
  * @param network - The network to use for the transaction.
  * @param unsigned - The unsigned Ergo transaction to sign.
  * @param keys - An array of ErgoHDKey objects containing the private keys for signing.
+ * @param networkType
  * @returns A signed transaction if successful
  * @throws Throws an error if any key does not have a private key.
  */

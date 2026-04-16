@@ -1,11 +1,12 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
     "outDir": "./dist",
     "composite": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true
+    "types": ["vitest/globals", "node"]
   },
-  "include": ["lib"],
+  "include": ["tests", "lib"],
   "references": [{ "path": "../../packages/extractors" }]
 }

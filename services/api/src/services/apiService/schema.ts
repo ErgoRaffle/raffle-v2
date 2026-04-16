@@ -1,5 +1,9 @@
 import { z } from 'zod';
 
+import { RaffleStatus } from '@ergo-raffle/db-views';
+
+import { DEFAULT_API_PAGE_SIZE } from '../../const';
+
 const blockchainInfoResponseSchema = z.object({
   fee: z.object({
     tx: z.bigint(),
@@ -18,8 +22,71 @@ const errorResponseSchema = z.object({
   message: z.string(),
 });
 
+const raffleStatusSchema = z.enum([
+  RaffleStatus.Active,
+  RaffleStatus.Failed,
+  RaffleStatus.SuccessFull,
+]);
+
+const tokenSchema = z.object({
+  id: z.string(),
+  name: z.string().optional(),
+  decimals: z.number().default(0),
+  verified: z.boolean(),
+});
+
+const raffleAmountSchema = z.object({
+  goal: z.coerce.bigint(),
+  raised: z.coerce.bigint(),
+});
+
+const raffleItemSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  image: z.string().optional(),
+  token: tokenSchema,
+  winnersCount: z.number(),
+  giftCount: z.number(),
+  tags: z.array(z.string()).optional(),
+  deadline: z.number(),
+  amount: raffleAmountSchema,
+  ticketPrice: z.coerce.bigint(),
+  status: raffleStatusSchema,
+});
+
+const getRafflesQuerySchema = z.object({
+  text: z.string().optional(),
+  tokenIds: z
+    .union([z.array(z.string()), z.string().transform((item) => [item])])
+    .optional(),
+  tags: z
+    .union([z.array(z.string()), z.string().transform((item) => [item])])
+    .optional(),
+  ids: z
+    .union([z.array(z.string()), z.string().transform((item) => [item])])
+    .optional(),
+  status: z
+    .union([
+      z.array(raffleStatusSchema),
+      raffleStatusSchema.transform((item) => [item]),
+    ])
+    .optional(),
+  order: z.enum(['height', 'deadline']).optional().default('height'),
+  direction: z.enum(['ASC', 'DESC']).optional().default('DESC'),
+  offset: z.coerce.number().optional().default(0),
+  limit: z.coerce.number().optional().default(DEFAULT_API_PAGE_SIZE),
+});
+
+const getRafflesResponseSchema = z.object({
+  items: z.array(raffleItemSchema),
+  total: z.number(),
+});
+
 export {
   blockchainInfoResponseSchema,
   versionResponseSchema,
   errorResponseSchema,
+  getRafflesQuerySchema,
+  getRafflesResponseSchema,
 };

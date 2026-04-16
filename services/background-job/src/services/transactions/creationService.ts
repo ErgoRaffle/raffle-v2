@@ -8,10 +8,10 @@ import {
   CreationTxBuilder,
   GiftTokenReceiptTxBuilder,
 } from '@ergo-raffle/transactions';
+import { ERG_TOKEN_ID } from '@ergo-raffle/utils';
 
 import { configs } from '../../config';
 import {
-  ERG_TOKEN_ID,
   GIFT_TOKEN_DESCRIPTION_PREFIX,
   GIFT_TOKEN_NAME_PREFIX,
   TICKET_TOKEN_COUNT,

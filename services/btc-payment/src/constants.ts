@@ -1,4 +1,3 @@
-export const ERG_TOKEN_ID = 'erg';
 export const BITCOIN_CHAIN_NAME = 'bitcoin';
 export const BITCOIN_RUNES_CHAIN_NAME = 'bitcoin-runes';
 export const ERGO_CHAIN_NAME = 'ergo';

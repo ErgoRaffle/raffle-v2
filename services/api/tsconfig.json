@@ -8,6 +8,8 @@
   "include": ["src"],
   "references": [
     { "path": "../../packages/data-source" },
-    { "path": "../../packages/extractors" }
+    { "path": "../../packages/extractors" },
+    { "path": "../../packages/db-views" },
+    { "path": "../../packages/utils" }
   ]
 }

@@ -1,8 +1,10 @@
 import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { FastifyWithZod } from '@rosen-bridge/fastify-enhanced';
 
+import { ERG_TOKEN_ID } from '@ergo-raffle/utils';
+
 import { AddressDeriver } from '../../bitcoin/addressDeriver';
-import { BTC_TOKEN_ID, ERG_TOKEN_ID } from '../../constants';
+import { BTC_TOKEN_ID } from '../../constants';
 import { ERGO_CHAIN_NAME } from '../../constants';
 import {
   Captcha as CaptchaConfig,
