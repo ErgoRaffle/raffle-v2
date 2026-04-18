@@ -25,6 +25,9 @@
     "release": "npm run clean && npm run build && npm publish --access public",
     "type-check": "tsc --noEmit"
   },
+  "dependencies": {
+    "@storacha/client": "^2.1.3"
+  },
   "engines": {
     "node": ">=22.18.0",
     "npm": "11.6.2"
