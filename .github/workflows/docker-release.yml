@@ -53,8 +53,18 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.branch || github.ref }}
 
+      - name: Download tokens.json
+        if: matrix.service.name == 'btc-payment'
+        working-directory: ${{ matrix.service.service_dir }}
+        shell: bash
+        run: |
+          mkdir -p ./config
+          npx @rosen-bridge/cli@${{ vars.ROSEN_CLI_VERSION || 'latest' }} download-assets -c ${{ vars.RELEASE_NAME }} ${{ vars.RELEASE_TAG }} -o ./config 
+          mv ./config/tokens*.json ./config/tokenMap.json
+
       - name: Move Docker YAMLs
         working-directory: ${{ matrix.service.service_dir }}
+        shell: bash
         run: |
           mv ./docker/*.yaml ./config/
 
