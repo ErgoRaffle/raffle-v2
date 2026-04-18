@@ -9,8 +9,8 @@ class ImageManager {
   }
 
   /**
-   * Creates and initializes an ImageManager with the given Storacha credentials.
-   * @param config - Key and proof for Storacha/IPFS authentication
+   * Creates and initializes an ImageManager with Filebase credentials.
+   * @param config - Filebase S3 access key, secret, and bucket for IPFS uploads
    * @returns Initialized ImageManager instance
    */
   static create = async (config: IpfsUploaderConfig): Promise<ImageManager> => {

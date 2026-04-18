@@ -26,7 +26,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@storacha/client": "^2.1.3"
+    "@filebase/sdk": "^1.0.6"
   },
   "engines": {
     "node": ">=22.18.0",

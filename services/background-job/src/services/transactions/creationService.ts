@@ -55,8 +55,9 @@ export class CreationService extends AbstractTxService {
   private getImageManager = async (): Promise<ImageManager> => {
     if (!this.imageManager) {
       this.imageManager = await ImageManager.create({
-        key: configs.ipfs.key,
-        proof: configs.ipfs.proof,
+        accessKey: configs.ipfs.accessKey,
+        secretKey: configs.ipfs.secretKey,
+        bucket: configs.ipfs.bucket,
       });
     }
     return this.imageManager;

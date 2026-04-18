@@ -365,23 +365,33 @@
   "ipfs": {
     "type": "object",
     "children": {
-      "key": {
+      "accessKey": {
         "type": "string",
-        "description": "Storacha (web3.storage) agent private key for IPFS uploads",
+        "description": "Filebase S3 API access key for IPFS uploads (see https://filebase.github.io/filebase-sdk/)",
         "validations": [
           {
             "required": true,
-            "error": "IPFS agent key must be specified"
+            "error": "Filebase access key must be specified"
           }
         ]
       },
-      "proof": {
+      "secretKey": {
         "type": "string",
-        "description": "Storacha (web3.storage) UCAN delegation proof for IPFS uploads",
+        "description": "Filebase S3 API secret key for IPFS uploads",
         "validations": [
           {
             "required": true,
-            "error": "IPFS delegation proof must be specified"
+            "error": "Filebase secret key must be specified"
+          }
+        ]
+      },
+      "bucket": {
+        "type": "string",
+        "description": "Filebase bucket name (IPFS-backed storage)",
+        "validations": [
+          {
+            "required": true,
+            "error": "Filebase bucket must be specified"
           }
         ]
       }

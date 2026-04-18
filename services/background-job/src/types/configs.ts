@@ -79,6 +79,7 @@ export interface Addresses {
 }
 
 export interface Ipfs {
-  key: string;
-  proof: string;
+  accessKey: string;
+  secretKey: string;
+  bucket: string;
 }
