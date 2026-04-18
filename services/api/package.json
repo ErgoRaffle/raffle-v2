@@ -27,10 +27,12 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@ergo-raffle/contracts": "^0.0.0",
     "@ergo-raffle/data-source": "^0.0.0",
     "@ergo-raffle/db-views": "^0.0.0",
     "@ergo-raffle/extractors": "^0.0.0",
     "@ergo-raffle/utils": "^0.0.0",
+    "@fleet-sdk/core": "^0.12.0",
     "@rosen-bridge/abstract-logger": "^4.0.0",
     "@rosen-bridge/abstract-scanner": "^1.0.2",
     "@rosen-bridge/callback-logger": "^2.0.0",

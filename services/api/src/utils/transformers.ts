@@ -1,3 +1,6 @@
+import { ErgoAddress, Network } from '@fleet-sdk/core';
+
+import { raffleInfo } from '@ergo-raffle/contracts';
 import { RaffleView } from '@ergo-raffle/db-views';
 import {
   ERG_TOKEN_DECIMALS,
@@ -42,4 +45,17 @@ export const transformRaffleViewToApiResponse = (raffle: RaffleView) => {
     ticketPrice: raffle.ticketPrice,
     status: raffle.status(),
   };
+};
+
+/**
+ * Transforms an ErgoTree hex string to a human-readable Ergo address
+ * Converts the hex string to a buffer, creates an ErgoAddress from it,
+ * and formats it for the appropriate network (Mainnet or Testnet)
+ * @param ergoTree - ErgoTree as a hex string
+ * @returns Ergo address string formatted for the current network
+ */
+export const transformErgoTreeToAddress = (ergoTree: string) => {
+  return ErgoAddress.fromErgoTree(Buffer.from(ergoTree, 'hex')).toString(
+    raffleInfo.network === 'Mainnet' ? Network.Mainnet : Network.Testnet,
+  );
 };

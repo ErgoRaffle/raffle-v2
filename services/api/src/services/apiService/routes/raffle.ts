@@ -2,7 +2,10 @@ import { FastifyWithZod } from '@rosen-bridge/fastify-enhanced';
 
 import { RaffleOrder } from '@ergo-raffle/db-views';
 
-import { transformRaffleViewToApiResponse } from '../../../utils';
+import {
+  transformErgoTreeToAddress,
+  transformRaffleViewToApiResponse,
+} from '../../../utils';
 import { DbService } from '../../dbService';
 import {
   errorResponseSchema,
@@ -95,9 +98,9 @@ const registerGetRaffleRoute = (fastify: FastifyWithZod) => {
           ...transformRaffleViewToApiResponse(raffle),
           pictures: JSON.parse(raffle.pictures),
           addresses: {
-            project: raffle.projectErgoTree,
-            implementer: raffle.implementerErgoTree,
-            service: raffle.serviceErgoTree,
+            project: transformErgoTreeToAddress(raffle.projectErgoTree),
+            implementer: transformErgoTreeToAddress(raffle.implementerErgoTree),
+            service: transformErgoTreeToAddress(raffle.serviceErgoTree),
           },
           share: {
             winner: raffle.winnersPercent,
