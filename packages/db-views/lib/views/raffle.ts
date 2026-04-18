@@ -45,10 +45,13 @@ import { RaffleStatus } from '../types';
       .addSelect('MAX(details.name)', 'name')
       .addSelect('MAX(details.tags)', 'tags')
       .addSelect('MAX(details.pictures)', 'pictures')
-      .addSelect('COUNT(gift.id)', 'giftCount')
+      .addSelect('COUNT(DISTINCT gift.id)', 'giftCount')
       .addSelect('MAX(gift.height)', 'giftMaxHeight')
-      .addSelect('SUM(ticket.rangeEnd - ticket.rangeStart)', 'soldTicketCount')
-      .addSelect('COUNT(ticket.id)', 'bakers')
+      .addSelect(
+        'SUM(DISTINCT ticket.rangeEnd) - SUM(DISTINCT ticket.rangeStart)',
+        'soldTicketCount',
+      )
+      .addSelect('COUNT(DISTINCT ticket.id)', 'bakers')
       .addSelect('MAX(ticket.height)', 'ticketMaxHeight')
       .addSelect('COUNT(redeem.id)', 'redeemCount')
       .addSelect('COUNT(success.id)', 'successCount')
@@ -148,7 +151,7 @@ export class RaffleView {
   serviceFeePercent: number;
 
   @ViewColumn({ transformer: new BigIntValueTransformer() })
-  soldTicketCount: bigint;
+  soldTicketCount: bigint | null;
 
   @ViewColumn()
   bakers: number;

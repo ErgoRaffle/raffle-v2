@@ -18,12 +18,14 @@
   "scripts": {
     "config:generate:defaults": "cross-env NODE_OPTIONS=\"--import tsx\" npx @rosen-bridge/config generate-default --schema ./config/schema.json --output ./config/default.yml --format yaml",
     "config:generate:types": "cross-env NODE_OPTIONS=\"--import tsx\" npx @rosen-bridge/config generate-ts-types --schema ./config/schema.json --output ./src/types/configs.ts --root-type ApiConfig",
+    "coverage": "npm run test -- --coverage",
     "lint": "eslint --fix . && npm run prettify",
     "lint:check": "eslint . && npm run prettify:check",
     "prettify": "prettier --write . --ignore-path ../../.gitignore",
     "prettify:check": "prettier --check . --ignore-path ../../.gitignore",
     "start": "tsx ./src/index.ts",
     "start:dev": "tsx watch ./src/index.ts",
+    "test": "cross-env NODE_OPTIONS=\"--import tsx\" vitest",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
@@ -33,6 +35,7 @@
     "@ergo-raffle/extractors": "^0.0.0",
     "@ergo-raffle/utils": "^0.0.0",
     "@fleet-sdk/core": "^0.12.0",
+    "@fleet-sdk/serializer": "^0.11.0",
     "@rosen-bridge/abstract-logger": "^4.0.0",
     "@rosen-bridge/abstract-scanner": "^1.0.2",
     "@rosen-bridge/callback-logger": "^2.0.0",

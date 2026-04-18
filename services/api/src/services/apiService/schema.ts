@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { RaffleStatus } from '@ergo-raffle/db-views';
+import { InclusionStatus, RaffleStatus } from '@ergo-raffle/db-views';
 
 import { DEFAULT_API_PAGE_SIZE } from '../../const';
 
@@ -50,7 +50,7 @@ const raffleItemSchemaObject = {
   tags: z.array(z.string()).optional(),
   deadline: z.number(),
   amount: raffleAmountSchema,
-  ticketPrice: z.coerce.bigint(),
+  ticketPrice: z.bigint(),
   status: raffleStatusSchema,
 };
 
@@ -75,7 +75,7 @@ const raffleDetailsSchema = z.object({
   pictures: z.array(z.string()),
   addresses: raffleAddressesSchema,
   share: raffleShareSchema,
-  baker: z.number(),
+  backers: z.number(),
 });
 
 const getRafflesQuerySchema = z.object({
@@ -101,6 +101,18 @@ const getRafflesQuerySchema = z.object({
   limit: z.coerce.number().optional().default(DEFAULT_API_PAGE_SIZE),
 });
 
+const InclusionStatusScheme = z
+  .enum([InclusionStatus.NonEmpty, InclusionStatus.Empty])
+  .optional();
+
+const getRaffleWinnersQuerySchema = z.object({
+  offset: z.coerce.number().optional().default(0),
+  limit: z.coerce.number().optional().default(DEFAULT_API_PAGE_SIZE),
+  share: InclusionStatusScheme,
+  gift: InclusionStatusScheme,
+  index: z.coerce.number().optional(),
+});
+
 const getRafflesResponseSchema = z.object({
   items: z.array(raffleItemSchema),
   total: z.number(),
@@ -110,6 +122,26 @@ const raffleSearchParamScheme = z.object({
   raffleId: z.string(),
 });
 
+const winnerSearchParamScheme = z.object({
+  offset: z.coerce.number().default(0),
+  limit: z.coerce.number().default(DEFAULT_API_PAGE_SIZE),
+});
+
+const winnerGiftsSchema = z.object({
+  tokenId: z.string(),
+  amount: z.coerce.bigint(),
+});
+
+const winnerSchema = z.object({
+  index: z.number(),
+  share: z.number(),
+  gifts: z.array(winnerGiftsSchema),
+});
+
+const winnerApiResponseSchema = z.object({
+  items: z.array(winnerSchema),
+  total: z.number(),
+});
 export {
   blockchainInfoResponseSchema,
   versionResponseSchema,
@@ -118,4 +150,7 @@ export {
   getRafflesResponseSchema,
   raffleDetailsSchema,
   raffleSearchParamScheme,
+  winnerSearchParamScheme,
+  winnerApiResponseSchema,
+  getRaffleWinnersQuerySchema,
 };

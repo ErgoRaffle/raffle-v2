@@ -168,7 +168,7 @@ export class RaffleViewActions {
     successCount: Number(item.successCount),
     redeemCount: Number(item.redeemCount),
     giftCount: Number(item.giftCount),
-    soldTicketCount: BigInt(item.soldTicketCount),
+    soldTicketCount: BigInt(item.soldTicketCount ?? 0),
     ticketPrice: BigInt(item.ticketPrice),
     goal: BigInt(item.goal),
     txFee: BigInt(item.txFee),
