@@ -5,6 +5,5 @@
     "composite": true,
     "types": ["vitest/globals", "node"]
   },
-  "include": ["tests", "lib"],
-  "references": [{ "path": "../contracts" }]
+  "include": ["tests", "lib"]
 }

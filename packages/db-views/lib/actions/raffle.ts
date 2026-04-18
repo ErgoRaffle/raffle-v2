@@ -88,14 +88,14 @@ export class RaffleViewActions {
   };
 
   /**
-   * Creates SQL LIKE conditions for searching by tags
+   * Creates SQL LIKE conditions for searching by tags.
    * Tags are stored as comma-separated values, so each tag is wrapped in commas for exact matching
    * @param tags - Array of tag strings to search for
    * @returns SQL condition and parameters, or undefined if tags array is empty
    */
   protected createTagsSearch = (tags: Array<string>) => {
     if (tags.length > 0) {
-      const queries = tags.map((tag, index) => `"tags" LIKE :tag${index}`);
+      const queries = tags.map((_, index) => `"tags" LIKE :tag${index}`);
       const params = tags
         .map((item, index) => ({ [`tag${index}`]: `%,${item},%` }))
         .reduce((a, b) => ({ ...a, ...b }), {});
@@ -140,21 +140,38 @@ export class RaffleViewActions {
     }
     queryBuilder.skip(params.offset ?? 0).take(params.limit);
 
-    const [items, count] = await queryBuilder.getManyAndCount();
-    const fetchedRaffles = items.map(
-      (item) =>
-        ({
-          ...item,
-          // these conversions are needed because queryBuilder missed executing transform on field also COUNT output type mismatched in postgres and sqlite
-          successCount: Number(item.successCount),
-          redeemCount: Number(item.redeemCount),
-          giftCount: Number(item.giftCount),
-          soldTicketCount: BigInt(item.soldTicketCount),
-          ticketPrice: BigInt(item.ticketPrice),
-          goal: BigInt(item.goal),
-          txFee: BigInt(item.txFee),
-        }) as RaffleView,
-    );
-    return { items: fetchedRaffles, total: count };
+    const [items, total] = await queryBuilder.getManyAndCount();
+    const fetchedRaffles = items.map(this.transformRaffleView);
+    return { items: fetchedRaffles, total };
   };
+
+  /**
+   * Retrieves a single raffle by its ID
+   * @param raffleId - The raffle ID to search for
+   * @returns RaffleView instance or null if not found
+   */
+  getRaffle = async (raffleId: string): Promise<RaffleView | null> => {
+    const item = await this.repository.findOne({ where: { raffleId } });
+    return item === null ? item : this.transformRaffleView(item);
+  };
+
+  /**
+   * Transforms a RaffleView item by converting field types to match expected output
+   * These conversions are needed because queryBuilder missed executing transform on fields
+   * and COUNT output type is mismatched between postgres and sqlite
+   * @param item - RaffleView item to transform
+   * @returns Transformed RaffleView with correct field types
+   */
+  protected transformRaffleView = (item: RaffleView): RaffleView => ({
+    ...item,
+    // these conversions are needed because queryBuilder missed executing transform on field also COUNT output type mismatched in postgres and sqlite
+    successCount: Number(item.successCount),
+    redeemCount: Number(item.redeemCount),
+    giftCount: Number(item.giftCount),
+    soldTicketCount: BigInt(item.soldTicketCount),
+    ticketPrice: BigInt(item.ticketPrice),
+    goal: BigInt(item.goal),
+    txFee: BigInt(item.txFee),
+    bakers: Number(item.bakers),
+  });
 }

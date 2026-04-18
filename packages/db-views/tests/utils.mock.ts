@@ -12,6 +12,10 @@ import {
   SuccessRaffleEntity,
   GiftRedeemEntity,
 } from '@ergo-raffle/extractors';
+import {
+  TokenEntity,
+  migrations as tokenMigrations,
+} from '@ergo-raffle/tokens';
 
 import { RaffleView, migrations } from '../lib';
 
@@ -31,8 +35,13 @@ export const createDatabase = async (): Promise<DataSource> => {
       RaffleView,
       SuccessRaffleEntity,
       GiftRedeemEntity,
+      TokenEntity,
     ],
-    migrations: [...extractorMigrations.sqlite, ...migrations.sqlite],
+    migrations: [
+      ...extractorMigrations.sqlite,
+      ...migrations.sqlite,
+      ...tokenMigrations.sqlite,
+    ],
     synchronize: false,
     logging: false,
   });
