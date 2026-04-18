@@ -361,5 +361,30 @@
         ]
       }
     }
+  },
+  "ipfs": {
+    "type": "object",
+    "children": {
+      "key": {
+        "type": "string",
+        "description": "Storacha (web3.storage) agent private key for IPFS uploads",
+        "validations": [
+          {
+            "required": true,
+            "error": "IPFS agent key must be specified"
+          }
+        ]
+      },
+      "proof": {
+        "type": "string",
+        "description": "Storacha (web3.storage) UCAN delegation proof for IPFS uploads",
+        "validations": [
+          {
+            "required": true,
+            "error": "IPFS delegation proof must be specified"
+          }
+        ]
+      }
+    }
   }
 }

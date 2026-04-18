@@ -9,6 +9,7 @@ export interface BackgroundJobConfig {
   scanner: Scanner;
   database: Database;
   logs: Logs[];
+  ipfs: Ipfs;
 }
 
 export interface Logs {
@@ -75,4 +76,9 @@ export interface TokenDetails {
 
 export interface Addresses {
   serviceFeeAddress: string;
+}
+
+export interface Ipfs {
+  key: string;
+  proof: string;
 }
