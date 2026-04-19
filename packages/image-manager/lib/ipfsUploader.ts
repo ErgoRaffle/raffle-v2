@@ -1,4 +1,15 @@
-import { ObjectManager } from '@filebase/sdk';
+import { createRequire } from 'node:module';
+
+/**
+ * Filebase's package.json points ESM `import` at `./src`, where `NameManager` uses a
+ * method named `import` — Node parses that as dynamic `import()` and throws.
+ * Loading the published CJS bundle avoids that broken entry.
+ */
+const require = createRequire(import.meta.url);
+const { ObjectManager } =
+  require('@filebase/sdk') as typeof import('@filebase/sdk');
+
+type FilebaseObjectManager = InstanceType<typeof ObjectManager>;
 
 interface IpfsUploaderConfig {
   /** Filebase S3 API access key (from the Filebase dashboard) */
@@ -10,9 +21,9 @@ interface IpfsUploaderConfig {
 }
 
 class IpfsUploader {
-  private objectManager: ObjectManager;
+  private objectManager: FilebaseObjectManager;
 
-  private constructor(objectManager: ObjectManager) {
+  private constructor(objectManager: FilebaseObjectManager) {
     this.objectManager = objectManager;
   }
 

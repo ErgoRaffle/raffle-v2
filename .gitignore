@@ -157,3 +157,6 @@ local.yaml
 # token map
 *tokenMap.json
 packages/db-views/lib/dataSource.ts
+
+# cursor rules and skills
+.cursor/
