@@ -54,11 +54,14 @@ export class CreationService extends AbstractTxService {
    */
   private getImageManager = async (): Promise<ImageManager> => {
     if (!this.imageManager) {
-      this.imageManager = await ImageManager.create({
-        accessKey: configs.ipfs.accessKey,
-        secretKey: configs.ipfs.secretKey,
-        bucket: configs.ipfs.bucket,
-      });
+      this.imageManager = await ImageManager.create(
+        {
+          accessKey: configs.ipfs.accessKey,
+          secretKey: configs.ipfs.secretKey,
+          bucket: configs.ipfs.bucket,
+        },
+        this.logger.child('ImageManager'),
+      );
     }
     return this.imageManager;
   };
@@ -158,7 +161,10 @@ export class CreationService extends AbstractTxService {
     let pictureCids: string[] = [];
     if (originalPictures.length > 0) {
       const imageManager = await this.getImageManager();
-      pictureCids = await imageManager.processImages(originalPictures);
+      pictureCids = await imageManager.processImages(
+        originalPictures,
+        proxyBox.boxId,
+      );
       this.logger.info(
         `Uploaded ${pictureCids.length} picture(s) to IPFS for proxy box ${proxyBox.boxId}`,
       );

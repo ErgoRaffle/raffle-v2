@@ -26,7 +26,8 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@filebase/sdk": "^1.0.6"
+    "@filebase/sdk": "^1.0.6",
+    "@rosen-bridge/abstract-logger": "^4.0.0"
   },
   "engines": {
     "node": ">=22.18.0",
