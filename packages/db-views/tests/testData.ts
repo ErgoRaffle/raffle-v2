@@ -1013,7 +1013,7 @@ export const activityItems: Partial<UserActivityView>[] = [
     type: 'gift',
     txId: 'gift_tx1',
     height: 1000,
-    ticketCount: undefined,
+    ticketCount: 0n,
   },
   {
     ergoTree: 'addr_user3',
@@ -1021,7 +1021,7 @@ export const activityItems: Partial<UserActivityView>[] = [
     type: 'gift',
     txId: 'gift_tx2',
     height: 3000,
-    ticketCount: undefined,
+    ticketCount: 0n,
   },
   {
     ergoTree: 'addr_user1',
@@ -1029,7 +1029,7 @@ export const activityItems: Partial<UserActivityView>[] = [
     type: 'creation',
     txId: 'raffle_tx1',
     height: 1000,
-    ticketCount: undefined,
+    ticketCount: 0n,
   },
   {
     ergoTree: 'addr_user2',
@@ -1037,7 +1037,7 @@ export const activityItems: Partial<UserActivityView>[] = [
     type: 'creation',
     txId: 'raffle_tx2',
     height: 2000,
-    ticketCount: undefined,
+    ticketCount: 0n,
   },
   {
     ergoTree: 'addr_user1',
@@ -1045,7 +1045,7 @@ export const activityItems: Partial<UserActivityView>[] = [
     type: 'creation',
     txId: 'raffle_tx3',
     height: 3000,
-    ticketCount: undefined,
+    ticketCount: 0n,
   },
   {
     ergoTree: 'addr_user2',
