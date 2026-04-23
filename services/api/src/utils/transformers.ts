@@ -99,7 +99,7 @@ export const mergeAssets = (assets: Array<WinnerGift>): Array<WinnerGift> => {
   assets.forEach((asset) => {
     assetsMap.set(
       asset.tokenId,
-      assetsMap.get(asset.tokenId) ?? 0n + asset.amount,
+      (assetsMap.get(asset.tokenId) ?? 0n) + asset.amount,
     );
   });
   return Array.from(assetsMap.entries()).map(([tokenId, amount]) => ({

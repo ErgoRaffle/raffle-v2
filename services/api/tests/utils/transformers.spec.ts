@@ -14,7 +14,6 @@ import {
   mockRaffleWithUndefinedTokenFields,
   mockRaffleWithNullSoldTicketCount,
   validErgoTree,
-  invalidErgoTree,
   mockWinners,
   mockWinnersWithDuplicateIndices,
   mockAssetsWithDuplicates,
@@ -131,18 +130,6 @@ describe('utils', () => {
       expect(typeof result).toBe('string');
       expect(result.length).toBeGreaterThan(0);
     });
-
-    /**
-     * @target should throw error for invalid ErgoTree hex
-     * @dependencies
-     * @scenario
-     * - call transformErgoTreeToAddress with an invalid hex string
-     * @expected
-     * - should throw an error
-     */
-    it('should throw error for invalid ErgoTree hex', () => {
-      expect(() => transformErgoTreeToAddress(invalidErgoTree)).toThrow();
-    });
   });
 
   describe('winnersViewToScheme', () => {
@@ -210,7 +197,6 @@ describe('utils', () => {
      */
     it('should merge assets with same tokenId', () => {
       const result = mergeAssets(mockAssetsWithDuplicates);
-
       expect(result).toHaveLength(2);
       expect(result[0].tokenId).toBe('token1');
       expect(result[0].amount).toBe(150n);

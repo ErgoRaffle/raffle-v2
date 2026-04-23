@@ -36,6 +36,7 @@
     "@ergo-raffle/contracts": "0.0.0",
     "@ergo-raffle/data-source": "0.0.0",
     "@ergo-raffle/extractors": "0.0.0",
+    "@ergo-raffle/image-manager": "0.0.0",
     "@ergo-raffle/tokens": "0.0.0",
     "@ergo-raffle/fleet-box-selection": "^0.0.0",
     "@ergo-raffle/transactions": "0.0.0",

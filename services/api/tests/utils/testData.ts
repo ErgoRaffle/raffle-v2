@@ -22,8 +22,6 @@ const createBaseRaffle = (): RaffleView => {
 export const validErgoTree =
   '1005040004000e36100203a184f400027d1f79365a18179d525b2844483759d047d656d1a060004d803d1edcc70100';
 
-export const invalidErgoTree = 'invalidhex';
-
 export const mockRaffleWithCustomToken = createBaseRaffle();
 mockRaffleWithCustomToken.collectingTokenId = 'token123';
 mockRaffleWithCustomToken.tokenName = 'Test Token';

@@ -3,3 +3,8 @@ scanner:
     initialHeight: 0
 addresses:
   serviceFeeAddress: 9fSgUi6Z7kOnxq94voRFuJbDrZfStJn6f2q7oEwj4vJtQp6nR8M
+
+ipfs:
+  accessKey: key
+  secretKey: secret
+  bucket: bucket
