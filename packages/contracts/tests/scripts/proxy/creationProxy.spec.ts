@@ -137,6 +137,47 @@ describe('CreationProxy', () => {
     });
 
     /**
+     * @target creation proxy should accept inactive raffle picture URLs that differ from the proxy when the picture count matches
+     * @scenario
+     * - creation proxy box R6 holds two picture link byte strings
+     * - creation transaction sets two different URLs on the inactive raffle (same count)
+     * - execute transaction
+     * @expected
+     * - transaction succeeds because the contract only requires matching name, description, tags and the same number of picture entries
+     */
+    it('should create a raffle when inactive raffle uses different picture URLs but the same picture count as the proxy', () => {
+      const transaction = createRaffleBuilder
+        .setRafflePictures([
+          'https://cdn.example.com/revised-a.png',
+          'https://ipfs.io/ipfs/QmRevisedB',
+        ])
+        .build();
+
+      expect(chain.executeTx(transaction, [])).toBeTruthy();
+    });
+
+    /**
+     * @target creation proxy should reject creation when inactive raffle has a different number of pictures than the proxy
+     * @scenario
+     * - creation proxy box R6 has two picture entries
+     * - creation transaction sets three picture URLs on the inactive raffle
+     * - execute transaction
+     * @expected
+     * - transaction execution throws
+     */
+    it('should fail creation when inactive raffle picture count differs from the proxy', () => {
+      const transaction = createRaffleBuilder
+        .setRafflePictures([
+          'https://example.com/p1.jpg',
+          'https://example.com/p2.jpg',
+          'https://example.com/p3.jpg',
+        ])
+        .build();
+
+      expect(() => chain.executeTx(transaction, [])).toThrow();
+    });
+
+    /**
      * @target creation proxy should create a token-goal raffle successfully
      * @scenario
      * - create service input box and creation proxy input box

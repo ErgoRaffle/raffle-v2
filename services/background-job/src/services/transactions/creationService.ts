@@ -3,6 +3,7 @@ import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 
 import { raffleInfo } from '@ergo-raffle/contracts';
 import { CreationProxyEntity } from '@ergo-raffle/extractors';
+import { ImageManager } from '@ergo-raffle/image-manager';
 import {
   ActivationTxBuilder,
   CreationTxBuilder,
@@ -31,6 +32,7 @@ import { AbstractTxService } from './abstractTxService';
 
 export class CreationService extends AbstractTxService {
   name = 'CreationService';
+  private imageManager?: ImageManager;
 
   constructor(nodeUrl: string, logger: AbstractLogger) {
     super(nodeUrl, logger);
@@ -44,6 +46,26 @@ export class CreationService extends AbstractTxService {
   static init = (nodeUrl: string, logger: AbstractLogger) => {
     if (this.instance != undefined) return;
     this.instance = new CreationService(nodeUrl, logger);
+  };
+
+  /**
+   * Lazily initialize and return the ImageManager for IPFS uploads.
+   * @returns The ImageManager instance
+   */
+  private getImageManager = async (): Promise<ImageManager> => {
+    if (!this.imageManager) {
+      const imageManagerLogger = this.logger.child('ImageManager');
+      this.imageManager = new ImageManager(
+        {
+          accessKey: configs.ipfs.accessKey,
+          secretKey: configs.ipfs.secretKey,
+          bucket: configs.ipfs.bucket,
+        },
+        imageManagerLogger,
+      );
+      this.logger.info('IPFS uploader is ready');
+    }
+    return this.imageManager;
   };
 
   /**
@@ -137,13 +159,26 @@ export class CreationService extends AbstractTxService {
 
     const chainHeight = await this.network.getHeight();
 
+    const originalPictures = JSON.parse(creationProxyEntity.pictures);
+    let pictureCids: string[] = [];
+    if (originalPictures.length > 0) {
+      const imageManager = await this.getImageManager();
+      pictureCids = await imageManager.processImages(
+        originalPictures,
+        proxyBox.boxId,
+      );
+      this.logger.info(
+        `Uploaded ${pictureCids.length} picture(s) to IPFS for proxy box ${proxyBox.boxId}`,
+      );
+    }
+
     const creationTxBuilder = new CreationTxBuilder()
       .setServiceBox(serviceBox)
       .setFeeBoxes(boxes)
       .setRaffleName(creationProxyEntity.name)
       .setRaffleDescription(creationProxyEntity.description)
       .setRaffleTags(creationProxyEntity.tags)
-      .setRafflePictures(JSON.parse(creationProxyEntity.pictures) as string[])
+      .setRafflePictures(pictureCids)
       .setTicketPrice(creationProxyEntity.ticketPrice)
       .setGoal(creationProxyEntity.goal)
       .setWinnersSharePercent(BigInt(creationProxyEntity.winnersPercent))
