@@ -187,8 +187,8 @@ export class InactiveRaffleBuilder {
   };
 
   /**
-   * Set the raffle pictures
-   * @param pictures - Array of picture URLs or data
+   * Set the raffle pictures as IPFS content identifiers (CIDs).
+   * @param pictures - Array of IPFS CIDs (CIDv0 starting with 'Qm' or CIDv1 starting with 'bafy')
    * @returns this builder instance
    */
   setPictures = (pictures: string[]): this => {
@@ -312,8 +312,8 @@ export class InactiveRaffleBuilder {
   };
 
   /**
-   * Get the raffle pictures
-   * @returns Array of picture URLs or data
+   * Get the raffle pictures as IPFS CIDs
+   * @returns Array of IPFS CIDs
    */
   getPictures = (): string[] => {
     return this.pictures || [];

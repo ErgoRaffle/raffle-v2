@@ -83,7 +83,8 @@
       inactiveRaffle.R4[Coll[Long]].get(5) == raffleDeadline,
       inactiveRaffle.R5[Coll[Coll[Byte]]].get(1) == implementerErgoTreeHash,
       inactiveRaffle.R5[Coll[Coll[Byte]]].get(2) == projectErgoTreeHash,
-      inactiveRaffle.R6[Coll[Coll[Byte]]].get == SELF.R6[Coll[Coll[Byte]]].get,
+      inactiveRaffle.R6[Coll[Coll[Byte]]].get.slice(0, 3) == SELF.R6[Coll[Coll[Byte]]].get.slice(0, 3),
+      inactiveRaffle.R6[Coll[Coll[Byte]]].get.size == SELF.R6[Coll[Coll[Byte]]].get.size,
       inactiveRaffle.R7[Coll[Coll[Byte]]].get(1) == winnersPercentListHash,
       inactiveRaffle.R8[Int].get == winnersCount,
       if(SELF.tokens.size >= 1){

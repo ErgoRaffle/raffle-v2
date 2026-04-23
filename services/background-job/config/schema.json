@@ -361,5 +361,40 @@
         ]
       }
     }
+  },
+  "ipfs": {
+    "type": "object",
+    "children": {
+      "accessKey": {
+        "type": "string",
+        "description": "Filebase S3 API access key for IPFS uploads (see https://filebase.github.io/filebase-sdk/)",
+        "validations": [
+          {
+            "required": true,
+            "error": "Filebase access key must be specified"
+          }
+        ]
+      },
+      "secretKey": {
+        "type": "string",
+        "description": "Filebase S3 API secret key for IPFS uploads",
+        "validations": [
+          {
+            "required": true,
+            "error": "Filebase secret key must be specified"
+          }
+        ]
+      },
+      "bucket": {
+        "type": "string",
+        "description": "Filebase bucket name (IPFS-backed storage)",
+        "validations": [
+          {
+            "required": true,
+            "error": "Filebase bucket must be specified"
+          }
+        ]
+      }
+    }
   }
 }
