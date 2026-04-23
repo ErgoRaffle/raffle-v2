@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { RaffleStatus } from '@ergo-raffle/db-views';
+import { RaffleStatus, USER_ACTIVITY_TYPES } from '@ergo-raffle/db-views';
 
 import { DEFAULT_API_PAGE_SIZE } from '../../const';
 
@@ -78,10 +78,31 @@ const getRafflesQuerySchema = z.object({
   limit: z.coerce.number().optional().default(DEFAULT_API_PAGE_SIZE),
 });
 
-const getRafflesResponseSchema = z.object({
-  items: z.array(raffleItemSchema),
-  total: z.number(),
+const paginatedSchema = <T extends z.ZodTypeAny>(itemSchema: T) =>
+  z.object({
+    items: z.array(itemSchema),
+    total: z.number(),
+  });
+
+const getRafflesResponseSchema = paginatedSchema(raffleItemSchema);
+
+const activityItemSchema = z.object({
+  address: z.string(),
+  raffleId: z.string(),
+  type: z.enum(USER_ACTIVITY_TYPES),
+  ticketCount: z.coerce.bigint().optional(),
+  txId: z.string(),
+  height: z.number(),
 });
+
+const getActivitiesQuerySchema = z.object({
+  address: z.string().optional(),
+  raffleId: z.string().optional(),
+  offset: z.coerce.number().optional().default(0),
+  limit: z.coerce.number().optional().default(DEFAULT_API_PAGE_SIZE),
+});
+
+const getActivitiesResponseSchema = paginatedSchema(activityItemSchema);
 
 export {
   blockchainInfoResponseSchema,
@@ -89,4 +110,6 @@ export {
   errorResponseSchema,
   getRafflesQuerySchema,
   getRafflesResponseSchema,
+  getActivitiesQuerySchema,
+  getActivitiesResponseSchema,
 };

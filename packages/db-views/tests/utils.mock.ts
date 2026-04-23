@@ -13,7 +13,7 @@ import {
   GiftRedeemEntity,
 } from '@ergo-raffle/extractors';
 
-import { RaffleView, migrations } from '../lib';
+import { RaffleView, UserActivityView, migrations } from '../lib';
 
 export const createDatabase = async (): Promise<DataSource> => {
   const dataSource = new DataSource({
@@ -29,6 +29,7 @@ export const createDatabase = async (): Promise<DataSource> => {
       TicketEntity,
       WinnerPrizeEntity,
       RaffleView,
+      UserActivityView,
       SuccessRaffleEntity,
       GiftRedeemEntity,
     ],
@@ -38,5 +39,6 @@ export const createDatabase = async (): Promise<DataSource> => {
   });
   await dataSource.initialize();
   await dataSource.runMigrations();
+  await dataSource.synchronize();
   return dataSource;
 };

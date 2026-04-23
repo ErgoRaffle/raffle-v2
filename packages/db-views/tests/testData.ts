@@ -7,6 +7,7 @@ import {
   GiftRedeemEntity,
 } from '@ergo-raffle/extractors';
 
+import { UserActivityView } from '../lib';
 import { createDatabase } from './utils.mock';
 
 export const mockRaffles = async () => {
@@ -856,3 +857,218 @@ export const mockRaffles = async () => {
   await giftRedeemRepository.insert(giftRedeems);
   return dataSource;
 };
+
+export const mockActivities = async () => {
+  const dataSource = await createDatabase();
+  const inactiveRaffleRepository =
+    dataSource.getRepository(InactiveRaffleEntity);
+  const ticketRepository = dataSource.getRepository(TicketEntity);
+  const giftRepository = dataSource.getRepository(GiftEntity);
+
+  // addr_user1 creates raffle1 and raffle3
+  // addr_user2 creates raffle2
+  const raffles = [
+    {
+      txId: 'raffle_tx1',
+      raffleId: 'raffle1',
+      serviceErgoTree: 'service_tree1',
+      implementerErgoTree: 'impl_tree1',
+      projectErgoTree: 'addr_user1',
+      serviceFeePercent: 5,
+      implementerFeePercent: 3,
+      winnersPercent: 92,
+      ticketPrice: BigInt(1000000000),
+      goal: BigInt(1000000000000),
+      deadline: 100,
+      winnersPercentList: '400,300,100,100,100',
+      txFee: BigInt(5000000),
+      block: '1000',
+      height: 1000,
+      extractor: 'raffle_extractor',
+      identifier: 'act_raffle_id1',
+      serialized: 'act_serialized1',
+    },
+    {
+      txId: 'raffle_tx2',
+      raffleId: 'raffle2',
+      serviceErgoTree: 'service_tree2',
+      implementerErgoTree: 'impl_tree2',
+      projectErgoTree: 'addr_user2',
+      serviceFeePercent: 5,
+      implementerFeePercent: 3,
+      winnersPercent: 92,
+      ticketPrice: BigInt(1000000000),
+      goal: BigInt(1000000000000),
+      deadline: 200,
+      winnersPercentList: '400,300,100,100,100',
+      txFee: BigInt(5000000),
+      block: '2000',
+      height: 2000,
+      extractor: 'raffle_extractor',
+      identifier: 'act_raffle_id2',
+      serialized: 'act_serialized2',
+    },
+    {
+      txId: 'raffle_tx3',
+      raffleId: 'raffle3',
+      serviceErgoTree: 'service_tree3',
+      implementerErgoTree: 'impl_tree3',
+      projectErgoTree: 'addr_user1',
+      serviceFeePercent: 5,
+      implementerFeePercent: 3,
+      winnersPercent: 92,
+      ticketPrice: BigInt(1000000000),
+      goal: BigInt(1000000000000),
+      deadline: 300,
+      winnersPercentList: '400,300,100,100,100',
+      txFee: BigInt(5000000),
+      block: '3000',
+      height: 3000,
+      extractor: 'raffle_extractor',
+      identifier: 'act_raffle_id3',
+      serialized: 'act_serialized3',
+    },
+  ];
+
+  // addr_user2 buys 5 tickets in raffle1
+  // addr_user1 buys 3 tickets in raffle2
+  // addr_user3 buys 1 ticket in raffle1
+  const tickets = [
+    {
+      txId: 'ticket_tx1',
+      raffleId: 'raffle1',
+      donatorErgoTree: 'addr_user2',
+      rangeStart: BigInt(0),
+      rangeEnd: BigInt(5),
+      block: '1000',
+      height: 1000,
+      extractor: 'ticket_extractor',
+      identifier: 'act_ticket_id1',
+      serialized: 'act_ticket_serialized1',
+    },
+    {
+      txId: 'ticket_tx2',
+      raffleId: 'raffle2',
+      donatorErgoTree: 'addr_user1',
+      rangeStart: BigInt(0),
+      rangeEnd: BigInt(3),
+      block: '2000',
+      height: 2000,
+      extractor: 'ticket_extractor',
+      identifier: 'act_ticket_id2',
+      serialized: 'act_ticket_serialized2',
+    },
+    {
+      txId: 'ticket_tx3',
+      raffleId: 'raffle1',
+      donatorErgoTree: 'addr_user3',
+      rangeStart: BigInt(5),
+      rangeEnd: BigInt(6),
+      block: '1000',
+      height: 1000,
+      extractor: 'ticket_extractor',
+      identifier: 'act_ticket_id3',
+      serialized: 'act_ticket_serialized3',
+    },
+  ];
+
+  // addr_user1 adds a gift to raffle1
+  // addr_user3 adds a gift to raffle3
+  const gifts = [
+    {
+      txId: 'gift_tx1',
+      raffleId: 'raffle1',
+      donatorErgoTree: 'addr_user1',
+      winnerIndex: 0,
+      block: '1000',
+      height: 1000,
+      extractor: 'gift_extractor',
+      identifier: 'act_gift_id1',
+      serialized: 'act_gift_serialized1',
+    },
+    {
+      txId: 'gift_tx2',
+      raffleId: 'raffle3',
+      donatorErgoTree: 'addr_user3',
+      winnerIndex: 0,
+      block: '3000',
+      height: 3000,
+      extractor: 'gift_extractor',
+      identifier: 'act_gift_id2',
+      serialized: 'act_gift_serialized2',
+    },
+  ];
+
+  await inactiveRaffleRepository.insert(raffles);
+  await ticketRepository.insert(tickets);
+  await giftRepository.insert(gifts);
+  return dataSource;
+};
+
+// Expected activity view rows sorted by txId for use in tests
+export const activityItems: Partial<UserActivityView>[] = [
+  {
+    address: 'addr_user1',
+    raffleId: 'raffle1',
+    type: 'gift',
+    txId: 'gift_tx1',
+    height: 1000,
+    ticketCount: undefined,
+  },
+  {
+    address: 'addr_user3',
+    raffleId: 'raffle3',
+    type: 'gift',
+    txId: 'gift_tx2',
+    height: 3000,
+    ticketCount: undefined,
+  },
+  {
+    address: 'addr_user1',
+    raffleId: 'raffle1',
+    type: 'creation',
+    txId: 'raffle_tx1',
+    height: 1000,
+    ticketCount: undefined,
+  },
+  {
+    address: 'addr_user2',
+    raffleId: 'raffle2',
+    type: 'creation',
+    txId: 'raffle_tx2',
+    height: 2000,
+    ticketCount: undefined,
+  },
+  {
+    address: 'addr_user1',
+    raffleId: 'raffle3',
+    type: 'creation',
+    txId: 'raffle_tx3',
+    height: 3000,
+    ticketCount: undefined,
+  },
+  {
+    address: 'addr_user2',
+    raffleId: 'raffle1',
+    type: 'donation',
+    txId: 'ticket_tx1',
+    height: 1000,
+    ticketCount: 5n,
+  },
+  {
+    address: 'addr_user1',
+    raffleId: 'raffle2',
+    type: 'donation',
+    txId: 'ticket_tx2',
+    height: 2000,
+    ticketCount: 3n,
+  },
+  {
+    address: 'addr_user3',
+    raffleId: 'raffle1',
+    type: 'donation',
+    txId: 'ticket_tx3',
+    height: 1000,
+    ticketCount: 1n,
+  },
+];
