@@ -10,7 +10,7 @@ import { UserActivityType } from '../types';
   name: 'user_activity_view',
   expression: `
     SELECT
-      "raffle"."projectErgoTree" AS "address",
+      "raffle"."projectErgoTree" AS "ergoTree",
       "raffle"."raffleId" AS "raffleId",
       'creation' AS "type",
       0 AS "ticketCount",
@@ -19,7 +19,7 @@ import { UserActivityType } from '../types';
     FROM "inactive_raffle" "raffle"
     UNION ALL
     SELECT
-      "ticket"."donatorErgoTree" AS "address",
+      "ticket"."donatorErgoTree" AS "ergoTree",
       "ticket"."raffleId" AS "raffleId",
       'donation' AS "type",
       "ticket"."rangeEnd" - "ticket"."rangeStart" AS "ticketCount",
@@ -28,7 +28,7 @@ import { UserActivityType } from '../types';
     FROM "ticket" "ticket"
     UNION ALL
     SELECT
-      "gift"."donatorErgoTree" AS "address",
+      "gift"."donatorErgoTree" AS "ergoTree",
       "gift"."raffleId" AS "raffleId",
       'gift' AS "type",
       0 AS "ticketCount",
@@ -39,7 +39,7 @@ import { UserActivityType } from '../types';
 })
 export class UserActivityView {
   @ViewColumn()
-  address: string;
+  ergoTree: string;
 
   @ViewColumn()
   raffleId: string;

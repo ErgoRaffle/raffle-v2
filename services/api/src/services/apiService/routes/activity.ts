@@ -20,11 +20,11 @@ const registerGetActivitiesRoute = (fastify: FastifyWithZod) => {
       },
     },
     async (request, response) => {
-      const { address, raffleId, offset, limit } = request.query;
+      const { ergoTree, raffleId, offset, limit } = request.query;
       const result = await DbService.getInstance()
         .getUserActivityViewAction()
         .getActivities({
-          query: { address, raffleId },
+          query: { ergoTree, raffleId },
           offset,
           limit,
         });

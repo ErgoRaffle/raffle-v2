@@ -1008,7 +1008,7 @@ export const mockActivities = async () => {
 // Expected activity view rows sorted by txId for use in tests
 export const activityItems: Partial<UserActivityView>[] = [
   {
-    address: 'addr_user1',
+    ergoTree: 'addr_user1',
     raffleId: 'raffle1',
     type: 'gift',
     txId: 'gift_tx1',
@@ -1016,7 +1016,7 @@ export const activityItems: Partial<UserActivityView>[] = [
     ticketCount: undefined,
   },
   {
-    address: 'addr_user3',
+    ergoTree: 'addr_user3',
     raffleId: 'raffle3',
     type: 'gift',
     txId: 'gift_tx2',
@@ -1024,7 +1024,7 @@ export const activityItems: Partial<UserActivityView>[] = [
     ticketCount: undefined,
   },
   {
-    address: 'addr_user1',
+    ergoTree: 'addr_user1',
     raffleId: 'raffle1',
     type: 'creation',
     txId: 'raffle_tx1',
@@ -1032,7 +1032,7 @@ export const activityItems: Partial<UserActivityView>[] = [
     ticketCount: undefined,
   },
   {
-    address: 'addr_user2',
+    ergoTree: 'addr_user2',
     raffleId: 'raffle2',
     type: 'creation',
     txId: 'raffle_tx2',
@@ -1040,7 +1040,7 @@ export const activityItems: Partial<UserActivityView>[] = [
     ticketCount: undefined,
   },
   {
-    address: 'addr_user1',
+    ergoTree: 'addr_user1',
     raffleId: 'raffle3',
     type: 'creation',
     txId: 'raffle_tx3',
@@ -1048,7 +1048,7 @@ export const activityItems: Partial<UserActivityView>[] = [
     ticketCount: undefined,
   },
   {
-    address: 'addr_user2',
+    ergoTree: 'addr_user2',
     raffleId: 'raffle1',
     type: 'donation',
     txId: 'ticket_tx1',
@@ -1056,7 +1056,7 @@ export const activityItems: Partial<UserActivityView>[] = [
     ticketCount: 5n,
   },
   {
-    address: 'addr_user1',
+    ergoTree: 'addr_user1',
     raffleId: 'raffle2',
     type: 'donation',
     txId: 'ticket_tx2',
@@ -1064,7 +1064,7 @@ export const activityItems: Partial<UserActivityView>[] = [
     ticketCount: 3n,
   },
   {
-    address: 'addr_user3',
+    ergoTree: 'addr_user3',
     raffleId: 'raffle1',
     type: 'donation',
     txId: 'ticket_tx3',

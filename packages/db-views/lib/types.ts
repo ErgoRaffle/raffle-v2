@@ -38,7 +38,7 @@ type RaffleWithTotalResult = ItemTotal<RaffleView>;
 
 type getUserActivityParams = {
   query?: {
-    address?: string;
+    ergoTree?: string;
     raffleId?: string;
   };
   offset?: number;

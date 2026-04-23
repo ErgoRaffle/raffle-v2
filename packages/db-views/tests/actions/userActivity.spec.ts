@@ -31,18 +31,18 @@ describe('UserActivityViewActions', () => {
     });
 
     /**
-     * @target should return only activities for the given address
+     * @target should return only activities for the given ergoTree
      * @dependencies
      * @scenario
-     * - call getActivities with address 'addr_user1'
+     * - call getActivities with ergoTree 'addr_user1'
      * - addr_user1 created raffle1 and raffle3, donated to raffle2, added gift to raffle1
      * @expected
      * - total should be 4
      * - items sorted by txId should match activityItems at indices 0, 2, 4, 6
      */
-    it('should return only activities for a given address', async () => {
+    it('should return only activities for a given ergoTree', async () => {
       const result = await actions.getActivities({
-        query: { address: 'addr_user1' },
+        query: { ergoTree: 'addr_user1' },
         limit: 100,
       });
       expect(result.total).toBe(4);
@@ -55,18 +55,18 @@ describe('UserActivityViewActions', () => {
     });
 
     /**
-     * @target should return only activities for an address with fewer activities
+     * @target should return only activities for an ergoTree with fewer activities
      * @dependencies
      * @scenario
-     * - call getActivities with address 'addr_user3'
+     * - call getActivities with ergoTree 'addr_user3'
      * - addr_user3 donated to raffle1 and added gift to raffle3
      * @expected
      * - total should be 2
      * - items sorted by txId should match activityItems at indices 1, 7
      */
-    it('should return only activities for an address with fewer activities', async () => {
+    it('should return only activities for an ergoTree with fewer activities', async () => {
       const result = await actions.getActivities({
-        query: { address: 'addr_user3' },
+        query: { ergoTree: 'addr_user3' },
         limit: 100,
       });
       expect(result.total).toBe(2);
@@ -123,18 +123,18 @@ describe('UserActivityViewActions', () => {
     });
 
     /**
-     * @target should return activities matching both address and raffleId
+     * @target should return activities matching both ergoTree and raffleId
      * @dependencies
      * @scenario
-     * - call getActivities with address 'addr_user1' and raffleId 'raffle1'
+     * - call getActivities with ergoTree 'addr_user1' and raffleId 'raffle1'
      * - addr_user1 created raffle1 and added gift to raffle1
      * @expected
      * - total should be 2
      * - items sorted by txId should match activityItems at indices 0, 2
      */
-    it('should return activities matching both address and raffleId', async () => {
+    it('should return activities matching both ergoTree and raffleId', async () => {
       const result = await actions.getActivities({
-        query: { address: 'addr_user1', raffleId: 'raffle1' },
+        query: { ergoTree: 'addr_user1', raffleId: 'raffle1' },
         limit: 100,
       });
       expect(result.total).toBe(2);
@@ -156,7 +156,7 @@ describe('UserActivityViewActions', () => {
      */
     it('should return correct ticketCount for donation activities', async () => {
       const result = await actions.getActivities({
-        query: { address: 'addr_user2', raffleId: 'raffle1' },
+        query: { ergoTree: 'addr_user2', raffleId: 'raffle1' },
         limit: 100,
       });
       expect(result.total).toBe(1);
@@ -175,7 +175,7 @@ describe('UserActivityViewActions', () => {
      */
     it('should return undefined ticketCount for non-donation activities', async () => {
       const result = await actions.getActivities({
-        query: { address: 'addr_user1', raffleId: 'raffle3' },
+        query: { ergoTree: 'addr_user1', raffleId: 'raffle3' },
         limit: 100,
       });
       expect(result.total).toBe(1);

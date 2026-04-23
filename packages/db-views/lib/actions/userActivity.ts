@@ -11,23 +11,23 @@ export class UserActivityViewActions {
   }
 
   /**
-   * Retrieves user activities from the database with optional filtering by address or raffleId, and pagination
-   * @param params - Query parameters including optional address/raffleId filters, offset, and limit
-   * @returns Object containing array of user activity views and total count
+   * Retrieves user activities from the database with optional filtering by ergoTree or raffleId, and pagination.
+   * @param params - Query parameters including optional ergoTree/raffleId filters, offset, and limit.
+   * @returns Object containing array of user activity views and total count.
    */
   getActivities = async (
     params: getUserActivityParams,
   ): Promise<UserActivityWithTotalResult> => {
     const queryBuilder = this.repository.createQueryBuilder();
 
-    if (params.query?.address) {
-      queryBuilder.where('"address" = :address', {
-        address: params.query.address,
+    if (params.query?.ergoTree) {
+      queryBuilder.where('"ergoTree" = :ergoTree', {
+        ergoTree: params.query.ergoTree,
       });
     }
 
     if (params.query?.raffleId) {
-      const method = params.query?.address ? 'andWhere' : 'where';
+      const method = params.query?.ergoTree ? 'andWhere' : 'where';
       queryBuilder[method]('"raffleId" = :raffleId', {
         raffleId: params.query.raffleId,
       });
