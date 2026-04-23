@@ -23,25 +23,15 @@ interface IpfsUploaderConfig {
 class IpfsUploader {
   private objectManager: FilebaseObjectManager;
 
-  private constructor(objectManager: FilebaseObjectManager) {
-    this.objectManager = objectManager;
-  }
-
   /**
    * Creates and initializes an IpfsUploader with Filebase credentials.
    * @param config - Filebase S3 access key, secret, and bucket for uploads
-   * @returns Initialized IpfsUploader instance ready for uploads
    */
-  static create = async (config: IpfsUploaderConfig): Promise<IpfsUploader> => {
-    const objectManager = new ObjectManager(
-      config.accessKey,
-      config.secretKey,
-      {
-        bucket: config.bucket,
-      },
-    );
-    return new IpfsUploader(objectManager);
-  };
+  constructor(config: IpfsUploaderConfig) {
+    this.objectManager = new ObjectManager(config.accessKey, config.secretKey, {
+      bucket: config.bucket,
+    });
+  }
 
   /**
    * Uploads a Blob to IPFS via Filebase and returns the content CID.

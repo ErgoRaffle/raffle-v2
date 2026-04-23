@@ -7,25 +7,18 @@ class ImageManager {
   private uploader: IpfsUploader;
   private logger: AbstractLogger;
 
-  private constructor(uploader: IpfsUploader, logger: AbstractLogger) {
-    this.uploader = uploader;
-    this.logger = logger;
-  }
-
   /**
-   * Creates and initializes an ImageManager with Filebase credentials.
-   * @param config - Filebase S3 access key, secret, and bucket for IPFS uploads
-   * @param logger - Optional structured logger; uses a no-op logger when omitted
-   * @returns Initialized ImageManager instance
+   * Creates an ImageManager instance.
+   * @param config - Filebase S3 access key, secret, and bucket for uploads
+   * @param logger - Structured logger used for progress and errors
    */
-  static create = async (
+  constructor(
     config: IpfsUploaderConfig,
     logger: AbstractLogger = new DummyLogger(),
-  ): Promise<ImageManager> => {
-    const uploader = await IpfsUploader.create(config);
-    logger.info('IPFS uploader is ready');
-    return new ImageManager(uploader, logger);
-  };
+  ) {
+    this.uploader = new IpfsUploader(config);
+    this.logger = logger;
+  }
 
   /**
    * Downloads an image from the given URL, uploads it to IPFS,
@@ -57,10 +50,25 @@ class ImageManager {
     this.logger.debug(
       `batch processing ${urls.length} image URL(s) under proxyBoxId=${proxyBoxId}`,
     );
+    this.logger.debug('starting image download phase');
+    const imageBlobs = await Promise.all(
+      urls.map(async (url) => {
+        this.logger.debug(`ImageManager: downloading image from ${url}`);
+        return downloadImage(url);
+      }),
+    );
+    this.logger.debug(
+      `download phase completed for ${imageBlobs.length} image(s), starting upload phase`,
+    );
+
     return Promise.all(
-      urls.map((url, imageIndex) =>
-        this.processImage(url, `${proxyBoxId}_${imageIndex}`),
-      ),
+      imageBlobs.map(async (imageBlob, imageIndex) => {
+        const imageKey = `${proxyBoxId}_${imageIndex}`;
+        this.logger.debug(`uploading "${imageKey}" (${imageBlob.size} bytes)`);
+        const cid = await this.uploader.upload(imageBlob, imageKey);
+        this.logger.info(`stored image on IPFS (cid=${cid}, key=${imageKey})`);
+        return cid;
+      }),
     );
   };
 }
