@@ -80,48 +80,48 @@ export class Migration1776258384966 implements MigrationInterface {
       ],
     );
     await queryRunner.query(`
-          CREATE VIEW "user_activity_view" AS
-          SELECT "raffle"."projectErgoTree" AS "ergoTree",
-              "raffle"."raffleId" AS "raffleId",
-              'creation' AS "type",
-              0 AS "ticketCount",
-              "raffle"."txId" AS "txId",
-              "raffle"."height" AS "height"
-          FROM "inactive_raffle" "raffle"
-          UNION ALL
-          SELECT "ticket"."donatorErgoTree" AS "ergoTree",
-              "ticket"."raffleId" AS "raffleId",
-              'donation' AS "type",
-              "ticket"."rangeEnd" - "ticket"."rangeStart" AS "ticketCount",
-              "ticket"."txId" AS "txId",
-              "ticket"."height" AS "height"
-          FROM "ticket" "ticket"
-          UNION ALL
-          SELECT "gift"."donatorErgoTree" AS "ergoTree",
-              "gift"."raffleId" AS "raffleId",
-              'gift' AS "type",
-              0 AS "ticketCount",
-              "gift"."txId" AS "txId",
-              "gift"."height" AS "height"
-          FROM "gift" "gift"
-      `);
+            CREATE VIEW "user_activity_view" AS
+            SELECT "raffle"."height" AS "height",
+                "raffle"."txId" AS "txId",
+                "raffle"."raffleId" AS "raffleId",
+                "raffle"."projectErgoTree" AS "ergoTree",
+                'creation' AS "type",
+                0 AS "ticketCount"
+            FROM "inactive_raffle" "raffle"
+            UNION ALL
+            SELECT "ticket"."height" AS "height",
+                "ticket"."txId" AS "txId",
+                "ticket"."raffleId" AS "raffleId",
+                "ticket"."donatorErgoTree" AS "ergoTree",
+                'donation' AS "type",
+                "ticket"."rangeEnd" - "ticket"."rangeStart" AS "ticketCount"
+            FROM "ticket" "ticket"
+            UNION ALL
+            SELECT "gift"."height" AS "height",
+                "gift"."txId" AS "txId",
+                "gift"."raffleId" AS "raffleId",
+                "gift"."donatorErgoTree" AS "ergoTree",
+                'gift' AS "type",
+                0 AS "ticketCount"
+            FROM "gift" "gift"
+        `);
     await queryRunner.query(
       `
-          INSERT INTO "typeorm_metadata"(
-                  "database",
-                  "schema",
-                  "table",
-                  "type",
-                  "name",
-                  "value"
-              )
-          VALUES (DEFAULT, $1, DEFAULT, $2, $3, $4)
-      `,
+            INSERT INTO "typeorm_metadata"(
+                    "database",
+                    "schema",
+                    "table",
+                    "type",
+                    "name",
+                    "value"
+                )
+            VALUES (DEFAULT, $1, DEFAULT, $2, $3, $4)
+        `,
       [
         'public',
         'VIEW',
         'user_activity_view',
-        'SELECT\n      "raffle"."projectErgoTree" AS "ergoTree",\n      "raffle"."raffleId" AS "raffleId",\n      \'creation\' AS "type",\n      0 AS "ticketCount",\n      "raffle"."txId" AS "txId",\n      "raffle"."height" AS "height"\n    FROM "inactive_raffle" "raffle"\n    UNION ALL\n    SELECT\n      "ticket"."donatorErgoTree" AS "ergoTree",\n      "ticket"."raffleId" AS "raffleId",\n      \'donation\' AS "type",\n      "ticket"."rangeEnd" - "ticket"."rangeStart" AS "ticketCount",\n      "ticket"."txId" AS "txId",\n      "ticket"."height" AS "height"\n    FROM "ticket" "ticket"\n    UNION ALL\n    SELECT\n      "gift"."donatorErgoTree" AS "ergoTree",\n      "gift"."raffleId" AS "raffleId",\n      \'gift\' AS "type",\n      0 AS "ticketCount",\n      "gift"."txId" AS "txId",\n      "gift"."height" AS "height"\n    FROM "gift" "gift"',
+        'SELECT "raffle"."height" AS "height", "raffle"."txId" AS "txId", "raffle"."raffleId" AS "raffleId", "raffle"."projectErgoTree" AS "ergoTree", \'creation\' AS "type", 0 AS "ticketCount" FROM "inactive_raffle" "raffle" UNION ALL SELECT "ticket"."height" AS "height", "ticket"."txId" AS "txId", "ticket"."raffleId" AS "raffleId", "ticket"."donatorErgoTree" AS "ergoTree", \'donation\' AS "type", "ticket"."rangeEnd" - "ticket"."rangeStart" AS "ticketCount" FROM "ticket" "ticket" UNION ALL SELECT "gift"."height" AS "height", "gift"."txId" AS "txId", "gift"."raffleId" AS "raffleId", "gift"."donatorErgoTree" AS "ergoTree", \'gift\' AS "type", 0 AS "ticketCount" FROM "gift" "gift"',
       ],
     );
   }
