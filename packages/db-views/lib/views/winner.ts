@@ -14,7 +14,7 @@ import { GiftEntity, WinnerEntity } from '@ergo-raffle/extractors';
       .addSelect('winner."raffleId"', 'raffleId')
       .addSelect('winner.index', 'index')
       .addSelect('winner.rewardPercent', 'rewardPercent')
-      .addSelect('gift.serialized', 'serialized')
+      .addSelect('gift.serialized', 'giftSerialized')
       .from(WinnerEntity, 'winner')
       .leftJoin(
         GiftEntity,
@@ -34,5 +34,5 @@ export class WinnerView {
   rewardPercent: number;
 
   @ViewColumn()
-  serialized?: string;
+  giftSerialized?: string;
 }

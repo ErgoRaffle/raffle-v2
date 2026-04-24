@@ -83,7 +83,7 @@ export class Migration1776857449078 implements MigrationInterface {
             CREATE VIEW "winner_view" AS
             SELECT DISTINCT "winner"."index" AS "index",
                 "winner"."rewardPercent" AS "rewardPercent",
-                "gift"."serialized" AS "serialized",
+                "gift"."serialized" AS "giftSerialized",
                 winner."raffleId" AS "raffleId"
             FROM "winner" "winner"
                 LEFT JOIN "gift" "gift" ON winner."raffleId" = gift."raffleId"
@@ -105,7 +105,7 @@ export class Migration1776857449078 implements MigrationInterface {
         'public',
         'VIEW',
         'winner_view',
-        'SELECT DISTINCT "winner"."index" AS "index", "winner"."rewardPercent" AS "rewardPercent", "gift"."serialized" AS "serialized", winner."raffleId" AS "raffleId" FROM "winner" "winner" LEFT JOIN "gift" "gift" ON winner."raffleId" = gift."raffleId" AND "winner"."index" = gift."winnerIndex"',
+        'SELECT DISTINCT "winner"."index" AS "index", "winner"."rewardPercent" AS "rewardPercent", "gift"."serialized" AS "giftSerialized", winner."raffleId" AS "raffleId" FROM "winner" "winner" LEFT JOIN "gift" "gift" ON winner."raffleId" = gift."raffleId" AND "winner"."index" = gift."winnerIndex"',
       ],
     );
   }

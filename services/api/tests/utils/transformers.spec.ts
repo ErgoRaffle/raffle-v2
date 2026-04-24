@@ -147,10 +147,10 @@ describe('utils', () => {
 
       expect(result).toHaveLength(2);
       expect(result[0].index).toBe(0);
-      expect(result[0].share).toBe(50);
+      expect(result[0].share).toBe(500);
       expect(result[0].gifts).toEqual([]);
       expect(result[1].index).toBe(1);
-      expect(result[1].share).toBe(50);
+      expect(result[1].share).toBe(500);
       expect(result[1].gifts).toEqual([]);
     });
 
@@ -168,7 +168,7 @@ describe('utils', () => {
 
       expect(result).toHaveLength(1);
       expect(result[0].index).toBe(0);
-      expect(result[0].share).toBe(50);
+      expect(result[0].share).toBe(500);
     });
 
     /**

@@ -39,13 +39,33 @@ mockRaffleWithNullSoldTicketCount.collectingTokenId = 'token123';
 mockRaffleWithNullSoldTicketCount.soldTicketCount = null;
 
 export const mockWinners: WinnerView[] = [
-  { index: 0, rewardPercent: 50, serialized: undefined, raffleId: 'raffle1' },
-  { index: 1, rewardPercent: 50, serialized: undefined, raffleId: 'raffle1' },
+  {
+    index: 0,
+    rewardPercent: 500,
+    giftSerialized: undefined,
+    raffleId: 'raffle1',
+  },
+  {
+    index: 1,
+    rewardPercent: 500,
+    giftSerialized: undefined,
+    raffleId: 'raffle1',
+  },
 ];
 
 export const mockWinnersWithDuplicateIndices: WinnerView[] = [
-  { index: 0, rewardPercent: 50, serialized: undefined, raffleId: 'raffle1' },
-  { index: 0, rewardPercent: 50, serialized: undefined, raffleId: 'raffle1' },
+  {
+    index: 0,
+    rewardPercent: 500,
+    giftSerialized: undefined,
+    raffleId: 'raffle1',
+  },
+  {
+    index: 0,
+    rewardPercent: 500,
+    giftSerialized: undefined,
+    raffleId: 'raffle1',
+  },
 ];
 
 export const mockAssetsWithDuplicates: WinnerGift[] = [

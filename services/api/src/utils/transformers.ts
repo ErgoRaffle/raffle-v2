@@ -73,8 +73,8 @@ export const winnersViewToScheme = (
       share: winner.rewardPercent,
       gifts: [],
     };
-    if (winner.serialized) {
-      const box = deserializeBox(Buffer.from(winner.serialized, 'base64'));
+    if (winner.giftSerialized) {
+      const box = deserializeBox(Buffer.from(winner.giftSerialized, 'base64'));
       const assets = winnerObject.gifts;
       box.assets.forEach((asset) => {
         assets.push({ tokenId: asset.tokenId, amount: asset.amount });

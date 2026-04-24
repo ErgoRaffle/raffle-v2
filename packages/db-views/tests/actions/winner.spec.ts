@@ -110,7 +110,7 @@ describe('WinnerViewActions', () => {
         limit: 100,
       });
       expect(total).toBe(3);
-      expect(items.every((item) => !!item.serialized)).toBe(true);
+      expect(items.every((item) => !!item.giftSerialized)).toBe(true);
     });
 
     /**
@@ -128,9 +128,8 @@ describe('WinnerViewActions', () => {
         gift: InclusionStatus.Empty,
         limit: 100,
       });
-      console.log(items);
       expect(total).toBe(2);
-      expect(items.every((item) => !item.serialized)).toBe(true);
+      expect(items.every((item) => !item.giftSerialized)).toBe(true);
     });
 
     /**
@@ -174,7 +173,7 @@ describe('WinnerViewActions', () => {
       expect(total).toBe(1);
       expect(items[0].index).toBe(0);
       expect(items[0].rewardPercent).toBe(400);
-      expect(items[0].serialized).toBeDefined();
+      expect(!!items[0].giftSerialized).toEqual(true);
     });
 
     /**
