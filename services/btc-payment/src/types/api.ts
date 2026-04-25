@@ -30,3 +30,16 @@ export const donationResponseDataSchema = types.object({
 export const donationResponseSchema = responseSchema.extend({
   data: donationResponseDataSchema,
 });
+
+// Bridgeable query schema
+export const bridgeableQuerySchema = types.object({
+  tokenId: types.string().describe('Token ID to check to be bridgeable'),
+});
+
+// Bridgeable response schema
+export const bridgeableResponseSchema = types.object({
+  tokenId: types.string().optional().describe('Requested token ID'),
+  bridgeable: types
+    .boolean()
+    .describe('Whether the token is bridgeable or not'),
+});

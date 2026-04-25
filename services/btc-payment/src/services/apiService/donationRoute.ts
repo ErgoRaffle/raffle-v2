@@ -65,7 +65,6 @@ export const registerDonationRoute = (
   logger: AbstractLogger,
   addressDeriver: AddressDeriver,
   addWatchingAddress: (address: string, tokenId: string) => void,
-  tokenMapService: TokenMapService,
   donationFee: bigint,
   captcha: CaptchaConfig,
 ) => {
@@ -124,14 +123,14 @@ export const registerDonationRoute = (
           .getData(raffleId);
 
         const tokenAmount = BigInt(ticketCount) * raffleData.ticketPrice;
-        const wrappedTokenAmount = tokenMapService
+        const wrappedTokenAmount = TokenMapService.getInstance()
           .getTokenMap()
           .wrapAmount(
             raffleData.collectingTokenId || ERG_TOKEN_ID,
             tokenAmount,
             ERGO_CHAIN_NAME,
           ).amount;
-        const btcTokenId = tokenMapService.getBtcTokenId(
+        const btcTokenId = TokenMapService.getInstance().getBtcTokenId(
           raffleData.collectingTokenId || ERG_TOKEN_ID,
         );
 
