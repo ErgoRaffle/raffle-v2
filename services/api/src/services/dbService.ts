@@ -7,7 +7,7 @@ import {
 } from '@rosen-bridge/service-manager';
 
 import { createDataSource } from '@ergo-raffle/data-source';
-import { RaffleViewActions } from '@ergo-raffle/db-views';
+import { RaffleViewActions, WinnerViewActions } from '@ergo-raffle/db-views';
 
 import BlockAction from '../actions/block';
 import ServiceBoxAction from '../actions/service';
@@ -21,6 +21,7 @@ export class DbService extends AbstractService {
   private serviceAction?: ServiceBoxAction;
   private blockAction?: BlockAction;
   private raffleViewAction?: RaffleViewActions;
+  private winnerViewAction?: WinnerViewActions;
 
   /**
    * Private constructor for singleton pattern
@@ -76,6 +77,8 @@ export class DbService extends AbstractService {
       this.logger.debug('Block action initialized');
       this.raffleViewAction = new RaffleViewActions(this.dataSource);
       this.logger.debug('Raffle view action initialized');
+      this.winnerViewAction = new WinnerViewActions(this.dataSource);
+      this.logger.debug('Raffle view action initialized');
       this.setStatus(ServiceStatus.running);
     } catch (e) {
       this.logger.error(
@@ -130,6 +133,11 @@ export class DbService extends AbstractService {
    */
   getRaffleViewAction = (): RaffleViewActions => {
     if (this.raffleViewAction) return this.raffleViewAction;
+    throw new Error('Service does not started');
+  };
+
+  getWinnerViewAction = (): WinnerViewActions => {
+    if (this.winnerViewAction) return this.winnerViewAction;
     throw new Error('Service does not started');
   };
 }

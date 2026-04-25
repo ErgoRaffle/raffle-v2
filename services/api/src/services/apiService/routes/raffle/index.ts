@@ -5,15 +5,16 @@ import { RaffleOrder } from '@ergo-raffle/db-views';
 import {
   transformErgoTreeToAddress,
   transformRaffleViewToApiResponse,
-} from '../../../utils';
-import { DbService } from '../../dbService';
+} from '../../../../utils';
+import { DbService } from '../../../dbService';
 import {
   errorResponseSchema,
   getRafflesQuerySchema,
   getRafflesResponseSchema,
   raffleDetailsSchema,
   raffleSearchParamScheme,
-} from '../schema';
+} from '../../schema';
+import { registerGetBasketRoute } from './basket';
 
 /**
  * Registers the GET /raffle route which returns a list of raffles
@@ -107,7 +108,7 @@ const registerGetRaffleRoute = (fastify: FastifyWithZod) => {
             service: raffle.serviceFeePercent,
             implementer: raffle.implementerFeePercent,
           },
-          baker: Number(raffle.bakers),
+          backerCount: Number(raffle.backerCount),
         };
         return response.status(200).send(responseJson);
       }
@@ -123,6 +124,7 @@ const registerGetRaffleRoute = (fastify: FastifyWithZod) => {
 const registerRaffleRoutes = (fastify: FastifyWithZod) => {
   registerGetRafflesRoute(fastify);
   registerGetRaffleRoute(fastify);
+  registerGetBasketRoute(fastify);
 };
 
 export { registerRaffleRoutes };
