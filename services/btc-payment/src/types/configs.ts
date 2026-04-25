@@ -38,6 +38,7 @@ export interface Api {
 export interface Captcha {
   enabled: boolean;
   secret?: string;
+  siteKey?: string;
   url?: string;
 }
 

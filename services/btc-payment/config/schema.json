@@ -213,6 +213,17 @@
           }
         ]
       },
+      "siteKey": {
+        "type": "string",
+        "description": "Captcha provider site key (e.g. reCAPTCHA siteKey); set in deployment or local.yml",
+        "validations": [
+          {
+            "required": true,
+            "when": { "path": "captcha.enabled", "value": true },
+            "error": "captcha site key must be specified"
+          }
+        ]
+      },
       "url": {
         "type": "string",
         "default": "https://www.google.com/recaptcha/api/siteverify",
