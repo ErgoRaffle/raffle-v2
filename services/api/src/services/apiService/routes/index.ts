@@ -3,10 +3,12 @@ import { FastifyWithZod } from '@rosen-bridge/fastify-enhanced';
 
 import { registerInfoRoutes } from './info';
 import { registerRaffleRoutes } from './raffle';
+import { registerTokenRoutes } from './tokens';
 
 const registerAllRoutes = (fastify: FastifyWithZod, logger: AbstractLogger) => {
   registerInfoRoutes(fastify);
   registerRaffleRoutes(fastify);
+  registerTokenRoutes(fastify);
   logger.debug('All routes are registered');
 };
 
