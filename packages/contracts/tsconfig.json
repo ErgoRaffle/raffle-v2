@@ -5,7 +5,7 @@
     "composite": true,
     "types": ["vitest/globals", "node"]
   },
-  "include": ["tests", "lib/"],
+  "include": ["tests", "lib/", "cli/"],
   "references": [
     {
       "path": "../transactions"

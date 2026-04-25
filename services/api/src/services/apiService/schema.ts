@@ -36,8 +36,8 @@ const tokenSchema = z.object({
 });
 
 const raffleAmountSchema = z.object({
-  goal: z.coerce.bigint(),
-  raised: z.coerce.bigint(),
+  goal: z.bigint(),
+  raised: z.bigint(),
 });
 
 const raffleItemSchemaObject = {
@@ -122,14 +122,9 @@ const raffleSearchParamScheme = z.object({
   raffleId: z.string(),
 });
 
-const winnerSearchParamScheme = z.object({
-  offset: z.coerce.number().default(0),
-  limit: z.coerce.number().default(DEFAULT_API_PAGE_SIZE),
-});
-
 const winnerGiftsSchema = z.object({
   tokenId: z.string(),
-  amount: z.coerce.bigint(),
+  amount: z.bigint(),
 });
 
 const winnerSchema = z.object({
@@ -150,7 +145,6 @@ export {
   getRafflesResponseSchema,
   raffleDetailsSchema,
   raffleSearchParamScheme,
-  winnerSearchParamScheme,
   winnerApiResponseSchema,
   getRaffleWinnersQuerySchema,
 };

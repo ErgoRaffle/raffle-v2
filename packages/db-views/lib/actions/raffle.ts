@@ -172,6 +172,6 @@ export class RaffleViewActions {
     ticketPrice: BigInt(item.ticketPrice),
     goal: BigInt(item.goal),
     txFee: BigInt(item.txFee),
-    bakers: Number(item.bakers),
+    backers: Number(item.backers),
   });
 }

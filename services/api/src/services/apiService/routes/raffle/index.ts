@@ -108,7 +108,7 @@ const registerGetRaffleRoute = (fastify: FastifyWithZod) => {
             service: raffle.serviceFeePercent,
             implementer: raffle.implementerFeePercent,
           },
-          backers: Number(raffle.bakers),
+          backers: Number(raffle.backers),
         };
         return response.status(200).send(responseJson);
       }

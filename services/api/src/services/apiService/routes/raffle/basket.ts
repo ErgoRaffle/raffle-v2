@@ -8,6 +8,10 @@ import {
   winnerApiResponseSchema,
 } from '../../schema';
 
+/**
+ * Registers the GET /raffle/:raffleId/basket route
+ * @param fastify - Fastify instance with Zod integration
+ */
 export const registerGetBasketRoute = (fastify: FastifyWithZod) => {
   fastify.get(
     '/raffle/:raffleId/basket',

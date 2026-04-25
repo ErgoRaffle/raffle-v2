@@ -76,9 +76,7 @@ export const winnersViewToScheme = (
     if (winner.giftSerialized) {
       const box = deserializeBox(Buffer.from(winner.giftSerialized, 'base64'));
       const assets = winnerObject.gifts;
-      box.assets.forEach((asset) => {
-        assets.push({ tokenId: asset.tokenId, amount: asset.amount });
-      });
+      assets.push(...box.assets);
     }
     winnersMap.set(winner.index, winnerObject);
   });
