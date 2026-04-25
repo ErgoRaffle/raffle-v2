@@ -38,8 +38,14 @@ export const bridgeableQuerySchema = types.object({
 
 // Bridgeable response schema
 export const bridgeableResponseSchema = types.object({
-  tokenId: types.string().optional().describe('Requested token ID'),
+  tokenId: types.string().describe('Requested token ID'),
   bridgeable: types
     .boolean()
     .describe('Whether the token is bridgeable or not'),
+});
+
+// Info response schema
+export const infoResponseSchema = types.object({
+  siteKey: types.string().describe('Captcha site key for frontend'),
+  version: types.string().describe(' Btc-payment service version'),
 });

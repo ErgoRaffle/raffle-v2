@@ -15,6 +15,7 @@ import { ScannerService } from '../scannerService';
 import { TokenMapService } from '../tokenMapService';
 import { registerBridgeableRoute } from './bridgeableRoute';
 import { registerDonationRoute } from './donationRoute';
+import { registerInfoRoute } from './infoRoute';
 
 export class ApiService extends AbstractService {
   name = 'ApiService';
@@ -131,5 +132,6 @@ export class ApiService extends AbstractService {
       configs.captcha,
     );
     registerBridgeableRoute(this.fastify);
+    registerInfoRoute(this.fastify);
   };
 }
