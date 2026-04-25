@@ -51,7 +51,7 @@ import { RaffleStatus } from '../types';
         'SUM(DISTINCT ticket.rangeEnd) - SUM(DISTINCT ticket.rangeStart)',
         'soldTicketCount',
       )
-      .addSelect('COUNT(DISTINCT ticket.id)', 'backers')
+      .addSelect('COUNT(DISTINCT ticket.id)', 'backerCount')
       .addSelect('MAX(ticket.height)', 'ticketMaxHeight')
       .addSelect('COUNT(redeem.id)', 'redeemCount')
       .addSelect('COUNT(success.id)', 'successCount')
@@ -154,7 +154,7 @@ export class RaffleView {
   soldTicketCount: bigint | null;
 
   @ViewColumn()
-  backers: number;
+  backerCount: number;
 
   @ViewColumn()
   successCount: number;

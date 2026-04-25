@@ -19,6 +19,8 @@ import {
   mockAssetsWithDuplicates,
   mockAssetsWithUniqueTokenIds,
   mockSingleAsset,
+  mockWinnersWIthGift,
+  serializedGiftTokens,
 } from './testData';
 
 describe('utils', () => {
@@ -165,10 +167,24 @@ describe('utils', () => {
      */
     it('should merge winners with same index', () => {
       const result = winnersViewToScheme(mockWinnersWithDuplicateIndices);
-
       expect(result).toHaveLength(1);
       expect(result[0].index).toBe(0);
       expect(result[0].share).toBe(500);
+    });
+
+    /**
+     * @target should return gifts of selected winner when serialized box is defined
+     * @dependencies
+     * @scenario
+     * - create WinnerView with giftSerialized containing valid base64 box data
+     * - call winnersViewToScheme
+     * @expected
+     * - should return winner with deserialized gift assets
+     */
+    it('should return gifts of selected winner when serialized box is defined', () => {
+      const result = winnersViewToScheme(mockWinnersWIthGift);
+      expect(result).toHaveLength(1);
+      expect(result[0].gifts).toEqual(serializedGiftTokens);
     });
 
     /**

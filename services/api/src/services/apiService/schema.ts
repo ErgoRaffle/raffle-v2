@@ -75,7 +75,7 @@ const raffleDetailsSchema = z.object({
   pictures: z.array(z.string()),
   addresses: raffleAddressesSchema,
   share: raffleShareSchema,
-  backers: z.number(),
+  backerCount: z.number(),
 });
 
 const getRafflesQuerySchema = z.object({

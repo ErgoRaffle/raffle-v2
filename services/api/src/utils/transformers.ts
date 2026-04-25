@@ -75,8 +75,7 @@ export const winnersViewToScheme = (
     };
     if (winner.giftSerialized) {
       const box = deserializeBox(Buffer.from(winner.giftSerialized, 'base64'));
-      const assets = winnerObject.gifts;
-      assets.push(...box.assets);
+      winnerObject.gifts.push(...box.assets);
     }
     winnersMap.set(winner.index, winnerObject);
   });

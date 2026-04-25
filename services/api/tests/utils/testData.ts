@@ -68,6 +68,16 @@ export const mockWinnersWithDuplicateIndices: WinnerView[] = [
   },
 ];
 
+export const mockWinnersWIthGift: WinnerView[] = [
+  {
+    index: 0,
+    rewardPercent: 1000,
+    giftSerialized:
+      'oLCULxn+AQoEAgQABAIEAAQCDiAAD++5Rb7pJkClO/IvlyFYwXCHCrcpYf9UKrg0xqQRhQQCBAAOID+tOastA2z3K0v9N/C/0J473ctEPzbutlmsn85kp/xkBADYBNYBsqVzAADWAttjCKfWA+TGpwYF1gTt7e3t7e2TjLLbYwiypXMBAHMCAAGMsnICcwMAAZPFsqRzBADFp5PLwnIBcwWTwXIBmcGncgOT22MIcgG0cgJzBrFyApPkxnIBBQVyA5PL5OMADuTGcgEEDpWTy8KypHMHAHMI0ZaDAgGT5MZyAQQO5May22UB/nMJAAQOcgTRloMCAZPkxnIBBA7kxqcEDnIEjZcSAjjdtgMwdvulXtvVd64EnCsDrcOCpfIR3HdNd3um1z60Ab34Rdb/+U1y8jq7SQ2Mzji0d1Ai3cHYvwz/jI2iAuN0eAMOICG2ng2HwGVipIlG/KUR3R0BqT4fZlvUIJNOQQIALQgPBAIFwKOGATD9nsjsWBahm5nVec7BCKs6HBxc3tmYZirnnOEtjfCIAQ==',
+    raffleId: 'raffle1',
+  },
+];
+
 export const mockAssetsWithDuplicates: WinnerGift[] = [
   { tokenId: 'token1', amount: 100n },
   { tokenId: 'token2', amount: 200n },
@@ -82,4 +92,15 @@ export const mockAssetsWithUniqueTokenIds: WinnerGift[] = [
 
 export const mockSingleAsset: WinnerGift[] = [
   { tokenId: 'token1', amount: 100n },
+];
+
+export const serializedGiftTokens = [
+  {
+    amount: 1n,
+    tokenId: '38ddb6033076fba55edbd577ae049c2b03adc382a5f211dc774d777ba6d73eb4',
+  },
+  {
+    amount: 120n,
+    tokenId: 'bdf845d6fff94d72f23abb490d8cce38b4775022ddc1d8bf0cff8c8da202e374',
+  },
 ];
