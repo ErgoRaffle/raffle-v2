@@ -47,5 +47,5 @@ export const bridgeableResponseSchema = types.object({
 // Info response schema
 export const infoResponseSchema = types.object({
   siteKey: types.string().describe('Captcha site key for frontend'),
-  version: types.string().describe(' Btc-payment service version'),
+  version: types.string().describe('btc-payment service version'),
 });
