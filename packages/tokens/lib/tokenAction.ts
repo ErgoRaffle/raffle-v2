@@ -101,4 +101,15 @@ export class TokenAction {
       );
     }
   };
+
+  /**
+   * Retrieves tokens from the database by their IDs
+   * @param tokenIds - Array of token IDs to retrieve
+   * @returns Promise resolving to array of TokenEntity objects
+   */
+  getTokens = async (tokenIds: Array<string>) => {
+    return this.repository.find({
+      where: { id: In(tokenIds) },
+    });
+  };
 }

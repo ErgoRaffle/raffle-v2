@@ -137,6 +137,18 @@ const winnerApiResponseSchema = z.object({
   items: z.array(winnerSchema),
   total: z.number(),
 });
+
+const getTokensQuerySchema = z.object({
+  tokenIds: z.union([
+    z.array(z.string()).max(100, 'Maximum 100 token IDs allowed'),
+    z.string().transform((item) => [item]),
+  ]),
+});
+
+const getTokensResponseSchema = z.object({
+  items: z.array(tokenSchema),
+});
+
 export {
   blockchainInfoResponseSchema,
   versionResponseSchema,
@@ -147,4 +159,6 @@ export {
   raffleSearchParamScheme,
   winnerApiResponseSchema,
   getRaffleWinnersQuerySchema,
+  getTokensQuerySchema,
+  getTokensResponseSchema,
 };

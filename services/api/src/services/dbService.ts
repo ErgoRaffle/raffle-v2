@@ -8,6 +8,7 @@ import {
 
 import { createDataSource } from '@ergo-raffle/data-source';
 import { RaffleViewActions, WinnerViewActions } from '@ergo-raffle/db-views';
+import { TokenAction } from '@ergo-raffle/tokens';
 
 import BlockAction from '../actions/block';
 import ServiceBoxAction from '../actions/service';
@@ -22,6 +23,7 @@ export class DbService extends AbstractService {
   private blockAction?: BlockAction;
   private raffleViewAction?: RaffleViewActions;
   private winnerViewAction?: WinnerViewActions;
+  private tokenAction?: TokenAction;
 
   /**
    * Private constructor for singleton pattern
@@ -79,6 +81,13 @@ export class DbService extends AbstractService {
       this.logger.debug('Raffle view action initialized');
       this.winnerViewAction = new WinnerViewActions(this.dataSource);
       this.logger.debug('Raffle view action initialized');
+      // API service is readonly and does not request to add tokens to this part of code. So nodeUrl is empty string.
+      this.tokenAction = new TokenAction(
+        this.dataSource,
+        '',
+        this.logger.child('tokenAction'),
+      );
+      this.logger.debug('Token action initialized');
       this.setStatus(ServiceStatus.running);
     } catch (e) {
       this.logger.error(
@@ -138,6 +147,16 @@ export class DbService extends AbstractService {
 
   getWinnerViewAction = (): WinnerViewActions => {
     if (this.winnerViewAction) return this.winnerViewAction;
+    throw new Error('Service does not started');
+  };
+
+  /**
+   * Returns the TokenAction instance
+   * @returns TokenAction instance
+   * @throws Error if service has not been started
+   */
+  getTokenAction = (): TokenAction => {
+    if (this.tokenAction) return this.tokenAction;
     throw new Error('Service does not started');
   };
 }

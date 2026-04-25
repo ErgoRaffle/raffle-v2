@@ -10,6 +10,7 @@
     { "path": "../../packages/data-source" },
     { "path": "../../packages/extractors" },
     { "path": "../../packages/db-views" },
-    { "path": "../../packages/utils" }
+    { "path": "../../packages/utils" },
+    { "path": "../../packages/tokens" }
   ]
 }
