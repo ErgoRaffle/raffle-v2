@@ -145,8 +145,19 @@ const getTokensQuerySchema = z.object({
   ]),
 });
 
+const searchTokensQuerySchema = z.object({
+  query: z.string().min(2, 'Minimum 1 character required'),
+  offset: z.coerce.number().optional().default(0),
+  limit: z.coerce.number().optional().default(DEFAULT_API_PAGE_SIZE),
+});
+
 const getTokensResponseSchema = z.object({
   items: z.array(tokenSchema),
+});
+
+const searchTokensResponseSchema = z.object({
+  items: z.array(tokenSchema),
+  total: z.number(),
 });
 
 export {
@@ -161,4 +172,6 @@ export {
   getRaffleWinnersQuerySchema,
   getTokensQuerySchema,
   getTokensResponseSchema,
+  searchTokensQuerySchema,
+  searchTokensResponseSchema,
 };
