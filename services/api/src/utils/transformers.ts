@@ -9,6 +9,7 @@ import {
   ERG_TOKEN_NAME,
 } from '@ergo-raffle/utils';
 
+import { configs } from '../configs';
 import { Winner, WinnerGift } from '../types/winners';
 
 /**
@@ -24,13 +25,13 @@ export const transformRaffleViewToApiResponse = (raffle: RaffleView) => {
         id: raffle.collectingTokenId,
         name: raffle.tokenName ?? undefined,
         decimals: raffle.tokenDecimals ?? 0,
-        verified: !!raffle.tokenIsVerified,
+        isVerified: !!raffle.tokenIsVerified,
       }
     : {
         id: ERG_TOKEN_ID,
         name: ERG_TOKEN_NAME,
         decimals: ERG_TOKEN_DECIMALS,
-        verified: true,
+        isVerified: true,
       };
   return {
     id: raffle.raffleId,
@@ -103,4 +104,8 @@ export const mergeAssets = (assets: Array<WinnerGift>): Array<WinnerGift> => {
     tokenId,
     amount,
   }));
+};
+
+export const transformCIDToURL = (cid: string) => {
+  return configs.ipfs.urlTransformSchema.replace('{CID}', cid);
 };

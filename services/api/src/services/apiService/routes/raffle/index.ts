@@ -3,6 +3,7 @@ import { FastifyWithZod } from '@rosen-bridge/fastify-enhanced';
 import { RaffleOrder } from '@ergo-raffle/db-views';
 
 import {
+  transformCIDToURL,
   transformErgoTreeToAddress,
   transformRaffleViewToApiResponse,
 } from '../../../../utils';
@@ -63,7 +64,8 @@ const registerGetRafflesRoute = (fastify: FastifyWithZod) => {
         });
       const items = raffleResult.items.map((raffle) => {
         const pictures = JSON.parse(raffle.pictures);
-        const picture = pictures.length > 0 ? pictures[0] : undefined;
+        const picture =
+          pictures.length > 0 ? transformCIDToURL(pictures[0]) : undefined;
         return { picture, ...transformRaffleViewToApiResponse(raffle) };
       });
       response.status(200).send({ items, total: raffleResult.total });
@@ -97,7 +99,7 @@ const registerGetRaffleRoute = (fastify: FastifyWithZod) => {
       if (raffle) {
         const responseJson = {
           ...transformRaffleViewToApiResponse(raffle),
-          pictures: JSON.parse(raffle.pictures),
+          pictures: JSON.parse(raffle.pictures).map(transformCIDToURL),
           addresses: {
             project: transformErgoTreeToAddress(raffle.projectErgoTree),
             implementer: transformErgoTreeToAddress(raffle.implementerErgoTree),

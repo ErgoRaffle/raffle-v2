@@ -22,12 +22,9 @@ const registerGetTokensRoute = (fastify: FastifyWithZod) => {
     },
     async (request, response) => {
       const { tokenIds } = request.query;
-      const items = (
-        await DbService.getInstance().getTokenAction().getTokens(tokenIds)
-      ).map((item) => ({
-        ...item,
-        verified: item.isVerified,
-      }));
+      const items = await DbService.getInstance()
+        .getTokenAction()
+        .getTokens(tokenIds);
       response.send({ items });
     },
   );

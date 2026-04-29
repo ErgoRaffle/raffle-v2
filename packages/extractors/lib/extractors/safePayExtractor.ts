@@ -56,6 +56,9 @@ export class SafePayExtractor extends AbstractErgoBoxExtractor<
   getTransactionExtraData = (tx: Transaction) => {
     return {
       firstOutputErgoTree: tx.outputs[0].ergoTree,
+      // Recipient address is extracted from the second input in all transactions,
+      // except winner prize transactions which only have a single input
+      inputId: tx.inputs[tx.inputs.length >= 2 ? 1 : 0].boxId,
     };
   };
 
@@ -113,13 +116,12 @@ export class SafePayExtractor extends AbstractErgoBoxExtractor<
         `Failed to extract recipient address from safe pay [${box.boxId}], error: [${e}]`,
       );
     }
-    const data = {
+    return {
       identifier: box.boxId.toString(),
       txId: box.transactionId,
       recipient,
       serialized: Buffer.from(serializeBox(box).toBytes()).toString('base64'),
+      inputBoxId: txExtra!.inputId,
     };
-
-    return data;
   };
 }
