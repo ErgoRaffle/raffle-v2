@@ -46,7 +46,7 @@ describe('utils', () => {
         id: 'token123',
         name: 'Test Token',
         decimals: 9,
-        verified: true,
+        isVerified: true,
       });
       expect(result.winnersCount).toBe(2);
       expect(result.giftCount).toBe(2);
@@ -74,7 +74,7 @@ describe('utils', () => {
         id: 'erg',
         name: 'Erg',
         decimals: 9,
-        verified: true,
+        isVerified: true,
       });
     });
 
@@ -96,7 +96,7 @@ describe('utils', () => {
         id: 'token123',
         name: undefined,
         decimals: 0,
-        verified: false,
+        isVerified: false,
       });
     });
 
