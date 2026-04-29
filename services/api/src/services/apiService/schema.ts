@@ -32,7 +32,7 @@ const tokenSchema = z.object({
   id: z.string(),
   name: z.string().optional(),
   decimals: z.number().default(0),
-  verified: z.boolean(),
+  isVerified: z.boolean(),
 });
 
 const raffleAmountSchema = z.object({

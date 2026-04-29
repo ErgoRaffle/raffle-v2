@@ -5,3 +5,5 @@ database:
   username: 'POSTGRES_USER'
   password: 'POSTGRES_PASSWORD'
   name: 'POSTGRES_DB'
+ipfs:
+  secretKey: 'IPFS_SECRET_KEY'

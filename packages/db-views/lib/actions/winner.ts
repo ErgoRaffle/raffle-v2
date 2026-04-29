@@ -63,6 +63,7 @@ export class WinnerViewActions {
       },
       skip: params.offset ?? 0,
       take: params.limit,
+      order: { index: 'ASC' },
     });
   };
 }

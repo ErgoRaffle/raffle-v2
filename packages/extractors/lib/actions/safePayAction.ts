@@ -31,6 +31,7 @@ export class SafePayAction extends AbstractErgoBoxAction<
         extractor: extractor,
         txId: box.txId,
         recipient: box.recipient,
+        inputBoxId: box.inputBoxId,
       };
     });
   };
@@ -45,6 +46,7 @@ export class SafePayAction extends AbstractErgoBoxAction<
       recipient: data.recipient,
       extractor: data.extractor,
       serialized: data.serialized,
+      inputBoxId: data.inputBoxId,
     }));
   };
 }

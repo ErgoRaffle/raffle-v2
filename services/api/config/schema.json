@@ -2,7 +2,9 @@
   "logs": {
     "type": "array",
     "default": [
-      { "type": "console" },
+      {
+        "type": "console"
+      },
       {
         "type": "file",
         "path": "./logs/",
@@ -18,8 +20,13 @@
           "description": "options: file, console, loki",
           "default": "file",
           "validations": [
-            { "required": true, "error": "log type must be specified" },
-            { "choices": ["file", "console", "loki"] }
+            {
+              "required": true,
+              "error": "log type must be specified"
+            },
+            {
+              "choices": ["file", "console", "loki"]
+            }
           ]
         },
         "maxSize": {
@@ -28,7 +35,10 @@
             {
               "required": true,
               "error": "maxSize for file log type must be specified",
-              "when": { "path": "logs.type", "value": "file" }
+              "when": {
+                "path": "logs.type",
+                "value": "file"
+              }
             }
           ]
         },
@@ -38,7 +48,10 @@
             {
               "required": true,
               "error": "maxFiles for file log type must be specified",
-              "when": { "path": "logs.type", "value": "file" }
+              "when": {
+                "path": "logs.type",
+                "value": "file"
+              }
             }
           ]
         },
@@ -48,7 +61,10 @@
             {
               "required": true,
               "error": "path for file log type must be specified",
-              "when": { "path": "logs.type", "value": "file" }
+              "when": {
+                "path": "logs.type",
+                "value": "file"
+              }
             }
           ]
         },
@@ -56,7 +72,10 @@
           "type": "string",
           "default": "info",
           "validations": [
-            { "required": true, "error": "log level must be specified" }
+            {
+              "required": true,
+              "error": "log level must be specified"
+            }
           ]
         },
         "serviceName": {
@@ -65,7 +84,10 @@
             {
               "required": true,
               "error": "Service-Name for the \"loki\" log type must be specified",
-              "when": { "path": "logs.type", "value": "loki" }
+              "when": {
+                "path": "logs.type",
+                "value": "loki"
+              }
             }
           ]
         },
@@ -75,11 +97,16 @@
             {
               "required": true,
               "error": "host for the \"loki\" log type must be specified",
-              "when": { "path": "logs.type", "value": "loki" }
+              "when": {
+                "path": "logs.type",
+                "value": "loki"
+              }
             }
           ]
         },
-        "basicAuth": { "type": "string" }
+        "basicAuth": {
+          "type": "string"
+        }
       }
     }
   },
@@ -90,8 +117,13 @@
         "type": "string",
         "default": "sqlite",
         "validations": [
-          { "required": true, "error": "database type must be specified" },
-          { "choices": ["sqlite", "postgres"] }
+          {
+            "required": true,
+            "error": "database type must be specified"
+          },
+          {
+            "choices": ["sqlite", "postgres"]
+          }
         ]
       },
       "host": {
@@ -99,7 +131,10 @@
         "validations": [
           {
             "required": true,
-            "when": { "path": "database.type", "value": "postgres" },
+            "when": {
+              "path": "database.type",
+              "value": "postgres"
+            },
             "error": "host for the \"postgres\" database address must be specified"
           }
         ]
@@ -109,7 +144,10 @@
         "validations": [
           {
             "required": true,
-            "when": { "path": "database.type", "value": "postgres" },
+            "when": {
+              "path": "database.type",
+              "value": "postgres"
+            },
             "error": "port for the \"postgres\" database must be specified"
           }
         ]
@@ -119,7 +157,10 @@
         "validations": [
           {
             "required": true,
-            "when": { "path": "database.type", "value": "postgres" },
+            "when": {
+              "path": "database.type",
+              "value": "postgres"
+            },
             "error": "username for the \"postgres\" database must be specified"
           }
         ]
@@ -129,7 +170,10 @@
         "validations": [
           {
             "required": true,
-            "when": { "path": "database.type", "value": "postgres" },
+            "when": {
+              "path": "database.type",
+              "value": "postgres"
+            },
             "error": "password for the \"postgres\" database must be specified"
           }
         ]
@@ -139,7 +183,10 @@
         "validations": [
           {
             "required": true,
-            "when": { "path": "database.type", "value": "postgres" },
+            "when": {
+              "path": "database.type",
+              "value": "postgres"
+            },
             "error": "postgres database name is required"
           }
         ]
@@ -150,7 +197,10 @@
         "validations": [
           {
             "required": true,
-            "when": { "path": "database.type", "value": "sqlite" },
+            "when": {
+              "path": "database.type",
+              "value": "sqlite"
+            },
             "error": "sqlite database path is required"
           }
         ]
@@ -165,7 +215,10 @@
         "default": "localhost",
         "description": "API server host",
         "validations": [
-          { "required": true, "error": "API host must be specified" }
+          {
+            "required": true,
+            "error": "API host must be specified"
+          }
         ]
       },
       "port": {
@@ -173,7 +226,26 @@
         "default": 8800,
         "description": "API server port",
         "validations": [
-          { "required": true, "error": "API port must be specified" }
+          {
+            "required": true,
+            "error": "API port must be specified"
+          }
+        ]
+      }
+    }
+  },
+  "ipfs": {
+    "type": "object",
+    "children": {
+      "urlTransformSchema": {
+        "type": "string",
+        "description": "Transform IPFS CID to URL (use {CID} as placeholder for CID)",
+        "default": "https://ipfs.io/ipfs/{CID}",
+        "validations": [
+          {
+            "required": true,
+            "error": "IPFS URL transform schema must be specified"
+          }
         ]
       }
     }

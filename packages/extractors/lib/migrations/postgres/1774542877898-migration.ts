@@ -201,6 +201,7 @@ export class Migration1774542877898 implements MigrationInterface {
                 "spendBlock" character varying,
                 "spendHeight" integer,
                 "txId" character varying NOT NULL,
+                "inputBoxId" character varying NOT NULL,
                 "recipient" character varying NOT NULL,
                 CONSTRAINT "UQ_115a113db9ef5a803eb2afb958e" UNIQUE ("identifier", "extractor"),
                 CONSTRAINT "PK_511601a885f51b157dcfd751137" PRIMARY KEY ("id")
