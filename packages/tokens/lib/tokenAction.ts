@@ -1,5 +1,10 @@
 import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
-import { DataSource, In, Repository } from '@rosen-bridge/extended-typeorm';
+import {
+  DataSource,
+  In,
+  Like,
+  Repository,
+} from '@rosen-bridge/extended-typeorm';
 
 import { ErgoNodeNetwork } from '@ergo-raffle/utils';
 
@@ -110,6 +115,21 @@ export class TokenAction {
   getTokens = async (tokenIds: Array<string>) => {
     return this.repository.find({
       where: { id: In(tokenIds) },
+    });
+  };
+
+  /**
+   * Searches for tokens by name or ID using a partial match query
+   * @param query - Search string to match against token name or ID
+   * @param offset - Number of results to skip for pagination
+   * @param limit - Maximum number of results to return
+   * @returns Promise resolving to tuple of [token items, total count]
+   */
+  searchTokens = async (query: string, offset: number, limit: number) => {
+    return this.repository.findAndCount({
+      where: [{ name: Like(`%${query}%`) }, { id: Like(`%${query}%`) }],
+      take: limit,
+      skip: offset,
     });
   };
 }
