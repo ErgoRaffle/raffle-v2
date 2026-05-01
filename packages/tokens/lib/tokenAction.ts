@@ -140,10 +140,5 @@ export class TokenAction {
       take: limit,
       skip: offset,
     });
-    // return this.repository.findAndCount({
-    //   where: [{ name: Like(`%${query}%`) }, { id: Like(`%${query}%`) }],
-    //   take: limit,
-    //   skip: offset,
-    // });
   };
 }
