@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { InclusionStatus, RaffleStatus } from '@ergo-raffle/db-views';
 
-import { DEFAULT_API_PAGE_SIZE } from '../../const';
+import { DEFAULT_API_PAGE_SIZE, MAX_API_PAGE_SIZE } from '../../const';
 
 const blockchainInfoResponseSchema = z.object({
   fee: z.object({
@@ -98,7 +98,11 @@ const getRafflesQuerySchema = z.object({
   order: z.enum(['height', 'deadline']).optional().default('height'),
   direction: z.enum(['ASC', 'DESC']).optional().default('DESC'),
   offset: z.coerce.number().optional().default(0),
-  limit: z.coerce.number().optional().default(DEFAULT_API_PAGE_SIZE),
+  limit: z.coerce
+    .number()
+    .max(MAX_API_PAGE_SIZE)
+    .optional()
+    .default(DEFAULT_API_PAGE_SIZE),
 });
 
 const InclusionStatusScheme = z
@@ -107,7 +111,11 @@ const InclusionStatusScheme = z
 
 const getRaffleWinnersQuerySchema = z.object({
   offset: z.coerce.number().optional().default(0),
-  limit: z.coerce.number().optional().default(DEFAULT_API_PAGE_SIZE),
+  limit: z.coerce
+    .number()
+    .max(MAX_API_PAGE_SIZE)
+    .optional()
+    .default(DEFAULT_API_PAGE_SIZE),
   share: InclusionStatusScheme,
   gift: InclusionStatusScheme,
   index: z.coerce.number().optional(),
@@ -145,8 +153,23 @@ const getTokensQuerySchema = z.object({
   ]),
 });
 
+const searchTokensQuerySchema = z.object({
+  query: z.string().min(2, 'Minimum 2 character required'),
+  offset: z.coerce.number().optional().default(0),
+  limit: z.coerce
+    .number()
+    .max(MAX_API_PAGE_SIZE)
+    .optional()
+    .default(DEFAULT_API_PAGE_SIZE),
+});
+
 const getTokensResponseSchema = z.object({
   items: z.array(tokenSchema),
+});
+
+const searchTokensResponseSchema = z.object({
+  items: z.array(tokenSchema),
+  total: z.number(),
 });
 
 export {
@@ -161,4 +184,6 @@ export {
   getRaffleWinnersQuerySchema,
   getTokensQuerySchema,
   getTokensResponseSchema,
+  searchTokensQuerySchema,
+  searchTokensResponseSchema,
 };
