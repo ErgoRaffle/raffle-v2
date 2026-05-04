@@ -7,11 +7,9 @@ class BlockAction {
     this.repository = dataSource.getRepository(BlockEntity);
   }
 
-  getLastScannedHeight = async () => {
+  getLastScannedHeight = async (scanner: string) => {
     const lastBlock = await this.repository.findOne({
-      where: {
-        status: PROCEED,
-      },
+      where: { status: PROCEED, scanner },
       order: {
         height: 'desc',
       },
