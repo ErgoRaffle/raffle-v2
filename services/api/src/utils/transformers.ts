@@ -1,12 +1,16 @@
 import { ErgoAddress, Network } from '@fleet-sdk/core';
+import { deserializeBox } from '@fleet-sdk/serializer';
 
 import { raffleInfo } from '@ergo-raffle/contracts';
-import { RaffleView } from '@ergo-raffle/db-views';
+import { RaffleView, WinnerView } from '@ergo-raffle/db-views';
 import {
   ERG_TOKEN_DECIMALS,
   ERG_TOKEN_ID,
   ERG_TOKEN_NAME,
 } from '@ergo-raffle/utils';
+
+import { configs } from '../configs';
+import { Winner, WinnerGift } from '../types/winners';
 
 /**
  * Transforms a RaffleView object to an API response format
@@ -21,13 +25,13 @@ export const transformRaffleViewToApiResponse = (raffle: RaffleView) => {
         id: raffle.collectingTokenId,
         name: raffle.tokenName ?? undefined,
         decimals: raffle.tokenDecimals ?? 0,
-        verified: raffle.tokenIsVerified ?? false,
+        isVerified: !!raffle.tokenIsVerified,
       }
     : {
         id: ERG_TOKEN_ID,
         name: ERG_TOKEN_NAME,
         decimals: ERG_TOKEN_DECIMALS,
-        verified: true,
+        isVerified: true,
       };
   return {
     id: raffle.raffleId,
@@ -39,7 +43,7 @@ export const transformRaffleViewToApiResponse = (raffle: RaffleView) => {
     deadline: raffle.deadline,
     amount: {
       goal: raffle.goal,
-      raised: raffle.ticketPrice * raffle.soldTicketCount,
+      raised: raffle.ticketPrice * (raffle.soldTicketCount ?? 0n),
     },
     tags: raffle.tags.split(',').filter(Boolean),
     ticketPrice: raffle.ticketPrice,
@@ -58,4 +62,50 @@ export const transformErgoTreeToAddress = (ergoTree: string) => {
   return ErgoAddress.fromErgoTree(Buffer.from(ergoTree, 'hex')).toString(
     raffleInfo.network === 'Mainnet' ? Network.Mainnet : Network.Testnet,
   );
+};
+
+export const winnersViewToScheme = (
+  winners: Array<WinnerView>,
+): Array<Winner> => {
+  const winnersMap = new Map<number, Winner>();
+  winners.forEach((winner) => {
+    const winnerObject = winnersMap.get(winner?.index ?? 0) ?? {
+      index: winner.index,
+      share: winner.rewardPercent,
+      gifts: [],
+    };
+    if (winner.giftSerialized) {
+      const box = deserializeBox(Buffer.from(winner.giftSerialized, 'base64'));
+      winnerObject.gifts.push(...box.assets);
+    }
+    winnersMap.set(winner.index, winnerObject);
+  });
+  return winnersMap
+    .values()
+    .map((winner) => {
+      return {
+        index: winner.index,
+        share: winner.share,
+        gifts: mergeAssets(winner.gifts),
+      };
+    })
+    .toArray();
+};
+
+export const mergeAssets = (assets: Array<WinnerGift>): Array<WinnerGift> => {
+  const assetsMap = new Map<string, bigint>();
+  assets.forEach((asset) => {
+    assetsMap.set(
+      asset.tokenId,
+      (assetsMap.get(asset.tokenId) ?? 0n) + asset.amount,
+    );
+  });
+  return Array.from(assetsMap.entries()).map(([tokenId, amount]) => ({
+    tokenId,
+    amount,
+  }));
+};
+
+export const transformCIDToURL = (cid: string) => {
+  return configs.ipfs.urlTransformSchema.replace('{CID}', cid);
 };

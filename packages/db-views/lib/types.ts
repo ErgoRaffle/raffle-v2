@@ -27,6 +27,20 @@ type RaffleOrder = {
   direction: 'ASC' | 'DESC';
 };
 
+enum InclusionStatus {
+  Empty = 'empty',
+  NonEmpty = 'non-empty',
+}
+
+type GetWinnerParams = {
+  raffleId: string;
+  share?: InclusionStatus;
+  gift?: InclusionStatus;
+  index?: number;
+  offset?: number;
+  limit: number;
+};
+
 type getRaffleParams = {
   query?: Partial<RaffleSearchCriteria>;
   order?: RaffleOrder;
@@ -57,4 +71,6 @@ export {
   RaffleWithTotalResult,
   getUserActivityParams,
   UserActivityWithTotalResult,
+  GetWinnerParams,
+  InclusionStatus,
 };

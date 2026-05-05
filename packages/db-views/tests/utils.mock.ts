@@ -17,7 +17,7 @@ import {
   migrations as tokenMigrations,
 } from '@ergo-raffle/tokens';
 
-import { RaffleView, UserActivityView, migrations } from '../lib';
+import { RaffleView, UserActivityView, WinnerView, migrations } from '../lib';
 
 export const createDatabase = async (): Promise<DataSource> => {
   const dataSource = new DataSource({
@@ -34,6 +34,7 @@ export const createDatabase = async (): Promise<DataSource> => {
       WinnerPrizeEntity,
       RaffleView,
       UserActivityView,
+      WinnerView,
       SuccessRaffleEntity,
       GiftRedeemEntity,
       TokenEntity,

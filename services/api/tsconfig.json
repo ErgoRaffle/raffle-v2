@@ -3,13 +3,14 @@
   "compilerOptions": {
     "outDir": "./dist",
     "baseUrl": ".",
-    "types": ["node"]
+    "types": ["node", "vitest/globals"]
   },
-  "include": ["src"],
+  "include": ["src", "tests"],
   "references": [
     { "path": "../../packages/data-source" },
     { "path": "../../packages/extractors" },
     { "path": "../../packages/db-views" },
-    { "path": "../../packages/utils" }
+    { "path": "../../packages/utils" },
+    { "path": "../../packages/tokens" }
   ]
 }

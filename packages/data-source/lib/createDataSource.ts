@@ -12,6 +12,7 @@ import {
 import {
   RaffleView,
   UserActivityView,
+  WinnerView,
   migrations as dbViewMigrations,
 } from '@ergo-raffle/db-views';
 import {
@@ -71,6 +72,7 @@ const ENTITIES = [
   AddGiftProxyEntity,
   RaffleView,
   UserActivityView,
+  WinnerView,
 ];
 
 const MIGRATIONS = {

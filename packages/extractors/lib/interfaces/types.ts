@@ -121,6 +121,7 @@ export interface TicketRedeemBoxInterface extends AbstractRaffleBoxInterface {
 
 export interface SafePayBoxInterface extends AbstractEntityData {
   txId: string;
+  inputBoxId: string;
   recipient: string;
 }
 

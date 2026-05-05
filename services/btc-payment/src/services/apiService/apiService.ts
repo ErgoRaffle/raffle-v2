@@ -13,7 +13,9 @@ import * as ConfigTypes from '../../types/configs';
 import { DbService } from '../dbService';
 import { ScannerService } from '../scannerService';
 import { TokenMapService } from '../tokenMapService';
+import { registerBridgeableRoute } from './bridgeableRoute';
 import { registerDonationRoute } from './donationRoute';
+import { registerInfoRoute } from './infoRoute';
 
 export class ApiService extends AbstractService {
   name = 'ApiService';
@@ -126,9 +128,10 @@ export class ApiService extends AbstractService {
       this.logger.child('donationRoute'),
       this.addressDeriver,
       ScannerService.getInstance().addDynamicAddress,
-      TokenMapService.getInstance(),
       configs.donation.fee,
       configs.captcha,
     );
+    registerBridgeableRoute(this.fastify);
+    registerInfoRoute(this.fastify);
   };
 }

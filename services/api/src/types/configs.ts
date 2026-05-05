@@ -1,4 +1,5 @@
 export interface ApiConfig {
+  ipfs: Ipfs;
   api: Api;
   database: Database;
   logs: Logs[];
@@ -28,4 +29,8 @@ export interface Database {
 export interface Api {
   host: string;
   port: number;
+}
+
+export interface Ipfs {
+  urlTransformSchema: string;
 }

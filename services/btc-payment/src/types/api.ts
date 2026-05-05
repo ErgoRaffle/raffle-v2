@@ -30,3 +30,22 @@ export const donationResponseDataSchema = types.object({
 export const donationResponseSchema = responseSchema.extend({
   data: donationResponseDataSchema,
 });
+
+// Bridgeable query schema
+export const bridgeableQuerySchema = types.object({
+  tokenId: types.string().describe('Token ID to check to be bridgeable'),
+});
+
+// Bridgeable response schema
+export const bridgeableResponseSchema = types.object({
+  tokenId: types.string().describe('Requested token ID'),
+  bridgeable: types
+    .boolean()
+    .describe('Whether the token is bridgeable or not'),
+});
+
+// Info response schema
+export const infoResponseSchema = types.object({
+  siteKey: types.string().describe('Captcha site key for frontend'),
+  version: types.string().describe('btc-payment service version'),
+});

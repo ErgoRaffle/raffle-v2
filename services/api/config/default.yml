@@ -16,3 +16,5 @@ database:
 api:
   host: localhost
   port: 8800
+ipfs:
+  urlTransformSchema: https://ipfs.io/ipfs/{CID}

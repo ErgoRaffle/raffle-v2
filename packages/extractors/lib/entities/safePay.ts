@@ -7,5 +7,8 @@ export class SafePayEntity extends AbstractErgoBoxEntity {
   txId: string;
 
   @Column({ type: 'varchar' })
+  inputBoxId: string;
+
+  @Column({ type: 'varchar' })
   recipient: string;
 }

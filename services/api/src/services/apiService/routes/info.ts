@@ -1,6 +1,7 @@
 import { FastifyWithZod } from '@rosen-bridge/fastify-enhanced';
 
 import packageJson from '../../../../package.json' with { type: 'json' };
+import { ERGO_SCANNER_NAME } from '../../../const';
 import { DbService } from '../../dbService';
 import {
   blockchainInfoResponseSchema,
@@ -13,6 +14,7 @@ import {
  * service information including fee parameters and last scanned height
  * @param fastify - Fastify instance with Zod schema support
  */
+
 const registerBlockchainInfoRoute = (fastify: FastifyWithZod) => {
   fastify.get(
     '/info/blockchain',
@@ -32,7 +34,7 @@ const registerBlockchainInfoRoute = (fastify: FastifyWithZod) => {
         .getLastService();
       const lastHeight = await DbService.getInstance()
         .getBlockAction()
-        .getLastScannedHeight();
+        .getLastScannedHeight(ERGO_SCANNER_NAME);
       if (lastService) {
         return reply.status(200).send({
           height: lastHeight,

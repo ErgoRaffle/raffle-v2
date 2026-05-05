@@ -130,9 +130,15 @@ export class RaffleViewActions {
     }>;
     for (let index = 0; index < queries.length; index++) {
       if (index === 0) {
-        queryBuilder.where(queries[index].condition, queries[index].params);
+        queryBuilder.where(
+          `(${queries[index].condition})`,
+          queries[index].params,
+        );
       } else {
-        queryBuilder.andWhere(queries[index].condition, queries[index].params);
+        queryBuilder.andWhere(
+          `(${queries[index].condition})`,
+          queries[index].params,
+        );
       }
     }
     if (params.order) {
@@ -168,10 +174,10 @@ export class RaffleViewActions {
     successCount: Number(item.successCount),
     redeemCount: Number(item.redeemCount),
     giftCount: Number(item.giftCount),
-    soldTicketCount: BigInt(item.soldTicketCount),
+    soldTicketCount: BigInt(item.soldTicketCount ?? 0),
     ticketPrice: BigInt(item.ticketPrice),
     goal: BigInt(item.goal),
     txFee: BigInt(item.txFee),
-    bakers: Number(item.bakers),
+    backerCount: Number(item.backerCount),
   });
 }
