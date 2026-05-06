@@ -11,6 +11,8 @@ import {
   migrations as extractorMigrations,
   SuccessRaffleEntity,
   GiftRedeemEntity,
+  SafePayEntity,
+  TicketRedeemEntity,
 } from '@ergo-raffle/extractors';
 import {
   TokenEntity,
@@ -37,6 +39,8 @@ export const createDatabase = async (): Promise<DataSource> => {
       WinnerView,
       SuccessRaffleEntity,
       GiftRedeemEntity,
+      SafePayEntity,
+      TicketRedeemEntity,
       TokenEntity,
     ],
     migrations: [

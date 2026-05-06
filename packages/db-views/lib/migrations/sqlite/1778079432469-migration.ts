@@ -3,8 +3,8 @@ import {
   QueryRunner,
 } from '@rosen-bridge/extended-typeorm';
 
-export class Migration1776857475311 implements MigrationInterface {
-  name = 'Migration1776857475311';
+export class Migration1778079432469 implements MigrationInterface {
+  name = 'Migration1778079432469';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
@@ -79,6 +79,70 @@ export class Migration1776857475311 implements MigrationInterface {
       ],
     );
     await queryRunner.query(`
+            CREATE VIEW "user_activity_view" AS
+            SELECT "raffle"."height" AS "height",
+                "raffle"."txId" AS "txId",
+                "raffle"."raffleId" AS "raffleId",
+                "raffle"."projectErgoTree" AS "ergoTree",
+                'creation' AS "type",
+                0 AS "ticketCount"
+            FROM "inactive_raffle" "raffle"
+            UNION ALL
+            SELECT "ticket"."height" AS "height",
+                "ticket"."txId" AS "txId",
+                "ticket"."raffleId" AS "raffleId",
+                "ticket"."donatorErgoTree" AS "ergoTree",
+                'donation' AS "type",
+                "ticket"."rangeEnd" - "ticket"."rangeStart" AS "ticketCount"
+            FROM "ticket" "ticket"
+            UNION ALL
+            SELECT "gift"."height" AS "height",
+                "gift"."txId" AS "txId",
+                "gift"."raffleId" AS "raffleId",
+                "gift"."donatorErgoTree" AS "ergoTree",
+                'gift' AS "type",
+                0 AS "ticketCount"
+            FROM "gift" "gift"
+            UNION ALL
+            SELECT "safePay"."height" AS "height",
+                "safePay"."txId" AS "txId",
+                "ticket"."raffleId" AS "raffleId",
+                "ticket"."donatorErgoTree" AS "ergoTree",
+                'ticket_redeem' AS "type",
+                "ticket"."rangeEnd" - "ticket"."rangeStart" AS "ticketCount"
+            FROM "safe_pay" "safePay"
+                INNER JOIN "ticket" "ticket" ON "ticket"."identifier" = "safePay"."inputBoxId"
+                INNER JOIN "ticket_redeem" "redeem" ON "redeem"."txId" = "safePay"."txId"
+            UNION ALL
+            SELECT "safePay"."height" AS "height",
+                "safePay"."txId" AS "txId",
+                "gift"."raffleId" AS "raffleId",
+                "gift"."donatorErgoTree" AS "ergoTree",
+                'gift_return' AS "type",
+                0 AS "ticketCount"
+            FROM "safe_pay" "safePay"
+                INNER JOIN "gift" "gift" ON "gift"."identifier" = "safePay"."inputBoxId"
+                INNER JOIN "gift_redeem" "redeem" ON "redeem"."txId" = "safePay"."txId"
+        `);
+    await queryRunner.query(
+      `
+            INSERT INTO "typeorm_metadata"(
+                    "database",
+                    "schema",
+                    "table",
+                    "type",
+                    "name",
+                    "value"
+                )
+            VALUES (NULL, NULL, NULL, ?, ?, ?)
+        `,
+      [
+        'VIEW',
+        'user_activity_view',
+        'SELECT "raffle"."height" AS "height", "raffle"."txId" AS "txId", "raffle"."raffleId" AS "raffleId", "raffle"."projectErgoTree" AS "ergoTree", \'creation\' AS "type", 0 AS "ticketCount" FROM "inactive_raffle" "raffle" UNION ALL SELECT "ticket"."height" AS "height", "ticket"."txId" AS "txId", "ticket"."raffleId" AS "raffleId", "ticket"."donatorErgoTree" AS "ergoTree", \'donation\' AS "type", "ticket"."rangeEnd" - "ticket"."rangeStart" AS "ticketCount" FROM "ticket" "ticket" UNION ALL SELECT "gift"."height" AS "height", "gift"."txId" AS "txId", "gift"."raffleId" AS "raffleId", "gift"."donatorErgoTree" AS "ergoTree", \'gift\' AS "type", 0 AS "ticketCount" FROM "gift" "gift" UNION ALL SELECT "safePay"."height" AS "height", "safePay"."txId" AS "txId", "ticket"."raffleId" AS "raffleId", "ticket"."donatorErgoTree" AS "ergoTree", \'ticket_redeem\' AS "type", "ticket"."rangeEnd" - "ticket"."rangeStart" AS "ticketCount" FROM "safe_pay" "safePay" INNER JOIN "ticket" "ticket" ON "ticket"."identifier" = "safePay"."inputBoxId"  INNER JOIN "ticket_redeem" "redeem" ON "redeem"."txId" = "safePay"."txId" UNION ALL SELECT "safePay"."height" AS "height", "safePay"."txId" AS "txId", "gift"."raffleId" AS "raffleId", "gift"."donatorErgoTree" AS "ergoTree", \'gift_return\' AS "type", 0 AS "ticketCount" FROM "safe_pay" "safePay" INNER JOIN "gift" "gift" ON "gift"."identifier" = "safePay"."inputBoxId"  INNER JOIN "gift_redeem" "redeem" ON "redeem"."txId" = "safePay"."txId"',
+      ],
+    );
+    await queryRunner.query(`
             CREATE VIEW "winner_view" AS
             SELECT DISTINCT "winner"."index" AS "index",
                 "winner"."rewardPercent" AS "rewardPercent",
@@ -106,50 +170,6 @@ export class Migration1776857475311 implements MigrationInterface {
         'SELECT DISTINCT "winner"."index" AS "index", "winner"."rewardPercent" AS "rewardPercent", "gift"."serialized" AS "giftSerialized", winner."raffleId" AS "raffleId" FROM "winner" "winner" LEFT JOIN "gift" "gift" ON winner."raffleId" = gift."raffleId" AND "winner"."index" = gift."winnerIndex"',
       ],
     );
-    await queryRunner.query(`
-            CREATE VIEW "user_activity_view" AS
-            SELECT "raffle"."height" AS "height",
-                "raffle"."txId" AS "txId",
-                "raffle"."raffleId" AS "raffleId",
-                "raffle"."projectErgoTree" AS "ergoTree",
-                'creation' AS "type",
-                0 AS "ticketCount"
-            FROM "inactive_raffle" "raffle"
-            UNION ALL
-            SELECT "ticket"."height" AS "height",
-                "ticket"."txId" AS "txId",
-                "ticket"."raffleId" AS "raffleId",
-                "ticket"."donatorErgoTree" AS "ergoTree",
-                'donation' AS "type",
-                "ticket"."rangeEnd" - "ticket"."rangeStart" AS "ticketCount"
-            FROM "ticket" "ticket"
-            UNION ALL
-            SELECT "gift"."height" AS "height",
-                "gift"."txId" AS "txId",
-                "gift"."raffleId" AS "raffleId",
-                "gift"."donatorErgoTree" AS "ergoTree",
-                'gift' AS "type",
-                0 AS "ticketCount"
-            FROM "gift" "gift"
-        `);
-    await queryRunner.query(
-      `
-            INSERT INTO "typeorm_metadata"(
-                    "database",
-                    "schema",
-                    "table",
-                    "type",
-                    "name",
-                    "value"
-                )
-            VALUES (NULL, NULL, NULL, ?, ?, ?)
-        `,
-      [
-        'VIEW',
-        'user_activity_view',
-        'SELECT "raffle"."height" AS "height", "raffle"."txId" AS "txId", "raffle"."raffleId" AS "raffleId", "raffle"."projectErgoTree" AS "ergoTree", \'creation\' AS "type", 0 AS "ticketCount" FROM "inactive_raffle" "raffle" UNION ALL SELECT "ticket"."height" AS "height", "ticket"."txId" AS "txId", "ticket"."raffleId" AS "raffleId", "ticket"."donatorErgoTree" AS "ergoTree", \'donation\' AS "type", "ticket"."rangeEnd" - "ticket"."rangeStart" AS "ticketCount" FROM "ticket" "ticket" UNION ALL SELECT "gift"."height" AS "height", "gift"."txId" AS "txId", "gift"."raffleId" AS "raffleId", "gift"."donatorErgoTree" AS "ergoTree", \'gift\' AS "type", 0 AS "ticketCount" FROM "gift" "gift"',
-      ],
-    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
@@ -170,21 +190,21 @@ export class Migration1776857475311 implements MigrationInterface {
             WHERE "type" = ?
                 AND "name" = ?
         `,
-      ['VIEW', 'raffle_view'],
+      ['VIEW', 'user_activity_view'],
     );
     await queryRunner.query(`
-            DROP VIEW "raffle_view"
+            DROP VIEW "user_activity_view"
         `);
     await queryRunner.query(
       `
             DELETE FROM "typeorm_metadata"
             WHERE "type" = ?
                 AND "name" = ?
-      `,
-      ['VIEW', 'user_activity_view'],
+        `,
+      ['VIEW', 'raffle_view'],
     );
     await queryRunner.query(`
-            DROP VIEW "user_activity_view"
-      `);
+            DROP VIEW "raffle_view"
+        `);
   }
 }

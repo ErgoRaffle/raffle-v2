@@ -1,6 +1,12 @@
 import { RaffleView, UserActivityView } from './views';
 
-const USER_ACTIVITY_TYPES = ['creation', 'donation', 'gift'] as const;
+const USER_ACTIVITY_TYPES = [
+  'creation',
+  'donation',
+  'gift',
+  'ticket_redeem',
+  'gift_return',
+] as const;
 type UserActivityType = (typeof USER_ACTIVITY_TYPES)[number];
 
 type ItemTotal<T> = {

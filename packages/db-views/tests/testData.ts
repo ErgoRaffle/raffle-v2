@@ -6,6 +6,8 @@ import {
   SuccessRaffleEntity,
   GiftRedeemEntity,
   WinnerEntity,
+  SafePayEntity,
+  TicketRedeemEntity,
 } from '@ergo-raffle/extractors';
 
 import { UserActivityView } from '../lib';
@@ -1069,6 +1071,9 @@ export const mockActivities = async () => {
     dataSource.getRepository(InactiveRaffleEntity);
   const ticketRepository = dataSource.getRepository(TicketEntity);
   const giftRepository = dataSource.getRepository(GiftEntity);
+  const safePayRepository = dataSource.getRepository(SafePayEntity);
+  const ticketRedeemRepository = dataSource.getRepository(TicketRedeemEntity);
+  const giftRedeemRepository = dataSource.getRepository(GiftRedeemEntity);
 
   // addr_user1 creates raffle1 and raffle3
   // addr_user2 creates raffle2
@@ -1204,9 +1209,120 @@ export const mockActivities = async () => {
     },
   ];
 
+  // addr_user1 redeems ticket_tx2 (raffle2, 3 tickets) -> safepay_tx1
+  // addr_user3 redeems ticket_tx3 (raffle1, 1 ticket) -> safepay_tx2
+  // addr_user1 returns gift_tx1 (raffle1) -> safepay_tx3
+  // addr_user3 returns gift_tx2 (raffle3) -> safepay_tx4
+  // an extra safe_pay row (other_tx_no_redeem) joins ticket_tx1 but has
+  // no matching TicketRedeemEntity / GiftRedeemEntity, so it must NOT
+  // surface as an activity
+  const safePays = [
+    {
+      txId: 'safepay_tx1',
+      inputBoxId: 'act_ticket_id2',
+      recipient: 'addr_user1',
+      block: '2500',
+      height: 2500,
+      extractor: 'safe_pay_extractor',
+      identifier: 'act_safepay_id1',
+      serialized: 'act_safepay_serialized1',
+    },
+    {
+      txId: 'safepay_tx2',
+      inputBoxId: 'act_ticket_id3',
+      recipient: 'addr_user3',
+      block: '1100',
+      height: 1100,
+      extractor: 'safe_pay_extractor',
+      identifier: 'act_safepay_id2',
+      serialized: 'act_safepay_serialized2',
+    },
+    {
+      txId: 'safepay_tx3',
+      inputBoxId: 'act_gift_id1',
+      recipient: 'addr_user1',
+      block: '1500',
+      height: 1500,
+      extractor: 'safe_pay_extractor',
+      identifier: 'act_safepay_id3',
+      serialized: 'act_safepay_serialized3',
+    },
+    {
+      txId: 'safepay_tx4',
+      inputBoxId: 'act_gift_id2',
+      recipient: 'addr_user3',
+      block: '3500',
+      height: 3500,
+      extractor: 'safe_pay_extractor',
+      identifier: 'act_safepay_id4',
+      serialized: 'act_safepay_serialized4',
+    },
+    {
+      txId: 'other_tx_no_redeem',
+      inputBoxId: 'act_ticket_id1',
+      recipient: 'addr_user2',
+      block: '1200',
+      height: 1200,
+      extractor: 'safe_pay_extractor',
+      identifier: 'act_safepay_id5',
+      serialized: 'act_safepay_serialized5',
+    },
+  ];
+
+  const ticketRedeems = [
+    {
+      txId: 'safepay_tx1',
+      raffleId: 'raffle2',
+      totalSoldTicket: BigInt(3),
+      redeemedTickets: BigInt(3),
+      block: '2500',
+      height: 2500,
+      extractor: 'ticket_redeem_extractor',
+      identifier: 'act_redeem_id1',
+      serialized: 'act_redeem_serialized1',
+    },
+    {
+      txId: 'safepay_tx2',
+      raffleId: 'raffle1',
+      totalSoldTicket: BigInt(6),
+      redeemedTickets: BigInt(1),
+      block: '1100',
+      height: 1100,
+      extractor: 'ticket_redeem_extractor',
+      identifier: 'act_redeem_id2',
+      serialized: 'act_redeem_serialized2',
+    },
+  ];
+
+  const giftRedeems = [
+    {
+      txId: 'safepay_tx3',
+      raffleId: 'raffle1',
+      step: 0,
+      block: '1500',
+      height: 1500,
+      extractor: 'gift_redeem_extractor',
+      identifier: 'act_gift_redeem_id1',
+      serialized: 'act_gift_redeem_serialized1',
+    },
+    {
+      txId: 'safepay_tx4',
+      raffleId: 'raffle3',
+      step: 0,
+      block: '3500',
+      height: 3500,
+      extractor: 'gift_redeem_extractor',
+      identifier: 'act_gift_redeem_id2',
+      serialized: 'act_gift_redeem_serialized2',
+    },
+  ];
+
   await inactiveRaffleRepository.insert(raffles);
   await ticketRepository.insert(tickets);
   await giftRepository.insert(gifts);
+  await safePayRepository.insert(safePays);
+  await ticketRedeemRepository.insert(ticketRedeems);
+  await giftRedeemRepository.insert(giftRedeems);
   return dataSource;
 };
 
@@ -1250,6 +1366,38 @@ export const activityItems: Partial<UserActivityView>[] = [
     type: 'creation',
     txId: 'raffle_tx3',
     height: 3000,
+    ticketCount: 0n,
+  },
+  {
+    ergoTree: 'addr_user1',
+    raffleId: 'raffle2',
+    type: 'ticket_redeem',
+    txId: 'safepay_tx1',
+    height: 2500,
+    ticketCount: 3n,
+  },
+  {
+    ergoTree: 'addr_user3',
+    raffleId: 'raffle1',
+    type: 'ticket_redeem',
+    txId: 'safepay_tx2',
+    height: 1100,
+    ticketCount: 1n,
+  },
+  {
+    ergoTree: 'addr_user1',
+    raffleId: 'raffle1',
+    type: 'gift_return',
+    txId: 'safepay_tx3',
+    height: 1500,
+    ticketCount: 0n,
+  },
+  {
+    ergoTree: 'addr_user3',
+    raffleId: 'raffle3',
+    type: 'gift_return',
+    txId: 'safepay_tx4',
+    height: 3500,
     ticketCount: 0n,
   },
   {

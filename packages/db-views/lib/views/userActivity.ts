@@ -7,22 +7,22 @@ import {
 
 import {
   GiftEntity,
+  GiftRedeemEntity,
   InactiveRaffleEntity,
+  SafePayEntity,
   TicketEntity,
+  TicketRedeemEntity,
 } from '@ergo-raffle/extractors';
 
 import { UserActivityType } from '../types';
 
 /**
- * Database view exposing a unified stream of user activity events (raffle
- * creations, ticket donations and gift donations) by combining rows from
- * `inactive_raffle`, `ticket` and `gift` via `UNION ALL`.
+ * Database view unifying user activity events (creations, donations, gifts,
+ * ticket redeems, gift returns) into one row stream via `UNION ALL`.
  *
- * TypeORM's `SelectQueryBuilder` does not provide a native `UNION ALL`
- * operator, so the three branches are built as individual query builders for
- * type-safety and then stitched together through a lightweight wrapper that
- * implements the single `getQuery()` method TypeORM invokes on the view
- * expression at migration time.
+ * Redeem/return branches read the tx id from `safe_pay` and require a
+ * matching `ticket_redeem`/`gift_redeem` row so unrelated safe-pay boxes
+ * that happen to spend a ticket/gift are excluded.
  */
 @ViewEntity({
   name: 'user_activity_view',
@@ -57,11 +57,43 @@ import { UserActivityType } from '../types';
       .addSelect('gift.height', 'height')
       .from(GiftEntity, 'gift');
 
+    const ticketRedeem = dataSource
+      .createQueryBuilder()
+      .addSelect('ticket.donatorErgoTree', 'ergoTree')
+      .addSelect('ticket.raffleId', 'raffleId')
+      .addSelect(`'ticket_redeem'`, 'type')
+      .addSelect('ticket.rangeEnd - ticket.rangeStart', 'ticketCount')
+      .addSelect('safePay.txId', 'txId')
+      .addSelect('safePay.height', 'height')
+      .from(SafePayEntity, 'safePay')
+      .innerJoin(
+        TicketEntity,
+        'ticket',
+        'ticket.identifier = safePay.inputBoxId',
+      )
+      .innerJoin(TicketRedeemEntity, 'redeem', 'redeem.txId = safePay.txId');
+
+    const giftReturn = dataSource
+      .createQueryBuilder()
+      .addSelect('gift.donatorErgoTree', 'ergoTree')
+      .addSelect('gift.raffleId', 'raffleId')
+      .addSelect(`'gift_return'`, 'type')
+      .addSelect('0', 'ticketCount')
+      .addSelect('safePay.txId', 'txId')
+      .addSelect('safePay.height', 'height')
+      .from(SafePayEntity, 'safePay')
+      .innerJoin(GiftEntity, 'gift', 'gift.identifier = safePay.inputBoxId')
+      .innerJoin(GiftRedeemEntity, 'redeem', 'redeem.txId = safePay.txId');
+
     return {
       getQuery: () =>
-        [creation.getQuery(), donation.getQuery(), gift.getQuery()].join(
-          ' UNION ALL ',
-        ),
+        [
+          creation.getQuery(),
+          donation.getQuery(),
+          gift.getQuery(),
+          ticketRedeem.getQuery(),
+          giftReturn.getQuery(),
+        ].join(' UNION ALL '),
     } as SelectQueryBuilder<object>;
   },
 })
