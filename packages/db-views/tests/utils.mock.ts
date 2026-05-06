@@ -53,6 +53,5 @@ export const createDatabase = async (): Promise<DataSource> => {
   });
   await dataSource.initialize();
   await dataSource.runMigrations();
-  await dataSource.synchronize();
   return dataSource;
 };

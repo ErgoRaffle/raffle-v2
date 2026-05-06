@@ -18,24 +18,16 @@ export class UserActivityViewActions {
   getActivities = async (
     params: getUserActivityParams,
   ): Promise<UserActivityWithTotalResult> => {
-    const queryBuilder = this.repository.createQueryBuilder();
+    const [items, total] = await this.repository.findAndCount({
+      where: {
+        ergoTree: params.query?.ergoTree,
+        raffleId: params.query?.raffleId,
+      },
+      skip: params.offset ?? 0,
+      take: params.limit,
+      order: { height: 'ASC' },
+    });
 
-    if (params.query?.ergoTree) {
-      queryBuilder.where('"ergoTree" = :ergoTree', {
-        ergoTree: params.query.ergoTree,
-      });
-    }
-
-    if (params.query?.raffleId) {
-      const method = params.query?.ergoTree ? 'andWhere' : 'where';
-      queryBuilder[method]('"raffleId" = :raffleId', {
-        raffleId: params.query.raffleId,
-      });
-    }
-
-    queryBuilder.skip(params.offset ?? 0).take(params.limit);
-
-    const [items, total] = await queryBuilder.getManyAndCount();
     const activities = items.map(
       (item) =>
         ({

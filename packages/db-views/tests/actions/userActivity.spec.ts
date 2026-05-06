@@ -1,10 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { UserActivityView, UserActivityViewActions } from '../../lib';
+import { UserActivityViewActions } from '../../lib';
 import { activityItems, mockActivities } from '../testData';
-
-const sortByTxId = (items: UserActivityView[]) =>
-  items.sort((a, b) => a.txId.localeCompare(b.txId));
 
 describe('UserActivityViewActions', () => {
   describe('getActivities', () => {
@@ -25,12 +22,25 @@ describe('UserActivityViewActions', () => {
      *   `GiftRedeemEntity` must be excluded
      * @expected
      * - total should be 12
-     * - items sorted by txId should match all activityItems
+     * - items should be ordered by height ASC
      */
     it('should return all activities when no filter is passed', async () => {
       const result = await actions.getActivities({ limit: 100 });
       expect(result.total).toBe(12);
-      expect(sortByTxId(result.items)).toEqual(activityItems);
+      expect(result.items).toEqual([
+        activityItems[2],
+        activityItems[9],
+        activityItems[11],
+        activityItems[0],
+        activityItems[6],
+        activityItems[7],
+        activityItems[3],
+        activityItems[10],
+        activityItems[5],
+        activityItems[4],
+        activityItems[1],
+        activityItems[8],
+      ]);
     });
 
     /**
@@ -43,7 +53,7 @@ describe('UserActivityViewActions', () => {
      *   that gift
      * @expected
      * - total should be 6
-     * - items sorted by txId should match activityItems at indices 0, 2, 4, 5, 7, 10
+     * - items should be ordered by height ASC
      */
     it('should return only activities for a given ergoTree', async () => {
       const result = await actions.getActivities({
@@ -51,13 +61,13 @@ describe('UserActivityViewActions', () => {
         limit: 100,
       });
       expect(result.total).toBe(6);
-      expect(sortByTxId(result.items)).toEqual([
-        activityItems[0],
+      expect(result.items).toEqual([
         activityItems[2],
-        activityItems[4],
-        activityItems[5],
+        activityItems[0],
         activityItems[7],
         activityItems[10],
+        activityItems[5],
+        activityItems[4],
       ]);
     });
 
@@ -70,7 +80,7 @@ describe('UserActivityViewActions', () => {
      *   added gift to raffle3 and returned that gift
      * @expected
      * - total should be 4
-     * - items sorted by txId should match activityItems at indices 1, 6, 8, 11
+     * - items should be ordered by height ASC
      */
     it('should return only activities for an ergoTree with fewer activities', async () => {
       const result = await actions.getActivities({
@@ -78,11 +88,11 @@ describe('UserActivityViewActions', () => {
         limit: 100,
       });
       expect(result.total).toBe(4);
-      expect(sortByTxId(result.items)).toEqual([
-        activityItems[1],
-        activityItems[6],
-        activityItems[8],
+      expect(result.items).toEqual([
         activityItems[11],
+        activityItems[6],
+        activityItems[1],
+        activityItems[8],
       ]);
     });
 
@@ -96,7 +106,7 @@ describe('UserActivityViewActions', () => {
      *   and 1 gift return (addr_user1)
      * @expected
      * - total should be 6
-     * - items sorted by txId should match activityItems at indices 0, 2, 6, 7, 9, 11
+     * - items should be ordered by height ASC
      */
     it('should return only activities for a given raffleId', async () => {
       const result = await actions.getActivities({
@@ -104,13 +114,13 @@ describe('UserActivityViewActions', () => {
         limit: 100,
       });
       expect(result.total).toBe(6);
-      expect(sortByTxId(result.items)).toEqual([
-        activityItems[0],
+      expect(result.items).toEqual([
         activityItems[2],
-        activityItems[6],
-        activityItems[7],
         activityItems[9],
         activityItems[11],
+        activityItems[0],
+        activityItems[6],
+        activityItems[7],
       ]);
     });
 
@@ -123,7 +133,7 @@ describe('UserActivityViewActions', () => {
      *   1 gift return (addr_user3)
      * @expected
      * - total should be 3
-     * - items sorted by txId should match activityItems at indices 1, 4, 8
+     * - items should be ordered by height ASC
      */
     it('should return only activities for a raffleId with fewer activities', async () => {
       const result = await actions.getActivities({
@@ -131,9 +141,9 @@ describe('UserActivityViewActions', () => {
         limit: 100,
       });
       expect(result.total).toBe(3);
-      expect(sortByTxId(result.items)).toEqual([
-        activityItems[1],
+      expect(result.items).toEqual([
         activityItems[4],
+        activityItems[1],
         activityItems[8],
       ]);
     });
@@ -147,7 +157,7 @@ describe('UserActivityViewActions', () => {
      *   that gift
      * @expected
      * - total should be 3
-     * - items sorted by txId should match activityItems at indices 0, 2, 7
+     * - items should be ordered by height ASC
      */
     it('should return activities matching both ergoTree and raffleId', async () => {
       const result = await actions.getActivities({
@@ -155,9 +165,9 @@ describe('UserActivityViewActions', () => {
         limit: 100,
       });
       expect(result.total).toBe(3);
-      expect(sortByTxId(result.items)).toEqual([
-        activityItems[0],
+      expect(result.items).toEqual([
         activityItems[2],
+        activityItems[0],
         activityItems[7],
       ]);
     });
@@ -191,8 +201,7 @@ describe('UserActivityViewActions', () => {
      *   ticket count as the donation row
      * @expected
      * - total should be 2
-     * - the ticket_redeem row should match activityItems at index 5 (ticketCount 3n)
-     * - the donation row should match activityItems at index 10 (ticketCount 3n)
+     * - items should be ordered by height ASC
      */
     it('should return correct ticketCount for ticket_redeem activities', async () => {
       const result = await actions.getActivities({
@@ -200,10 +209,7 @@ describe('UserActivityViewActions', () => {
         limit: 100,
       });
       expect(result.total).toBe(2);
-      expect(sortByTxId(result.items)).toEqual([
-        activityItems[5],
-        activityItems[10],
-      ]);
+      expect(result.items).toEqual([activityItems[10], activityItems[5]]);
     });
 
     /**
@@ -215,8 +221,7 @@ describe('UserActivityViewActions', () => {
      *   producing both a gift activity and a gift_return activity
      * @expected
      * - total should be 2
-     * - the gift row should match activityItems at index 1 (ticketCount 0n)
-     * - the gift_return row should match activityItems at index 8 (ticketCount 0n)
+     * - items should be ordered by height ASC
      */
     it('should return gift_return activity joined via safe_pay/gift_redeem', async () => {
       const result = await actions.getActivities({
@@ -224,10 +229,7 @@ describe('UserActivityViewActions', () => {
         limit: 100,
       });
       expect(result.total).toBe(2);
-      expect(sortByTxId(result.items)).toEqual([
-        activityItems[1],
-        activityItems[8],
-      ]);
+      expect(result.items).toEqual([activityItems[1], activityItems[8]]);
     });
 
     /**
@@ -256,12 +258,16 @@ describe('UserActivityViewActions', () => {
      * - call getActivities with limit 3 and offset 2 and no filter
      * @expected
      * - total should be 12 (full count)
-     * - items length should be 3
+     * - items should contain the first 3 height-ordered activities
      */
     it('should return a paginated subset of activities', async () => {
       const result = await actions.getActivities({ limit: 3, offset: 2 });
       expect(result.total).toBe(12);
-      expect(result.items).toHaveLength(3);
+      expect(result.items).toEqual([
+        activityItems[11],
+        activityItems[0],
+        activityItems[6],
+      ]);
     });
   });
 });

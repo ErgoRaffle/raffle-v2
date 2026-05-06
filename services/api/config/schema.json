@@ -115,92 +115,62 @@
     "children": {
       "type": {
         "type": "string",
-        "default": "sqlite",
+        "default": "postgres",
         "validations": [
           {
             "required": true,
             "error": "database type must be specified"
           },
-          {
-            "choices": ["sqlite", "postgres"]
-          }
+          { "choices": ["sqlite", "postgres"] }
         ]
       },
       "host": {
         "type": "string",
+        "default": "localhost",
         "validations": [
           {
             "required": true,
-            "when": {
-              "path": "database.type",
-              "value": "postgres"
-            },
+            "when": { "path": "database.type", "value": "postgres" },
             "error": "host for the \"postgres\" database address must be specified"
           }
         ]
       },
       "port": {
         "type": "number",
+        "default": 5432,
         "validations": [
           {
             "required": true,
-            "when": {
-              "path": "database.type",
-              "value": "postgres"
-            },
+            "when": { "path": "database.type", "value": "postgres" },
             "error": "port for the \"postgres\" database must be specified"
           }
         ]
       },
       "username": {
         "type": "string",
-        "validations": [
-          {
-            "required": true,
-            "when": {
-              "path": "database.type",
-              "value": "postgres"
-            },
-            "error": "username for the \"postgres\" database must be specified"
-          }
-        ]
+        "default": "postgres"
       },
       "password": {
         "type": "string",
-        "validations": [
-          {
-            "required": true,
-            "when": {
-              "path": "database.type",
-              "value": "postgres"
-            },
-            "error": "password for the \"postgres\" database must be specified"
-          }
-        ]
+        "default": ""
       },
       "name": {
         "type": "string",
+        "default": "raffle_v2",
         "validations": [
           {
             "required": true,
-            "when": {
-              "path": "database.type",
-              "value": "postgres"
-            },
+            "when": { "path": "database.type", "value": "postgres" },
             "error": "postgres database name is required"
           }
         ]
       },
       "path": {
         "type": "string",
-        "default": "./db.sqlite3",
         "validations": [
           {
             "required": true,
-            "when": {
-              "path": "database.type",
-              "value": "sqlite"
-            },
+            "when": { "path": "database.type", "value": "sqlite" },
             "error": "sqlite database path is required"
           }
         ]

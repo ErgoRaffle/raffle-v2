@@ -137,7 +137,7 @@ const activityItemSchema = z.object({
   ergoTree: z.string(),
   raffleId: z.string(),
   type: z.enum(USER_ACTIVITY_TYPES),
-  ticketCount: z.coerce.bigint().optional(),
+  ticketCount: z.bigint().optional(),
   txId: z.string(),
   height: z.number(),
 });
