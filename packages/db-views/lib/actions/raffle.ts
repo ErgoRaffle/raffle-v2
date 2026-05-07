@@ -1,5 +1,7 @@
 import { DataSource, Repository } from '@rosen-bridge/extended-typeorm';
 
+import { ERG_TOKEN_ID } from '@ergo-raffle/utils';
+
 import { getRaffleParams, RaffleStatus, RaffleWithTotalResult } from '../types';
 import { RaffleView } from '../views';
 
@@ -47,6 +49,27 @@ export class RaffleViewActions {
       return {
         condition: `"${field}" IN (:...${collection})`,
         params: { [collection]: items },
+      };
+    }
+  };
+
+  protected createTokenIdQuery = (tokenIds: Array<string>) => {
+    const queries: Array<string> = [];
+    if (tokenIds.includes(ERG_TOKEN_ID)) {
+      queries.push('"collectingTokenId" IS NULL');
+    }
+    const inList = this.createInListSearch(
+      'collectingTokenId',
+      'tokenIds',
+      tokenIds.filter((item) => item !== ERG_TOKEN_ID),
+    );
+    if (inList) {
+      queries.push(inList.condition);
+    }
+    if (queries.length > 0) {
+      return {
+        params: inList?.params ?? {},
+        condition: queries.join(' OR '),
       };
     }
   };
@@ -117,11 +140,7 @@ export class RaffleViewActions {
       ...this.createStatusSearch(params.query?.status ?? []).map(
         (condition) => ({ condition, params: {} }),
       ),
-      this.createInListSearch(
-        'collectingTokenId',
-        'tokenIds',
-        params.query?.tokenIds ?? [],
-      ),
+      this.createTokenIdQuery(params.query?.tokenIds ?? []),
       this.createInListSearch('raffleId', 'ids', params.query?.ids ?? []),
       this.createTagsSearch(params.query?.tags ?? []),
     ].filter(Boolean) as Array<{

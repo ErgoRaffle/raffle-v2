@@ -10,6 +10,7 @@
   "include": ["tests", "lib"],
   "references": [
     { "path": "../../packages/extractors" },
-    { "path": "../../packages/tokens" }
+    { "path": "../../packages/tokens" },
+    { "path": "../../packages/utils" }
   ]
 }
