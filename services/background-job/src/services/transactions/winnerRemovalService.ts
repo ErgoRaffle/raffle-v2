@@ -61,7 +61,7 @@ export class WinnerRemovalService extends AbstractTxService {
     boxes: ErgoBox[],
     unspentBoxes: ErgoBox[],
   ): Promise<void> => {
-    const giftRedeemBox = boxes[0];
+    let giftRedeemBox = boxes[0];
     const giftRedeemBuilder = GiftRedeemBuilder.fromBox(giftRedeemBox);
     const raffleId = giftRedeemBuilder.getTicketTokenId();
     const step = giftRedeemBuilder.getStep();
@@ -105,6 +105,7 @@ export class WinnerRemovalService extends AbstractTxService {
         .build();
 
       await signAndAddTx(this.network, winnerRemovalTx, TxType.WinnerRemoval);
+      giftRedeemBox = new ErgoBox(winnerRemovalTx.outputs[0]);
 
       this.logger.info(
         `Winner removal transaction for winner [${i}] of raffle [${raffleId}] has been added (txId: [${winnerRemovalTx.id}])`,
