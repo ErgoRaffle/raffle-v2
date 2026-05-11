@@ -1,6 +1,10 @@
 import { z } from 'zod';
 
-import { InclusionStatus, RaffleStatus } from '@ergo-raffle/db-views';
+import {
+  RaffleStatus,
+  USER_ACTIVITY_TYPES,
+  InclusionStatus,
+} from '@ergo-raffle/db-views';
 
 import { DEFAULT_API_PAGE_SIZE, MAX_API_PAGE_SIZE } from '../../const';
 
@@ -121,10 +125,31 @@ const getRaffleWinnersQuerySchema = z.object({
   index: z.coerce.number().optional(),
 });
 
-const getRafflesResponseSchema = z.object({
-  items: z.array(raffleItemSchema),
-  total: z.number(),
+const paginatedSchema = <T extends z.ZodTypeAny>(itemSchema: T) =>
+  z.object({
+    items: z.array(itemSchema),
+    total: z.number(),
+  });
+
+const getRafflesResponseSchema = paginatedSchema(raffleItemSchema);
+
+const activityItemSchema = z.object({
+  ergoTree: z.string(),
+  raffleId: z.string(),
+  type: z.enum(USER_ACTIVITY_TYPES),
+  ticketCount: z.bigint().optional(),
+  txId: z.string(),
+  height: z.number(),
 });
+
+const getActivitiesQuerySchema = z.object({
+  ergoTree: z.string().optional(),
+  raffleId: z.string().optional(),
+  offset: z.coerce.number().optional().default(0),
+  limit: z.coerce.number().optional().default(DEFAULT_API_PAGE_SIZE),
+});
+
+const getActivitiesResponseSchema = paginatedSchema(activityItemSchema);
 
 const raffleSearchParamScheme = z.object({
   raffleId: z.string(),
@@ -178,6 +203,8 @@ export {
   errorResponseSchema,
   getRafflesQuerySchema,
   getRafflesResponseSchema,
+  getActivitiesQuerySchema,
+  getActivitiesResponseSchema,
   raffleDetailsSchema,
   raffleSearchParamScheme,
   winnerApiResponseSchema,

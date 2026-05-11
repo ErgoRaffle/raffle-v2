@@ -1,4 +1,18 @@
-import { RaffleView } from './views';
+import { RaffleView, UserActivityView } from './views';
+
+const USER_ACTIVITY_TYPES = [
+  'creation',
+  'donation',
+  'gift',
+  'ticket_redeem',
+  'gift_return',
+] as const;
+type UserActivityType = (typeof USER_ACTIVITY_TYPES)[number];
+
+type ItemTotal<T> = {
+  items: Array<T>;
+  total: number;
+};
 
 enum RaffleStatus {
   SuccessFull = 'successful',
@@ -40,16 +54,29 @@ type getRaffleParams = {
   limit: number;
 };
 
-type RaffleWithTotalResult = {
-  items: Array<RaffleView>;
-  total: number;
+type RaffleWithTotalResult = ItemTotal<RaffleView>;
+
+type getUserActivityParams = {
+  query?: {
+    ergoTree?: string;
+    raffleId?: string;
+  };
+  offset?: number;
+  limit: number;
 };
 
+type UserActivityWithTotalResult = ItemTotal<UserActivityView>;
+
 export {
+  USER_ACTIVITY_TYPES,
+  UserActivityType,
+  ItemTotal,
   RaffleStatus,
   getRaffleParams,
   RaffleOrder,
   RaffleWithTotalResult,
+  getUserActivityParams,
+  UserActivityWithTotalResult,
   GetWinnerParams,
   InclusionStatus,
 };

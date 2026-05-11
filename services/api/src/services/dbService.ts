@@ -7,7 +7,11 @@ import {
 } from '@rosen-bridge/service-manager';
 
 import { createDataSource } from '@ergo-raffle/data-source';
-import { RaffleViewActions, WinnerViewActions } from '@ergo-raffle/db-views';
+import {
+  RaffleViewActions,
+  UserActivityViewActions,
+  WinnerViewActions,
+} from '@ergo-raffle/db-views';
 import { TokenAction } from '@ergo-raffle/tokens';
 
 import BlockAction from '../actions/block';
@@ -22,6 +26,7 @@ export class DbService extends AbstractService {
   private serviceAction?: ServiceBoxAction;
   private blockAction?: BlockAction;
   private raffleViewAction?: RaffleViewActions;
+  private userActivityViewAction?: UserActivityViewActions;
   private winnerViewAction?: WinnerViewActions;
   private tokenAction?: TokenAction;
 
@@ -79,6 +84,10 @@ export class DbService extends AbstractService {
       this.logger.debug('Block action initialized');
       this.raffleViewAction = new RaffleViewActions(this.dataSource);
       this.logger.debug('Raffle view action initialized');
+      this.userActivityViewAction = new UserActivityViewActions(
+        this.dataSource,
+      );
+      this.logger.debug('User activity view action initialized');
       this.winnerViewAction = new WinnerViewActions(this.dataSource);
       this.logger.debug('Raffle view action initialized');
       // API service is readonly and does not request to add tokens to this part of code. So nodeUrl is empty string.
@@ -111,6 +120,7 @@ export class DbService extends AbstractService {
     this.serviceAction = undefined;
     this.blockAction = undefined;
     this.raffleViewAction = undefined;
+    this.userActivityViewAction = undefined;
     this.setStatus(ServiceStatus.dormant);
     return true;
   };
@@ -145,6 +155,21 @@ export class DbService extends AbstractService {
     throw new Error('Service does not started');
   };
 
+  /**
+   * Returns the UserActivityViewActions instance
+   * @returns UserActivityViewActions instance
+   * @throws Error if service has not been started
+   */
+  getUserActivityViewAction = (): UserActivityViewActions => {
+    if (this.userActivityViewAction) return this.userActivityViewAction;
+    throw new Error('Service does not started');
+  };
+
+  /**
+   * Returns the WinnerViewActions instance
+   * @returns WinnerViewActions instance
+   * @throws Error if service has not been started
+   */
   getWinnerViewAction = (): WinnerViewActions => {
     if (this.winnerViewAction) return this.winnerViewAction;
     throw new Error('Service does not started');

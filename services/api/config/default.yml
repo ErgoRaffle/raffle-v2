@@ -7,8 +7,12 @@ logs:
     maxSize: 20m
     maxFiles: 14d
 database:
-  type: sqlite
-  path: ./db.sqlite3
+  type: postgres
+  host: localhost
+  port: 5432
+  username: postgres
+  password: ''
+  name: raffle_v2
 api:
   host: localhost
   port: 8800
