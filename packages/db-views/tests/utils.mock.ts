@@ -1,3 +1,7 @@
+import {
+  BlockEntity,
+  migrations as scannerMigrations,
+} from '@rosen-bridge/abstract-scanner';
 import { DataSource } from '@rosen-bridge/extended-typeorm';
 
 import {
@@ -19,7 +23,13 @@ import {
   migrations as tokenMigrations,
 } from '@ergo-raffle/tokens';
 
-import { RaffleView, UserActivityView, WinnerView, migrations } from '../lib';
+import {
+  RaffleView,
+  ActivityView,
+  WinnerView,
+  migrations,
+  ActivityWithTimeView,
+} from '../lib';
 
 export const createDatabase = async (): Promise<DataSource> => {
   const dataSource = new DataSource({
@@ -35,15 +45,18 @@ export const createDatabase = async (): Promise<DataSource> => {
       TicketEntity,
       WinnerPrizeEntity,
       RaffleView,
-      UserActivityView,
+      ActivityView,
+      ActivityWithTimeView,
       WinnerView,
       SuccessRaffleEntity,
       GiftRedeemEntity,
       SafePayEntity,
       TicketRedeemEntity,
       TokenEntity,
+      BlockEntity,
     ],
     migrations: [
+      ...scannerMigrations.sqlite,
       ...extractorMigrations.sqlite,
       ...migrations.sqlite,
       ...tokenMigrations.sqlite,

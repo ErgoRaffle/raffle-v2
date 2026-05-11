@@ -1,13 +1,13 @@
 import { DataSource, Repository } from '@rosen-bridge/extended-typeorm';
 
-import { getUserActivityParams, UserActivityWithTotalResult } from '../types';
-import { UserActivityView } from '../views';
+import { getUserActivityParams, ActivityWithTotalResult } from '../types';
+import { ActivityWithTimeView } from '../views';
 
-export class UserActivityViewActions {
-  repository: Repository<UserActivityView>;
+export class ActivityViewActions {
+  repository: Repository<ActivityWithTimeView>;
 
   constructor(protected dataSource: DataSource) {
-    this.repository = dataSource.getRepository(UserActivityView);
+    this.repository = dataSource.getRepository(ActivityWithTimeView);
   }
 
   /**
@@ -17,7 +17,7 @@ export class UserActivityViewActions {
    */
   getActivities = async (
     params: getUserActivityParams,
-  ): Promise<UserActivityWithTotalResult> => {
+  ): Promise<ActivityWithTotalResult> => {
     const [items, total] = await this.repository.findAndCount({
       where: {
         ergoTree: params.query?.ergoTree,
@@ -34,7 +34,7 @@ export class UserActivityViewActions {
           ...item,
           ticketCount:
             item.ticketCount != null ? BigInt(item.ticketCount) : undefined,
-        }) as UserActivityView,
+        }) as ActivityWithTimeView,
     );
 
     return { items: activities, total };

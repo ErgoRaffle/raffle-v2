@@ -25,7 +25,7 @@ import { UserActivityType } from '../types';
  * that happen to spend a ticket/gift are excluded.
  */
 @ViewEntity({
-  name: 'user_activity_view',
+  name: 'activity_view',
   expression: (dataSource) => {
     const creation = dataSource
       .createQueryBuilder()
@@ -97,7 +97,7 @@ import { UserActivityType } from '../types';
     } as SelectQueryBuilder<object>;
   },
 })
-export class UserActivityView {
+export class ActivityView {
   @ViewColumn()
   ergoTree: string;
 

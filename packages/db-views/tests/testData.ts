@@ -1,3 +1,5 @@
+import { BlockEntity, PROCEED } from '@rosen-bridge/abstract-scanner';
+
 import {
   InactiveRaffleEntity,
   RaffleDetailsEntity,
@@ -10,7 +12,7 @@ import {
   TicketRedeemEntity,
 } from '@ergo-raffle/extractors';
 
-import { UserActivityView } from '../lib';
+import { ActivityWithTimeView } from '../lib';
 import { createDatabase } from './utils.mock';
 
 export const mockRaffles = async () => {
@@ -1074,6 +1076,7 @@ export const mockActivities = async () => {
   const safePayRepository = dataSource.getRepository(SafePayEntity);
   const ticketRedeemRepository = dataSource.getRepository(TicketRedeemEntity);
   const giftRedeemRepository = dataSource.getRepository(GiftRedeemEntity);
+  const blockRepository = dataSource.getRepository(BlockEntity);
 
   // addr_user1 creates raffle1 and raffle3
   // addr_user2 creates raffle2
@@ -1317,7 +1320,32 @@ export const mockActivities = async () => {
     },
   ];
 
+  // For each distinct height referenced in mocked data, insert one block row.
+  // This is required for views that join activities with BlockEntity.
+  const blockEntries = [
+    ...raffles,
+    ...tickets,
+    ...gifts,
+    ...safePays,
+    ...ticketRedeems,
+    ...giftRedeems,
+  ]
+    .map((item) => ({ height: item.height, hash: item.block }))
+    .filter(
+      (item, index, all) =>
+        all.findIndex((other) => other.height === item.height) === index,
+    )
+    .map((item) => ({
+      height: item.height,
+      hash: String(item.hash),
+      parentHash: `parent_${item.height}`,
+      status: PROCEED,
+      scanner: 'ergo',
+      timestamp: item.height * 1000,
+    }));
+
   await inactiveRaffleRepository.insert(raffles);
+  await blockRepository.insert(blockEntries);
   await ticketRepository.insert(tickets);
   await giftRepository.insert(gifts);
   await safePayRepository.insert(safePays);
@@ -1327,13 +1355,14 @@ export const mockActivities = async () => {
 };
 
 // Expected activity view rows sorted by txId for use in tests
-export const activityItems: Partial<UserActivityView>[] = [
+export const activityItems: Partial<ActivityWithTimeView>[] = [
   {
     ergoTree: 'addr_user1',
     raffleId: 'raffle1',
     type: 'gift',
     txId: 'gift_tx1',
     height: 1000,
+    timestamp: 1000000,
     ticketCount: 0n,
   },
   {
@@ -1342,6 +1371,7 @@ export const activityItems: Partial<UserActivityView>[] = [
     type: 'gift',
     txId: 'gift_tx2',
     height: 3000,
+    timestamp: 3000000,
     ticketCount: 0n,
   },
   {
@@ -1350,6 +1380,7 @@ export const activityItems: Partial<UserActivityView>[] = [
     type: 'creation',
     txId: 'raffle_tx1',
     height: 1000,
+    timestamp: 1000000,
     ticketCount: 0n,
   },
   {
@@ -1358,6 +1389,7 @@ export const activityItems: Partial<UserActivityView>[] = [
     type: 'creation',
     txId: 'raffle_tx2',
     height: 2000,
+    timestamp: 2000000,
     ticketCount: 0n,
   },
   {
@@ -1366,6 +1398,7 @@ export const activityItems: Partial<UserActivityView>[] = [
     type: 'creation',
     txId: 'raffle_tx3',
     height: 3000,
+    timestamp: 3000000,
     ticketCount: 0n,
   },
   {
@@ -1374,6 +1407,7 @@ export const activityItems: Partial<UserActivityView>[] = [
     type: 'ticket_redeem',
     txId: 'safepay_tx1',
     height: 2500,
+    timestamp: 2500000,
     ticketCount: 3n,
   },
   {
@@ -1382,6 +1416,7 @@ export const activityItems: Partial<UserActivityView>[] = [
     type: 'ticket_redeem',
     txId: 'safepay_tx2',
     height: 1100,
+    timestamp: 1100000,
     ticketCount: 1n,
   },
   {
@@ -1390,6 +1425,7 @@ export const activityItems: Partial<UserActivityView>[] = [
     type: 'gift_return',
     txId: 'safepay_tx3',
     height: 1500,
+    timestamp: 1500000,
     ticketCount: 0n,
   },
   {
@@ -1398,6 +1434,7 @@ export const activityItems: Partial<UserActivityView>[] = [
     type: 'gift_return',
     txId: 'safepay_tx4',
     height: 3500,
+    timestamp: 3500000,
     ticketCount: 0n,
   },
   {
@@ -1406,6 +1443,7 @@ export const activityItems: Partial<UserActivityView>[] = [
     type: 'donation',
     txId: 'ticket_tx1',
     height: 1000,
+    timestamp: 1000000,
     ticketCount: 5n,
   },
   {
@@ -1414,6 +1452,7 @@ export const activityItems: Partial<UserActivityView>[] = [
     type: 'donation',
     txId: 'ticket_tx2',
     height: 2000,
+    timestamp: 2000000,
     ticketCount: 3n,
   },
   {
@@ -1422,6 +1461,7 @@ export const activityItems: Partial<UserActivityView>[] = [
     type: 'donation',
     txId: 'ticket_tx3',
     height: 1000,
+    timestamp: 1000000,
     ticketCount: 1n,
   },
 ];

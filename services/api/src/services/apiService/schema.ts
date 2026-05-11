@@ -134,16 +134,17 @@ const paginatedSchema = <T extends z.ZodTypeAny>(itemSchema: T) =>
 const getRafflesResponseSchema = paginatedSchema(raffleItemSchema);
 
 const activityItemSchema = z.object({
-  ergoTree: z.string(),
+  address: z.string(),
   raffleId: z.string(),
   type: z.enum(USER_ACTIVITY_TYPES),
   ticketCount: z.bigint().optional(),
   txId: z.string(),
   height: z.number(),
+  timestamp: z.number().optional(),
 });
 
 const getActivitiesQuerySchema = z.object({
-  ergoTree: z.string().optional(),
+  address: z.string().optional(),
   raffleId: z.string().optional(),
   offset: z.coerce.number().optional().default(0),
   limit: z.coerce.number().optional().default(DEFAULT_API_PAGE_SIZE),

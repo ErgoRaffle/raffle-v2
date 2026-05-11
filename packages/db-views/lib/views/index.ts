@@ -1,3 +1,4 @@
 export * from './raffle';
-export * from './userActivity';
+export * from './activity';
 export * from './winner';
+export * from './activityWithTime';
