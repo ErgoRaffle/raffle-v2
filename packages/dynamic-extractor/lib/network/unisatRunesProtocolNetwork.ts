@@ -15,6 +15,7 @@ import type {
  */
 export class UnisatRunesProtocolNetwork {
   private readonly unisatClient: Axios;
+  protected readonly PAGE_SIZE = 500;
 
   /**
    * @param unisatUrl - Unisat API base URL
@@ -53,23 +54,40 @@ export class UnisatRunesProtocolNetwork {
 
     let txRunes: UnisatTxRunes;
     try {
-      const response = await this.unisatClient.get<
-        UnisatResponse<UnisatTxRunes>
-      >(`/v1/indexer/runes/event?txid=${txId}`);
-      this.logger.debug(
-        `requested 'v1/indexer/runes/event' filtering txId [${txId}]. Response: ${JsonBigInt.stringify(response.data)}`,
+      let offset = 0;
+      let response = await this.unisatClient.get<UnisatResponse<UnisatTxRunes>>(
+        `/v1/indexer/runes/event?txid=${txId}&start=${offset}&limit=${this.PAGE_SIZE}`,
       );
-
-      txRunes = response.data.data;
+      this.logger.debug(
+        `requested 'indexer/runes/event' filtering txId [${txId}] on offset|limit [${offset}|${this.PAGE_SIZE}]. Response: ${JsonBigInt.stringify(
+          response.data,
+        )}`,
+      );
+      const total = response.data.data.total;
+      txRunes = { total, height: blockHeight, detail: [] };
+      while (true) {
+        const runes = response.data.data;
+        if (blockHeight > runes.height) {
+          throw new Error(
+            `UnisatRunesProtocolNetwork is not synced. processing block height is [${blockHeight}] and synced height of network is [${runes.height}]`,
+          );
+        }
+        if (runes.detail.length === 0) break;
+        txRunes.detail.push(...response.data.data.detail);
+        offset += this.PAGE_SIZE;
+        if (offset > total) break;
+        response = await this.unisatClient.get<UnisatResponse<UnisatTxRunes>>(
+          `/v1/indexer/runes/event?txid=${txId}&start=${offset}&limit=${this.PAGE_SIZE}`,
+        );
+        this.logger.debug(
+          `requested 'indexer/runes/event' filtering txId [${txId}] on offset|limit [${offset}|${this.PAGE_SIZE}]. Response: ${JsonBigInt.stringify(
+            response.data,
+          )}`,
+        );
+      }
       if (txRunes.detail.length !== txRunes.total) {
         throw new Error(
           `Unexpected pagination: expected [${txRunes.total}] runes but got [${txRunes.detail.length}]`,
-        );
-      }
-
-      if (blockHeight > txRunes.height) {
-        throw new Error(
-          `UnisatRunesProtocolNetwork is not synced. processing block height is [${blockHeight}] and synced height of network is [${txRunes.height}]`,
         );
       }
     } catch (e: unknown) {
