@@ -33,6 +33,8 @@
   "dependencies": {
     "@ergo-raffle/extractors": "0.0.0",
     "@ergo-raffle/tokens": "^0.0.0",
+    "@ergo-raffle/utils": "^0.0.0",
+    "@rosen-bridge/abstract-scanner": "^1.0.2",
     "@rosen-bridge/extended-typeorm": "^1.0.1"
   },
   "engines": {

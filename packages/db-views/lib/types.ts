@@ -1,4 +1,4 @@
-import { RaffleView, UserActivityView } from './views';
+import { RaffleView, ActivityWithTimeView } from './views';
 
 const USER_ACTIVITY_TYPES = [
   'creation',
@@ -65,7 +65,7 @@ type getUserActivityParams = {
   limit: number;
 };
 
-type UserActivityWithTotalResult = ItemTotal<UserActivityView>;
+type ActivityWithTotalResult = ItemTotal<ActivityWithTimeView>;
 
 export {
   USER_ACTIVITY_TYPES,
@@ -76,7 +76,7 @@ export {
   RaffleOrder,
   RaffleWithTotalResult,
   getUserActivityParams,
-  UserActivityWithTotalResult,
+  ActivityWithTotalResult,
   GetWinnerParams,
   InclusionStatus,
 };

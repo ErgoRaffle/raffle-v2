@@ -6,6 +6,7 @@
   "exclude": ["tests", "vitest.config.ts"],
   "references": [
     { "path": "../../packages/extractors/tsconfig.build.json" },
-    { "path": "../../packages/tokens/tsconfig.build.json" }
+    { "path": "../../packages/tokens/tsconfig.build.json" },
+    { "path": "../../packages/utils/tsconfig.build.json" }
   ]
 }

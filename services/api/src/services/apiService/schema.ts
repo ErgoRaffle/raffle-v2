@@ -1,3 +1,4 @@
+import { ErgoAddress } from '@fleet-sdk/core';
 import { z } from 'zod';
 
 import {
@@ -7,6 +8,15 @@ import {
 } from '@ergo-raffle/db-views';
 
 import { DEFAULT_API_PAGE_SIZE, MAX_API_PAGE_SIZE } from '../../const';
+
+const addressValidator = (address?: string) => {
+  try {
+    if (address) ErgoAddress.fromBase58(address);
+    return true;
+  } catch {
+    return false;
+  }
+};
 
 const blockchainInfoResponseSchema = z.object({
   fee: z.object({
@@ -134,16 +144,17 @@ const paginatedSchema = <T extends z.ZodTypeAny>(itemSchema: T) =>
 const getRafflesResponseSchema = paginatedSchema(raffleItemSchema);
 
 const activityItemSchema = z.object({
-  ergoTree: z.string(),
+  address: z.string(),
   raffleId: z.string(),
   type: z.enum(USER_ACTIVITY_TYPES),
   ticketCount: z.bigint().optional(),
   txId: z.string(),
   height: z.number(),
+  timestamp: z.number().optional(),
 });
 
 const getActivitiesQuerySchema = z.object({
-  ergoTree: z.string().optional(),
+  address: z.string().optional().refine(addressValidator),
   raffleId: z.string().optional(),
   offset: z.coerce.number().optional().default(0),
   limit: z.coerce.number().optional().default(DEFAULT_API_PAGE_SIZE),

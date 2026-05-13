@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { UserActivityViewActions } from '../../lib';
+import { ActivityViewActions } from '../../lib';
 import { activityItems, mockActivities } from '../testData';
 
-describe('UserActivityViewActions', () => {
+describe('ActivityViewActions', () => {
   describe('getActivities', () => {
-    let actions: UserActivityViewActions;
+    let actions: ActivityViewActions;
     beforeEach(async () => {
       const dataSource = await mockActivities();
-      actions = new UserActivityViewActions(dataSource);
+      actions = new ActivityViewActions(dataSource);
     });
 
     /**

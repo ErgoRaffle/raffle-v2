@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { RaffleViewActions } from '../../lib';
-import { RaffleStatus } from '../../lib';
+import { ERG_TOKEN_ID } from '@ergo-raffle/utils';
+
+import { RaffleStatus, RaffleViewActions } from '../../lib';
 import { mockRaffles } from '../testData';
 
 describe('RaffleViewActions', () => {
@@ -183,6 +184,30 @@ describe('RaffleViewActions', () => {
     });
 
     /**
+     * @target should return raffles collecting ERG when ERG token id is passed
+     * @dependencies
+     * @scenario
+     * - call getRaffles with tokenIds [ERG_TOKEN_ID]
+     * - ERG raffles are stored with collectingTokenId = NULL (not literal 'erg')
+     * @expected
+     * - should return only raffles collecting ERG
+     */
+    it('should find appropriate raffle when ERG tokenId passed', async () => {
+      const result = await actions.getRaffles({
+        query: { tokenIds: [ERG_TOKEN_ID] },
+        limit: 100,
+      });
+      expect(result.total).toBe(5);
+      expect(result.items.map((item) => item.raffleId).sort()).toEqual([
+        'raffle1',
+        'raffle3',
+        'raffle4',
+        'raffle6',
+        'raffle7',
+      ]);
+    });
+
+    /**
      * @target should return raffles matching the provided list of tags
      * @dependencies
      * @scenario
@@ -313,6 +338,59 @@ describe('RaffleViewActions', () => {
       expect(result.items.map((item) => item.raffleId).sort()).toEqual([
         'raffle1',
         'raffle3',
+        'raffle5',
+        'raffle6',
+        'raffle7',
+        'raffle8',
+      ]);
+    });
+
+    /**
+     * @target should find appropriate raffle when status is Success or Failed
+     * @dependencies
+     * @scenario
+     * - call getRaffles with status [RaffleStatus.Failed, RaffleStatus.SuccessFull]
+     * @expected
+     * - should return 4 raffles (raffle2, raffle3, raffle4, raffle5)
+     */
+    it('should find appropriate raffle when status is Success or Failed', async () => {
+      const result = await actions.getRaffles({
+        query: { status: [RaffleStatus.Failed, RaffleStatus.SuccessFull] },
+        limit: 100,
+      });
+      expect(result.total).toBe(4);
+      expect(result.items.map((item) => item.raffleId).sort()).toEqual([
+        'raffle2',
+        'raffle3',
+        'raffle4',
+        'raffle5',
+      ]);
+    });
+    /**
+     * @target should find appropriate raffle when passed all status
+     * @dependencies
+     * @scenario
+     * - call getRaffles with status [RaffleStatus.Failed, RaffleStatus.SuccessFull, RaffleStatus.Active]
+     * @expected
+     * - should return 4 raffles (raffle2, raffle3, raffle4, raffle5)
+     */
+    it('should find appropriate raffle when passed all status', async () => {
+      const result = await actions.getRaffles({
+        query: {
+          status: [
+            RaffleStatus.Failed,
+            RaffleStatus.SuccessFull,
+            RaffleStatus.Active,
+          ],
+        },
+        limit: 100,
+      });
+      expect(result.total).toBe(8);
+      expect(result.items.map((item) => item.raffleId).sort()).toEqual([
+        'raffle1',
+        'raffle2',
+        'raffle3',
+        'raffle4',
         'raffle5',
         'raffle6',
         'raffle7',

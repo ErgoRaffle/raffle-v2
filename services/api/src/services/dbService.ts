@@ -9,7 +9,7 @@ import {
 import { createDataSource } from '@ergo-raffle/data-source';
 import {
   RaffleViewActions,
-  UserActivityViewActions,
+  ActivityViewActions,
   WinnerViewActions,
 } from '@ergo-raffle/db-views';
 import { TokenAction } from '@ergo-raffle/tokens';
@@ -26,7 +26,7 @@ export class DbService extends AbstractService {
   private serviceAction?: ServiceBoxAction;
   private blockAction?: BlockAction;
   private raffleViewAction?: RaffleViewActions;
-  private userActivityViewAction?: UserActivityViewActions;
+  private activityViewAction?: ActivityViewActions;
   private winnerViewAction?: WinnerViewActions;
   private tokenAction?: TokenAction;
 
@@ -84,10 +84,8 @@ export class DbService extends AbstractService {
       this.logger.debug('Block action initialized');
       this.raffleViewAction = new RaffleViewActions(this.dataSource);
       this.logger.debug('Raffle view action initialized');
-      this.userActivityViewAction = new UserActivityViewActions(
-        this.dataSource,
-      );
-      this.logger.debug('User activity view action initialized');
+      this.activityViewAction = new ActivityViewActions(this.dataSource);
+      this.logger.debug('Activity view action initialized');
       this.winnerViewAction = new WinnerViewActions(this.dataSource);
       this.logger.debug('Raffle view action initialized');
       // API service is readonly and does not request to add tokens to this part of code. So nodeUrl is empty string.
@@ -120,7 +118,7 @@ export class DbService extends AbstractService {
     this.serviceAction = undefined;
     this.blockAction = undefined;
     this.raffleViewAction = undefined;
-    this.userActivityViewAction = undefined;
+    this.activityViewAction = undefined;
     this.setStatus(ServiceStatus.dormant);
     return true;
   };
@@ -156,12 +154,12 @@ export class DbService extends AbstractService {
   };
 
   /**
-   * Returns the UserActivityViewActions instance
-   * @returns UserActivityViewActions instance
+   * Returns the ActivityViewActions instance
+   * @returns ActivityViewActions instance
    * @throws Error if service has not been started
    */
-  getUserActivityViewAction = (): UserActivityViewActions => {
-    if (this.userActivityViewAction) return this.userActivityViewAction;
+  getActivityViewAction = (): ActivityViewActions => {
+    if (this.activityViewAction) return this.activityViewAction;
     throw new Error('Service does not started');
   };
 

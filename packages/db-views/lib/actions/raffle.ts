@@ -1,5 +1,7 @@
 import { DataSource, Repository } from '@rosen-bridge/extended-typeorm';
 
+import { ERG_TOKEN_ID } from '@ergo-raffle/utils';
+
 import { getRaffleParams, RaffleStatus, RaffleWithTotalResult } from '../types';
 import { RaffleView } from '../views';
 
@@ -52,22 +54,50 @@ export class RaffleViewActions {
   };
 
   /**
-   * Creates a condition for XOR logic between Active and another status
-   * @param isActive - Whether Active status is included
-   * @param isOtherStatus - Whether the other status (Success/Failed) is included
-   * @param field - Database field name to check (successCount or redeemCount)
-   * @returns SQL condition string, or undefined if both statuses are the same
+   * Builds a tokenId filter condition for the raffle query.
+   *
+   * Raffles that collect ERG are stored with `collectingTokenId = NULL` (not
+   * the literal `ERG_TOKEN_ID`), so when `ERG_TOKEN_ID` is included we emit an
+   * `IS NULL` clause. Any other token ids are emitted as an `IN (:...tokenIds)`
+   * clause and combined with the ERG clause using `OR`.
+   *
+   * @param tokenIds - Collecting token ids to filter by (may include `ERG_TOKEN_ID`)
+   * @returns Query fragment with `{ condition, params }` suitable for QueryBuilder,
+   * or `undefined` when `tokenIds` is empty / yields no conditions
    */
-  protected createXorFieldSearch = (
-    isActive: boolean,
-    isOtherStatus: boolean,
-    field: string,
-  ) => {
-    if (isActive !== isOtherStatus) {
-      const operator = isActive ? '=' : '>';
-      return `"${field}" ${operator} 0`;
+  protected createTokenIdQuery = (tokenIds: Array<string>) => {
+    const queries: Array<string> = [];
+    if (tokenIds.includes(ERG_TOKEN_ID)) {
+      queries.push('"collectingTokenId" IS NULL');
+    }
+    const inList = this.createInListSearch(
+      'collectingTokenId',
+      'tokenIds',
+      tokenIds.filter((item) => item !== ERG_TOKEN_ID),
+    );
+    if (inList) {
+      queries.push(inList.condition);
+    }
+    if (queries.length > 0) {
+      return {
+        params: inList?.params ?? {},
+        condition: queries.join(' OR '),
+      };
     }
   };
+
+  /**
+   * Creates a simple numeric comparison SQL fragment of the form `"<field>" <operator> 0`.
+   *
+   * This is used for status filtering where derived counter fields (e.g. `successCount`,
+   * `redeemCount`) are compared against zero.
+   *
+   * @param field - View column name to compare. Must be a trusted/known field name.
+   * @param operator - SQL comparison operator (e.g. `=` or `>`). Must be a trusted constant.
+   * @returns SQL fragment string (no parameters), e.g. `"successCount" > 0`
+   */
+  protected createFieldQuery = (field: string, operator: string) =>
+    `"${field}" ${operator} 0`;
 
   /**
    * Creates SQL conditions for filtering by raffle status
@@ -79,12 +109,20 @@ export class RaffleViewActions {
     const isActive = status.includes(RaffleStatus.Active);
     const isSuccess = status.includes(RaffleStatus.SuccessFull);
     const isFailed = status.includes(RaffleStatus.Failed);
-    return [
-      // If one and only one of isActive and isSuccess passed "successCount" must be filtered
-      this.createXorFieldSearch(isActive, isSuccess, 'successCount'),
-      // If one and only one of isActive and isFailed passed "redeemCount" must be filtered
-      this.createXorFieldSearch(isActive, isFailed, 'redeemCount'),
-    ].filter(Boolean) as Array<string>;
+    const activeQuery = [
+      this.createFieldQuery('successCount', '='),
+      this.createFieldQuery('redeemCount', '='),
+    ].join(' AND ');
+    const failedQuery = this.createFieldQuery('redeemCount', '>');
+    const successQuery = this.createFieldQuery('successCount', '>');
+    const condition = [
+      isActive ? `(${activeQuery})` : '',
+      isFailed ? failedQuery : '',
+      isSuccess ? successQuery : '',
+    ]
+      .filter((item) => item !== '')
+      .join(' OR ');
+    return condition === '' ? undefined : { condition, params: {} };
   };
 
   /**
@@ -114,14 +152,8 @@ export class RaffleViewActions {
     const queryBuilder = this.repository.createQueryBuilder();
     const queries = [
       this.createTextSearch(params.query?.text),
-      ...this.createStatusSearch(params.query?.status ?? []).map(
-        (condition) => ({ condition, params: {} }),
-      ),
-      this.createInListSearch(
-        'collectingTokenId',
-        'tokenIds',
-        params.query?.tokenIds ?? [],
-      ),
+      this.createStatusSearch(params.query?.status ?? []),
+      this.createTokenIdQuery(params.query?.tokenIds ?? []),
       this.createInListSearch('raffleId', 'ids', params.query?.ids ?? []),
       this.createTagsSearch(params.query?.tags ?? []),
     ].filter(Boolean) as Array<{
