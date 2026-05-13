@@ -56,7 +56,8 @@ export class UnisatRunesProtocolNetwork {
     try {
       let offset = 0;
       let response = await this.unisatClient.get<UnisatResponse<UnisatTxRunes>>(
-        `/v1/indexer/runes/event?txid=${txId}&start=${offset}&limit=${this.PAGE_SIZE}`,
+        '/v1/indexer/runes/event',
+        { params: { txid: txId, start: offset, limit: this.PAGE_SIZE } },
       );
       this.logger.debug(
         `requested 'indexer/runes/event' filtering txId [${txId}] on offset|limit [${offset}|${this.PAGE_SIZE}]. Response: ${JsonBigInt.stringify(
@@ -77,7 +78,8 @@ export class UnisatRunesProtocolNetwork {
         offset += this.PAGE_SIZE;
         if (offset > total) break;
         response = await this.unisatClient.get<UnisatResponse<UnisatTxRunes>>(
-          `/v1/indexer/runes/event?txid=${txId}&start=${offset}&limit=${this.PAGE_SIZE}`,
+          '/v1/indexer/runes/event',
+          { params: { txid: txId, start: offset, limit: this.PAGE_SIZE } },
         );
         this.logger.debug(
           `requested 'indexer/runes/event' filtering txId [${txId}] on offset|limit [${offset}|${this.PAGE_SIZE}]. Response: ${JsonBigInt.stringify(

@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { ActivityViewActions } from '../../lib';
 import { activityItems, mockActivities } from '../testData';
 
-describe('UserActivityViewActions', () => {
+describe('ActivityViewActions', () => {
   describe('getActivities', () => {
     let actions: ActivityViewActions;
     beforeEach(async () => {

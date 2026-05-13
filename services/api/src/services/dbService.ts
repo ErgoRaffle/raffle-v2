@@ -155,7 +155,7 @@ export class DbService extends AbstractService {
 
   /**
    * Returns the ActivityViewActions instance
-   * @returns UserActivityViewActions instance
+   * @returns ActivityViewActions instance
    * @throws Error if service has not been started
    */
   getActivityViewAction = (): ActivityViewActions => {

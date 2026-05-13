@@ -9,7 +9,7 @@ import { UserActivityType } from '../types';
 import { ActivityView } from './activity';
 
 @ViewEntity({
-  name: 'activity_view_with_time',
+  name: 'activity_with_time_view',
   expression: (dataSource) =>
     dataSource
       .createQueryBuilder()

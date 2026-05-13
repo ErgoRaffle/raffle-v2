@@ -171,7 +171,7 @@ export class Migration1778505512467 implements MigrationInterface {
       ],
     );
     await queryRunner.query(`
-            CREATE VIEW "activity_view_with_time" AS
+            CREATE VIEW "activity_with_time_view" AS
             SELECT "activity"."ergoTree" AS "ergoTree",
                 "activity"."raffleId" AS "raffleId",
                 "activity"."type" AS "type",
@@ -197,7 +197,7 @@ export class Migration1778505512467 implements MigrationInterface {
         `,
       [
         'VIEW',
-        'activity_view_with_time',
+        'activity_with_time_view',
         'SELECT "activity"."ergoTree" AS "ergoTree", "activity"."raffleId" AS "raffleId", "activity"."type" AS "type", "activity"."ticketCount" AS "ticketCount", "activity"."txId" AS "txId", "activity"."height" AS "height", "block"."timestamp" AS "timestamp" FROM "activity_view" "activity" LEFT JOIN "block_entity" "block" ON "block"."height" = "activity"."height" AND "block"."scanner" = \'ergo\'',
       ],
     );
@@ -210,10 +210,10 @@ export class Migration1778505512467 implements MigrationInterface {
             WHERE "type" = ?
                 AND "name" = ?
         `,
-      ['VIEW', 'activity_view_with_time'],
+      ['VIEW', 'activity_with_time_view'],
     );
     await queryRunner.query(`
-            DROP VIEW "activity_view_with_time"
+            DROP VIEW "activity_with_time_view"
         `);
     await queryRunner.query(
       `
