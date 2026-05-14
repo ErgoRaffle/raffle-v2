@@ -5,6 +5,8 @@ import {
   ViewEntity,
 } from '@rosen-bridge/extended-typeorm';
 
+import { RaffleDetailsEntity } from '@ergo-raffle/extractors';
+
 import { UserActivityType } from '../types';
 import { ActivityView } from './activity';
 
@@ -20,11 +22,17 @@ import { ActivityView } from './activity';
       .addSelect('activity.txId', 'txId')
       .addSelect('activity.height', 'height')
       .addSelect('block.timestamp', 'timestamp')
+      .addSelect('details.name', 'raffleName')
       .from(ActivityView, 'activity')
       .leftJoin(
         BlockEntity,
         'block',
         "block.height = activity.height AND block.scanner = 'ergo'",
+      )
+      .leftJoin(
+        RaffleDetailsEntity,
+        'details',
+        'details.raffleId = activity.raffleId',
       ),
 })
 export class ActivityWithTimeView {
@@ -48,4 +56,7 @@ export class ActivityWithTimeView {
 
   @ViewColumn()
   timestamp?: number;
+
+  @ViewColumn()
+  raffleName?: string;
 }

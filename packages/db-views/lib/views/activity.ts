@@ -14,7 +14,7 @@ import {
   TicketRedeemEntity,
 } from '@ergo-raffle/extractors';
 
-import { UserActivityType } from '../types';
+import { ActivityType, UserActivityType } from '../types';
 
 /**
  * Database view unifying user activity events (creations, donations, gifts,
@@ -31,7 +31,7 @@ import { UserActivityType } from '../types';
       .createQueryBuilder()
       .addSelect('raffle.projectErgoTree', 'ergoTree')
       .addSelect('raffle.raffleId', 'raffleId')
-      .addSelect(`'creation'`, 'type')
+      .addSelect(`'${ActivityType.Creation}'`, 'type')
       .addSelect('0', 'ticketCount')
       .addSelect('raffle.txId', 'txId')
       .addSelect('raffle.height', 'height')
@@ -41,7 +41,7 @@ import { UserActivityType } from '../types';
       .createQueryBuilder()
       .addSelect('ticket.donatorErgoTree', 'ergoTree')
       .addSelect('ticket.raffleId', 'raffleId')
-      .addSelect(`'donation'`, 'type')
+      .addSelect(`'${ActivityType.Donation}'`, 'type')
       .addSelect('ticket.rangeEnd - ticket.rangeStart', 'ticketCount')
       .addSelect('ticket.txId', 'txId')
       .addSelect('ticket.height', 'height')
@@ -51,7 +51,7 @@ import { UserActivityType } from '../types';
       .createQueryBuilder()
       .addSelect('gift.donatorErgoTree', 'ergoTree')
       .addSelect('gift.raffleId', 'raffleId')
-      .addSelect(`'gift'`, 'type')
+      .addSelect(`'${ActivityType.Gift}'`, 'type')
       .addSelect('0', 'ticketCount')
       .addSelect('gift.txId', 'txId')
       .addSelect('gift.height', 'height')
@@ -61,7 +61,7 @@ import { UserActivityType } from '../types';
       .createQueryBuilder()
       .addSelect('ticket.donatorErgoTree', 'ergoTree')
       .addSelect('ticket.raffleId', 'raffleId')
-      .addSelect(`'ticket_redeem'`, 'type')
+      .addSelect(`'${ActivityType.TicketRedeem}'`, 'type')
       .addSelect('ticket.rangeEnd - ticket.rangeStart', 'ticketCount')
       .addSelect('safePay.txId', 'txId')
       .addSelect('safePay.height', 'height')
@@ -77,7 +77,7 @@ import { UserActivityType } from '../types';
       .createQueryBuilder()
       .addSelect('gift.donatorErgoTree', 'ergoTree')
       .addSelect('gift.raffleId', 'raffleId')
-      .addSelect(`'gift_return'`, 'type')
+      .addSelect(`'${ActivityType.GiftReturn}'`, 'type')
       .addSelect('0', 'ticketCount')
       .addSelect('safePay.txId', 'txId')
       .addSelect('safePay.height', 'height')

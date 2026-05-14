@@ -31,6 +31,7 @@ export class DynamicExtractor extends AbstractExtractor<
   /**
    * @param dataSource - TypeORM data source for persistence
    * @param id - Extractor id
+   * @param network
    * @param unisatUrl - Unisat API base URL for runes data
    * @param getTokenMap - Resolves the Rosen token map (called when processing txs so the map is loaded)
    * @param unisatApiKey - Unisat API key (optional)
@@ -186,6 +187,7 @@ export class DynamicExtractor extends AbstractExtractor<
         }
       } catch (err) {
         this.logger.debug(`getTxOutputRunes failed for tx ${tx.txid}: ${err}`);
+        return false;
       }
     }
 

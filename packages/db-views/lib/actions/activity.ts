@@ -1,4 +1,4 @@
-import { DataSource, Repository } from '@rosen-bridge/extended-typeorm';
+import { DataSource, In, Repository } from '@rosen-bridge/extended-typeorm';
 
 import { getUserActivityParams, ActivityWithTotalResult } from '../types';
 import { ActivityWithTimeView } from '../views';
@@ -22,10 +22,14 @@ export class ActivityViewActions {
       where: {
         ergoTree: params.query?.ergoTree,
         raffleId: params.query?.raffleId,
+        type:
+          params.types && params.types.length > 0
+            ? In(params.types)
+            : undefined,
       },
       skip: params.offset ?? 0,
       take: params.limit,
-      order: { height: 'ASC' },
+      order: { height: 'DESC' },
     });
 
     const activities = items.map(
