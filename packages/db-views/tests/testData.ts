@@ -1066,6 +1066,7 @@ export const mockActivities = async () => {
   const dataSource = await createDatabase();
   const inactiveRaffleRepository =
     dataSource.getRepository(InactiveRaffleEntity);
+  const raffleDetailsRepository = dataSource.getRepository(RaffleDetailsEntity);
   const ticketRepository = dataSource.getRepository(TicketEntity);
   const giftRepository = dataSource.getRepository(GiftEntity);
   const safePayRepository = dataSource.getRepository(SafePayEntity);
@@ -1135,6 +1136,48 @@ export const mockActivities = async () => {
       extractor: 'raffle_extractor',
       identifier: 'act_raffle_id3',
       serialized: 'act_serialized3',
+    },
+  ];
+
+  const raffleDetails = [
+    {
+      raffleId: 'raffle1',
+      name: 'raffle1',
+      block: '1000',
+      height: 1000,
+      extractor: 'raffle_extractor',
+      identifier: 'details1',
+      serialized: 'details1',
+      txId: 'details1',
+      description: 'description1',
+      tags: '',
+      pictures: '',
+    },
+    {
+      raffleId: 'raffle2',
+      name: 'raffle2',
+      block: '2000',
+      height: 2000,
+      extractor: 'raffle_extractor',
+      identifier: 'details2',
+      serialized: 'details2',
+      txId: 'details2',
+      description: 'description2',
+      tags: '',
+      pictures: '',
+    },
+    {
+      raffleId: 'raffle3',
+      name: 'raffle3',
+      block: '3000',
+      height: 3000,
+      extractor: 'raffle_extractor',
+      identifier: 'details3',
+      serialized: 'details3',
+      txId: 'details3',
+      description: 'description3',
+      tags: '',
+      pictures: '',
     },
   ];
 
@@ -1340,6 +1383,7 @@ export const mockActivities = async () => {
     }));
 
   await inactiveRaffleRepository.insert(raffles);
+  await raffleDetailsRepository.insert(raffleDetails);
   await blockRepository.insert(blockEntries);
   await ticketRepository.insert(tickets);
   await giftRepository.insert(gifts);
@@ -1358,6 +1402,7 @@ export const activityItems: Partial<ActivityWithTimeView>[] = [
     txId: 'gift_tx1',
     height: 1000,
     timestamp: 1000000,
+    raffleName: 'raffle1',
     ticketCount: 0n,
   },
   {
@@ -1367,6 +1412,7 @@ export const activityItems: Partial<ActivityWithTimeView>[] = [
     txId: 'gift_tx2',
     height: 3000,
     timestamp: 3000000,
+    raffleName: 'raffle3',
     ticketCount: 0n,
   },
   {
@@ -1376,6 +1422,7 @@ export const activityItems: Partial<ActivityWithTimeView>[] = [
     txId: 'raffle_tx1',
     height: 1000,
     timestamp: 1000000,
+    raffleName: 'raffle1',
     ticketCount: 0n,
   },
   {
@@ -1385,6 +1432,7 @@ export const activityItems: Partial<ActivityWithTimeView>[] = [
     txId: 'raffle_tx2',
     height: 2000,
     timestamp: 2000000,
+    raffleName: 'raffle2',
     ticketCount: 0n,
   },
   {
@@ -1394,6 +1442,7 @@ export const activityItems: Partial<ActivityWithTimeView>[] = [
     txId: 'raffle_tx3',
     height: 3000,
     timestamp: 3000000,
+    raffleName: 'raffle3',
     ticketCount: 0n,
   },
   {
@@ -1403,6 +1452,7 @@ export const activityItems: Partial<ActivityWithTimeView>[] = [
     txId: 'safepay_tx1',
     height: 2500,
     timestamp: 2500000,
+    raffleName: 'raffle2',
     ticketCount: 3n,
   },
   {
@@ -1412,6 +1462,7 @@ export const activityItems: Partial<ActivityWithTimeView>[] = [
     txId: 'safepay_tx2',
     height: 1100,
     timestamp: 1100000,
+    raffleName: 'raffle1',
     ticketCount: 1n,
   },
   {
@@ -1421,6 +1472,7 @@ export const activityItems: Partial<ActivityWithTimeView>[] = [
     txId: 'safepay_tx3',
     height: 1500,
     timestamp: 1500000,
+    raffleName: 'raffle1',
     ticketCount: 0n,
   },
   {
@@ -1430,6 +1482,7 @@ export const activityItems: Partial<ActivityWithTimeView>[] = [
     txId: 'safepay_tx4',
     height: 3500,
     timestamp: 3500000,
+    raffleName: 'raffle3',
     ticketCount: 0n,
   },
   {
@@ -1439,6 +1492,7 @@ export const activityItems: Partial<ActivityWithTimeView>[] = [
     txId: 'ticket_tx1',
     height: 1000,
     timestamp: 1000000,
+    raffleName: 'raffle1',
     ticketCount: 5n,
   },
   {
@@ -1448,6 +1502,7 @@ export const activityItems: Partial<ActivityWithTimeView>[] = [
     txId: 'ticket_tx2',
     height: 2000,
     timestamp: 2000000,
+    raffleName: 'raffle2',
     ticketCount: 3n,
   },
   {
@@ -1457,6 +1512,7 @@ export const activityItems: Partial<ActivityWithTimeView>[] = [
     txId: 'ticket_tx3',
     height: 1000,
     timestamp: 1000000,
+    raffleName: 'raffle1',
     ticketCount: 1n,
   },
 ];

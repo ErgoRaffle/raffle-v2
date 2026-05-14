@@ -2,8 +2,8 @@ import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { TokenMap } from '@rosen-bridge/tokens';
 import * as bitcoin from 'bitcoinjs-lib';
 
-import { DynamicExtractor } from '../../lib/extractors/dynamicExtractor';
-import type { TxOutputRune } from '../../lib/network/types';
+import type { TxOutputRune } from '../../lib';
+import { DynamicExtractor } from '../../lib';
 import { createDatabase } from '../utils.mock';
 import {
   sampleDynamicExtractedDataWithRune,
@@ -15,7 +15,7 @@ import {
   sampleTokenId,
 } from './testData';
 
-const unisatUrl = 'https://open-api.unisat.io';
+const unisatUrl = '--';
 const unisatApiKey = '';
 
 describe('DynamicExtractor', () => {
@@ -146,6 +146,9 @@ describe('DynamicExtractor', () => {
       const storeEntitiesSpy = vi
         .spyOn(extractor.actions, 'storeEntities')
         .mockResolvedValue(true);
+      vi.spyOn(extractor['runesNetwork'], 'getTxOutputRunes').mockResolvedValue(
+        [],
+      );
 
       // sampleBitcoinTx vout scriptPubKey decodes to sampleBitcoinAddress (P2WPKH)
       extractor.addNewAddress(sampleBitcoinAddress, 'btc');

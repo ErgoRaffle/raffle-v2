@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { ActivityViewActions } from '../../lib';
+import { ActivityType, ActivityViewActions } from '../../lib';
 import { activityItems, mockActivities } from '../testData';
 
 describe('ActivityViewActions', () => {
@@ -28,18 +28,18 @@ describe('ActivityViewActions', () => {
       const result = await actions.getActivities({ limit: 100 });
       expect(result.total).toBe(12);
       expect(result.items).toEqual([
+        activityItems[8],
+        activityItems[4],
+        activityItems[1],
+        activityItems[5],
+        activityItems[3],
+        activityItems[10],
+        activityItems[7],
+        activityItems[6],
         activityItems[2],
         activityItems[9],
         activityItems[11],
         activityItems[0],
-        activityItems[6],
-        activityItems[7],
-        activityItems[3],
-        activityItems[10],
-        activityItems[5],
-        activityItems[4],
-        activityItems[1],
-        activityItems[8],
       ]);
     });
 
@@ -62,12 +62,12 @@ describe('ActivityViewActions', () => {
       });
       expect(result.total).toBe(6);
       expect(result.items).toEqual([
+        activityItems[4],
+        activityItems[5],
+        activityItems[10],
+        activityItems[7],
         activityItems[2],
         activityItems[0],
-        activityItems[7],
-        activityItems[10],
-        activityItems[5],
-        activityItems[4],
       ]);
     });
 
@@ -89,10 +89,10 @@ describe('ActivityViewActions', () => {
       });
       expect(result.total).toBe(4);
       expect(result.items).toEqual([
-        activityItems[11],
-        activityItems[6],
-        activityItems[1],
         activityItems[8],
+        activityItems[1],
+        activityItems[6],
+        activityItems[11],
       ]);
     });
 
@@ -115,12 +115,12 @@ describe('ActivityViewActions', () => {
       });
       expect(result.total).toBe(6);
       expect(result.items).toEqual([
+        activityItems[7],
+        activityItems[6],
         activityItems[2],
         activityItems[9],
         activityItems[11],
         activityItems[0],
-        activityItems[6],
-        activityItems[7],
       ]);
     });
 
@@ -142,9 +142,9 @@ describe('ActivityViewActions', () => {
       });
       expect(result.total).toBe(3);
       expect(result.items).toEqual([
+        activityItems[8],
         activityItems[4],
         activityItems[1],
-        activityItems[8],
       ]);
     });
 
@@ -166,9 +166,55 @@ describe('ActivityViewActions', () => {
       });
       expect(result.total).toBe(3);
       expect(result.items).toEqual([
+        activityItems[7],
         activityItems[2],
         activityItems[0],
-        activityItems[7],
+      ]);
+    });
+
+    /**
+     * @target should filter activities by a single type
+     * @dependencies
+     * @scenario
+     * - call getActivities with types=[Donation]
+     * @expected
+     * - total should be 3 (all donation rows)
+     * - items should be ordered by height DESC
+     */
+    it('should filter activities by a single type', async () => {
+      const result = await actions.getActivities({
+        types: [ActivityType.Donation],
+        limit: 100,
+      });
+      expect(result.total).toBe(3);
+      expect(result.items).toEqual([
+        activityItems[10],
+        activityItems[9],
+        activityItems[11],
+      ]);
+    });
+
+    /**
+     * @target should filter activities by multiple types
+     * @dependencies
+     * @scenario
+     * - call getActivities with types=[Donation, Gift]
+     * @expected
+     * - total should be 5 (3 donations + 2 gifts)
+     * - items should be ordered by height DESC
+     */
+    it('should filter activities by multiple types', async () => {
+      const result = await actions.getActivities({
+        types: [ActivityType.Donation, ActivityType.Gift],
+        limit: 100,
+      });
+      expect(result.total).toBe(5);
+      expect(result.items).toEqual([
+        activityItems[1],
+        activityItems[10],
+        activityItems[9],
+        activityItems[11],
+        activityItems[0],
       ]);
     });
 
@@ -209,7 +255,7 @@ describe('ActivityViewActions', () => {
         limit: 100,
       });
       expect(result.total).toBe(2);
-      expect(result.items).toEqual([activityItems[10], activityItems[5]]);
+      expect(result.items).toEqual([activityItems[5], activityItems[10]]);
     });
 
     /**
@@ -229,7 +275,7 @@ describe('ActivityViewActions', () => {
         limit: 100,
       });
       expect(result.total).toBe(2);
-      expect(result.items).toEqual([activityItems[1], activityItems[8]]);
+      expect(result.items).toEqual([activityItems[8], activityItems[1]]);
     });
 
     /**
@@ -264,9 +310,9 @@ describe('ActivityViewActions', () => {
       const result = await actions.getActivities({ limit: 3, offset: 2 });
       expect(result.total).toBe(12);
       expect(result.items).toEqual([
-        activityItems[11],
-        activityItems[0],
-        activityItems[6],
+        activityItems[1],
+        activityItems[5],
+        activityItems[3],
       ]);
     });
   });

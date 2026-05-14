@@ -5,6 +5,7 @@ import {
   RaffleStatus,
   USER_ACTIVITY_TYPES,
   InclusionStatus,
+  ActivityType,
 } from '@ergo-raffle/db-views';
 
 import { DEFAULT_API_PAGE_SIZE, MAX_API_PAGE_SIZE } from '../../const';
@@ -149,16 +150,38 @@ const activityItemSchema = z.object({
   type: z.enum(USER_ACTIVITY_TYPES),
   ticketCount: z.bigint().optional(),
   txId: z.string(),
+  raffleName: z.string().optional(),
   height: z.number(),
   timestamp: z.number().optional(),
+  status: z.enum(['success', 'failed', 'pending']),
 });
 
-const getActivitiesQuerySchema = z.object({
-  address: z.string().optional().refine(addressValidator),
-  raffleId: z.string().optional(),
-  offset: z.coerce.number().optional().default(0),
-  limit: z.coerce.number().optional().default(DEFAULT_API_PAGE_SIZE),
-});
+const raffleTypes = z.enum([
+  ActivityType.Creation,
+  ActivityType.Donation,
+  ActivityType.Gift,
+  ActivityType.TicketRedeem,
+  ActivityType.GiftReturn,
+]);
+
+const getActivitiesQuerySchema = z
+  .object({
+    address: z.string().optional().refine(addressValidator),
+    raffleId: z.string().optional(),
+    types: z
+      .union([z.array(raffleTypes), raffleTypes.transform((item) => [item])])
+      .optional(),
+    offset: z.coerce.number().optional().default(0),
+    limit: z.coerce.number().optional().default(DEFAULT_API_PAGE_SIZE),
+  })
+  .refine(
+    (data) => {
+      return !(data.raffleId === undefined && data.address === undefined);
+    },
+    {
+      message: 'One of "raffleId" or "address" must be defined',
+    },
+  );
 
 const getActivitiesResponseSchema = paginatedSchema(activityItemSchema);
 

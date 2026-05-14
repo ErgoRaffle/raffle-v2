@@ -1,6 +1,6 @@
 import { DataSource } from '@rosen-bridge/extended-typeorm';
 
-import { DynamicBoxEntity } from '../lib/entities';
+import { DynamicBoxEntity } from '../lib';
 
 /**
  * Create an in-memory SQLite DataSource for DynamicExtractor tests.

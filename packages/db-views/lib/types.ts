@@ -20,6 +20,14 @@ enum RaffleStatus {
   Active = 'active',
 }
 
+enum ActivityType {
+  Creation = 'creation',
+  Donation = 'donation',
+  Gift = 'gift',
+  TicketRedeem = 'ticket_redeem',
+  GiftReturn = 'gift_return',
+}
+
 type RaffleSearchCriteria = {
   text: string;
   tokenIds: Array<string>;
@@ -61,6 +69,7 @@ type getUserActivityParams = {
     ergoTree?: string;
     raffleId?: string;
   };
+  types?: Array<ActivityType>;
   offset?: number;
   limit: number;
 };
@@ -79,4 +88,5 @@ export {
   ActivityWithTotalResult,
   GetWinnerParams,
   InclusionStatus,
+  ActivityType,
 };

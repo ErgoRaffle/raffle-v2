@@ -22,7 +22,7 @@ const registerGetActivitiesRoute = (fastify: FastifyWithZod) => {
       },
     },
     async (request, response) => {
-      const { address, raffleId, offset, limit } = request.query;
+      const { address, raffleId, types, offset, limit } = request.query;
       const ergoTree = address
         ? ErgoAddress.fromBase58(address).ergoTree
         : undefined;
@@ -30,6 +30,7 @@ const registerGetActivitiesRoute = (fastify: FastifyWithZod) => {
         .getActivityViewAction()
         .getActivities({
           query: { ergoTree, raffleId },
+          types,
           offset,
           limit,
         });
@@ -38,6 +39,8 @@ const registerGetActivitiesRoute = (fastify: FastifyWithZod) => {
         items: result.items.map((item) => ({
           ...item,
           address: transformErgoTreeToAddress(item.ergoTree),
+          /* TODO: Implement status for activities local/ergo/ergoraffle/raffle-v2/-/issues/150 */
+          status: 'success',
         })),
       });
     },
