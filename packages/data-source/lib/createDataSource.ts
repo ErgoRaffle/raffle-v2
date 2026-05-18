@@ -36,6 +36,7 @@ import {
   CreationProxyEntity,
   DonationProxyEntity,
   AddGiftProxyEntity,
+  TagEntity,
   migrations as extractorsMigrations,
 } from '@ergo-raffle/extractors';
 import {
@@ -75,6 +76,7 @@ const ENTITIES = [
   ActivityView,
   ActivityWithTimeView,
   WinnerView,
+  TagEntity,
 ];
 
 const MIGRATIONS = {

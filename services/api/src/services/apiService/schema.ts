@@ -33,6 +33,12 @@ const versionResponseSchema = z.object({
   version: z.string(),
 });
 
+const tagsQuerySchema = z.object({
+  query: z.string().optional(),
+});
+
+const tagsResponseSchema = z.array(z.string());
+
 const errorResponseSchema = z.object({
   message: z.string(),
 });
@@ -247,4 +253,6 @@ export {
   getTokensResponseSchema,
   searchTokensQuerySchema,
   searchTokensResponseSchema,
+  tagsQuerySchema,
+  tagsResponseSchema,
 };

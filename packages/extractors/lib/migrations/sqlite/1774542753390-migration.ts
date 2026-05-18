@@ -299,9 +299,17 @@ export class Migration1774542753390 implements MigrationInterface {
                 CONSTRAINT "UQ_1c3eb64d3ed8435c9eb69d41005" UNIQUE ("identifier", "extractor")
             )
         `);
+    await queryRunner.query(`
+            CREATE TABLE "tag" (
+                "title" varchar PRIMARY KEY NOT NULL
+            )
+        `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`
+        DROP TABLE "tag"
+    `);
     await queryRunner.query(`
             DROP TABLE "winner_prize"
         `);
