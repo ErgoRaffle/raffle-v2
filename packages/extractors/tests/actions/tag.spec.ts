@@ -17,12 +17,12 @@ describe('TagAction', () => {
     ctx.dataSource = dataSource;
   });
 
-  describe('upsertTag', () => {
+  describe('upsertTags', () => {
     /**
      * @target should successfully upsert a new tag
      * @dependencies
      * @scenario
-     * - call the upsertTag function with a new tag
+     * - call the upsertTags function with a new tag
      * - check if tag is upserted correctly
      * @expected
      * - Tag should be upserted successfully
@@ -31,7 +31,7 @@ describe('TagAction', () => {
       tagAction,
       dataSource,
     }) => {
-      await tagAction.upsertTag('test-tag');
+      await tagAction.upsertTags(['test-tag']);
 
       const tagRepository = dataSource.getRepository('TagEntity');
       const tags = await tagRepository.find();
@@ -43,7 +43,7 @@ describe('TagAction', () => {
      * @target should successfully update an existing tag
      * @dependencies
      * @scenario
-     * - call the upsertTag function with an existing tag
+     * - call the upsertTags function with an existing tag
      * - check if tag is updated correctly
      * @expected
      * - Tag should be updated successfully
@@ -52,8 +52,29 @@ describe('TagAction', () => {
       tagAction,
       dataSource,
     }) => {
-      await tagAction.upsertTag('test-tag');
-      await tagAction.upsertTag('test-tag');
+      await tagAction.upsertTags(['test-tag']);
+      await tagAction.upsertTags(['test-tag']);
+      const tagRepository = dataSource.getRepository('TagEntity');
+      const tags = await tagRepository.find();
+      expect(tags).toHaveLength(1);
+      expect(tags[0].title).toBe('test-tag');
+    });
+
+    /**
+     * @target should not insert duplicate tag when case differs
+     * @dependencies
+     * @scenario
+     * - call upsertTags with the same tag title but different casing
+     * @expected
+     * - only one row should exist in tag table
+     * - stored title should be normalized (lower-case)
+     */
+    it<TestInterface>(`should not insert duplicate tag when case differs`, async ({
+      tagAction,
+      dataSource,
+    }) => {
+      await tagAction.upsertTags(['TeSt-TaG']);
+      await tagAction.upsertTags(['test-tag']);
 
       const tagRepository = dataSource.getRepository('TagEntity');
       const tags = await tagRepository.find();
@@ -76,37 +97,13 @@ describe('TagAction', () => {
     it<TestInterface>(`should successfully get tags with a query`, async ({
       tagAction,
     }) => {
-      await tagAction.upsertTag('test-tag-1');
-      await tagAction.upsertTag('test-tag-2');
-      await tagAction.upsertTag('other-tag');
+      await tagAction.upsertTags(['test-tag-1', 'test-tag-2', 'other-tag']);
 
       const tags = await tagAction.getTags('test');
 
       expect(tags).toHaveLength(2);
       expect(tags[0].title).toBe('test-tag-1');
       expect(tags[1].title).toBe('test-tag-2');
-    });
-
-    /**
-     * @target should successfully get tags with case insensitive query
-     * @dependencies
-     * @scenario
-     * - upsert multiple tags with different cases
-     * - call the getTags function with a lowercase query
-     * - check if tags are returned correctly
-     * @expected
-     * - Tags should be returned successfully case insensitive
-     */
-    it<TestInterface>(`should successfully get tags with case insensitive query`, async ({
-      tagAction,
-    }) => {
-      await tagAction.upsertTag('Test-Tag-1');
-      await tagAction.upsertTag('TEST-TAG-2');
-      await tagAction.upsertTag('other-tag');
-
-      const tags = await tagAction.getTags('test');
-
-      expect(tags).toHaveLength(2);
     });
 
     /**
@@ -117,16 +114,17 @@ describe('TagAction', () => {
      * - call the getTags function with offset and limit
      * - check if tags are returned correctly
      * @expected
-     * - Tags should be returned with correct offset and limit
+     * - Tags should be returned with the correct offset and limit
      */
     it<TestInterface>(`should successfully get tags with offset and limit`, async ({
       tagAction,
     }) => {
-      await tagAction.upsertTag('test-tag-1');
-      await tagAction.upsertTag('test-tag-2');
-      await tagAction.upsertTag('test-tag-3');
-      await tagAction.upsertTag('test-tag-4');
-
+      await tagAction.upsertTags([
+        'test-tag-1',
+        'test-tag-2',
+        'test-tag-3',
+        'test-tag-4',
+      ]);
       const tags = await tagAction.getTags('test', 1, 2);
 
       expect(tags).toHaveLength(2);
@@ -145,8 +143,7 @@ describe('TagAction', () => {
     it<TestInterface>(`should return empty array when no tags match query`, async ({
       tagAction,
     }) => {
-      await tagAction.upsertTag('test-tag-1');
-      await tagAction.upsertTag('test-tag-2');
+      await tagAction.upsertTags(['test-tag-1', 'test-tag-2']);
 
       const tags = await tagAction.getTags('nonexistent');
 

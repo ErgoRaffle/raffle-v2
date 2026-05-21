@@ -15,10 +15,12 @@ import {
   AddGiftProxyExtractor,
   CreationProxyExtractor,
   DonationProxyExtractor,
+  GiftBoxInterface,
   GiftExtractor,
   GiftRedeemExtractor,
   GiftTokenRepoExtractor,
   InactiveRaffleExtractor,
+  RaffleDetailsBoxInterface,
   RaffleDetailsExtractor,
   SafePayExtractor,
   ServiceExtractor,
@@ -30,10 +32,6 @@ import {
   WinnerExtractor,
   WinnerPrizeExtractor,
 } from '@ergo-raffle/extractors';
-import {
-  GiftBoxInterface,
-  RaffleDetailsBoxInterface,
-} from '@ergo-raffle/extractors/dist/interfaces/types';
 
 import { configs } from '../config';
 import { Scanner as ScannerBaseOption } from '../types';
@@ -90,7 +88,7 @@ export class ScannerService extends AbstractService {
     const tokenIds = new Set<string>();
     gifts.forEach((gift) => {
       const box = deserializeBox(Buffer.from(gift.serialized, 'base64'));
-      box.assets.forEach((asset) => tokenIds.add(asset.tokenId));
+      box.assets.slice(1).forEach((asset) => tokenIds.add(asset.tokenId));
     });
     this.logger.debug(
       `Tokens in new gift boxes are ${JSON.stringify(tokenIds.values().toArray())}`,
@@ -118,9 +116,7 @@ export class ScannerService extends AbstractService {
     this.logger.debug(
       `Tags in new raffle details boxes are ${JSON.stringify(tags.values().toArray())}`,
     );
-    for (let tag of tags.values().toArray()) {
-      await this.tagAction.upsertTag(tag);
-    }
+    await this.tagAction.upsertTags(tags.values().toArray());
   };
 
   /**

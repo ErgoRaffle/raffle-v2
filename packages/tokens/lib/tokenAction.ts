@@ -5,7 +5,7 @@ import {
   Raw,
   Repository,
 } from '@rosen-bridge/extended-typeorm';
-import { Mutex } from 'await-semaphore';
+import { Mutex } from '@rosen-bridge/semaphore';
 
 import { ErgoNodeNetwork } from '@ergo-raffle/utils';
 
@@ -135,12 +135,14 @@ export class TokenAction {
     return this.repository.findAndCount({
       where: [
         {
-          name: Raw(
-            (alias) => `LOWER(${alias}) LIKE '%${query.toLowerCase()}%'`,
-          ),
+          name: Raw((alias) => `LOWER(${alias}) LIKE :query`, {
+            query: `%${query.toLowerCase()}%`,
+          }),
         },
         {
-          id: Raw((alias) => `LOWER(${alias}) LIKE '%${query.toLowerCase()}%'`),
+          id: Raw((alias) => `LOWER(${alias}) LIKE :query`, {
+            query: `%${query.toLowerCase()}%`,
+          }),
         },
       ],
       take: limit,

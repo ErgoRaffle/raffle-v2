@@ -96,10 +96,6 @@ export const mockSingleAsset: WinnerGift[] = [
 
 export const serializedGiftTokens = [
   {
-    amount: 1n,
-    tokenId: '38ddb6033076fba55edbd577ae049c2b03adc382a5f211dc774d777ba6d73eb4',
-  },
-  {
     amount: 120n,
     tokenId: 'bdf845d6fff94d72f23abb490d8cce38b4775022ddc1d8bf0cff8c8da202e374',
   },

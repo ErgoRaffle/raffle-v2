@@ -1,5 +1,5 @@
 import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
-import { DataSource, Raw, Repository } from '@rosen-bridge/extended-typeorm';
+import { DataSource, Like, Repository } from '@rosen-bridge/extended-typeorm';
 
 import { TagEntity } from '../entities';
 
@@ -19,11 +19,17 @@ export class TagAction {
 
   /**
    * Inserts a tag or updates it when a row with the same title already exists.
-   * @param tag - Tag title to store
+   * @param tags
    */
-  upsertTag = async (tag: string) => {
-    this.logger.debug(`Upserting tag ${tag}`);
-    const res = await this.repository.upsert({ title: tag }, ['title']);
+  upsertTags = async (tags: Array<string>) => {
+    this.logger.debug(`Upserting tag ${JSON.stringify(tags)}`);
+    const normalized = [...new Set(tags.map((t) => t.toLowerCase()))].filter(
+      (t) => t !== '',
+    );
+    const res = await this.repository.upsert(
+      normalized.map((item) => ({ title: item })),
+      ['title'],
+    );
     this.logger.trace(`Upserted tag ${res}`);
   };
 
@@ -37,9 +43,7 @@ export class TagAction {
   getTags = async (query?: string, offset = 0, limit = 10) => {
     return await this.repository.find({
       where: {
-        title: query
-          ? Raw((alias) => `LOWER(${alias}) LIKE '%${query.toLowerCase()}%'`)
-          : undefined,
+        title: Like(`%${query?.toLowerCase()}%`),
       },
       skip: offset,
       take: limit,
