@@ -15,8 +15,9 @@ import {
   GiftEntity,
   TicketEntity,
   WinnerPrizeEntity,
-} from '../lib/entities';
-import { migrations } from '../lib/migrations';
+  TagEntity,
+} from '../lib';
+import { migrations } from '../lib';
 
 const chain = new MockChain(1);
 export const serviceWallet = chain.addParty(
@@ -57,6 +58,7 @@ export const createDatabase = async (): Promise<DataSource> => {
       GiftEntity,
       TicketEntity,
       WinnerPrizeEntity,
+      TagEntity,
     ],
     migrations: [...migrations.sqlite, ...scannerMigrations.sqlite],
     synchronize: false,

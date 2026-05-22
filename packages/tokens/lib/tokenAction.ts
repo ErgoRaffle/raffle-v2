@@ -5,6 +5,7 @@ import {
   Raw,
   Repository,
 } from '@rosen-bridge/extended-typeorm';
+import { Mutex } from '@rosen-bridge/semaphore';
 
 import { ErgoNodeNetwork } from '@ergo-raffle/utils';
 
@@ -13,6 +14,7 @@ import { TokenEntity } from './tokenEntity';
 export class TokenAction {
   protected repository: Repository<TokenEntity>;
   private ergoNodeNetwork: ErgoNodeNetwork;
+  private mutex = new Mutex();
 
   /**
    * @param dataSource - TypeORM data source
@@ -61,17 +63,21 @@ export class TokenAction {
     isVerified: boolean,
   ): Promise<void> => {
     if (tokenIds.length === 0) return;
+    const release = await this.mutex.acquire();
+    try {
+      const unique = [...new Set(tokenIds)];
+      const existing = await this.repository.find({
+        where: { id: In(unique) },
+        select: ['id'],
+      });
+      const existingIds = new Set(existing.map((t) => t.id));
+      const missingIds = unique.filter((id) => !existingIds.has(id));
 
-    const unique = [...new Set(tokenIds)];
-    const existing = await this.repository.find({
-      where: { id: In(unique) },
-      select: ['id'],
-    });
-    const existingIds = new Set(existing.map((t) => t.id));
-    const missingIds = unique.filter((id) => !existingIds.has(id));
-
-    if (missingIds.length > 0) {
-      await this.insertTokens(missingIds, isVerified);
+      if (missingIds.length > 0) {
+        await this.insertTokens(missingIds, isVerified);
+      }
+    } finally {
+      release();
     }
   };
 
@@ -129,12 +135,14 @@ export class TokenAction {
     return this.repository.findAndCount({
       where: [
         {
-          name: Raw(
-            (alias) => `LOWER(${alias}) LIKE '%${query.toLowerCase()}%'`,
-          ),
+          name: Raw((alias) => `LOWER(${alias}) LIKE :query`, {
+            query: `%${query.toLowerCase()}%`,
+          }),
         },
         {
-          id: Raw((alias) => `LOWER(${alias}) LIKE '%${query.toLowerCase()}%'`),
+          id: Raw((alias) => `LOWER(${alias}) LIKE :query`, {
+            query: `%${query.toLowerCase()}%`,
+          }),
         },
       ],
       take: limit,

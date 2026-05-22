@@ -1,7 +1,7 @@
 import { AbstractEntityData } from '@rosen-bridge/abstract-extractor';
 import { InitializeOptions } from '@rosen-bridge/abstract-extractor';
 
-import { RaffleBoxType } from '../entities/raffleBoxEntity';
+import { RaffleBoxType } from '../entities';
 
 export interface AbstractRaffleBoxInterface extends AbstractEntityData {
   txId: string;

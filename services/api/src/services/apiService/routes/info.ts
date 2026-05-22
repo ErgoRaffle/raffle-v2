@@ -1,11 +1,13 @@
 import { FastifyWithZod } from '@rosen-bridge/fastify-enhanced';
 
 import packageJson from '../../../../package.json' with { type: 'json' };
-import { ERGO_SCANNER_NAME } from '../../../const';
+import { ERGO_SCANNER_NAME, MAX_API_PAGE_SIZE } from '../../../const';
 import { DbService } from '../../dbService';
 import {
   blockchainInfoResponseSchema,
   errorResponseSchema,
+  tagsQuerySchema,
+  tagsResponseSchema,
   versionResponseSchema,
 } from '../schema';
 
@@ -14,7 +16,6 @@ import {
  * service information including fee parameters and last scanned height
  * @param fastify - Fastify instance with Zod schema support
  */
-
 const registerBlockchainInfoRoute = (fastify: FastifyWithZod) => {
   fastify.get(
     '/info/blockchain',
@@ -78,12 +79,40 @@ const registerVersionRoute = (fastify: FastifyWithZod) => {
 };
 
 /**
+ * Registers the GET /info/tags route which searches stored tags by query string
+ * @param fastify - Fastify instance with Zod schema support
+ */
+const registerTagsRoute = (fastify: FastifyWithZod) => {
+  fastify.get(
+    '/info/tags',
+    {
+      schema: {
+        description: 'Search over tags',
+        tags: ['Info'],
+        querystring: tagsQuerySchema,
+        response: {
+          200: tagsResponseSchema,
+        },
+      },
+    },
+    async (request, reply) => {
+      const { query } = request.query;
+      const result = await DbService.getInstance()
+        .getTagAction()
+        .getTags(query, 0, MAX_API_PAGE_SIZE);
+      reply.status(200).send(result.map((item) => item.title));
+    },
+  );
+};
+
+/**
  * Registers all info-related routes on the given Fastify instance
  * @param fastify - Fastify instance with Zod schema support
  */
 const registerInfoRoutes = (fastify: FastifyWithZod) => {
   registerVersionRoute(fastify);
   registerBlockchainInfoRoute(fastify);
+  registerTagsRoute(fastify);
 };
 
 export { registerInfoRoutes };

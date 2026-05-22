@@ -125,4 +125,8 @@ export class TokenDetailsService extends PeriodicTaskService {
       },
     ];
   };
+
+  getTokenActions = () => {
+    return this.tokenAction;
+  };
 }

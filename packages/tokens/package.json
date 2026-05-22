@@ -30,7 +30,8 @@
   "dependencies": {
     "@ergo-raffle/utils": "0.0.0",
     "@rosen-bridge/abstract-logger": "^4.0.0",
-    "@rosen-bridge/extended-typeorm": "^1.0.1"
+    "@rosen-bridge/extended-typeorm": "^1.0.1",
+    "@rosen-bridge/semaphore": "^0.1.0"
   },
   "engines": {
     "node": ">=22.18.0",

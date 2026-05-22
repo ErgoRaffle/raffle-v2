@@ -13,3 +13,4 @@ export { SafePayEntity } from './safePay';
 export { DonationProxyEntity } from './donationProxy';
 export { CreationProxyEntity } from './creationProxy';
 export { AddGiftProxyEntity } from './addGiftProxy';
+export { TagEntity } from './tag';

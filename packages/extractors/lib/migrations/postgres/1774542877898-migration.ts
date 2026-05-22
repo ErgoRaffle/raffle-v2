@@ -319,9 +319,18 @@ export class Migration1774542877898 implements MigrationInterface {
                 CONSTRAINT "PK_032663e4fb5462f8282e834e200" PRIMARY KEY ("id")
             )
         `);
+    await queryRunner.query(`
+            CREATE TABLE "tag" (
+                "title" character varying NOT NULL,
+                CONSTRAINT "PK_ea660f2baf9c3f3141d7c2ef531" PRIMARY KEY ("title")
+            )
+        `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`
+        DROP TABLE "tag"
+    `);
     await queryRunner.query(`
             DROP TABLE "winner_prize"
         `);

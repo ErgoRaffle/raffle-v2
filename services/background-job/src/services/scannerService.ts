@@ -1,6 +1,7 @@
-import { AbstractLogger } from '@rosen-bridge/abstract-logger';
-import { DefaultLogger } from '@rosen-bridge/abstract-logger';
-import { ErgoScanner, ErgoNodeNetwork } from '@rosen-bridge/ergo-scanner';
+import { deserializeBox } from '@fleet-sdk/serializer';
+import { CallbackType } from '@rosen-bridge/abstract-extractor';
+import { AbstractLogger, DefaultLogger } from '@rosen-bridge/abstract-logger';
+import { ErgoNodeNetwork, ErgoScanner } from '@rosen-bridge/ergo-scanner';
 import { ErgoNetworkType } from '@rosen-bridge/scanner-interfaces';
 import {
   AbstractService,
@@ -10,28 +11,32 @@ import {
 
 import { raffleInfo } from '@ergo-raffle/contracts';
 import {
-  ServiceExtractor,
-  InactiveRaffleExtractor,
-  TicketRepoExtractor,
   ActiveRaffleExtractor,
-  GiftTokenRepoExtractor,
-  WinnerExtractor,
-  RaffleDetailsExtractor,
-  GiftExtractor,
-  TicketExtractor,
-  WinnerPrizeExtractor,
-  GiftRedeemExtractor,
-  SuccessRaffleExtractor,
-  TicketRedeemExtractor,
-  SafePayExtractor,
   AddGiftProxyExtractor,
-  DonationProxyExtractor,
   CreationProxyExtractor,
+  DonationProxyExtractor,
+  GiftBoxInterface,
+  GiftExtractor,
+  GiftRedeemExtractor,
+  GiftTokenRepoExtractor,
+  InactiveRaffleExtractor,
+  RaffleDetailsBoxInterface,
+  RaffleDetailsExtractor,
+  SafePayExtractor,
+  ServiceExtractor,
+  SuccessRaffleExtractor,
+  TagAction,
+  TicketExtractor,
+  TicketRedeemExtractor,
+  TicketRepoExtractor,
+  WinnerExtractor,
+  WinnerPrizeExtractor,
 } from '@ergo-raffle/extractors';
 
 import { configs } from '../config';
 import { Scanner as ScannerBaseOption } from '../types';
 import { DbService } from './dbService';
+import { TokenDetailsService } from './tokenDetailsService';
 
 export class ScannerService extends AbstractService {
   name = 'ScannerService';
@@ -39,12 +44,17 @@ export class ScannerService extends AbstractService {
   readonly scannerConfig: ScannerBaseOption;
   private shouldStop = false;
   private latestTimeOut: undefined | ReturnType<typeof setTimeout>;
+  private tagAction: TagAction;
   private continueStop = () => {
     return;
   };
   protected dependencies: Dependency[] = [
     {
       serviceName: DbService.name,
+      allowedStatuses: [ServiceStatus.running],
+    },
+    {
+      serviceName: TokenDetailsService.name,
       allowedStatuses: [ServiceStatus.running],
     },
   ];
@@ -55,6 +65,10 @@ export class ScannerService extends AbstractService {
     logger?: AbstractLogger,
   ) {
     super(logger);
+    this.tagAction = new TagAction(
+      DbService.getInstance().dataSource,
+      this.logger.child('tagAction'),
+    );
     this.scannerConfig = scannerConfig;
     this.ergoScanner = new ErgoScanner({
       network: new ErgoNodeNetwork(this.scannerConfig.node.url),
@@ -63,6 +77,47 @@ export class ScannerService extends AbstractService {
       logger: DefaultLogger.getInstance().child('ergoScanner'),
     });
   }
+
+  /**
+   * Insert callback for gift boxes: collects asset token ids from serialized
+   * boxes and ensures token metadata exists in the database.
+   * @param gifts - Newly inserted gift box data from the scanner
+   */
+  protected hookTokensInfo = async (gifts: Array<GiftBoxInterface>) => {
+    this.logger.debug('New gift entities. searching for tokens');
+    const tokenIds = new Set<string>();
+    gifts.forEach((gift) => {
+      const box = deserializeBox(Buffer.from(gift.serialized, 'base64'));
+      box.assets.slice(1).forEach((asset) => tokenIds.add(asset.tokenId));
+    });
+    this.logger.debug(
+      `Tokens in new gift boxes are ${JSON.stringify(tokenIds.values().toArray())}`,
+    );
+    await TokenDetailsService.getInstance()
+      .getTokenActions()
+      .ensureTokens(tokenIds.values().toArray(), false);
+  };
+
+  /**
+   * Insert callback for raffle details: parse comma-separated tags and upserts
+   * each distinct tag into the tag table.
+   * @param details - Newly inserted raffle details box data from the scanner
+   */
+  protected hookTags = async (details: Array<RaffleDetailsBoxInterface>) => {
+    this.logger.debug('New raffleDetails entities. searching for tags');
+    const tags = new Set<string>();
+    details.forEach((detail) => {
+      detail.tags.split(',').forEach((tag) => {
+        if (tag !== '') {
+          tags.add(tag.toLowerCase());
+        }
+      });
+    });
+    this.logger.debug(
+      `Tags in new raffle details boxes are ${JSON.stringify(tags.values().toArray())}`,
+    );
+    await this.tagAction.upsertTags(tags.values().toArray());
+  };
 
   /**
    * register all required extractors.
@@ -163,6 +218,7 @@ export class ScannerService extends AbstractService {
       },
       DefaultLogger.getInstance().child('raffleDetailsExtractor'),
     );
+    await raffleDetailsExtractor.hook(CallbackType.Insert, this.hookTags);
     await this.ergoScanner.registerExtractor(raffleDetailsExtractor);
 
     const giftExtractor = new GiftExtractor(
@@ -176,6 +232,7 @@ export class ScannerService extends AbstractService {
       },
       DefaultLogger.getInstance().child('giftExtractor'),
     );
+    await giftExtractor.hook(CallbackType.Insert, this.hookTokensInfo);
     await this.ergoScanner.registerExtractor(giftExtractor);
 
     const ticketExtractor = new TicketExtractor(
@@ -305,7 +362,7 @@ export class ScannerService extends AbstractService {
    *
    * @static
    * @param {ScannerBaseOption} scannerConfig
-   * @param {DbService} [dbService]
+   * @param logger
    * @memberof ScannerService
    */
   static readonly init = async (
@@ -354,7 +411,7 @@ export class ScannerService extends AbstractService {
    * Scan and fetch raffle boxes data
    * @returns {boolean}
    */
-  protected fetchData = async () => {
+  protected fetchData = async (): Promise<boolean> => {
     this.latestTimeOut = undefined;
     this.logger.info('Starting scanner fetchData job');
     try {

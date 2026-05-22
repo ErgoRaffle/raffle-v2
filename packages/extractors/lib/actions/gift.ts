@@ -3,7 +3,7 @@ import { AbstractLogger } from '@rosen-bridge/abstract-logger';
 import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
 
-import { GiftEntity } from '../entities/gift';
+import { GiftEntity } from '../entities';
 import { GiftBoxInterface } from '../interfaces/types';
 
 export class GiftAction extends AbstractErgoBoxAction<
