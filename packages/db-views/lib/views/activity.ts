@@ -29,42 +29,54 @@ import { ActivityType, UserActivityType } from '../types';
   expression: (dataSource) => {
     const creation = dataSource
       .createQueryBuilder()
-      .addSelect('raffle.projectErgoTree', 'ergoTree')
-      .addSelect('raffle.raffleId', 'raffleId')
-      .addSelect(`'${ActivityType.Creation}'`, 'type')
-      .addSelect('0', 'ticketCount')
-      .addSelect('raffle.txId', 'txId')
-      .addSelect('raffle.height', 'height')
+      .select([
+        'raffle.projectErgoTree AS "ergoTree"',
+        'raffle.raffleId AS "raffleId"',
+        `'${ActivityType.Creation}' AS type`,
+        '0 AS "ticketCount"',
+        '-1 AS "winnerIndex"',
+        'raffle.txId AS "txId"',
+        'raffle.height AS "height"',
+      ])
       .from(InactiveRaffleEntity, 'raffle');
 
     const donation = dataSource
       .createQueryBuilder()
-      .addSelect('ticket.donatorErgoTree', 'ergoTree')
-      .addSelect('ticket.raffleId', 'raffleId')
-      .addSelect(`'${ActivityType.Donation}'`, 'type')
-      .addSelect('ticket.rangeEnd - ticket.rangeStart', 'ticketCount')
-      .addSelect('ticket.txId', 'txId')
-      .addSelect('ticket.height', 'height')
+      .select([
+        'ticket.donatorErgoTree AS "ergoTree"',
+        'ticket.raffleId AS "raffleId"',
+        `'${ActivityType.Donation}' AS type`,
+        'ticket.rangeEnd - ticket.rangeStart AS "ticketCount"',
+        '-1 AS "winnerIndex"',
+        'ticket.txId AS "txId"',
+        'ticket.height AS "height"',
+      ])
       .from(TicketEntity, 'ticket');
 
     const gift = dataSource
       .createQueryBuilder()
-      .addSelect('gift.donatorErgoTree', 'ergoTree')
-      .addSelect('gift.raffleId', 'raffleId')
-      .addSelect(`'${ActivityType.Gift}'`, 'type')
-      .addSelect('0', 'ticketCount')
-      .addSelect('gift.txId', 'txId')
-      .addSelect('gift.height', 'height')
+      .select([
+        'gift.donatorErgoTree AS "ergoTree"',
+        'gift.raffleId AS "raffleId"',
+        `'${ActivityType.Gift}' AS type`,
+        '0 AS "ticketCount"',
+        'gift.winnerIndex AS "winnerIndex"',
+        'gift.txId AS "txId"',
+        'gift.height AS "height"',
+      ])
       .from(GiftEntity, 'gift');
 
     const ticketRedeem = dataSource
       .createQueryBuilder()
-      .addSelect('ticket.donatorErgoTree', 'ergoTree')
-      .addSelect('ticket.raffleId', 'raffleId')
-      .addSelect(`'${ActivityType.TicketRedeem}'`, 'type')
-      .addSelect('ticket.rangeEnd - ticket.rangeStart', 'ticketCount')
-      .addSelect('safePay.txId', 'txId')
-      .addSelect('safePay.height', 'height')
+      .select([
+        'ticket.donatorErgoTree AS "ergoTree"',
+        'ticket.raffleId AS "raffleId"',
+        `'${ActivityType.TicketRedeem}' AS type`,
+        'ticket.rangeEnd - ticket.rangeStart AS "ticketCount"',
+        '-1 AS "winnerIndex"',
+        'safePay.txId AS "txId"',
+        'safePay.height AS "height"',
+      ])
       .from(SafePayEntity, 'safePay')
       .innerJoin(
         TicketEntity,
@@ -75,16 +87,18 @@ import { ActivityType, UserActivityType } from '../types';
 
     const giftReturn = dataSource
       .createQueryBuilder()
-      .addSelect('gift.donatorErgoTree', 'ergoTree')
-      .addSelect('gift.raffleId', 'raffleId')
-      .addSelect(`'${ActivityType.GiftReturn}'`, 'type')
-      .addSelect('0', 'ticketCount')
-      .addSelect('safePay.txId', 'txId')
-      .addSelect('safePay.height', 'height')
+      .select([
+        'gift.donatorErgoTree AS "ergoTree"',
+        'gift.raffleId AS "raffleId"',
+        `'${ActivityType.GiftReturn}' AS type`,
+        '0 AS "ticketCount"',
+        'gift.winnerIndex AS "winnerIndex"',
+        'safePay.txId AS "txId"',
+        'safePay.height AS "height"',
+      ])
       .from(SafePayEntity, 'safePay')
       .innerJoin(GiftEntity, 'gift', 'gift.identifier = safePay.inputBoxId')
       .innerJoin(GiftRedeemEntity, 'redeem', 'redeem.txId = safePay.txId');
-
     return {
       getQuery: () =>
         [
@@ -109,6 +123,9 @@ export class ActivityView {
 
   @ViewColumn({ transformer: new BigIntValueTransformer() })
   ticketCount?: bigint;
+
+  @ViewColumn()
+  winnerIndex?: number;
 
   @ViewColumn()
   txId: string;

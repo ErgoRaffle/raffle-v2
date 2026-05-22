@@ -15,7 +15,7 @@ import {
   raffleDetailsSchema,
   raffleSearchParamScheme,
 } from '../../schema';
-import { registerGetBasketRoute } from './basket';
+import { registerBasketWinnerRoute, registerGetBasketRoute } from './basket';
 
 /**
  * Registers the GET /raffle route which returns a list of raffles
@@ -127,6 +127,7 @@ const registerRaffleRoutes = (fastify: FastifyWithZod) => {
   registerGetRafflesRoute(fastify);
   registerGetRaffleRoute(fastify);
   registerGetBasketRoute(fastify);
+  registerBasketWinnerRoute(fastify);
 };
 
 export { registerRaffleRoutes };

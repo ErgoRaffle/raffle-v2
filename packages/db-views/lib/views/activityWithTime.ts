@@ -19,6 +19,7 @@ import { ActivityView } from './activity';
       .addSelect('activity.raffleId', 'raffleId')
       .addSelect('activity.type', 'type')
       .addSelect('activity.ticketCount', 'ticketCount')
+      .addSelect('activity.winnerIndex', 'winnerIndex')
       .addSelect('activity.txId', 'txId')
       .addSelect('activity.height', 'height')
       .addSelect('block.timestamp', 'timestamp')
@@ -47,6 +48,9 @@ export class ActivityWithTimeView {
 
   @ViewColumn({ transformer: new BigIntValueTransformer() })
   ticketCount?: bigint;
+
+  @ViewColumn()
+  winnerIndex?: number;
 
   @ViewColumn()
   txId: string;

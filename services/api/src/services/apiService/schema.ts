@@ -155,6 +155,7 @@ const activityItemSchema = z.object({
   raffleId: z.string(),
   type: z.enum(USER_ACTIVITY_TYPES),
   ticketCount: z.bigint().optional(),
+  winnerIndex: z.number().optional(),
   txId: z.string(),
   raffleName: z.string().optional(),
   height: z.number(),
@@ -193,6 +194,16 @@ const getActivitiesResponseSchema = paginatedSchema(activityItemSchema);
 
 const raffleSearchParamScheme = z.object({
   raffleId: z.string(),
+});
+
+const basketTransactionParams = z.object({
+  raffleId: z.string(),
+  winnerIndex: z.coerce.number(),
+});
+
+const basketTransactionsQueryParamSchema = z.object({
+  offset: z.coerce.number().optional().default(0),
+  limit: z.coerce.number().optional().default(DEFAULT_API_PAGE_SIZE),
 });
 
 const winnerGiftsSchema = z.object({
@@ -255,4 +266,6 @@ export {
   searchTokensResponseSchema,
   tagsQuerySchema,
   tagsResponseSchema,
+  basketTransactionParams,
+  basketTransactionsQueryParamSchema,
 };
