@@ -179,7 +179,11 @@ const getActivitiesQuerySchema = z
       .union([z.array(raffleTypes), raffleTypes.transform((item) => [item])])
       .optional(),
     offset: z.coerce.number().optional().default(0),
-    limit: z.coerce.number().optional().default(DEFAULT_API_PAGE_SIZE),
+    limit: z.coerce
+      .number()
+      .max(MAX_API_PAGE_SIZE)
+      .optional()
+      .default(DEFAULT_API_PAGE_SIZE),
   })
   .refine(
     (data) => {
@@ -203,7 +207,11 @@ const basketTransactionParams = z.object({
 
 const basketTransactionsQueryParamSchema = z.object({
   offset: z.coerce.number().optional().default(0),
-  limit: z.coerce.number().optional().default(DEFAULT_API_PAGE_SIZE),
+  limit: z.coerce
+    .number()
+    .max(MAX_API_PAGE_SIZE)
+    .optional()
+    .default(DEFAULT_API_PAGE_SIZE),
 });
 
 const winnerGiftsSchema = z.object({
