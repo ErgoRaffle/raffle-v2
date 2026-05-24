@@ -13,7 +13,7 @@ export class ActivityViewActions {
   /**
    * Retrieves user activities from the database with optional filtering by ergoTree or raffleId, and pagination.
    * @param params - Query parameters including optional ergoTree/raffleId filters, offset, and limit.
-   * @returns Object containing array of user activity views and total count.
+   * @returns Object containing an array of user activity views and total count.
    */
   getActivities = async (
     params: getUserActivityParams,
@@ -22,6 +22,7 @@ export class ActivityViewActions {
       where: {
         ergoTree: params.query?.ergoTree,
         raffleId: params.query?.raffleId,
+        winnerIndex: params.query?.winnerIndex,
         type:
           params.types && params.types.length > 0
             ? In(params.types)

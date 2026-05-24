@@ -68,6 +68,7 @@ type getUserActivityParams = {
   query?: {
     ergoTree?: string;
     raffleId?: string;
+    winnerIndex?: number;
   };
   types?: Array<ActivityType>;
   offset?: number;

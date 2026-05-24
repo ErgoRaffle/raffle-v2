@@ -1404,6 +1404,7 @@ export const activityItems: Partial<ActivityWithTimeView>[] = [
     timestamp: 1000000,
     raffleName: 'raffle1',
     ticketCount: 0n,
+    winnerIndex: 0,
   },
   {
     ergoTree: 'addr_user3',
@@ -1414,6 +1415,7 @@ export const activityItems: Partial<ActivityWithTimeView>[] = [
     timestamp: 3000000,
     raffleName: 'raffle3',
     ticketCount: 0n,
+    winnerIndex: 0,
   },
   {
     ergoTree: 'addr_user1',
@@ -1424,6 +1426,7 @@ export const activityItems: Partial<ActivityWithTimeView>[] = [
     timestamp: 1000000,
     raffleName: 'raffle1',
     ticketCount: 0n,
+    winnerIndex: -1,
   },
   {
     ergoTree: 'addr_user2',
@@ -1434,6 +1437,7 @@ export const activityItems: Partial<ActivityWithTimeView>[] = [
     timestamp: 2000000,
     raffleName: 'raffle2',
     ticketCount: 0n,
+    winnerIndex: -1,
   },
   {
     ergoTree: 'addr_user1',
@@ -1444,6 +1448,7 @@ export const activityItems: Partial<ActivityWithTimeView>[] = [
     timestamp: 3000000,
     raffleName: 'raffle3',
     ticketCount: 0n,
+    winnerIndex: -1,
   },
   {
     ergoTree: 'addr_user1',
@@ -1454,6 +1459,7 @@ export const activityItems: Partial<ActivityWithTimeView>[] = [
     timestamp: 2500000,
     raffleName: 'raffle2',
     ticketCount: 3n,
+    winnerIndex: -1,
   },
   {
     ergoTree: 'addr_user3',
@@ -1464,6 +1470,7 @@ export const activityItems: Partial<ActivityWithTimeView>[] = [
     timestamp: 1100000,
     raffleName: 'raffle1',
     ticketCount: 1n,
+    winnerIndex: -1,
   },
   {
     ergoTree: 'addr_user1',
@@ -1474,6 +1481,7 @@ export const activityItems: Partial<ActivityWithTimeView>[] = [
     timestamp: 1500000,
     raffleName: 'raffle1',
     ticketCount: 0n,
+    winnerIndex: 0,
   },
   {
     ergoTree: 'addr_user3',
@@ -1484,6 +1492,7 @@ export const activityItems: Partial<ActivityWithTimeView>[] = [
     timestamp: 3500000,
     raffleName: 'raffle3',
     ticketCount: 0n,
+    winnerIndex: 0,
   },
   {
     ergoTree: 'addr_user2',
@@ -1494,6 +1503,7 @@ export const activityItems: Partial<ActivityWithTimeView>[] = [
     timestamp: 1000000,
     raffleName: 'raffle1',
     ticketCount: 5n,
+    winnerIndex: -1,
   },
   {
     ergoTree: 'addr_user1',
@@ -1504,6 +1514,7 @@ export const activityItems: Partial<ActivityWithTimeView>[] = [
     timestamp: 2000000,
     raffleName: 'raffle2',
     ticketCount: 3n,
+    winnerIndex: -1,
   },
   {
     ergoTree: 'addr_user3',
@@ -1514,5 +1525,6 @@ export const activityItems: Partial<ActivityWithTimeView>[] = [
     timestamp: 1000000,
     raffleName: 'raffle1',
     ticketCount: 1n,
+    winnerIndex: -1,
   },
 ];
