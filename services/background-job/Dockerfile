@@ -27,11 +27,10 @@ COPY --parents tsconfig*.json packages ./
 RUN npm run build
 
 RUN mkdir -p /tmp/artifacts && \
-    find /app/packages /app/services -type d -name dist -not -path '*/node_modules/*' \
+    find /app/packages -type d -name dist -not -path '*/node_modules/*' \
     -exec cp -a --parents {} /tmp/artifacts \;
 
 FROM node:22.18-bookworm-slim AS prod
-ARG CONTRACT_CONFIGS
 ARG SERVICE_DIR=/app/services/background-job
 
 LABEL maintainer="ErgoRaffle team <team@ergoraffle.com>"
@@ -68,6 +67,5 @@ COPY --from=builder --chown=ergo:ergo /tmp/artifacts/app/ /app/
 
 WORKDIR ${SERVICE_DIR}
 USER ergo
-EXPOSE 3000
 
 ENTRYPOINT ["npm", "run", "start"]
