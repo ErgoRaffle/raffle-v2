@@ -61,7 +61,8 @@
     "@rosen-bridge/winston-logger": "^3.0.0",
     "lodash-es": "^4.17.21",
     "pg": "^8.4.0",
-    "sigmastate-js": "^0.4.6"
+    "sigmastate-js": "^0.4.6",
+    "tsx": "^4.20.5"
   },
   "devDependencies": {
     "@types/lodash-es": "^4.17.12"

@@ -16,7 +16,7 @@
     "postinstall": "patch-package",
     "lint": "npm run lint --workspaces",
     "lint:check": "npm run lint:check --workspaces",
-    "prepare": "husky install",
+    "prepare": "husky || true",
     "prettify": "npm run prettify --workspaces",
     "prettify:check": "npm run prettify:check --workspaces",
     "release": "npm run release --workspaces",
