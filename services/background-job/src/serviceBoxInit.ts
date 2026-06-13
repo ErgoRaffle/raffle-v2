@@ -28,6 +28,7 @@ const SERVICE_DEFAULT_VALUE = 100000000n;
 export const serviceBoxInit = async (
   logger: AbstractLogger,
   ownerAddress: string,
+  serviceFeeAddress: string,
 ): Promise<void> => {
   const trimmed = ownerAddress.trim();
   if (!trimmed) {
@@ -36,6 +37,7 @@ export const serviceBoxInit = async (
 
   const network = new ErgoNodeNetwork(configs.scanner.node.url, logger);
   const owner = ErgoAddress.fromBase58(trimmed);
+  const serviceFee = ErgoAddress.fromBase58(serviceFeeAddress);
   const ownerErgoTree = owner.ergoTree;
 
   logger.debug(`Looking for covering boxes for owner address: ${owner}`);
@@ -68,7 +70,7 @@ export const serviceBoxInit = async (
 
   const chainHeight = await network.getHeight();
   const serviceOutput = new ServiceBuilder()
-    .setOwnerAddress(owner.toString())
+    .setOwnerAddress(serviceFee.toString())
     .setCreationHeight(chainHeight)
     .setValue(SERVICE_DEFAULT_VALUE)
     .setServiceFeePercent(DEFAULT_SERVICE_FEE_PERCENT)
@@ -109,7 +111,7 @@ export const serviceBoxInit = async (
   );
 
   logger.info(
-    `ergopay: ${Buffer.from(reducedTx.toHex(), 'hex').toString('base64')}`,
+    `ergopay:${Buffer.from(reducedTx.toHex(), 'hex').toString('base64')}`,
   );
 };
 
@@ -120,12 +122,22 @@ export const serviceBoxInit = async (
 const run = async (): Promise<void> => {
   const ownerAddress = process.argv[2]?.trim();
   if (!ownerAddress) {
-    console.error('Usage: npm run init -- <owner-address>');
+    console.error(
+      'Usage: npm run init -- <owner-address> <service-fee-address>',
+    );
     process.exit(1);
   }
 
+  let serviceFeeAddress = process.argv[3]?.trim();
+  if (!serviceFeeAddress) {
+    console.warn(
+      'Service fee address is not present. using owner address for this param',
+    );
+    serviceFeeAddress = ownerAddress;
+  }
+
   const logger = DefaultLogger.getInstance().child('serviceBoxInit');
-  await serviceBoxInit(logger, ownerAddress);
+  await serviceBoxInit(logger, ownerAddress, serviceFeeAddress);
 };
 
 run().catch((err) => {

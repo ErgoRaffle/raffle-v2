@@ -5,3 +5,12 @@ database:
   username: 'POSTGRES_USER'
   password: 'POSTGRES_PASSWORD'
   name: 'POSTGRES_DB'
+captcha:
+  secret: 'CAPTCHA_SECRET'
+ergo:
+  mnemonic: 'ERG_MNEMONIC'
+bitcoin:
+  mnemonic: 'BITCOIN_MNEMONIC'
+  runes:
+    unisat:
+      apiKey: 'BITCOIN_RUNES_UNISAT_API_KEY'

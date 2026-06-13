@@ -1,0 +1,12 @@
+{
+  "network": "testnet",
+  "giftTokenCount": 2000,
+  "ticketExpirationHeight": 100,
+  "tokens": {
+    "oracleTokenId": "bc2aa8c5b7d0cd0665ffcf9be70fb2ed11f9e7383f51fe281c80ae8c6df94a22",
+    "serviceNft": "dd8f3e43d8bd5513f07d953ce323a33030dc6ee0d3bef7286dd2134f8bb7bc78",
+    "raffleLicense": "70c4b0317d89642716ae6303543816a6f3d7427ef870feacfa144b1afd56e672",
+    "ownerNft": "ebe5e09c48b29e81b0707c06fbad4d73d4c7f0d7e2e96b4f0898281713d89d5a",
+    "ticketCollectorNft": "a75e0449d9187976ba3725691fd328d52f86a0fe4937de92b1c4b74404edda27"
+  }
+}

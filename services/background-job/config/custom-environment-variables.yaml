@@ -7,3 +7,4 @@ database:
   name: 'POSTGRES_DB'
 ipfs:
   secretKey: 'IPFS_SECRET_KEY'
+  accessKey: 'IPFS_ACCESS_KEY'
