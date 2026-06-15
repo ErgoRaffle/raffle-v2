@@ -44,6 +44,11 @@ import {
   migrations as requestParamsMigrations,
 } from '@ergo-raffle/request-params';
 import {
+  RaffleSocialPostEntity,
+  SocialPollCursorEntity,
+  migrations as socialMigrations,
+} from '@ergo-raffle/social';
+import {
   TokenEntity,
   migrations as tokensMigrations,
 } from '@ergo-raffle/tokens';
@@ -77,6 +82,8 @@ const ENTITIES = [
   ActivityWithTimeView,
   WinnerView,
   TagEntity,
+  RaffleSocialPostEntity,
+  SocialPollCursorEntity,
 ];
 
 const MIGRATIONS = {
@@ -88,6 +95,7 @@ const MIGRATIONS = {
     ...tokensMigrations.sqlite,
     ...dynamicBoxMigrations.sqlite,
     ...dbViewMigrations.sqlite,
+    ...socialMigrations.sqlite,
   ],
   postgres: [
     ...scannerMigrations.postgres,
@@ -97,6 +105,7 @@ const MIGRATIONS = {
     ...tokensMigrations.postgres,
     ...dynamicBoxMigrations.postgres,
     ...dbViewMigrations.postgres,
+    ...socialMigrations.postgres,
   ],
 };
 
