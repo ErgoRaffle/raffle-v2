@@ -33,6 +33,7 @@
     "@ergo-raffle/data-source": "^0.0.0",
     "@ergo-raffle/db-views": "^0.0.0",
     "@ergo-raffle/extractors": "^0.0.0",
+    "@ergo-raffle/social": "0.0.0",
     "@ergo-raffle/tokens": "^0.0.0",
     "@ergo-raffle/utils": "^0.0.0",
     "@fleet-sdk/core": "^0.12.0",

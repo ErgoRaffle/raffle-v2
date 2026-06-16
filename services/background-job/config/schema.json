@@ -396,5 +396,110 @@
         ]
       }
     }
+  },
+  "social": {
+    "type": "object",
+    "children": {
+      "provider": {
+        "type": "string",
+        "default": "thirdparty",
+        "description": "active mentions data source",
+        "validations": [{ "choices": ["official", "thirdparty"] }]
+      },
+      "pollInterval": {
+        "type": "number",
+        "default": 1800,
+        "description": "seconds between mention polls (default 30 min)"
+      },
+      "handle": {
+        "type": "string",
+        "default": "ergoraffle",
+        "description": "@ergoraffle handle without '@'"
+      },
+      "userId": {
+        "type": "string",
+        "default": "",
+        "description": "numeric X user id of @ergoraffle (official API); set via env when available"
+      },
+      "allowHosts": {
+        "type": "array",
+        "default": [
+          "testnet-beta.ergoraffle.com",
+          "*.ergoraffle.com",
+          "raffle.rosen.tech"
+        ],
+        "description": "allow-listed raffle-URL hosts; exact or '*.domain' wildcard",
+        "items": { "type": "string" }
+      },
+      "official": {
+        "type": "object",
+        "children": {
+          "bearerToken": {
+            "type": "string",
+            "default": "",
+            "description": "X API v2 app bearer token; set via env"
+          },
+          "maxPages": {
+            "type": "number",
+            "default": 5,
+            "description": "max pages followed per tick (cost cap)"
+          }
+        }
+      },
+      "thirdparty": {
+        "type": "object",
+        "children": {
+          "apiKey": {
+            "type": "string",
+            "default": "",
+            "description": "twitterapi.io API key; set via env"
+          },
+          "maxPages": {
+            "type": "number",
+            "default": 5,
+            "description": "max pages followed per tick (cost cap)"
+          }
+        }
+      },
+      "filters": {
+        "type": "object",
+        "children": {
+          "keywords": {
+            "type": "array",
+            "default": [
+              "airdrop",
+              "free crypto",
+              "giveaway",
+              "double your",
+              "claim now",
+              "dm me",
+              "seed phrase",
+              "wallet validation",
+              "connect your wallet",
+              "t.me/",
+              "metamask",
+              "elon"
+            ],
+            "description": "lower-cased substrings; a tweet containing any is dropped",
+            "items": { "type": "string" }
+          },
+          "minAccountAgeDays": {
+            "type": "number",
+            "default": 30,
+            "description": "minimum author account age in days"
+          },
+          "minFollowers": {
+            "type": "number",
+            "default": 5,
+            "description": "minimum author follower count"
+          },
+          "maxPerAuthorPerRaffle": {
+            "type": "number",
+            "default": 3,
+            "description": "max posts from one author on one raffle"
+          }
+        }
+      }
+    }
   }
 }

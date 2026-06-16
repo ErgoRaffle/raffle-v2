@@ -13,6 +13,7 @@ import { BoxLookupService } from './boxLookup/boxLookupService';
 import { DbService } from './dbService';
 import { HealthCheckService } from './healthCheckService';
 import { ScannerService } from './scannerService';
+import { SocialPollService } from './socialPollService';
 import { TokenDetailsService } from './tokenDetailsService';
 import { ActivationService } from './transactions/activationService';
 import { AddGiftService } from './transactions/addGiftService';
@@ -150,6 +151,10 @@ export class InitializerService extends AbstractService {
       serviceName: TokenDetailsService.name,
       allowedStatuses: [ServiceStatus.running],
     },
+    {
+      serviceName: SocialPollService.name,
+      allowedStatuses: [ServiceStatus.running],
+    },
   ];
 
   /**
@@ -279,6 +284,15 @@ export class InitializerService extends AbstractService {
 
     TokenDetailsService.init(configs.scanner.node.url, tokenDetailsLogger);
     this.logger.debug('Token details service initialized');
+
+    // Initialize social poll service
+    this.logger.debug('Initializing social poll service');
+    SocialPollService.init(
+      configs.social,
+      defaultLogger.child('SocialPollService'),
+    );
+    this.logger.debug('Social poll service initialized');
+
     this.logger.info('All services initialized successfully');
   };
 
@@ -308,6 +322,7 @@ export class InitializerService extends AbstractService {
     this.serviceManager.register(LicenseRedeemService.getInstance());
     this.serviceManager.register(SafeWithdrawalService.getInstance());
     this.serviceManager.register(TokenDetailsService.getInstance());
+    this.serviceManager.register(SocialPollService.getInstance());
     this.logger.debug('All services registered with ServiceManager');
   };
 

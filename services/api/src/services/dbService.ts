@@ -13,6 +13,7 @@ import {
   WinnerViewActions,
 } from '@ergo-raffle/db-views';
 import { TagAction } from '@ergo-raffle/extractors';
+import { SocialAction } from '@ergo-raffle/social';
 import { TokenAction } from '@ergo-raffle/tokens';
 
 import BlockAction from '../actions/block';
@@ -31,6 +32,7 @@ export class DbService extends AbstractService {
   private winnerViewAction?: WinnerViewActions;
   private tokenAction?: TokenAction;
   private tagAction?: TagAction;
+  private socialAction?: SocialAction;
 
   /**
    * Private constructor for singleton pattern
@@ -99,6 +101,8 @@ export class DbService extends AbstractService {
       this.logger.debug('Token action initialized');
       this.tagAction = new TagAction(this.dataSource);
       this.logger.debug('Tag action initialized');
+      this.socialAction = new SocialAction(this.dataSource);
+      this.logger.debug('Social action initialized');
       this.setStatus(ServiceStatus.running);
     } catch (e) {
       this.logger.error(
@@ -194,6 +198,16 @@ export class DbService extends AbstractService {
    */
   getTagAction = (): TagAction => {
     if (this.tagAction) return this.tagAction;
+    throw new Error('Service does not started');
+  };
+
+  /**
+   * Returns the SocialAction instance
+   * @returns SocialAction instance
+   * @throws Error if service has not been started
+   */
+  getSocialAction = (): SocialAction => {
+    if (this.socialAction) return this.socialAction;
     throw new Error('Service does not started');
   };
 }

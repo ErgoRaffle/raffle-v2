@@ -247,6 +247,27 @@ const searchTokensQuerySchema = z.object({
     .default(DEFAULT_API_PAGE_SIZE),
 });
 
+const getSocialQuerySchema = z.object({
+  offset: z.coerce.number().optional().default(0),
+  limit: z.coerce
+    .number()
+    .max(MAX_API_PAGE_SIZE)
+    .optional()
+    .default(DEFAULT_API_PAGE_SIZE),
+});
+
+const socialPostSchema = z.object({
+  tweetId: z.string(),
+  authorHandle: z.string(),
+  createdAt: z.string(),
+  url: z.string(),
+});
+
+const getSocialResponseSchema = z.object({
+  items: z.array(socialPostSchema),
+  total: z.number(),
+});
+
 const getTokensResponseSchema = z.object({
   items: z.array(tokenSchema),
 });
@@ -276,4 +297,6 @@ export {
   tagsResponseSchema,
   basketTransactionParams,
   basketTransactionsQueryParamSchema,
+  getSocialQuerySchema,
+  getSocialResponseSchema,
 };

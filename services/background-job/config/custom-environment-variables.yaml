@@ -8,3 +8,9 @@ database:
 ipfs:
   secretKey: 'IPFS_SECRET_KEY'
   accessKey: 'IPFS_ACCESS_KEY'
+social:
+  userId: 'ERGORAFFLE_X_USER_ID'
+  official:
+    bearerToken: 'X_BEARER_TOKEN'
+  thirdparty:
+    apiKey: 'X_THIRDPARTY_API_KEY'

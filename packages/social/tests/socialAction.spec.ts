@@ -32,14 +32,17 @@ describe('SocialAction', () => {
       // same tweetId again with different data → ignored, no error, no dup
       await action.upsertPosts([post({ tweetId: '1', createdAtMs: 999 })]);
 
-      const items = await action.listByRaffle('r1', 50);
+      const { items, total } = await action.listByRaffle('r1', 0, 50);
+      expect(total).toBe(1);
       expect(items).toHaveLength(1);
       expect(items[0].createdAtMs).toBe(10);
     });
 
     it<TestInterface>('is a no-op on empty input', async ({ action }) => {
       await action.upsertPosts([]);
-      expect(await action.listByRaffle('r1', 50)).toHaveLength(0);
+      const { items, total } = await action.listByRaffle('r1', 0, 50);
+      expect(items).toHaveLength(0);
+      expect(total).toBe(0);
     });
   });
 
@@ -59,26 +62,23 @@ describe('SocialAction', () => {
         .getRepository('RaffleSocialPostEntity')
         .update({ tweetId: '2' }, { hidden: true });
 
-      const items = await action.listByRaffle('r1', 50);
+      const { items, total } = await action.listByRaffle('r1', 0, 50);
       expect(items.map((item) => item.tweetId)).toEqual(['3', '1']);
+      expect(total).toBe(2); // hidden excluded from the count too
     });
 
-    it<TestInterface>('paginates with beforeMs and limit', async ({
-      action,
-    }) => {
+    it<TestInterface>('paginates with offset and limit', async ({ action }) => {
       await action.upsertPosts([
         post({ tweetId: '1', createdAtMs: 100 }),
         post({ tweetId: '2', createdAtMs: 200 }),
         post({ tweetId: '3', createdAtMs: 300 }),
       ]);
-      const firstPage = await action.listByRaffle('r1', 2);
-      expect(firstPage.map((item) => item.tweetId)).toEqual(['3', '2']);
-      const nextPage = await action.listByRaffle(
-        'r1',
-        2,
-        firstPage[1].createdAtMs,
-      );
-      expect(nextPage.map((item) => item.tweetId)).toEqual(['1']);
+      const firstPage = await action.listByRaffle('r1', 0, 2);
+      expect(firstPage.items.map((item) => item.tweetId)).toEqual(['3', '2']);
+      expect(firstPage.total).toBe(3);
+      const nextPage = await action.listByRaffle('r1', 2, 2);
+      expect(nextPage.items.map((item) => item.tweetId)).toEqual(['1']);
+      expect(nextPage.total).toBe(3);
     });
   });
 

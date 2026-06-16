@@ -64,29 +64,27 @@ export class SocialAction {
   };
 
   /**
-   * List non-hidden posts for a raffle, newest first, cursor-paginated by creation time.
+   * List non-hidden posts for a raffle, newest first, with offset/limit pagination
+   * (matches the house API style: returns the page plus the total count).
    * @param raffleId - raffle to list posts for
+   * @param offset - rows to skip
    * @param limit - max rows to return
-   * @param beforeMs - when set, only posts strictly older than this epoch-ms (keyset pagination)
-   * @returns matching posts, newest first
+   * @returns the page of posts (newest first) and the total non-hidden count for the raffle
    */
   listByRaffle = async (
     raffleId: string,
+    offset: number,
     limit: number,
-    beforeMs?: number,
-  ): Promise<SocialPostRecord[]> => {
-    const query = this.postRepository
+  ): Promise<{ items: SocialPostRecord[]; total: number }> => {
+    const [items, total] = await this.postRepository
       .createQueryBuilder('post')
       .where('post.raffleId = :raffleId', { raffleId })
-      .andWhere('post.hidden = :hidden', { hidden: false });
-    if (beforeMs !== undefined) {
-      query.andWhere('post.createdAtMs < :beforeMs', { beforeMs });
-    }
-    const items = await query
+      .andWhere('post.hidden = :hidden', { hidden: false })
       .orderBy('post.createdAtMs', 'DESC')
+      .skip(offset)
       .take(limit)
-      .getMany();
-    return items.map(this.transformPost);
+      .getManyAndCount();
+    return { items: items.map(this.transformPost), total };
   };
 
   /**

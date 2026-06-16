@@ -31,3 +31,35 @@ boxLookup:
   updateInterval: 60
 tokenDetails:
   updateInterval: 60
+social:
+  provider: thirdparty
+  pollInterval: 1800
+  handle: ergoraffle
+  userId: ''
+  allowHosts:
+    - testnet-beta.ergoraffle.com
+    - '*.ergoraffle.com'
+    - raffle.rosen.tech
+  official:
+    bearerToken: ''
+    maxPages: 5
+  thirdparty:
+    apiKey: ''
+    maxPages: 5
+  filters:
+    keywords:
+      - airdrop
+      - free crypto
+      - giveaway
+      - double your
+      - claim now
+      - dm me
+      - seed phrase
+      - wallet validation
+      - connect your wallet
+      - t.me/
+      - metamask
+      - elon
+    minAccountAgeDays: 30
+    minFollowers: 5
+    maxPerAuthorPerRaffle: 3

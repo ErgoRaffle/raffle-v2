@@ -13,6 +13,7 @@
     { "path": "../../packages/transactions" },
     { "path": "../../packages/box-lookup" },
     { "path": "../../packages/data-source" },
+    { "path": "../../packages/social" },
     { "path": "../../packages/fleet-box-selection" },
     { "path": "../../packages/utils" },
     { "path": "../../packages/image-manager" }
