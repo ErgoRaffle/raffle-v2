@@ -14,10 +14,13 @@ export interface ThirdPartyProviderConfig {
   readonly baseUrl?: string;
 }
 
-// ── Assumed shape of the twitterapi.io advanced-search response (fields we use) ──
-// NOTE: field names follow twitterapi.io's advanced-search docs as of design time. They are
-// isolated to this file and the mapper below — verify against the live API when the key is
-// provisioned (TODO(provider-creds)); only `mapTweet` needs adjusting if anything differs.
+// ── Shape of the twitterapi.io advanced-search response (fields we use) ──
+// Field names verified against the live twitterapi.io advanced-search docs (2026-06): top-level
+// `tweets` / `has_next_page` / `next_cursor`; per-tweet `id` / `text` / `createdAt` /
+// `retweeted_tweet` / `entities.urls[].expanded_url`; `author.userName` / `createdAt` / `followers`.
+// `createdAt` is X's "Tue Dec 10 07:00:30 +0000 2024" format, which `new Date(...)` parses.
+// Provider-specific shape stays isolated here — only `mapTweet` changes if the API evolves.
+// (End-to-end run against a live key is still pending — see TODO(provider-creds).)
 interface TaTweet {
   id: string;
   text?: string;
