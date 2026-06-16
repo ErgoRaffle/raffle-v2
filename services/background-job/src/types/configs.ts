@@ -24,6 +24,8 @@ export interface Social {
   userId: string;
   /** Allow-listed hosts a raffle URL may use; exact or "*.domain" wildcard entries. */
   allowHosts: string[];
+  /** Raffle domains searched in tweet URLs for discovery (the `url:` prong), e.g. "ergoraffle.com". */
+  searchDomains: string[];
   official: SocialOfficial;
   thirdparty: SocialThirdParty;
   filters: SocialFilters;

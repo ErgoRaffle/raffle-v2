@@ -1,7 +1,12 @@
 /**
- * A mention of @ergoraffle, normalized to the shape the rest of the system uses.
+ * A candidate post about a raffle, normalized to the shape the rest of the system uses.
  * Every provider implementation maps its own response into this so nothing downstream depends
  * on which data source ran.
+ *
+ * A post qualifies by carrying a raffle URL (`/raffles/{id}` on an allow-listed host) — the URL is
+ * the identifier. It may be discovered either because it mentions @ergoraffle or because it links a
+ * raffle (the provider query searches both); the mention itself is not required, so it is not part
+ * of this shape.
  *
  * Fields in the "transient — filtering only" group exist solely to run the ingest spam filters
  * (see `passesFilters`). They are **never persisted** — the entity stores only id/handle/time.
@@ -15,8 +20,6 @@ export interface RawMention {
   readonly createdAt: Date;
   /** Fully-expanded URLs from the tweet's url entities (t.co already unwrapped). */
   readonly urls: readonly string[];
-  /** Whether the tweet mentions @ergoraffle. Defense-in-depth; the provider query already filters. */
-  readonly mentionsErgoraffle: boolean;
 
   // ── transient — filtering only (NOT stored) ──
   /** Tweet text — used only for the keyword blocklist check. transient. */

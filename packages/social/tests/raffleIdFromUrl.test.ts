@@ -89,3 +89,44 @@ describe('raffleIdFromUrl', () => {
     expect(firstRaffleId(['https://example.com/foo'], HOSTS)).toBeNull();
   });
 });
+
+describe('raffleIdFromUrl with the apex host allow-listed', () => {
+  // Adding the exact apex entry alongside the wildcard makes "ergoraffle.com plus all of its
+  // sub-domains" resolvable, while the dot-boundary still rejects look-alikes.
+  const HOSTS_WITH_APEX = [
+    'ergoraffle.com',
+    'testnet-beta.ergoraffle.com',
+    '*.ergoraffle.com',
+    'raffle.rosen.tech',
+  ];
+
+  it('resolves the bare apex once it is allow-listed', () => {
+    expect(
+      raffleIdFromUrl('https://ergoraffle.com/raffles/a', HOSTS_WITH_APEX),
+    ).toBe('a');
+  });
+
+  it('still resolves sub-domains (http included)', () => {
+    expect(
+      raffleIdFromUrl('http://www.ergoraffle.com/raffles/b', HOSTS_WITH_APEX),
+    ).toBe('b');
+    expect(
+      raffleIdFromUrl(
+        'https://testnet-beta.ergoraffle.com/raffles/c',
+        HOSTS_WITH_APEX,
+      ),
+    ).toBe('c');
+  });
+
+  it('still rejects look-alike hosts', () => {
+    expect(
+      raffleIdFromUrl(
+        'https://ergoraffle.com.evil.com/raffles/a',
+        HOSTS_WITH_APEX,
+      ),
+    ).toBeNull();
+    expect(
+      raffleIdFromUrl('https://notergoraffle.com/raffles/a', HOSTS_WITH_APEX),
+    ).toBeNull();
+  });
+});

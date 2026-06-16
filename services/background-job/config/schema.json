@@ -424,11 +424,18 @@
       "allowHosts": {
         "type": "array",
         "default": [
+          "ergoraffle.com",
           "testnet-beta.ergoraffle.com",
           "*.ergoraffle.com",
           "raffle.rosen.tech"
         ],
-        "description": "allow-listed raffle-URL hosts; exact or '*.domain' wildcard",
+        "description": "allow-listed raffle-URL hosts; exact or '*.domain' wildcard (apex + subdomains)",
+        "items": { "type": "string" }
+      },
+      "searchDomains": {
+        "type": "array",
+        "default": ["ergoraffle.com"],
+        "description": "raffle domains searched in tweet URLs for discovery (the 'url:' prong); subdomains match too",
         "items": { "type": "string" }
       },
       "official": {

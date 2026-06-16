@@ -89,11 +89,13 @@ export class SocialPollService extends AbstractService {
       bearerToken: config.official.bearerToken,
       userId: config.userId,
       handle: config.handle,
+      searchDomains: config.searchDomains,
       maxPages: config.official.maxPages,
     },
     thirdparty: {
       apiKey: config.thirdparty.apiKey,
       handle: config.handle,
+      searchDomains: config.searchDomains,
       maxPages: config.thirdparty.maxPages,
     },
   });
@@ -167,9 +169,11 @@ export class SocialPollService extends AbstractService {
     for (const mention of mentions) {
       maxId = this.maxTweetId(maxId, mention.tweetId);
 
+      // The raffle URL is the identifier: a post qualifies by linking a raffle on an allow-listed
+      // host, whether or not it also mentions @ergoraffle. Posts with no resolvable raffle link are
+      // dropped (we can't know which raffle they belong to).
       const raffleId = firstRaffleId(mention.urls, this.config.allowHosts);
-      if (!raffleId) continue; // not about a raffle
-      if (!mention.mentionsErgoraffle) continue; // defense-in-depth
+      if (!raffleId) continue;
 
       if (!seededRaffles.has(raffleId)) {
         const stored = await action.countByAuthorForRaffle(raffleId);

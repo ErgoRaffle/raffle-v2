@@ -37,9 +37,12 @@ social:
   handle: ergoraffle
   userId: ''
   allowHosts:
+    - ergoraffle.com
     - testnet-beta.ergoraffle.com
     - '*.ergoraffle.com'
     - raffle.rosen.tech
+  searchDomains:
+    - ergoraffle.com
   official:
     bearerToken: ''
     maxPages: 5

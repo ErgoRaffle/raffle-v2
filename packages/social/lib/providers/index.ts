@@ -8,3 +8,4 @@ export {
   type ThirdPartyProviderConfig,
 } from './thirdPartyProvider';
 export { makeMentionsProvider, type ProviderConfig } from './factory';
+export { buildDiscoveryQuery } from './discoveryQuery';

@@ -1,13 +1,16 @@
 import { AbstractLogger, DummyLogger } from '@rosen-bridge/abstract-logger';
 
+import { buildDiscoveryQuery } from './discoveryQuery';
 import { RawMention, XMentionsProvider } from './types';
 
 /** Config for the third-party provider (twitterapi.io). Credentials come from service env. */
 export interface ThirdPartyProviderConfig {
   /** API key. Server-side only. Sent as the `X-API-Key` header. */
   readonly apiKey: string;
-  /** Handle (without '@') we search mentions for, e.g. "ergoraffle". */
+  /** Handle (without '@') searched as a mention, e.g. "ergoraffle". */
   readonly handle: string;
+  /** Raffle domains matched in tweet URLs (the `url:` discovery prong). Default []. */
+  readonly searchDomains?: readonly string[];
   /** Max pages to follow per tick (cost cap). Default 5. */
   readonly maxPages?: number;
   /** Override base URL (tests). Default https://api.twitterapi.io. */
@@ -40,9 +43,10 @@ interface TaSearchResponse {
 }
 
 /**
- * Third-party (twitterapi.io) mentions provider — the default. Cheaper than the official API and
- * needs no OAuth. Runs an advanced search for `@handle` newest-first and normalizes each result
- * into a `RawMention`. Incremental polling is expressed with the `since_id:` search operator.
+ * Third-party (twitterapi.io) provider — the default. Cheaper than the official API and needs no
+ * OAuth. Runs an advanced search that discovers posts mentioning `@handle` OR linking a raffle
+ * domain (see `buildDiscoveryQuery`), newest-first, and normalizes each result into a `RawMention`.
+ * Incremental polling is expressed with the `since_id:` search operator.
  */
 export class ThirdPartyMentionsProvider implements XMentionsProvider {
   readonly name = 'thirdparty' as const;
@@ -58,9 +62,12 @@ export class ThirdPartyMentionsProvider implements XMentionsProvider {
   fetchMentions = async (sinceId: string | null): Promise<RawMention[]> => {
     const base = this.config.baseUrl ?? 'https://api.twitterapi.io';
     const maxPages = this.config.maxPages ?? 5;
-    const query = sinceId
-      ? `@${this.config.handle} since_id:${sinceId}`
-      : `@${this.config.handle}`;
+    const discovery = buildDiscoveryQuery(
+      this.config.handle,
+      this.config.searchDomains ?? [],
+    );
+    // `since_id:` is AND-ed onto the discovery group for incremental polling.
+    const query = sinceId ? `${discovery} since_id:${sinceId}` : discovery;
 
     const mentions: RawMention[] = [];
     let cursor: string | undefined;
@@ -102,8 +109,6 @@ export class ThirdPartyMentionsProvider implements XMentionsProvider {
       authorHandle: tweet.author?.userName ?? '',
       createdAt: tweet.createdAt ? new Date(tweet.createdAt) : new Date(),
       urls,
-      // The search query targets @handle, so a returned tweet mentions it by construction.
-      mentionsErgoraffle: true,
       text: tweet.text ?? '',
       isRetweet: Boolean(tweet.retweeted_tweet),
       authorCreatedAt: tweet.author?.createdAt

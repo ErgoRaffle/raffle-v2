@@ -15,7 +15,6 @@ const mention = (overrides: Partial<RawMention> = {}): RawMention => ({
   authorHandle: 'alice',
   createdAt: NOW,
   urls: ['https://www.ergoraffle.com/raffles/r1'],
-  mentionsErgoraffle: true,
   text: 'Check out this raffle!',
   isRetweet: false,
   authorCreatedAt: oldEnough,
