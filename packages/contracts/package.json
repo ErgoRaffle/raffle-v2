@@ -16,7 +16,7 @@
     "CHANGELOG.md"
   ],
   "scripts": {
-    "build": "mkdir -p dist/ && tsx --trace-warnings ./cli/index.ts build",
+    "build": "mkdir -p dist/ && cross-env CONTRACT_CONFIGS=\"beta-launch\" tsx --trace-warnings ./cli/index.ts build",
     "clean": "rimraf dist && rimraf tsconfig.build.tsbuildinfo",
     "compile-contracts": "tsx ./cli/index.ts compile-contracts",
     "coverage": "npm run test -- --coverage",
