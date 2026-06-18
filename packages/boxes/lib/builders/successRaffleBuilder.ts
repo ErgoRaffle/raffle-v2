@@ -272,7 +272,7 @@ export class SuccessRaffleBuilder {
     if (!this.projectErgoTreeHash)
       throw new Error('Project ergo tree hash not set');
     if (!this.seed) throw new Error('Seed not set');
-    if (!this.step) throw new Error('Step not set');
+    if (this.step === undefined) throw new Error('Step not set');
     if (!this.ticketTokenId) throw new Error('Ticket token ID not set');
     if (!this.ticketTokenAmount) throw new Error('Ticket token amount not set');
     if (this.selectedWinners.length > this.winnerCount!) {

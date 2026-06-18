@@ -218,7 +218,7 @@ export class WinnerBuilder {
       throw new Error('Reward percent not set');
     if (!this.deadline) throw new Error('Deadline not set');
     if (!this.txFee) throw new Error('Transaction fee not set');
-    if (!this.winnerIndex) throw new Error('Winner index not set');
+    if (this.winnerIndex === undefined) throw new Error('Winner index not set');
     if (this.giftCount == undefined) throw new Error('Gift count not set');
     if (!this.ticketTokenId) throw new Error('Ticket token not set');
     if (!this.ticketTokenAmount) throw new Error('Ticket token amount not set');

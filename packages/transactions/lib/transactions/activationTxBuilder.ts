@@ -112,7 +112,7 @@ export class ActivationTxBuilder {
   private validate = (): void => {
     if (!this.inactiveRaffle) throw new Error('Inactive raffle box not set');
     if (!this.ticketRepo) throw new Error('Ticket repository box not set');
-    if (!this.winnersSharePercent)
+    if (this.winnersSharePercent === undefined)
       throw new Error('Winners share percent not set');
     if (!this.chainHeight) throw new Error('Chain height not set');
     if (!this.txFee) throw new Error('Transaction fee not set');

@@ -153,7 +153,7 @@ export class GiftBuilder {
     if (!this.creationHeight) throw new Error('Creation height not set');
     if (!this.donatorErgoTreeHash)
       throw new Error('Donator ErgoTree hash not set');
-    if (!this.winnerIndex) throw new Error('Winner index not set');
+    if (this.winnerIndex === undefined) throw new Error('Winner index not set');
     if (!this.giftTokenId) throw new Error('Gift token not set');
   };
 

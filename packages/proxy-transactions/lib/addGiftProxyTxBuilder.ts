@@ -155,7 +155,7 @@ export class AddGiftProxyTxBuilder {
     if (!this.giftGiverErgoTree) throw new Error('Gift giver ErgoTree not set');
     if (!this.giftGiverAddress) throw new Error('Gift giver address not set');
     if (!this.raffleId) throw new Error('Raffle id not set');
-    if (this.winnerIndex == null) throw new Error('Winner index not set');
+    if (this.winnerIndex === undefined) throw new Error('Winner index not set');
     if (!this.txFee) throw new Error('Transaction fee not set');
     if (!this.expirationHeight) throw new Error('Expiration height not set');
     if (!this.raffleDeadline) throw new Error('Raffle deadline not set');

@@ -436,7 +436,8 @@ export class ActiveRaffleBuilder {
   private validate = (): void => {
     if (!this.value) throw new Error('Value not set');
     if (!this.creationHeight) throw new Error('Creation height not set');
-    if (!this.winnersPercent) throw new Error('Winners percent not set');
+    if (this.winnersPercent === undefined)
+      throw new Error('Winners percent not set');
     if (!this.serviceFeePercent) throw new Error('Service fee percent not set');
     if (!this.implementerFeePercent)
       throw new Error('Implementer fee percent not set');

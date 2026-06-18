@@ -276,7 +276,8 @@ export class CreationProxyTxBuilder {
       throw new Error('Tags not set (use empty string for none)');
     if (!this.ticketPrice) throw new Error('Ticket price not set');
     if (!this.goal) throw new Error('Goal not set');
-    if (this.winnersPercent == null) throw new Error('Winners percent not set');
+    if (this.winnersPercent === undefined)
+      throw new Error('Winners percent not set');
     if (!this.winnerCount) throw new Error('Winner count not set');
     if (!this.winnersPercentList)
       throw new Error('Winners percent list not set');

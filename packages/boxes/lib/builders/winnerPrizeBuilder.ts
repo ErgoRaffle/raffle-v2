@@ -220,7 +220,7 @@ export class WinnerPrizeBuilder {
       throw new Error('Winner ticket index not set');
     if (this.giftCount == undefined) throw new Error('Gift count not set');
     if (!this.txFee) throw new Error('Transaction fee not set');
-    if (!this.winnerIndex) throw new Error('Winner index not set');
+    if (this.winnerIndex === undefined) throw new Error('Winner index not set');
     if (this.unwrappedGiftCount == undefined)
       throw new Error('Unwrapped gift count not set');
     if (!this.ticketTokenId) throw new Error('Ticket token ID not set');
