@@ -313,7 +313,7 @@ export class CreationTxBuilder {
     if (!this.deadline) throw new Error('Deadline not set');
     if (!this.winnersPercent) throw new Error('Winners percent not set');
     if (!this.ticketPrice) throw new Error('Ticket price not set');
-    if (!this.winnersSharePercent)
+    if (this.winnersSharePercent === undefined)
       throw new Error('Winners share percent not set');
     if (!this.goal) throw new Error('Goal not set');
     if (!this.inactiveRaffleValue)

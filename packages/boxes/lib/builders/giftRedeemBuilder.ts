@@ -216,7 +216,7 @@ export class GiftRedeemBuilder {
     if (!this.ticketPrice) throw new Error('Ticket price not set');
     if (!this.txFee) throw new Error('Transaction fee not set');
     if (!this.winnersCount) throw new Error('Winners count not set');
-    if (!this.step) throw new Error('Step not set');
+    if (this.step === undefined) throw new Error('Step not set');
     if (!this.ticketTokenId) throw new Error('Ticket token not set');
     if (!this.ticketTokenAmount) throw new Error('Ticket token amount not set');
   };

@@ -202,7 +202,7 @@ export class GiftTokenRepoBuilder {
     if (!this.txFee) throw new Error('Transaction fee not set');
     if (!this.ticketId) throw new Error('Ticket ID not set');
     if (!this.winnersCount) throw new Error('Winners count not set');
-    if (!this.step) throw new Error('Step not set');
+    if (this.step === undefined) throw new Error('Step not set');
   };
 
   /**
