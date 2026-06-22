@@ -413,29 +413,20 @@
       },
       "handle": {
         "type": "string",
-        "default": "ergoraffle",
-        "description": "@ergoraffle handle without '@'"
+        "description": "account handle without '@' (mention prong); set per deployment via env/config"
       },
       "userId": {
         "type": "string",
-        "default": "",
-        "description": "numeric X user id of @ergoraffle (official API); set via env when available"
+        "description": "numeric X user id of the polled account (official API); set per deployment via env/config"
       },
       "allowHosts": {
         "type": "array",
-        "default": [
-          "ergoraffle.com",
-          "testnet-beta.ergoraffle.com",
-          "*.ergoraffle.com",
-          "raffle.rosen.tech"
-        ],
-        "description": "allow-listed raffle-URL hosts; exact or '*.domain' wildcard (apex + subdomains)",
+        "description": "allow-listed raffle-URL hosts; exact or '*.domain' wildcard (apex + subdomains); set per deployment",
         "items": { "type": "string" }
       },
       "searchDomains": {
         "type": "array",
-        "default": ["ergoraffle.com"],
-        "description": "raffle domains searched in tweet URLs for discovery (the 'url:' prong); subdomains match too",
+        "description": "raffle domains searched in tweet URLs for discovery (the 'url:' prong); subdomains match too; set per deployment",
         "items": { "type": "string" }
       },
       "official": {

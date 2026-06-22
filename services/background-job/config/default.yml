@@ -34,15 +34,10 @@ tokenDetails:
 social:
   provider: thirdparty
   pollInterval: 1800
-  handle: ergoraffle
+  handle: ''
   userId: ''
-  allowHosts:
-    - ergoraffle.com
-    - testnet-beta.ergoraffle.com
-    - '*.ergoraffle.com'
-    - raffle.rosen.tech
-  searchDomains:
-    - ergoraffle.com
+  allowHosts: []
+  searchDomains: []
   official:
     bearerToken: ''
     maxPages: 5
