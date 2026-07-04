@@ -1,4 +1,5 @@
 import { RaffleView, WinnerView } from '@ergo-raffle/db-views';
+import { ERG_TOKEN_ID } from '@ergo-raffle/utils';
 
 import { WinnerGift } from '../../src/types/winners';
 
@@ -103,5 +104,9 @@ export const serializedGiftTokens = [
   {
     amount: 120n,
     tokenId: 'bdf845d6fff94d72f23abb490d8cce38b4775022ddc1d8bf0cff8c8da202e374',
+  },
+  {
+    amount: 95600000n,
+    tokenId: ERG_TOKEN_ID,
   },
 ];
