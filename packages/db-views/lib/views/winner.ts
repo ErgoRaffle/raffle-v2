@@ -1,4 +1,8 @@
-import { ViewColumn, ViewEntity } from '@rosen-bridge/extended-typeorm';
+import {
+  BigIntValueTransformer,
+  ViewColumn,
+  ViewEntity,
+} from '@rosen-bridge/extended-typeorm';
 
 import { GiftEntity, WinnerEntity } from '@ergo-raffle/extractors';
 
@@ -14,6 +18,7 @@ import { GiftEntity, WinnerEntity } from '@ergo-raffle/extractors';
       .addSelect('winner."raffleId"', 'raffleId')
       .addSelect('winner.index', 'index')
       .addSelect('winner.rewardPercent', 'rewardPercent')
+      .addSelect('winner.txFee', 'txFee')
       .addSelect('gift.serialized', 'giftSerialized')
       .from(WinnerEntity, 'winner')
       .leftJoin(
@@ -35,4 +40,7 @@ export class WinnerView {
 
   @ViewColumn()
   giftSerialized?: string;
+
+  @ViewColumn({ transformer: new BigIntValueTransformer() })
+  txFee: bigint;
 }

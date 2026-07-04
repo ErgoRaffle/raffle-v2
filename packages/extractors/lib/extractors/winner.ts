@@ -69,15 +69,14 @@ export class WinnerExtractor extends AbstractErgoBoxExtractor<
     const R4Serialized = SConstant.from(box.additionalRegisters!.R4!)
       .data as bigint[];
     const index = SConstant.from(box.additionalRegisters!.R5!).data as number;
-    const data = {
+    return {
       identifier: box.boxId.toString(),
       txId: box.transactionId,
       raffleId: box.assets![0].tokenId,
       index: index,
       rewardPercent: Number(R4Serialized[0]),
+      txFee: R4Serialized[2],
       serialized: Buffer.from(serializeBox(box).toBytes()).toString('base64'),
     };
-
-    return data;
   };
 }

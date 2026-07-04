@@ -44,12 +44,14 @@ export const mockWinners: WinnerView[] = [
     rewardPercent: 500,
     giftSerialized: undefined,
     raffleId: 'raffle1',
+    txFee: 1100000n,
   },
   {
     index: 1,
     rewardPercent: 500,
     giftSerialized: undefined,
     raffleId: 'raffle1',
+    txFee: 1100000n,
   },
 ];
 
@@ -59,12 +61,14 @@ export const mockWinnersWithDuplicateIndices: WinnerView[] = [
     rewardPercent: 500,
     giftSerialized: undefined,
     raffleId: 'raffle1',
+    txFee: 1100000n,
   },
   {
     index: 0,
     rewardPercent: 500,
     giftSerialized: undefined,
     raffleId: 'raffle1',
+    txFee: 1100000n,
   },
 ];
 
@@ -75,6 +79,7 @@ export const mockWinnersWIthGift: WinnerView[] = [
     giftSerialized:
       'oLCULxn+AQoEAgQABAIEAAQCDiAAD++5Rb7pJkClO/IvlyFYwXCHCrcpYf9UKrg0xqQRhQQCBAAOID+tOastA2z3K0v9N/C/0J473ctEPzbutlmsn85kp/xkBADYBNYBsqVzAADWAttjCKfWA+TGpwYF1gTt7e3t7e2TjLLbYwiypXMBAHMCAAGMsnICcwMAAZPFsqRzBADFp5PLwnIBcwWTwXIBmcGncgOT22MIcgG0cgJzBrFyApPkxnIBBQVyA5PL5OMADuTGcgEEDpWTy8KypHMHAHMI0ZaDAgGT5MZyAQQO5May22UB/nMJAAQOcgTRloMCAZPkxnIBBA7kxqcEDnIEjZcSAjjdtgMwdvulXtvVd64EnCsDrcOCpfIR3HdNd3um1z60Ab34Rdb/+U1y8jq7SQ2Mzji0d1Ai3cHYvwz/jI2iAuN0eAMOICG2ng2HwGVipIlG/KUR3R0BqT4fZlvUIJNOQQIALQgPBAIFwKOGATD9nsjsWBahm5nVec7BCKs6HBxc3tmYZirnnOEtjfCIAQ==',
     raffleId: 'raffle1',
+    txFee: 1100000n,
   },
 ];
 

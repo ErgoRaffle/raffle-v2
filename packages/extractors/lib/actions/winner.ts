@@ -4,7 +4,7 @@ import { DataSource } from '@rosen-bridge/extended-typeorm';
 import { BlockInfo } from '@rosen-bridge/scanner-interfaces';
 import { pick } from 'lodash-es';
 
-import { WinnerEntity } from '../entities/winner';
+import { WinnerEntity } from '../entities';
 import { WinnerBoxInterface } from '../interfaces/types';
 
 export class WinnerAction extends AbstractErgoBoxAction<
@@ -36,6 +36,7 @@ export class WinnerAction extends AbstractErgoBoxAction<
         txId: box.txId,
         raffleId: box.raffleId,
         index: box.index,
+        txFee: box.txFee,
         rewardPercent: box.rewardPercent,
       };
     });
@@ -54,6 +55,7 @@ export class WinnerAction extends AbstractErgoBoxAction<
         'extractor',
         'serialized',
         'index',
+        'txFee',
         'rewardPercent',
       ]),
     );
