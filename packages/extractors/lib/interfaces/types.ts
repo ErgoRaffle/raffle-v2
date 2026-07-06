@@ -77,6 +77,7 @@ export interface AddGiftProxyBoxInterface extends AbstractRaffleBoxInterface {
 export interface WinnerBoxInterface extends AbstractRaffleBoxInterface {
   index: number;
   rewardPercent: number;
+  txFee: bigint;
 }
 
 export interface RaffleDetailsBoxInterface extends AbstractRaffleBoxInterface {

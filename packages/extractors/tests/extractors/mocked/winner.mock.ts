@@ -29,6 +29,7 @@ export const sampleWinnerExtractedData = {
   identifier: sampleWinnerBoxes[0].boxId,
   txId: sampleWinnerBoxes[0].transactionId,
   index: 1,
+  txFee: 15000000n,
   raffleId: 'd29deaa5d8095fe30930845412b093d2ba75b48e31c25dff9f05a673967730fb',
   rewardPercent: 1000,
   serialized:

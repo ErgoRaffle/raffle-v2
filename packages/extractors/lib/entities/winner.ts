@@ -1,5 +1,9 @@
 import { AbstractErgoBoxEntity } from '@rosen-bridge/abstract-extractor';
-import { Entity, Column } from '@rosen-bridge/extended-typeorm';
+import {
+  Entity,
+  Column,
+  BigIntValueTransformer,
+} from '@rosen-bridge/extended-typeorm';
 
 @Entity('winner')
 export class WinnerEntity extends AbstractErgoBoxEntity {
@@ -14,4 +18,7 @@ export class WinnerEntity extends AbstractErgoBoxEntity {
 
   @Column('integer')
   rewardPercent: number;
+
+  @Column({ type: 'bigint', transformer: new BigIntValueTransformer() })
+  txFee: bigint;
 }

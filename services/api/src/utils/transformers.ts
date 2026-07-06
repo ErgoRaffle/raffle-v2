@@ -77,6 +77,12 @@ export const winnersViewToScheme = (
     if (winner.giftSerialized) {
       const box = deserializeBox(Buffer.from(winner.giftSerialized, 'base64'));
       winnerObject.gifts.push(...box.assets.slice(1));
+      if (box.value > 3n * winner.txFee) {
+        winnerObject.gifts.push({
+          tokenId: ERG_TOKEN_ID,
+          amount: box.value - 3n * winner.txFee,
+        });
+      }
     }
     winnersMap.set(winner.index, winnerObject);
   });
