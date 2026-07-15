@@ -58,7 +58,7 @@
     "@rosen-bridge/scanner-sync-check": "^8.2.0",
     "@rosen-bridge/service-manager": "^1.0.2",
     "@rosen-bridge/tx-pot": "^2.0.3",
-    "@rosen-bridge/winston-logger": "^3.0.0",
+    "@rosen-bridge/winston-logger": "^3.1.0",
     "lodash-es": "^4.17.21",
     "pg": "^8.4.0",
     "sigmastate-js": "^0.4.6",

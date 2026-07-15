@@ -1,4 +1,5 @@
 export interface BackgroundJobConfig {
+  ipfs: Ipfs;
   addresses: Addresses;
   tokenDetails: TokenDetails;
   boxLookup: BoxLookup;
@@ -9,7 +10,6 @@ export interface BackgroundJobConfig {
   scanner: Scanner;
   database: Database;
   logs: Logs[];
-  ipfs: Ipfs;
 }
 
 export interface Logs {
@@ -21,6 +21,9 @@ export interface Logs {
   serviceName?: string;
   host?: string;
   basicAuth?: string;
+  format?: 'plain' | 'json';
+  createSymlink?: boolean;
+  symlinkName?: string;
 }
 
 export interface Database {

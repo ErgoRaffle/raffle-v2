@@ -25,6 +25,10 @@ export const getLogOptions = (logConfigs: Logs[] = []): TransportOptions[] => {
           path: log.path!,
           maxSize: log.maxSize!,
           maxFiles: log.maxFiles!,
+          format: log.format,
+          createSymlink: log.createSymlink,
+          symlinkName: log.symlinkName,
+          serviceName: log.serviceName,
         });
         break;
       case 'loki':

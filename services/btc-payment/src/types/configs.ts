@@ -18,6 +18,9 @@ export interface Logs {
   serviceName?: string;
   host?: string;
   basicAuth?: string;
+  format?: 'plain' | 'json';
+  createSymlink?: boolean;
+  symlinkName?: string;
 }
 
 export interface Database {
