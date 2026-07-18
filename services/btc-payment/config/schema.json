@@ -89,6 +89,20 @@
         },
         "basicAuth": {
           "type": "string"
+        },
+        "format": {
+          "type": "string",
+          "validations": [
+            {
+              "choices": ["plain", "json"]
+            }
+          ]
+        },
+        "createSymlink": {
+          "type": "boolean"
+        },
+        "symlinkName": {
+          "type": "string"
         }
       }
     }
